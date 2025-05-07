@@ -1,5 +1,9 @@
 on:
-  push:
+  pull_request:
+    type:
+      - closed
+    branches:
+      - main
     paths-ignore:
       - ".github/**"
       - "app-chart/**"
