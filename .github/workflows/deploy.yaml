@@ -1,0 +1,61 @@
+on:
+  push:
+    paths-ignore:
+      - ".github/**"
+      - "app-chart/**"
+
+jobs:
+  container-rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Try to get the current version number from the running webserver
+        run: echo "VERSION_NUMBER=$(curl -s --max-time 10 -o - 'https://gdex-web-test.k8s.ucar.edu/version/')" >> $GITHUB_ENV
+      - name: If the webserver is unavailable, pull the latest image
+        if: ${{ env.VERSION_NUMBER == '' }}
+        run: |
+          docker pull dattore/gdex-web-test:latest
+          echo "VERSION_NUMBER=$(docker run dattore/gdex-web-test /bin/bash -c '/usr/local/bin/get_version_number')" >> $GITHUB_ENV
+      - name: Increment the version number
+        run: echo "VERSION_NUMBER=$(($VERSION_NUMBER+1))" >> $GITHUB_ENV
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      - name: Export secrets
+        id: secrets
+        run: |
+          echo "WAGTAIL_USERNAME=${{ secrets.WAGTAIL_USERNAME }}" >> $GITHUB_ENV
+          echo "WAGTAIL_PASSWORD=${{ secrets.WAGTAIL_PASSWORD }}" >> $GITHUB_ENV
+          echo "WAGTAIL_HOST=${{ secrets.WAGTAIL_HOST }}" >> $GITHUB_ENV
+          echo "WAGTAIL_DBNAME=${{ secrets.WAGTAIL_DBNAME }}" >> $GITHUB_ENV
+          echo "WAGTAIL_PORT=${{ secrets.WAGTAIL_PORT }}" >> $GITHUB_ENV
+          echo "DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}" >> $GITHUB_ENV
+          echo "DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}" >> $GITHUB_ENV
+          echo "DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL}}" >> $GITHUB_ENV
+      - name: Build a new version of container
+        run: >
+          docker build --platform linux/amd64
+          --build-arg VERSION_NUMBER=$VERSION_NUMBER
+          --secret id=WAGTAIL_USERNAME --secret id=WAGTAIL_PASSWORD
+          --secret id=WAGTAIL_HOST --secret id=WAGTAIL_PORT --secret id=WAGTAIL_DBNAME
+          --secret id=DJANGO_SUPERUSER_USERNAME --secret id=DJANGO_SUPERUSER_PASSWORD
+          --secret id=DJANGO_SUPERUSER_EMAIL
+          -t dattore/gdex-web-test:v$VERSION_NUMBER
+          --no-cache .
+      - name: Push the new image to Docker Hub
+        run: |
+          docker push dattore/gdex-web-test:v$VERSION_NUMBER
+          docker tag dattore/gdex-web-test:v$VERSION_NUMBER dattore/gdex-web-test:latest
+          docker push dattore/gdex-web-test:latest
+      - name: Update the Helm chart
+        run: |
+          git config user.email "${{ secrets.GIT_CONFIG_USER_EMAIL }}"
+          git config user.name "${{ secrets.GIT_CONFIG_USER_NAME }}"
+          sed -E "/image/s/gdex-web-test:(.){1,}/gdex-web-test:v$VERSION_NUMBER/" app-chart/values.yaml > app-chart/values.yaml.new
+          mv app-chart/values.yaml.new app-chart/values.yaml
+          git add app-chart/values.yaml
+          git commit -m "increment version"
+          git push
