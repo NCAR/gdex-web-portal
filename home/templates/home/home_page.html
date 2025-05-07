@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block content %}
+
+        <div class="d-grid d-print-flex">
+            <article class="main-content-wrapper">
+
+                {% comment %}welcome message{% endcomment %}
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="text-center">
+                            <h3 class="display-6 text-black mb-2">{{ page.tagline|richtext }}</h3>
+                            <p class="text-black-50">{{ page.welcome|richtext }}</p>
+                        </div>
+                    </div>
+                </div>
+
+{% comment %}search bar {% endcomment %} 
+    <div class="component featured-work container-lg">
+    <div class="row gx-0 pt-md-4 justify-content-center">
+        <div class="col-8 primary text-center">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title mb-md-2">{{ page.search_box_title }}</h3>
+                <form class="d-flex" action="/dssearch/">
+                    <input class="form-control" id="dataSearch" name="words" type="search" aria-label="Search" placeholder="{{ page.search_box_placeholder }}">
+                    <button class="btn btn-primary" type="submit" aria-label="Search"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+        </div>
+        </div>
+    </div>
+    </div>
+{% comment %} end search bar {% endcomment %} 
+
+                {% comment %}grid cards{% endcomment %}
+                <div class="component featured-work container-lg pt-md-4">
+                    <div class="row gx-0 justify-content-center">
+                        <div class="col-10 primary">
+                            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-2 g-md-4">
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h3 class="card-title text-center"><a href="{{ page.card_1_footer_page.url }}" class="text-white">{{ page.card_1_title }}</a></h3>
+                                            <div class="icon py-2 text-center">
+                                                <i class="fas fa-{{ page.card_1_icon_name }} fa-2x"></i>
+                                            </div>
+                                            <p class="card-text text-center">{{ page.card_1_text|richtext }}</p>
+                                        </div>
+                                        <div class="card-footer text-center">
+                                            <a href="{{ page.card_1_footer_page.url }}" class="btn btn-outline-light">{{ page.card_1_footer_text }}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h3 class="card-title text-center"><a href="{{ page.card_2_footer_page.url }}" class="text-white">{{ page.card_2_title }}</a></h3>
+                                            <div class="icon py-2 text-center">
+                                                <i class="fas fa-{{ page.card_2_icon_name }} fa-2x"></i>
+                                            </div>
+                                            <p class="card-text text-center">{{ page.card_2_text|richtext }}</p>
+                                        </div>
+                                        <div class="card-footer text-center">
+                                            <a href="{{ page.card_2_footer_page.url }}" class="btn btn-outline-light">{{ page.card_2_footer_text }}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h3 class="card-title text-center"><a href="{{ page.card_3_footer_page.url }}" class="text-white">{{ page.card_3_title }}</a></h3>
+                                            <div class="icon py-2 text-center">
+                                                <i class="fas fa-{{ page.card_3_icon_name }} fa-2x"></i>
+                                            </div>
+                                            <p class="card-text text-center">{{ page.card_3_text|richtext }}</p>
+                                        </div>
+                                        <div class="card-footer text-center">
+                                            <a href="{{ page.card_3_footer_page.url }}" class="btn btn-outline-light">{{ page.card_3_footer_text }}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </article>
+        </div>
+
+    {% include_block page.card_1 %}
+
+{% endblock %}
