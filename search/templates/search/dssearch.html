@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags %}
+
+{% block content %}
+    <h1>Dataset Search</h1>
+
+    <p class="mb-0">
+        You searched for '<b>{{ request.GET.words }}</b>'.
+    </p>
+
+    {% if results|length > 0 %}
+    <script src="/js/xhr_content2.js"></script>
+    <script src="{% static 'js/swapDivs.js' %}"></script>
+    <style id="dssearch_style">
+        .result:hover {
+            background-color: #eafaff;
+        }
+        .line-clamp-4 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            /* truncate to 4 lines */
+            -webkit-line-clamp: 4;
+        }
+    </style>
+    <script id="dssearch_script" language="javascript">
+        document.getElementById("siteSearch").value = '{{ request.GET.words }}';
+        function initSummaries() {
+          l = document.getElementsByClassName("line-clamp-4");
+          for (n = 0; n < l.length; ++n) {
+            if (l[n].offsetHeight < l[n].scrollHeight) {
+              document.getElementById("B" + n).classList.remove("d-none");
+            }
+          }
+        }
+        function toggleClamp(i) {
+          s = document.getElementById("S" + i);
+          b = document.getElementById("B" + i);
+          if (s.classList.contains("line-clamp-4")) {
+            s.classList.remove("line-clamp-4");
+            b.innerHTML = "Read less";
+          } else {
+            s.classList.add("line-clamp-4");
+            b.innerHTML = "Read more...";
+          }
+        }
+
+        function toggleDsSearchAdv() {
+          let e = document.getElementById("dssearch_adv");
+          let a = document.getElementById("adv_arrow");
+          if (e.classList.contains("d-none")) {
+            a.classList.add("show");
+            e.classList.replace("d-none", "d-block");
+          } else {
+            a.classList.remove("show");
+            e.classList.replace("d-block", "d-none");
+          }
+        }
+
+        var min_start = "{{ min_date_start }}";
+        var max_end = "{{ max_date_end }}";
+
+        function checkAdvForm() {
+          let f = document.dssearch_adv_form;
+          let sd = f.startd;
+          if (sd.value < min_start) {
+            alert("The earliest date that can be requested is {{ min_date_start }}.");
+            sd.value = "{{ min_date_start }}";
+          }
+          let ed = f.endd;
+          if (ed.value > max_end) {
+            alert("The latest date that can be requested is {{ max_date_end }}.");
+            ed.value = "{{ max_date_end }}";
+          }
+          let b = false;
+          if (f.words.value != "{{ request.GET.words }}") {
+            b = true;
+          }
+          if (sd.value != min_start) {
+            b = true;
+          }
+          if (ed.value != max_end) {
+            b = true;
+          }
+          if (f.tres.selectedIndex > 0) {
+            b = true;
+          }
+          if (f.format.selectedIndex > 0) {
+            b = true;
+          }
+          if (b) {
+            if (sd.value == min_start) {
+              sd.value = "";
+            }
+            if (ed.value == max_end) {
+              ed.value = "";
+            }
+          } else {
+            alert("You did not change any selections.");
+          }
+          return b;
+        }
+    </script>
+
+    {% with n=results|length %}
+    {% if n == 1 %}
+    <p class="mt-2">
+        1 dataset was identified:
+    </p>
+    {% else %}
+    <div>
+        <span class="text-uppercase text-body"><b>Advanced Options</b></span><a href="javascript:void(0)" onclick="toggleDsSearchAdv()"><button id="adv_arrow" class="btn dropdown-toggle p-md-1" role="button"></button></a>
+        <div id="dssearch_adv" class="d-{% if show_adv %}block{% else %}none{% endif %}">
+            <form name="dssearch_adv_form" action="/dssearch/" onsubmit="return checkAdvForm()">
+                <div class="component two-column container-lg overflow-hidden mb-3">
+                    <div class="row gx-0 gx-md-1 mt-1 align-items-center">
+                        <div class="col-12 col-md-2 text-end">
+                            keywords
+                        </div>
+                        <div class="col-12 col-md-10 text-start">
+                            :&nbsp;<input type="text" name="words" value="{{ request.GET.words }}">
+                        </div>
+                    </div>
+                    <div class="row gx-0 gx-md-1 mt-1 align-items-center">
+                        <div class="col-12 col-md-2 text-end">
+                            date range of data
+                            <br>
+                            (YYYY-MM)
+                        </div>
+                        <div class="col-12 col-md-10 text-start">
+                            :&nbsp;<input type="text" name="startd" size="8" maxlength="7" value="{{ date_start }}"> to <input type="text" name="endd" size="8" maxlength="7" value="{{ date_end }}">
+                        </div>
+                    </div>
+                    <div class="row gx-0 gx-md-1 mt-1 align-items-center">
+                        <div class="col-12 col-md-2 text-end">
+                            data temporal resolution
+                        </div>
+                        <div class="col-12 col-md-10 text-start">
+                            :&nbsp;<select name="tres">
+                                <option value="">any</option>
+                                {% for r in tres %}
+                                <option value="{{ r }}">{{ r|slice:"4:" }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row gx-0 gx-md-1 mt-1 align-items-center">
+                        <div class="col-12 col-md-2 text-end">
+                            data format
+                        </div>
+                        <div class="col-12 col-md-10 text-start">
+                            :&nbsp;<select name="format">
+                                <option value="">any</option>
+                                {% for f in fmts %}
+                                <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row gx-0 gx-md-1 mt-1 align-items-center">
+                        <div class="col-12 col-md-2 text-end">
+                        </div>
+                        <div class="col-12 col-md-10 text-start">
+                            <button class="btn btn-primary px-2 py-1 border-1">Update</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <p class="mt-1">
+        {{ n }} datasets (sorted by relevance) were identified:
+    </p>
+    {% endif %}
+    {% endwith %}
+
+    {% for result in results %}
+        {% if forloop.counter0 == historical_start %}
+        <div style="border: thin solid black; padding: 5px">
+            <p>
+                <i class="fa-solid fa-triangle-exclamation"></i>&nbsp;<font color="red">The following datasets are recommended for ancillary use only and not as primary research datasets. They have likely been superseded by newer and better datasets.</font>
+            </p>
+        {% endif %}
+        <div class="result p-2">
+            <div>
+                {% if result.type != "P" %}<i class="fa-solid fa-triangle-exclamation"></i>&nbsp;{% endif %}{{ forloop.counter }}.&nbsp;<a href="/datasets/{{ result.dsid }}"><b>{{ result.title }}</b></a>&nbsp;({{ result.dsid }})
+            </div>
+            <div id="S{{ forloop.counter0 }}" class="line-clamp-4">
+                {{ result.summary|richtext }}
+            </div>
+            <button id="B{{ forloop.counter0 }}" class="btn btn-outline-primary px-1 py-0 border-1 d-none" onclick="toggleClamp('{{ forloop.counter0 }}')">Read more...</button>
+        </div>
+    {% endfor %}
+    {% if historical_length > 0 %}
+    </div>
+    {% endif %}
+    <img src="/images/transpace.gif" onload="initSummaries()">
+    {% else %}
+    <p>
+        No datasets were identified.
+    </p>
+    <ul>
+        <li>
+            Make sure you spelled all words correctly.
+        </li>
+        <li>
+            If an acronym could not be matched, try spelling it out.
+        </li>
+        <li>
+            Try using a common acronym if one exists (e.g. ERA40, FNL).
+        </li>
+        <li>
+            Contact us at <a href="mailto:rdahelp@ucar.edu">rdahelp@ucar.edu</a>. If we don't have the data you want, we may know where you can obtain them.
+        </li>
+    </ul>
+    {% endif %}
+
+{% endblock %}
