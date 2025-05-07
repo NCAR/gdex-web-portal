@@ -1,0 +1,14 @@
+replicaCount: 1
+
+webapp:
+  name: gdex-webserver-test
+  group: gdex-web-test
+  path: /
+  tls:
+    fqdn: gdex-web-test.k8s.ucar.edu
+    secretName: incommon-cert-gdex-web-test
+  container: 
+    image: docker.io/dattore/gdex-web-test:v114
+    port: 443
+    memory: 1G
+    cpu: 2
