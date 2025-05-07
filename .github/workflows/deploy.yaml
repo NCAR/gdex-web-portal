@@ -18,8 +18,8 @@ jobs:
       - name: If the webserver is unavailable, pull the latest image
         if: ${{ env.VERSION_NUMBER == '' }}
         run: |
-          docker pull dattore/gdex-web-test:latest
-          echo "VERSION_NUMBER=$(docker run dattore/gdex-web-test /bin/bash -c '/usr/local/bin/get_version_number')" >> $GITHUB_ENV
+          docker pull dattore/gdex-web-portal:latest
+          echo "VERSION_NUMBER=$(docker run dattore/gdex-web-portal /bin/bash -c '/usr/local/bin/get_version_number')" >> $GITHUB_ENV
       - name: Increment the version number
         run: echo "VERSION_NUMBER=$(($VERSION_NUMBER+1))" >> $GITHUB_ENV
       - name: Checkout the repository
@@ -43,18 +43,18 @@ jobs:
           --secret id=WAGTAIL_HOST --secret id=WAGTAIL_PORT --secret id=WAGTAIL_DBNAME
           --secret id=DJANGO_SUPERUSER_USERNAME --secret id=DJANGO_SUPERUSER_PASSWORD
           --secret id=DJANGO_SUPERUSER_EMAIL
-          -t dattore/gdex-web-test:v$VERSION_NUMBER
+          -t dattore/gdex-web-portal:v$VERSION_NUMBER
           --no-cache .
       - name: Push the new image to Docker Hub
         run: |
-          docker push dattore/gdex-web-test:v$VERSION_NUMBER
-          docker tag dattore/gdex-web-test:v$VERSION_NUMBER dattore/gdex-web-test:latest
-          docker push dattore/gdex-web-test:latest
+          docker push dattore/gdex-web-portal:v$VERSION_NUMBER
+          docker tag dattore/gdex-web-portal:v$VERSION_NUMBER dattore/gdex-web-portal:latest
+          docker push dattore/gdex-web-portal:latest
       - name: Update the Helm chart
         run: |
           git config user.email "${{ secrets.GIT_CONFIG_USER_EMAIL }}"
           git config user.name "${{ secrets.GIT_CONFIG_USER_NAME }}"
-          sed -E "/image/s/gdex-web-test:(.){1,}/gdex-web-test:v$VERSION_NUMBER/" app-chart/values.yaml > app-chart/values.yaml.new
+          sed -E "/image/s/gdex-web-portal:(.){1,}/gdex-web-portal:v$VERSION_NUMBER/" app-chart/values.yaml > app-chart/values.yaml.new
           mv app-chart/values.yaml.new app-chart/values.yaml
           git add app-chart/values.yaml
           git commit -m "increment version"
