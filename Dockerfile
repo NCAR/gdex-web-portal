@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM dattore/rda-web-test:wagtail AS intermediate
+FROM dattore/gdex-web-portal:wagtail AS intermediate
 
 # set the version number
 ARG VERSION_NUMBER=
@@ -16,7 +16,7 @@ EOF
 RUN <<EOF
 cat <<EOFCAT > /tmp/get_version_number
 #! /bin/bash
-cat /usr/local/rdaweb/version_number
+cat /usr/local/gdexweb/version_number
 EOFCAT
 EOF
 RUN chmod 755 /tmp/get_version_number
@@ -24,18 +24,17 @@ RUN chmod 755 /tmp/get_version_number
 RUN <<EOF
 apt-get update -y
 apt-get install -y git
-mkdir /tmp/rdaweb
-git clone https://github.com/rda-dattore/rdaweb.git /tmp/rdaweb
+mkdir /tmp/gdexweb
+git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
 EOF
-#ADD git@github.com:rda-dattore/rdaweb.git /tmp/rdaweb
 
 
-FROM dattore/rda-web-test:wagtail
+FROM dattore/gdex-web-portal:wagtail
 
 # copy from the intermediate
-COPY --from=intermediate /tmp/version_number /usr/local/rdaweb/
+COPY --from=intermediate /tmp/version_number /usr/local/gdexweb/
 COPY --from=intermediate /tmp/get_version_number /usr/local/bin/
-COPY --from=intermediate /tmp/rdaweb /usr/local/rdaweb
+COPY --from=intermediate /tmp/gdexweb /usr/local/gdexweb
 
 # create the local settings file
 RUN \
@@ -48,7 +47,7 @@ RUN \
 --mount=type=secret,id=DJANGO_SUPERUSER_PASSWORD,env=DJANGO_SUPERUSER_PASSWORD \
 --mount=type=secret,id=DJANGO_SUPERUSER_EMAIL,env=DJANGO_SUPERUSER_EMAIL \
 <<EOF
-cat <<EOFCAT > /usr/local/rdaweb/rdawebserver/settings/local_settings.py
+cat <<EOFCAT > /usr/local/gdexweb/gdexwebserver/settings/local_settings.py
 wagtail_config = {
     'user': "$WAGTAIL_USERNAME",
     'password': "$WAGTAIL_PASSWORD",
@@ -65,21 +64,21 @@ DJANGO_SUPERUSER = {
 EOFCAT
 EOF
 
-RUN pip install -r /usr/local/rdaweb/requirements.txt
+RUN pip install -r /usr/local/gdexweb/requirements.txt
 
 # create the final setup and run script
 RUN <<EOF
 cat <<EOFCAT > /usr/local/bin/start_web_server
 #! /bin/bash
-/usr/local/rdaweb/manage.py makemigrations
-/usr/local/rdaweb/manage.py migrate
-/usr/local/rdaweb/manage.py collectstatic --noinput
-python3.12 /usr/local/rdaweb/manage.py ensuresuperuser
-gunicorn --bind 0.0.0.0:443 --workers 4 rdawebserver.wsgi
+/usr/local/gdexweb/manage.py makemigrations
+/usr/local/gdexweb/manage.py migrate
+/usr/local/gdexweb/manage.py collectstatic --noinput
+python3.12 /usr/local/gdexweb/manage.py ensuresuperuser
+gunicorn --bind 0.0.0.0:443 --workers 4 gdexwebserver.wsgi
 EOFCAT
 EOF
 RUN chmod 755 /usr/local/bin/start_web_server
 
 # start gunicorn
-ENV PYTHONPATH=/usr/local/rdaweb
+ENV PYTHONPATH=/usr/local/gdexweb
 CMD ["/usr/local/bin/start_web_server"]
