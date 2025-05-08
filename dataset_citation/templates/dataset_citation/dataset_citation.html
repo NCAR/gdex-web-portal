@@ -1,0 +1,37 @@
+{% load wagtailcore_tags %}
+
+<div class="p-1">
+    <h5>How to Cite this Dataset:</h5>
+    <div id="citation" class="border p-1">
+        <img src="/images/transpace.gif" width="1" height="1" onload="getAjaxContent('GET', null, '/cgi-bin/datasets/citation?dsnum={{ dsid }}&style=esip', 'citation')" />
+    </div>
+    <div class="mt-1">
+        <a href="javascript:void(0)" class="btn btn-pill btn-primary px-2 py-1 border-1" onclick="location='/cgi-bin/datasets/citation?dsnum={{ dsid }}&style=ris'">Download in RIS Format</a>
+        <a href="javascript:void(0)" class="btn btn-pill btn-primary px-2 py-1 border-1" onclick="location='/cgi-bin/datasets/citation?dsnum={{ dsid }}&style=bibtex'">Download in <span style="font-family: serif; text-transform: none">BibTeX</span> Format</a>
+    </div>
+</div>
+
+<div class="p-1 mt-3">
+    <h5>Citation Statistics for this Dataset:</h5>
+    This dataset has been cited <b>{{ num_citations }}</b> time{% if num_citations != 1 %}s{% endif %}.
+    {% if num_citations >= 1 %}
+    <span class="d-block small mt-n1 mb-2">
+        <span id="DC0">
+            <a class="text-uppercase text-body" href="javascript:swapDivs('C0', 'C1')" title="Expand dataset citation list"><b>See a list of published works that have cited this dataset</b><button class="btn dropdown-toggle p-md-1" role="button"></button></a>
+        </span>
+        <span id="DC1" style="visibility: hidden; position: absolute; top: 0; line-height: 1.25em">
+            <a class="text-uppercase text-body" href="javascript:swapDivs('C1', 'C0')" title="Collapse dataset citation list"><b>Published works that have cited this dataset:</b><button class="btn dropdown-toggle p-md-1 show" role="button"></button></a>
+            <span class="d-block mt-n1"></span>
+                {% for pub_year in citations %}
+                <div class="mb-2">
+                    <b>{{ pub_year.year }}</b>
+                    {% for publication in pub_year.publications %}
+                    <div class="mb-1" style="text-indent: -1.625em; margin-left: 2.625em">
+                        {{ publication|richtext }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+        </span>
+    {% endif %}
+</div>
