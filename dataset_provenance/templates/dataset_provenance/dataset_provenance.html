@@ -1,0 +1,40 @@
+{% load wagtailcore_tags %}
+
+<div class="p-1">
+    {% if page.events|length > 0 %}
+        <div class="table-responsive mt-2">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            Event Date
+                        </th>
+                        <th scope="col">
+                            Source Institution
+                        </th>
+                        <th scope="col">
+                            Event Description
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for event in page.events %}
+                    <tr>
+                        <td>
+                            {{ event.start_date }}{% if event.end_date %} to {{ event.end_date }}{% endif %}
+                        </td>
+                        <td>
+                            {{ event.source_institution }}
+                        </td>
+                        <td>
+                            {{ event.description|richtext }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No lineage information is available for this dataset.</p>
+    {% endif %}
+</div>
