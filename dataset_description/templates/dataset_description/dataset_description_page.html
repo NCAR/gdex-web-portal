@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags custom_tags login_tags %}
+
+{% block title %}
+NCAR RDA Dataset {{ page.dsid }}
+{% endblock %}
+
+{% block content %}
+
+    {% with page.dsid|add:".jsonld" as jsonld %}
+      {% if jsonld|template_exists %}
+        {% include jsonld %}
+      {% endif %}
+    {% endwith %}
+    <script src="/js/xhr_content2.js"></script>
+    <script src="/js/popInfo.js"></script>
+{% comment %}
+    <script src="{% static 'js/hashchange.js' %}"></script>
+{% endcomment %}
+    <script src="/js/jquery.js"></script>
+    <script type="text/javascript">
+        function setActiveTab(i) {
+          var li_list = document.getElementById('datasetTab').getElementsByTagName('li');
+          for (n = 0; n < li_list.length; ++n) {
+            var a_list = li_list[n].getElementsByTagName('a');
+            if (a_list.length > 0) {
+              var a = a_list[0];
+              if (a.id == i) {
+                a.classList.add('active');
+                a.ariaSelected = true;
+              } else {
+                a.classList.remove('active');
+                a.ariaSelected = false;
+              }
+            }
+          }
+        }
+
+        function setTab() {
+          path = document.location.pathname.substr(document.location.pathname.indexOf("/datasets") + 10);
+          path = path.substr(path.indexOf("/") + 1)
+          qs = document.location.search;
+          if (path.length == 0) {
+            setActiveTab("description-tab");
+          } else if (path.indexOf("dataaccess") == 0 || qs.indexOf("content=dataaccess") >= 0 || path.indexOf("listopt") == 0) {
+            setActiveTab("data-access-tab");
+          } else if (path.indexOf("citation") == 0) {
+            setActiveTab("citation-tab");
+          } else if (path.indexOf("documentation") == 0) {
+            setActiveTab("documentation-tab");
+          } else if (path.indexOf("software") == 0) {
+            setActiveTab("software-tab");
+          } else if (path.indexOf("metrics") == 0) {
+            setActiveTab("metrics-tab");
+          }
+        }
+
+        function replace_ds_content(response) {
+          $('#ds_content').html(response);
+          $('html, body').animate({
+            scrollTop: $('#ds_content').offset().top - $('header').height()
+          });
+        }
+
+        function get_ajax_with_history(u, t = '', h = true) {
+          $.get(u, replace_ds_content);
+          if (h) {
+            document.title = "NCAR RDA Dataset {{ page.dsid }} " + t;
+            window.history.pushState({'url': u, 'title': t}, "", u);
+          }
+        }
+
+        window.onpopstate = function(e) {
+          setTab();
+          if (document.location.hash !== "") return; //Do nothing if tag anchor
+          if (e.state) {
+            get_ajax_with_history(e.state.url, e.state.title, false);
+          } else {
+            get_ajax_with_history('', '', false);
+          }
+        };
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="/css/bubble.css">
+    <style>
+    .infosrc {
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+      text-decoration-style: dashed;
+      cursor: help;
+    }
+    div.info {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      visibility: hidden;
+      max-width: 400px;
+      border: thin solid black;
+      padding: 3px 8px 3px 8px;
+      z-index: 998;
+      background-color: #c3d7ee;
+    }
+    div.dshead {
+        display: grid;
+        grid-template-columns: 1fr 9fr;
+        grid-gap: 10px;
+    }
+    .dshead .img {
+        grid-column: 1;
+        display: flex;
+        align-items: top;
+        justify-content: center;
+    }
+    .dshead .title {
+        grid-column: 2;
+    }
+    .disabled-tab {
+        color: #6c757d !important;
+        pointer-events: none !important;
+        cursor: default !important;
+    }
+    </style>
+
+        <div class="dshead">
+            <div class="img-fluid">
+                {% if page.dslogo %}
+                    <img src="/images/ds_logos/{{ page.dslogo }}">
+                {% else %}
+                    <picture>
+                        <source type="image/webp" srcset="/media/original_images/NCAR_RDA_Icon_Blue_wRDAtext_transparent.webp">
+                        <source type="image/jpeg+png" srcset="/media/original_images/NCAR_RDA_Icon_Blue_wRDAtext_transparent.png">
+                        <img class="img-fluid" src="/media/original_images/NCAR_RDA_Icon_Blue_wRDAtext.jpg" alt="NCAR Resarch Data Archive logo">
+                    </picture>
+                {% endif %}
+            </div>
+            <div class="title">
+                <h2 class="mb-0">{{ page.dstitle }}</h2>
+                <div>
+                    <h5 class="d-inline mb-0">{{ page.dsid }}</h5>{% if 'iuser' in request.COOKIES %}<a href="/metaman/manage-datasets/?editId={{ page.dsid }}" title="Edit {{ page.dsid }} in the Metadata Manager"><sup class="ms-1"><i class="fa fa-pen-to-square"></i></sup></a>{% endif %}{% if page.dsdoi %}<h5 class="d-inline mb-0"> | DOI: {{ page.dsdoi }}</h5>{% endif %}
+                    {% with duser=request.COOKIES|duser %}
+                    {% with is_bookmarked=page.dsid|ds_is_bookmarked:duser %}
+                    <img id="ds_bookmark_img" class="mb-1" src="/images/{% if is_bookmarked %}gold-star.png{% else %}hollow-black-star.png{% endif %}" width="18" height="18" border="0" title="Click to {% if is_bookmarked %}delete this bookmark{% else %}bookmark this dataset{% endif %}" onclick="$.get('bookmark/', function(response) { $('#ds_bookmark_img').attr('src', '/images/' + response) })">
+                    {% endwith %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+        <div>&nbsp;<div class="float-end my-2 position-relative" style="z-index: 999"><a class="component-link i-angle-right--after" href="mailto:rdahelp@ucar.edu?subject=Question about dataset {{ page.dsid }}">Ask a Question</a></div></div>
+
+        {% comment %} Begin Dataset Tabs {% endcomment %}
+        <ul class="nav nav-tabs" id="datasetTab" role="tablist">
+            <li class="nav-item" role="dataset">
+                <a class="nav-link px-3 py-2 active" id="description-tab" data-toggle="tab" href="#" role="tab" aria-controls="description" aria-selected="true" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/')">Description</a>
+            </li>
+            <li class="nav-item" role="dataset">
+                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="data-access-tab" data-toggle="tab" href="#" role="tab" aria-controls="data-access" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/dataaccess/', 'Data Access')">Data Access</a>
+            </li>
+            <li class="nav-item" role="dataset">
+                <a class="nav-link px-3 py-2" id="citation-tab" data-toggle="tab" href="#" role="tab" aria-controls="citation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/citation/', 'Citation')">Citation</a>
+            </li>
+            <li class="nav-item" role="dataset">
+                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="documentation-tab" data-toggle="tab" href="#" role="tab" aria-controls="documentation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/documentation/', 'Documentation')">Documentation</a>
+            </li>
+            <li class="nav-item" role="dataset">
+                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="software-tab" data-toggle="tab" href="#" role="tab" aria-controls="software" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/software/', 'Software')">Software</a>
+            </li>
+            <li class="nav-item" role="dataset">
+                <a class="nav-link px-3 py-2" id="metrics-tab" data-toggle="tab" href="#" role="tab" onclick="switch_to_metrics()" aria-controls="metrics" aria-selected="false">Metrics</a>
+            </li>
+        </ul>
+        {% comment %} End Dataset Tabs {% endcomment %}
+
+        {% comment %} Begin Page Content (default is dataset description) {% endcomment %}
+        <div id="ds_content" class="dataset p-3{% comment %} yellow-orange-border{% endcomment %}">
+            {% block ds_content %}
+                {% if 'content' in request.GET and request.GET.content == 'dataaccess' %}
+                <img src="/images/transpace.gif" width="0" height="0" onload="$.get('dataaccess', replace_ds_content)">
+                {% else %}
+                {% include "datasets/description.html" %}
+                {% endif %}
+            {% endblock %}
+        </div>
+        {% comment %} End Page Content {% endcomment %}
+
+    <script language="javascript" type="text/javascript" src="{% static 'js/swapDivs.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/FileSaver.min.js' %}"></script>
+    <script language="javascript" type="text/javascript">
+        function switch_to_metrics() {
+            window.history.pushState("","",'metrics')
+            $.get('/datasets/{{ page.dsid }}/metrics', replace_ds_content)
+            // Load needs to be synchronous
+    	    $.getScript("{% static 'js/d3.v5.min.js' %}").done(function()
+                    {
+    	            $.getScript("{% static 'js/metrics.js' %}").done(function()
+                        {
+                        $.getScript("{% static 'js/add_graph.js' %}").done(function()
+                            {
+                            add_graph('{{ page.dsid }}')
+                            })
+                        });
+                    });
+             }
+    </script>
+
+    <img src="/images/transpace.gif" width="0" height="0" onload="setTab()">
+{% endblock %}
