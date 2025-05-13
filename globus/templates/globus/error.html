@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags static %}
+{% block body_class %}{% endblock %}
+{% block content %}
+
+<div class='bg-white p-3'>
+
+<div class="d-grid d-print-flex">
+    <article class="main-content-wrapper">
+        <div class="main-content clearfix"> 
+            <div class="bg-white p-3">
+
+                <h3 class="py-2">Unable to fulfill your request</h3>
+                <div>
+                    Sorry, but an unexpected Globus error has occurred while servicing your request. 
+                </div>
+                <hr>
+                <div>
+                    {% for key, val in data.items %}
+                        <div>
+                            <strong>{{ key }}:</strong> {{ val }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="pt-2">
+                    If this problem persists, please <a href="/contact-us">contact RDA support</a> and copy-paste the information above to help us resolve the problem.
+                </div>
+
+            </div>
+         </div>
+    </article>
+</div>
+
+{% endblock %}
+
