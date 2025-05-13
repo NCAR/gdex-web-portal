@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags static %}
+{% block body_class %}{% endblock %}
+{% block content %}
+
+<div class='bg-white p-3'>
+
+<div class="d-grid d-print-flex">
+    <article class="main-content-wrapper">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <div class="py-1 py-md-3">
+                        <div class="d-flex">
+                            <div>
+                                {% if message.tags == 'success' %}
+                                    <i class="fas fa-info-circle"></i>
+                                {% elif message.tags == 'info' %}
+                                    <i class="fas fa-info-circle"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="fas fa-exclamation-circle"></i>
+                                {% elif message.tags == 'danger' %}
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap">
+                                    <span class="pe-3">{{ message }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <button type="button" class="fas fa-times close" data-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="main-content clearfix"> 
+            <div class="bg-white p-3">
+                <h2 class="py-2">Globus transfer details</h2>
+                <div id="task">
+                    <div>
+                        <strong>Task ID</strong>: {{ task_id }}
+                    </div>
+                    <div>
+                      <strong>Source endpoint</strong>: {{ source_endpoint_display_name }}
+                    </div>
+                    <div>
+                      <strong>Destination Endpoint</strong>: {{ destination_endpoint_display_name }}
+                    </div>
+                    <div>
+                      <strong>Request Time</strong>: {{ request_time }}
+                    </div>
+                    <div>
+                      <strong>Status</strong>: {{ status }}
+                    </div>
+                    <div>
+                      <strong>Files transferred</strong>: {{ files_transferred }}
+                    </div>
+                    <div>
+                      <strong>Faults</strong>: {{ faults }}
+                    </div>
+                    <div>
+                      <strong>Label</strong>: {{ label }}
+                    </div>
+                    <div>
+                      <strong>Summary and event log</strong>: <a href="{{ settings.GLOBUS_APP_URL }}activity/{{ task_id }}" target="_blank">{{ settings.GLOBUS_APP_URL }}activity/{{ task_id }}</a>
+                    </div>
+
+                    <div class="py-2">
+                      <a href="{% url 'status-view' task_id=task_id %}">
+                        <button type="button" class="btn btn-lg btn-primary">
+                          Refresh
+                        </button>
+                      </a>
+                    </div>
+                    <div>
+                        <a href="/datasets/{{ dsid }}/">Return to the {{ dsid }} page</a>
+                    </div>
+                </div>
+            </div>
+         </div>
+    </article>
+</div>
+
+{% endblock %}
+
