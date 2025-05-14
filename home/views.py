@@ -1,7 +1,6 @@
 import sys
 from django.shortcuts import render
 from django.http import HttpResponse
-from mysql import connector
 
 # Create your views here.
 
