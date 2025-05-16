@@ -1,0 +1,111 @@
+{% extends "datasets/base_request.html" %}
+{% load wagtailcore_tags static decs_tags home_tags custom_tags %}
+
+{% block title %}
+NSF NCAR RDA | Data Request {{ info.request_index }}
+{% endblock %}
+
+{% block request_title %}
+<h2 id='request_title'>RDA Data Request {{ info.request_index }}</h2>
+{% endblock %}
+
+{% block request_summary %}
+<div id="summary" class="p-2">
+  Your request for data from the NSF NCAR Research Data Archive is complete and
+  ready for download below.  These data files will remain available for download for 
+  five days and will be deleted on <strong>{{ info.date_purge }}</strong>.  If you need 
+  additional time to complete the download, please navigate to your 
+  <a href="/ajax/#!cgi-bin/dashboard">user dashboard</a> 
+  and request an extension under the "Customized Data Requests" section.  After 
+  you have completed the download, you may delete the request and data files from 
+  our data server in your user dashboard.  Please email 
+  <a href="mailto:rdahelp@ucar.edu?subject=Question about data request {{ info.request_index }}">
+    rdahelp@ucar.edu
+  </a>
+  if you have questions regarding this request.
+</div>
+<hr class="my-1">
+{% endblock request_summary %}
+
+{% block request_details %}
+<h4 id="request_details_title" class="pt-2 px-2">Request details</h4>
+<div id="request_details" class="ms-2 p-2">
+  <div><strong>Request index:</strong> {{ info.request_index }}</div>
+  <div><strong>Dataset ID:</strong> {{ info.dsid }}</div>
+  <div><strong>Dataset title:</strong> <a href="{{ info.dsurl }}">{{ info.dstitle }}</a></div>
+  <div><strong>Status:</strong> {{ info.status }}</strong></div>
+  <div class="py-1"><strong>Request parameters:</strong> 
+    <div class="py-2"><pre><code>{{ info.subset_info.note }}</code></pre></div>
+  </div>
+</div>
+<hr class="my-1">
+{% endblock request_details %}
+
+{% block download_options %}
+<div id="downloadOptions">
+  <h4>Download options</h4>
+  {% include "datasets/download_buttons.html" with globus_url=info.globus_url %}
+</div>
+{% endblock download_options %}
+
+{% block request_table_summary %}
+<div class="table_summary pb-2" id="rqst_table_summary">
+  <strong>{{ files|length }} Files </strong> are listed below
+  <br />
+  Click on a filename to download a single file or select multiple files and generate a download script.
+  <br />
+  Currently <strong id='num_selected_files_request'>0</strong><strong> Files </strong><strong id='total_size_request' data-value='0'> </strong> selected
+  <br />
+  <button class="btn btn-primary btn-all-files my-2" id="request_select_all">Select all</button>
+  <button class="btn btn-primary clear-group-btn" id="request_clear_button" disabled>Clear selections</button>
+</div>
+{% endblock request_table_summary %}
+
+{% block request_table %}
+<div class="table-responsive">
+<table id='request_table' class='table table-light table-striped'>
+  <thead>
+    <tr>
+      <th>
+        Index
+      </th>
+      {% for key,val in column_headers.items %}
+      <th>
+        {{ val }} <i role='button' class="fas fa-solid fa-sort sort-column"></i>
+      </th>
+      {% endfor %}
+    </tr>
+  </thead>
+  
+  <tbody>
+    {% for file in files %}
+    <tr>
+      <td>
+        <input class='file' type='checkbox'></input>
+        {{ forloop.counter }}
+      </td>
+      
+      {% for key,val in file.items %}
+      {% if key in column_headers %}
+      <td class='{{ key }}' {% if key == 'size' %}data-size='{{ val }}'{% endif %}>
+        {% if key == 'wfile' %}
+            <a style="font-family:'Roboto Mono';" href="{{ file.url }}">{{ file.base_file_name }}</a>
+        {% else %}
+            {% if key == 'size' %}
+                {{ val|convert_bytes }}
+            {% elif key == 'note' and val is None %}
+                &nbsp;
+            {% else %}
+                {{ val }}
+            {% endif %}
+        {% endif %}
+      </td>
+      {% endif %}
+      {% endfor %}
+
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock request_table %}

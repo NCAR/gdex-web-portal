@@ -1,0 +1,19 @@
+{% load wagtailcore_tags static wagtailimages_tags %}
+
+<style>
+.date-select
+{
+user-select : none;
+color : #aaa;
+display : inline;
+cursor : pointer
+}
+#year
+{
+color : #333;
+}
+</style>
+<div class='date-select' id='year'>Yearly</div>
+<div style='display:inline;color:#aaa'>|</div>
+<div class='date-select' id='month'>Monthly</div>
+<div id='content_container' style='height:900px'></div>

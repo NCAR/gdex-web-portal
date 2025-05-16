@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+{% load decs_tags custom_tags %}
+
+{% block content %}
+        <div class="d-grid d-print-flex">
+            <article class="main-content-wrapper">
+                <h2>{{ page.header }}</h2>
+                <div class="main-content clearfix">{{ page.description|richtext }}</div>
+                <div class="component list">
+                    {% for child in page.get_children.specific %}
+                        <div class="list-item p-3">
+                            {% with dsid=child.dsid|format_dsid %}
+                            <div><a href="{{ dsid|ds_slug }}/">{{ dsid }}</a> - {{ child.dstitle }}</div>
+                            {% endwith %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags static decs_tags home_tags custom_tags %}
+
+{% if error_messages %}}
+{{ error_messages }}
+{% endif %}
+
+{% block content %}
+
+<button class="btn btn-primary" id="topButton" title="Scroll to top"><i class="fas fa-arrow-up"></i>&nbsp;Top</button>
+<div class="d-grid d-print-flex">
+<article class="main-content-wrapper">
+<div class="main-content clearfix"> 
+<div class="bg-white p-3">
+
+{% block request_title %}{% endblock %}
+{% block request_summary %}{% endblock %}
+{% block request_details %}{% endblock %}
+{% block download_options %}{% endblock %}
+{% block request_table_summary %}{% endblock %}
+{% block request_table %}{% endblock %}
+
+</div>
+</div>
+</article>
+</div>
+
+<script src="/js/jquery.js"></script>
+<script type="text/javascript" src="{% static 'js/FileSaver.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/cache_filelist.js' %}"></script>
+
+{% endblock content %}

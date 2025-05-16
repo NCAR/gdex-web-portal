@@ -1,0 +1,361 @@
+{% load wagtailcore_tags decs_tags home_tags custom_tags static %}
+<script src="/js/jquery.js"></script>
+<script type="text/javascript" src="{% static 'js/cache_filelist.js' %}"></script>
+{% if error_messages %}}
+{{ error_messages }}
+{% endif %}
+{% csrf_token %}
+
+<input type='hidden' id=clipboard></input> {# Used for text copying #}
+<button class="btn btn-primary" id="topButton" title="Scroll to top"><i class="fas fa-arrow-up"></i>&nbsp;Top</button>
+
+<div class='d-none' id='file_table' data-dsid='{{ data.dsid }}'></div>
+{% if data.parent.url %}
+    <a class="btn btn-icon-gray" href="javascript:void(0);" onclick="$.get('{{ data.parent.url }}{% if data.is_glade %}?fl=glade{% endif %}', function(d){replace_ds_content(d)});">
+        <i class="fas fa-arrow-circle-left me-1"></i>
+        <span class="d-none d-md-inline">Back</span>
+    </a>
+{% endif %}
+<h2 id='data_title'>{{ data.title }}</h2>
+<hr class="my-1">
+{% if data.is_glade %}
+    <p class='border p-1 bg-light d-inline-block rounded-sm'>
+        <i class="pe-1 fas fa-info-circle"> </i>
+        <strong>To access data files: </strong> GLADE data files are directly accessible from any NCAR computing system that has the /glade partition mounted on it. The files can be opened in place on GLADE or copied to your local work or /scratch directory using the Unix "cp" command.
+    </p>
+{% endif %}
+{% if data.note %}
+    <p class='border p-1 bg-light d-inline-block rounded-sm'><i class="pe-1 fas fa-info-circle"> </i> {{ data.note|striptags }}</p>
+    <br>
+{% endif %}
+
+{% if data.groups|length > 1 %}
+   <h2> Subgroup Summary </h2>
+   <div>
+      {% if data.is_glade %}
+         {% include "datasets/glade_buttons.html" %}
+      {% else %}
+         {% include "datasets/download_buttons.html" %}
+      {% endif %}
+      <table class='table table-striped'>
+        <thead>
+            <tr>
+                <th>Group ID</th>
+                <th>Data Description</th>
+                <th>File Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in data.groups %}
+            <tr>
+                <td>
+                    <input type='checkbox' class='parent_group' id='{{group.group_id|slugify}}_parent'></input>
+                    <a href='#{{group.group_id|slugify}}' onclick="$event.preventDefault()">{{ group.group_id }}</a>
+                </td>
+                <td>
+                    {{ group.title }}
+                </td>
+                <td>
+                    {{ group.rows|length }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+   </div>
+<hr/>
+{% endif %}
+{% if data.groups.0.gindex|add:"0" < 0  %} {% comment %} If an ARCO group {% endcomment %}
+<input type='hidden' id=clipboard></input>
+<div id='arco-container' class='d-flex flex-column w-75'>
+{% for row in data.groups.0.rows %}
+  {% if row.2.value != 'CSV' %}
+    <div class='arco-asset {% if forloop.counter|divisibleby:2 %}bg-light{% else %}bg-light-subtle{% endif %} d-flex justify-content-between p-1 mb-1 border border-info align-items-center'>
+     <div class='' style='font-family:monospaced'>
+	    {{row.0.value}} {# Maybe we should display full URL here? #}
+     </div>
+     <div class='p-1 ms-3 border rounded bg-primary text-light' 
+	 style='transition:all 0.2s ease' 
+	 role='button' 
+	 onClick="
+	    copyText('{{row.0.url}}') && 
+	    $(this).removeClass('bg-primary').addClass('bg-success').text('Link Copied');
+            setTimeout(function(ele){
+		          ele.removeClass('bg-success').addClass('bg-primary').text('');
+			  ele.append('<i class=\'fa-solid fa-copy\'></i> Copy Full URL');},1000, $(this)
+			  )">
+       <i class="fa-solid fa-copy"></i>
+       Copy Full URL
+     </div>
+    </div>
+    {% if row.0.note %}
+    <div class='d-inline p-1 m-1'>
+    	<i class="fa-solid fa-circle-info"></i>
+    {{row.0.note}}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+</div>
+{% else %}
+{% for group in data.groups %}
+{% if group.title and data.groups|length > 1 %}
+     <h3 id='{{group.group_id|slugify}}'>
+       {{group.title}}
+       {% if group.paginator.needs_pagination %}
+         (Page {{ group.paginator.cur_page|add:"1" }}/{{ group.paginator.max_pages|add:"1" }})
+       {% endif %}
+     </h3>
+   {% endif %}
+  
+  {% if not group.is_group_summary and group.rows|length > 0 %}
+      {% if data.is_glade %}
+          {% include "datasets/glade_buttons.html" %}
+      {% else %}
+          {% include "datasets/download_buttons.html" %}
+      {% endif %}
+       <div class="table_summary pb-2" id="table_summary">
+          <div class="pt-2">
+          <strong>{{ group.rows|length }} Files </strong> are listed below.
+          {% if group.paginator.needs_pagination %}
+              This group contains a total of <strong>{{ group.total_file_count }}</strong> files.  Please use the filelist page navigation below to view files on other pages, or use the file name filter to filter this file listing.
+          {% endif %}
+          </div>
+          <div class="pt-2">
+           {% if not data.is_glade %}
+              <strong>To download files:</strong> click a filename to download a single file, or select multiple files to generate a download script or submit a Globus transfer to your endpoint.
+           {% endif %}
+           </div>
+           <div class="pt-2">
+              Currently <strong id='num_selected_files_{{group.group_id|slugify}}'>0</strong><strong> Files </strong><strong id='total_size_{{group.group_id|slugify}}' data-value='0'> </strong> selected
+           </div>
+           <div class="pt-1">
+              <button class="btn btn-primary clear-group-btn" id="{{ group.group_id|slugify }}_clear_button" disabled>Clear Selections</button>
+           </div>
+       </div>
+  {% endif %}
+  
+  {% if not group.is_group_summary and data.groups|length == 1 %}
+  <hr class="my-1">
+  <div class="pb-2" id="filter_search">
+      <div><strong>File name filter</strong></div>
+      <div><em>Enter a case-sensitive file name pattern to filter this file list.</em></div>
+      <input type="text" id="filterwfile" class='form-control' placeholder="Enter a filter string" name="filter_wfile"{% if data.filter_wfile %} value="{{data.filter_wfile}}"{% endif %}>
+      <button class="btn btn-primary my-2" style="font-size:1rem" id="applyFilters">Apply filter</button>
+      <button class="btn btn-outline-primary my-2" style="font-size:1rem" id="clearFilters">Clear filter</button>
+  </div>
+  <script>
+  $("#applyFilters").on("click", function() {
+      url='/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?filter_wfile='+$("#filterwfile").val();
+      $.get(url, function(d) {
+          replace_ds_content(d);
+      });
+  })
+  $("#clearFilters").on("click", function() {
+      $("input[id^='filter']").val("");
+      url='/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}{% endif %}';
+      $.get(url, function(d) {
+          replace_ds_content(d);
+      });
+  })
+  </script>
+  {% endif %}
+  
+  {% comment %}
+  Note about pagination: group.paginator.cur_page and group.paginator.max_pages start with
+  index 0 in views.py.  For this template, add 1 to these indexes so that they display
+  relative to index 1 on the web pages.
+  {% endcomment %}
+  
+  {% if group.paginator.needs_pagination %}
+  <hr class="my-1">
+  <div class="font-weight-bold text-center"><strong>Filelist page navigation ({{ group.paginator.max_pages|add:"1" }} pages)</strong></div>
+  <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center">
+  
+      {% if group.paginator.cur_page != 0 %}
+          <li class="page-item">
+              <a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page=0{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});" aria-label="First">
+                  <i aria-hidden="true" class="fas fa-angle-double-left"></i>
+                  <span class="sr-only">First</span>
+              </a>
+          </li>
+          <li class="page-item">
+              <a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});" aria-label="Previous">
+                  <i aria-hidden="true" class="fas fa-angle-left"></i>
+                  <span class="sr-only">Previous</span>
+              </a>
+          </li>
+      {% endif %}
+  
+          {% comment %} Case 1: current page is first page {% endcomment %}    
+          {% if group.paginator.cur_page == 0 %}
+                  <li class="page-item active"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"1"}}</a></li>
+              {% if group.paginator.cur_page|add:"1" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"2"}}</a></li>
+              {% endif %}            
+              {% if group.paginator.cur_page|add:"2" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"2"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"3" }}</a></li>
+              {% endif %}
+              {% if group.paginator.cur_page|add:"3" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"3"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"4" }}</a></li>
+              {% endif %}
+              {% if group.paginator.cur_page|add:"4" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"4"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"5" }}</a></li>
+              {% endif %}
+  
+          {% comment %} Case 2: current page is last page {% endcomment %}
+          {% elif group.paginator.cur_page == group.paginator.max_pages %}
+              {% if group.paginator.cur_page|add:"-4" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-4"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"-3"}}</a></li>
+              {% endif %}            
+              {% if group.paginator.cur_page|add:"-3" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-3"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"-2"}}</a></li>
+              {% endif %}            
+              {% if group.paginator.cur_page|add:"-2" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-2"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"-1"}}</a></li>
+              {% endif %}            
+              {% if group.paginator.cur_page|add:"-1" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page}}</a></li>
+              {% endif %}            
+                  <li class="page-item active"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"1" }}</a></li>
+  
+          {% comment %} Case 3: general case, current page is between first and last pages {% endcomment %}
+          {% else %}
+              {% if group.paginator.cur_page|add:"-2" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-2"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"-1"}}</a></li>
+              {% endif %}            
+              {% if group.paginator.cur_page|add:"-1" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page}}</a></li>
+              {% endif %}            
+                  <li class="page-item active"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"1"}}</a></li>
+              {% if group.paginator.cur_page|add:"1" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"2" }}</a></li>
+              {% endif %}        
+              {% if group.paginator.cur_page|add:"2" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"2"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"3" }}</a></li>
+              {% endif %}        
+          {% endif %}
+  
+          {% if group.paginator.cur_page != group.paginator.max_pages %}
+              <li class="page-item">
+                  <a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});" aria-label="Next">
+                      <i aria-hidden="true" class="fas fa-angle-right"></i>
+                      <span class="sr-only">Next</span>
+                  </a>
+              </li>
+              <li class="page-item">
+                  <a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.max_pages}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});" aria-label="Last">
+                      <i aria-hidden="true" class="fas fa-angle-double-right"></i>
+                      <span class="sr-only">Last</span>
+                  </a>
+              </li>
+         {% endif %}
+      </ul>
+  </nav>
+  <hr class="my-1">
+  {% endif %}
+  
+  {% if group.rows|length > 0 %}
+  
+  {% if data.filter_wfile %}
+  <div class="py-2">The files matching the filter "<strong>{{ data.filter_wfile }}</strong>" are shown below.  Select "Clear filter" to return to the full file list, or apply a different filter.</div>
+  {% endif %}
+  
+  {# Filelist Table #}
+   <table id='{{group.group_id|slugify}}_table' class='table table-light table-striped'>
+   <thead>
+    <tr>
+    {% if not group.is_group_summary %}
+      <th>
+        <input class='table_group' type='checkbox' id='{{ group.group_id|slugify }}_group_index'></input>
+        Index
+      </th>
+    {% endif %}
+      {% for col in group.column_headers %}
+       <th>  
+       {{col}} <i role='button' class="fas fa-solid fa-sort sort-column"></i> 
+       </th>
+      {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in group.rows %}
+    <tr>
+    {% if not group.is_group_summary %}
+     <td>
+        <input class='file' type='checkbox'></input>
+        {{ forloop.counter }}
+     </td>
+    {% endif %}
+     {% for col in row %}
+       <td class='{{col.name}}' {% if col.name == 'Size' %}data-size='{{col.value}}'{% endif %}>
+         {% if col.url %}
+          {% if col.is_file %}
+           <a style="font-family:'Roboto Mono';"{% if not data.is_glade %} href="{{col.url}} {% endif %}">
+          {% else %}
+	    {% if col.webpath|slice:"-5:" == ".zarr" %}
+	    <!--Zarr format-->
+
+            <div class='d-inline-block p-1 border rounded bg-primary text-light' 
+                 style='transition:all 0.2s ease; float:right' 
+                 role='button' 
+                 onClick="
+                    {% if not data.is_glade %}
+                    copyText('https://data.rda.ucar.edu/datasets/{{data.dsid}}/{{ col.webpath }}') && 
+		     {% else %}
+                    copyText('/glade/campaign/collections/rda/data/{{data.dsid}}/{{ col.webpath }}') && 
+		     {% endif %}
+                    $(this).removeClass('bg-primary').addClass('bg-success').text('Link Copied');
+                    setTimeout(function(ele){
+                	          ele.removeClass('bg-success').addClass('bg-primary').text('');
+                		  ele.append('<i class=\'fa-solid fa-copy\'></i> Copy Full {% if not data.is_glade %}URL{% else %}Path{% endif %}');},1000, $(this)
+                		  )">
+              <i class="fa-solid fa-copy"></i>
+              Copy Full {% if not data.is_glade %}URL{% else %}Path{% endif %}
+            </div>
+            {% elif data.is_ajax %}
+             <a href='javascript:void(0);' 
+                col-data='{{col.url}}' 
+                onclick="$.get('{{col.url}}{% if data.is_glade %}?fl=glade{% endif %}', function(d){replace_ds_content(d);$('#datasetTab')[0].scrollIntoView();});">
+            {% else %}
+             <a href="{{col.url}}{% if data.is_glade %}?fl=glade{% endif %}">
+            {% endif %}
+          {% endif %}
+          <!--a href={{ col.url }}-->
+           {% if data.is_glade and col.is_file %}
+             {{ col.data_path|make_glade_URL }}
+             </a>
+	   {% elif col.webpath|slice:"-5:" == ".zarr" %}
+	     {{ col.webpath|basename }}
+	        
+           {% else %}
+             {{ col.value }}
+            </a>
+           {% endif %}
+          {% if col.meta_link != 'N' and col.is_file %}
+            <a title='Click for Detailed Metadata' 
+               target='_blank' 
+               href="/ajax/#cgi-bin/transform?xml=/datasets/{{data.dsid}}/metadata/wfmd{{col.data_path|remove_datadsid}}.{{col.meta_link}}ML">
+            <i class="pe-1 fas fa-info-circle"> </i>
+            </a>
+          {% endif %}
+         {% else %}
+          {% if col.name == 'Size' %}
+           {{ col.value|convert_bytes }}
+          {% else %}
+           {{ col.value }}
+          {% endif %}
+         {% endif %}
+       </td>
+     {% endfor %}
+    </tr>
+  {% endfor %}
+  </tbody>
+  </table>
+  <hr class="my-1">
+  {% else %}
+     <div class="py-2">Your filter does not match any files in this group.  To return to the full file list, select 'Clear filter' above.</div>
+  {% endif %}
+  
+  {% endfor %}
+{% endif %} 

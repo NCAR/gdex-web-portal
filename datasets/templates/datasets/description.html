@@ -1,0 +1,270 @@
+{% load wagtailcore_tags decs_tags home_tags custom_tags %}
+
+{% if page.dstype == "H" %}
+<p class="alert alert-warning mb-2">
+    <i class="fas fa-exclamation-triangle fa-lg pe-1"></i>This historical dataset is recommended for ancillary use only and not as a primary research dataset. It has likely been superseded by a newer, improved dataset.
+</p>
+{% elif page.dstype == "D" %}
+<p class="alert alert-danger mb-2">
+    <i class="fas fa-exclamation-triangle fa-lg pe-1"></i>This dataset has been removed from the archive and is no longer accessible. It has likely been superseded by a newer, improved dataset. See the abstract for more information.
+</p>
+{% endif %}
+
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Abstract:</div>
+    <div class="col-12 col-md-10">{{ page.abstract|richtext }}</div>
+</div>
+
+{% if page.dstype != "D" %} {% comment %}begin NON-DEAD datasets{% endcomment %}
+{% if page.acknowledgement %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Acknowledgement:</div>
+    <div class="col-12 col-md-10">{{ page.acknowledgement|richtext }}</div>
+</div>
+{% endif %}
+
+{% if page.temporal %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Temporal Range:</div>
+    <div class="col-12 col-md-10">{{ page.temporal.full }}
+    {% if 'groups' in page.temporal %}
+    (Entire dataset)
+    <span class="d-block small mt-n1 mb-1">
+        <span id="DP0">
+            <b><a class="text-uppercase" style="color: black" href="javascript:swapDivs('P0', 'P1')" title="Expand dataset product period list">Period details by dataset product<button class="btn dropdown-toggle p-md-1" role="button"></button></a></b>
+        </span>
+        <span id="DP1" style="visibility: hidden; position: absolute; top: 0; line-height: 1.25em">
+            <b><a class="text-uppercase" style="color: black" href="javascript:swapDivs('P1', 'P0')" title="Collapse dataset product period list">Period details by dataset product<button class="btn dropdown-toggle p-md-1 show" role="button"></button></a></b>
+            <span class="d-block mt-n1"></span>
+            {% for group in page.temporal.groups %}
+            <span class="d-block ms-3">{{ group|richtext }}</span>
+            {% endfor %}
+        </span>
+    </span>
+    {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if page.update_freq %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Updates:</div>
+    <div class="col-12 col-md-10">{{ page.update_freq }}</div>
+</div>
+{% endif %}
+
+{%if page.access_restrict %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Access Restrictions:</div>
+    <div class="col-12 col-md-10">{{ page.access_restrict|richtext }}</div>
+</div>
+{% endif %}
+
+{%if page.usage_restrict %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Usage Restrictions:</div>
+    <div class="col-12 col-md-10">{{ page.usage_restrict|richtext }}</div>
+</div>
+{% endif %}
+
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Variables:</div>
+    <div class="col-12 col-md-10">
+        <div class="table-responsive mb-1">
+            <table class="table mb-0">
+                <tr>
+                {% for variable in page.variables.gcmd %}
+                    {% if forloop.counter0 > 0 and forloop.counter0|divisibleby:4 %}
+                        </tr>
+                        <tr>
+                    {% endif %}
+                    <td>{{ variable }}</td>
+                {% endfor %}
+                </tr>
+            </table>
+            {% for table in page.variables.tables %}
+            <div>
+                {{ table.format }} parameter table: <a href="javascript:void(0)" onclick="$.get('/datasets/{{ page.dsid }}/{{ table.html }}', replace_ds_content)">HTML</a>{% if table.xml %} | <a href="/datasets/{{ page.dsid }}/{{ table.xml }}">XML</a>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% if page.levels %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Vertical Levels:</div>
+    <div class="col-12 col-md-10">
+        {% if page.levels.list %}
+        <div class="table-responsive mb-1">
+            <table class="table mb-0">
+                <tr>
+                {% for level in page.levels.list %}
+                    {% if forloop.counter0 > 0 and forloop.counter0|divisibleby:4 %}
+                        </tr>
+                        <tr>
+                    {% endif %}
+                    <td>{{ level }}</td>
+                {% endfor %}
+                </tr>
+            </table>
+        </div>
+        {% else %}
+        See the <a href="javascript:void(0)" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/detailed_metadata/?view=level')">detailed metadata</a> for level information.
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if page.temporal_freq %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Temporal Frequencies:</div>
+    <div class="col-12 col-md-10">{{ page.temporal_freq }}</div>
+</div>
+{% endif %}
+
+{% if page.data_types %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Data Types:</div>
+    <div class="col-12 col-md-10">
+        {% for type in page.data_types %}
+            {% if forloop.counter0 > 0 %}
+                ,&nbsp;
+            {% endif %}
+            {{ type }}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if page.spatial_coverage %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Spatial Coverage:</div>
+    <div class="col-12 col-md-10">
+        Longitude Range: Westernmost={{ page.spatial_coverage.west }} Easternmost={{ page.spatial_coverage.east}}
+        <br>
+        Latitude Range: Southernmost={{ page.spatial_coverage.south }} Northernmost={{ page.spatial_coverage.north }}
+        {% if page.spatial_coverage.details %}
+        <span class="d-block small mt-n1 mb-1">
+            <span id="DSC0">
+                <a class="text-uppercase" style="color: black; font-weight: 600" href="javascript:swapDivs('SC0', 'SC1')" title="Expand detailed coverage information">Detailed coverage information<button class="btn dropdown-toggle p-md-1" role="button"></button></a>
+            </span>
+            <span id="DSC1" style="visibility: hidden; position: absolute; top: 0; line-height: 1.25em">
+                <a class="text-uppercase" style="color: black; font-weight: 600" href="javascript:swapDivs('SC1', 'SC0')" title="Collapse detailed coverage information">Detailed coverage information<button class="btn dropdown-toggle p-md-1 show" role="button"></button></a>
+                <span style="display: block; margin-top: -0.65em"></span>
+                {% for item in page.spatial_coverage.details %}
+                <span style="display: block; margin-left: 1em">{{ item|richtext }}</span>
+                {% endfor %}
+            </span>
+        </span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Data Contributors:</div>
+    <div class="col-12 col-md-10">
+        {% for contributor in page.contributors %}
+            {% if forloop.counter0 > 0 %}
+                &nbsp;|&nbsp;
+            {% endif %}
+            <span class="infosrc" onmouseover="popInfo(this, 'src{{ forloop.counter0 }}', '#e1eaff', 'left', 'bottom')" onmouseout="hideInfo('src{{ forloop.counter0 }}')">{{ contributor.id }}</span>
+            <div id="src{{ forloop.counter0 }}" class="info"><small>{{ contributor.name }}</small></div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if page.related_rsrc_list %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Related Resources:</div>
+    <div class="col-12 col-md-10">
+        {% for rsrc in page.related_rsrc_list %}
+            {% with b=rsrc.url|is_remote_url %}
+            <a href="{{ rsrc.url }}">{% if b %}<i>{% endif %}{{ rsrc.description }}{% if b %}</i>{% endif %}</a><br>
+            {% endwith %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if page.publications %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Publications:</div>
+    <div class="col-12 col-md-10">
+        {% for item in page.publications %}
+        <div class="mb-1" style="text-indent: -1.625em; margin-left: 1.625em">{{ item|richtext }}</div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Total Volume:</div>
+    <div class="col-12 col-md-10">{{ page.volume.full }}
+    {% if 'groups' in page.volume %}
+        (Entire dataset)
+        <span class="d-block small mt-n1 mb-1">
+            <span id="DV0">
+                <a class="text-uppercase" style="color: black; font-weight: 600" href="javascript:swapDivs('V0', 'V1')" title="Expand dataset product volume list">Volume details by dataset product<button class="btn dropdown-toggle p-md-1" role="button"></button></a>
+            </span>
+            <span id="DV1" style="visibility: hidden; position: absolute; top: 0; line-height: 1.25em">
+                <a class="text-uppercase" style="color: black; font-weight: 600" href="javascript:swapDivs('V1', 'V0')" title="Collapse dataset product volume list">Volume details by dataset product<button class="btn dropdown-toggle p-md-1 show" role="button"></button></a>
+                <span style="display: block; margin-top: -0.65em"></span>
+                {% for group in page.volume.groups %}
+                    <span style="display: block; margin-left: 1em">{{ group.group }}: {{ group.volume }}</span>
+                {% endfor %}
+            </span>
+        </span>
+    {% endif %}
+    </div>
+</div>
+
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Data Formats:</div>
+    <div class="col-12 col-md-10">
+    {% for format in page.data_formats %}{% with b=format.url|is_remote_url %}{% if forloop.counter0 > 0 %},&nbsp;{% endif %}{% if 'url' in format %}{% if b %}<i>{% endif %}<a href="{{ format.url }}" target="_format">{% endif %}{{ format.description }}{% if 'url' in format %}{% if b %}</i>{% endif %}</a>{% endif %}{% endwith %}{% endfor %}
+    </div>
+</div>
+
+{% if page.related_dslist %}
+<div class="row gx-0 mb-2 mb-md-3">
+    <div class="col-12 col-md-2 dataset-label">Related RDA Datasets:</div>
+    <div class="col-12 col-md-10">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 98fr">
+        {% for ds in page.related_dslist %}
+            <div style="grid-column: 1"><center><a href="/datasets/{{ ds.dsid }}/">{{ ds.dsid }}</a></center></div>
+            <div class="ps-1 pe-1" style="grid-column: 2">-</div>
+            <div style="grid-column: 3">{{ ds.title }}</div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if "/data/web/datasets/"|add:page.dsid|add:"/metadata/detailed.html"|check_file %}
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">More Details:</div>
+    <div class="col-12 col-md-10">
+        View a <a href="javascript:void(0)" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/detailed_metadata/')">more detailed summary</a> of the data, including specific date ranges and locations by parameter
+    </div>
+</div>
+{% endif %}
+
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Metadata Record:</div>
+    <div id="meta_record" class="col-12 col-md-10">
+    </div>
+    <img class="w-auto h-auto" src="/images/transpace.gif" width="0" height="0" onload="getAjaxContent('GET', null, '/datasets/{{ page.dsid }}/metadata_view/', 'meta_record')">
+</div>
+
+<div class="row gx-0 mb-2 mb-md-1">
+    <div class="col-12 col-md-2 dataset-label">Data License:</div>
+    <div class="col-12 col-md-10">
+        <a rel="license" href="{{ page.data_license.url }}" target="_data_license"><img class="w-auto h-auto" alt="Data License" style="border-width:0" src="{{ page.data_license.img_url }}" hspace="5px" valign="top" /></a>This work is licensed under a <a rel="license" href="{{ page.data_license.url }}" target="_data_license">{{ page.data_license.name }}</a>.
+    </div>
+</div>
+
+<div id="icite" class="bubble-left-top-arrow" style="width: 600px">Citation counts are compiled through information provided by publicly-accessible APIs according to the guidelines developed through the https://makedatacount.org/ project.  If journals do not provide citation information to these publicly-accessible services, then this citation information will not be included in RDA citation counts. Additionally citations that include dataset DOIs are the only types included in these counts, so legacy citations without DOIs, references found in publication acknowledgements, or references to a related publication that describes a dataset will not be included in these counts.</div>
+{% endif %}
+{% comment %}end NON-DEAD datasets{% endcomment %}

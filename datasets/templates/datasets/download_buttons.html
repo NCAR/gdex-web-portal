@@ -1,0 +1,13 @@
+{% load wagtailcore_tags custom_tags home_tags static %}
+<div class="mt-1">
+<button class="btn btn-primary mt-1 p-1" style="font-size:1rem" onclick="getScript('csh')" id="csh_download">Csh Download Script</button>
+<button class="btn btn-primary mt-1 p-1" style="font-size:1rem" onclick="getScript('python')" id="python_download">Python Download Script</button>
+<button class="btn btn-primary mt-1 p-1" style="font-size:1rem" onclick="getScript('jupyter')" id="jupyter_download">Jupyter Notebook Download Script</button>
+</div>
+<div class="mb-1">
+{% if globus_url %}
+    <a href="{{ globus_url }}" class="btn btn-primary mt-1 p-1" role="button" style="font-size:1rem">Globus Transfer</a>
+{% else %}
+    <button class="btn btn-primary mt-1 p-1" style="font-size:1rem" onclick=showGlobusConfirmation() id="globus_download">Globus download</button>
+{% endif %}
+</div>
