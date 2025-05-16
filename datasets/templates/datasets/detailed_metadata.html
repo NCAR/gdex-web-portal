@@ -1,0 +1,160 @@
+{% load custom_tags %}
+
+<style id="detail">
+  @import url(/css/transform.css);
+</style>
+<style id="view_button">
+div.view-button-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-left: 1rem;
+}
+
+div.view-button-on:after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 0px;
+  height: 0px;
+  border-style: solid;
+  border-width: 10px 10px 0px 10px;
+  border-color: #1a65af transparent transparent transparent;
+  top: 100%;
+  left: 50%;
+  margin-left: -10px;
+}
+</style>
+
+<script id = "view_script" language="javascript">
+function changeView(e, v) {
+  if (e.classList.contains('view-button-off')) {
+    var list = document.getElementsByClassName('view-button-on');
+    for (n = 0; n < list.length; ++n) {
+        x = list[n];
+        x.classList.replace('view-button-on', 'view-button-off');
+        x.classList.replace('btn-primary', 'btn-outline-primary');
+    }
+    e.classList.replace('view-button-off', 'view-button-on');
+    e.classList.replace('btn-outline-primary', 'btn-primary');
+    getAjaxContent('GET', null, '/datasets/{{ page.dsid }}/metadata/' + v, 'detail_content');
+  }
+}
+</script>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th colspan="2" scope="col" class="text-center">Overview</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="2"><b>Dataset Title: </b>{{ page.dstitle }}</td>
+            </tr>
+            {% if page.data_types or page.data_formats %}
+            <tr>
+                {% if page.data_types and page.data_formats %}
+                <td>
+                    <b>Types of data: </b>
+                    <ul>
+                        {% for t in page.data_types %}
+                        <li>{{ t }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <b>Data formats: </b>
+                    <ul>
+                        {% for f in page.data_formats %}
+                        <li><a href="{{ f.url }}">{{ f.description }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                {% elif page.data_types %}
+                <td colspan="2">
+                    <b>Types of data: </b>
+                    <ul>
+                        {% for t in page.data_types %}
+                        <li>{{ t }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                {% else %}
+                <td colspan="2">
+                    <b>Data formats: </b>
+                    <ul>
+                        {% for f in page.data_formats %}
+                        <li>{{ f }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                {% endif %}
+            </tr>
+            {% endif %}
+            {% if page.contributors %}
+            <tr>
+                <td colspan="2">
+                    <b>Data contributors: </b>
+                    <ul>
+                        {% for c in page.contributors %}
+                        <li>{{ c.name }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endif %}
+            {% if page.projects %}
+            <tr>
+                <td colspan="2">
+                    <b>Programs/Experiements that collected the data: </b>
+                    <ul>
+                        {% for p in page.projects %}
+                        <li>{{ p }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endif %}
+            {% if page.supported_projects %}
+            <tr>
+                <td colspan="2">
+                    <b>Projects that are supported by the data: </b>
+                    <ul>
+                        {% for p in page.supported_projects %}
+                        <li>{{ p }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td colspan="2"><b>Total volume: </b>{{ page.volume.full }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="mt-2">
+    {% if page.grid_view %}
+      {% if page.view_button %}
+      <div class="view-button-wrapper">
+          <div class="btn btn-primary view-button-on">{{ page.view_button }}</div>
+          <img src="/images/transpace.gif" width="0" height="0" onload="getAjaxContent('GET', null, '/datasets/{{ page.dsid }}/metadata/{{ request.GET.view }}-detail.html', 'detail_content')">
+      </div>
+      {% else %}
+      <div class="view-button-wrapper">
+          <div class="btn btn-primary view-button-on" onclick="changeView(this, 'parameter-detail.html')">Parameter View</div>
+          <img src="/images/transpace.gif" width="0" height="0" onload="getAjaxContent('GET', null, '/datasets/{{ page.dsid }}/metadata/parameter-detail.html', 'detail_content')">
+      </div>
+      <div class="view-button-wrapper">
+          <div class="btn btn{% if request.GET.view != "level" %}-outline{% endif %}-primary view-button-{% if request.GET.view == "level" %}on{% else %}off{% endif %}"{% if request.GET.view != "level" %} onclick="changeView(this, 'level-detail.html')"{% endif %}>Vertical Level View</div>
+      </div>
+      <div class="view-button-wrapper">
+          <div class="btn btn{% if request.GET.view != "product" %}-outline{% endif %}-primary view-button-{% if request.GET.view == "product" %}on{% else %}off{% endif %}"{% if request.GET.view != "product" %} onclick="changeView(this, 'product-detail.html')"{% endif %}>Product View</div>
+      </div>
+      {% endif %}
+    {% elif page.obs_view %}
+    <img src="/images/transpace.gif" width="0" height="0" onload="getAjaxContent('GET', null, '/datasets/{{ page.dsid }}/metadata/obs-detail.html', 'detail_content')">
+    {% endif %}
+</div>
+<div id="detail_content" class="mt-2"></div>

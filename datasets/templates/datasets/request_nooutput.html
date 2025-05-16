@@ -1,0 +1,36 @@
+{% extends "datasets/base_request.html" %}
+{% load wagtailcore_tags static decs_tags home_tags custom_tags %}
+
+{% block title %}
+NSF NCAR RDA | Data Request {{ info.request_index }}
+{% endblock %}
+
+{% block request_title %}
+<h2 id='request_title'>RDA Data Request {{ info.request_index }}</h2>
+{% endblock %}
+
+{% block request_summary %}
+<div id="summary" class="p-2">
+    Your request for data from the NSF NCAR Research Data Archive is complete, but returned no 
+    data based the parameters of your request.  Please email 
+    <a href="mailto:rdahelp@ucar.edu?subject=Question about data request {{ info.request_index }}">
+      rdahelp@ucar.edu
+    </a>
+    if you have questions regarding this request.
+</div>
+<hr class="my-1">
+{% endblock %}
+
+{% block request_details %}
+<h4 id="request_details_title" class="pt-2 px-2">Request details</h4>
+<div id="request_details" class="ms-2 p-2">
+  <div><strong>Request index:</strong> {{ info.request_index }}</div>
+  <div><strong>Dataset ID:</strong> {{ info.dsid }}</div>
+  <div><strong>Dataset title:</strong> <a href="{{ info.dsurl }}">{{ info.dstitle }}</a></div>
+  <div><strong>Status:</strong> {{ info.status }}</strong></div>
+  <div><strong>Number of output files:</strong> 0</div>
+  <div class="py-1"><strong>Request parameters:</strong> 
+    <div class="py-2"><pre><code>{{ info.subset_info.note }}</code></pre></div>
+  </div>
+</div>
+{% endblock %}

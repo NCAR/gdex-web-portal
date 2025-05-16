@@ -1,0 +1,53 @@
+{% load wagtailcore_tags decs_tags custom_tags home_tags static %}
+<script type="text/javascript" src="{% static 'js/cache_filelist.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/FileSaver.min.js' %}"></script>
+<script src="/js/jquery.js"></script>
+
+
+{% has_alt_index data.files as has_alt_index_flag %}
+{% if has_alt_index_flag %}
+<script>
+$.get('/OS/web/datasets/{{ request.path|get_dsid_from_url|dsid_dash_to_dot }}/docs/alt_index.html', function(response) {
+          $('#ds_content').html(response);
+                 })
+</script>
+{% elif not data.files %}
+<h3>No Documentation for this dataset</h3>
+{% else %}
+
+
+
+<table id='file_table' data-dsid='{{ data.dsid }}'>
+<thead>
+<tr>
+<th>Filename <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
+<th>Size (KB) <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
+<th>Date Modified <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+{% for row in data.files %}
+<tr id="row_{{ forloop.counter }}">
+
+{% for k,v in row.items %} 
+{% if k != 'url' %}
+<td class="{{ k }}">
+{% if k == 'hfile' %}
+ {% if row.url is not None %}
+ <a href='{{row.url}}' >{{ v }} </a>
+ {% else %}
+ <a href='/OS/web/datasets/{{data.dsid}}/docs/{{row.hfile}}' >{{ v }} </a>
+{% endif %}
+
+{% else %}
+ {{ v }}
+{% endif %}
+</td>
+{% endif %}
+{% endfor %}
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
