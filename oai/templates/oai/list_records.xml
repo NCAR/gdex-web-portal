@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+  <responseDate>{% now "Y-m-d\TH:i:s\Z" %}</responseDate>
+  <request verb="ListRecords" metadataPrefix="{{ request.GET.metadataPrefix }}">{{ base_url }}</request>
+  <ListRecords>
+    {% for metadata_record in metadata_records %}
+    <record>
+      <header>
+        <identifier>{{ metadata_record.0 }}</identifier>
+        <datestamp>{{ metadata_record.1|date:"Y-m-d\TH:i:s\Z" }}</datestamp>
+      </header>
+      <metadata>
+        {% autoescape off %}{{ metadata_record.2 }}{% endautoescape %}
+      </metadata>
+    </record>
+    {% endfor %}
+    <resumptionToken {% if token_expiration %}expirationDate="{{ token_expiration }}"{% endif %} completeListSize="{{ list_size }}" cursor="{{ cursor }}">{{ resumption_token }}</resumptionToken>
+  </ListRecords>
+</OAI-PMH>
