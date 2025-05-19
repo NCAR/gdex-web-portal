@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 
 from wagtail.models import Page
-from wagtail.search.models import Query
+from wagtail.contrib.search_promotions.models import Query
 
 from .utils import SearchResults
 
