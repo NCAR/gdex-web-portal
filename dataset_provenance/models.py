@@ -1,8 +1,8 @@
 from django.db import models
-from wagtail.core import blocks
-from wagtail.core.fields import StreamField
-from wagtail.core.models import Page
-from wagtail.admin.edit_handlers import StreamFieldPanel
+from wagtail import blocks
+from wagtail.fields import StreamField
+from wagtail.models import Page
+from wagtail.admin.panels import FieldPanel
 
 # Create your models here.
 
@@ -29,20 +29,16 @@ class EventSection(blocks.StructBlock):
     )
 
 class DatasetProvenancePage(Page):
-    dsid = models.CharField(max_length=5, blank=False, default="", unique=True)
+    dsid = models.CharField(max_length=9, blank=False, default="", unique=True)
     events = StreamField(
-        [
-            ('event_section', EventSection()),
-        ],
-        block_counts = {
-            'event_section': {'min_num': 1},
-        },
-        default="",
-        verbose_name = "List of Event Sections"
+            [('event_section', EventSection()),],
+            block_counts={'event_section': {'min_num': 1},},
+            default="", use_json_field=True,
+            verbose_name = "List of Event Sections"
     )
 
     content_panels = Page.content_panels + [
-        StreamFieldPanel('events', classname="collapsible collapsed"),
+        FieldPanel('events', classname="collapsible collapsed"),
     ]
 
     is_creatable = False

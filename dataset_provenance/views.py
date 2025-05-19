@@ -1,7 +1,7 @@
 import json
 
 from django.shortcuts import render
-from wagtail.core.models import Page
+from wagtail.models import Page
 
 from datasets.utils import ng_gdex_id
 from dataset_description.models import DatasetDescriptionPage

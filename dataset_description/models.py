@@ -1,11 +1,11 @@
 from django.db import models
 
-from wagtail.core.models import Page
-from wagtail.core.fields import RichTextField
+from wagtail.models import Page
+from wagtail.fields import RichTextField
 
 
 class DatasetDescriptionPage(Page):
-    dsid = models.CharField(max_length=5, blank=False, default="", unique=True)
+    dsid = models.CharField(max_length=9, blank=False, default="", unique=True)
     dsdoi = models.CharField(max_length=50, blank=True, default="")
     dstype = models.CharField(max_length=1, blank=False, default="")
     dslogo = models.CharField(max_length=255, blank=True, default="")
