@@ -1,9 +1,9 @@
 from django.db import models
 
-from wagtail.admin.edit_handlers import StreamFieldPanel
-from wagtail.core import blocks
-from wagtail.core.fields import StreamField
-from wagtail.core.models import Page
+from wagtail.admin.panels import FieldPanel
+from wagtail import blocks
+from wagtail.fields import StreamField
+from wagtail.models import Page
 
 
 class MetadataFormat(blocks.StructBlock):
@@ -22,8 +22,9 @@ class MetadataFormatsPage(Page):
     metadata_formats = StreamField(
             [('metadata_format', MetadataFormat())],
             block_counts={'metadata_format': {'min_num': 0}},
+            use_json_field=True,
             default="List of exportable metadata formats")
     content_panels = Page.content_panels + [
-        StreamFieldPanel('metadata_formats', classname="collapsible collapsed")
+        FieldPanel('metadata_formats', classname="collapsible collapsed")
     ]
     is_creatable = False
