@@ -1,0 +1,20 @@
+{% load static custom_tags %}
+
+{% if request|split_path|length > 0 %}
+  <nav aria-label="breadcrumb" class="breadcrumb-wrapper mb-2 d-print-none">
+    <ol class=breadcrumb>
+        <li class='breadcrumb-item'> 
+          <a href='/'>Home</a>
+        </li>
+      {% for url_part in request|split_path %}
+        <li class='breadcrumb-item'>
+        {% if forloop.last %}
+          {{ url_part.0|dsid_dash_to_dot }}
+        {% else %}
+          <a href='{{ url_part.1 }}'> {{ url_part.0|dsid_dash_to_dot }}</a>
+        {% endif %}
+        </li>
+      {% endfor %}
+    </ol> 
+  </nav>
+{% endif %}

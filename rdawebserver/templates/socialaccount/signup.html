@@ -1,0 +1,55 @@
+{% extends "socialaccount/base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+
+{% block messages %}
+    {% if messages %}
+    <div>
+      <strong>Messages: </strong>
+      <ul>
+        {% for message in messages %}
+        <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+<article class="main-content-wrapper">
+  <h2>{% trans "Sign Up" %}</h2>
+  <p>
+    {% blocktrans with provider_name=account.get_provider.name site_name=site.name %}
+    You are about to use your {{provider_name}} account to login to The Research Data Archive. 
+    As a final step, please complete the following:
+    {% endblocktrans %}
+  </p>
+  <p>
+    If you want to retain your bookmarks, citation history, and data subsets from your previous RDA account, please use the email address associated with your previous account.
+  </p>
+  
+
+  <div class="main-content clearfix">
+    <div class="component webform yellow-orange-border p-2 p-md-4">
+      <form class="signup row gx-0 gy-3" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="col-12 col-md-10">
+            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+            {{ field }}
+          </div>
+        {% endfor %}
+        {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+        {% endif %}
+        <div class="col-12 col-md-10">
+          <button class="btn btn-primary" type="submit">{% trans "Register" %} &raquo;</button>
+        </div>
+      </form>      
+    </div>
+  </div>
+</article>
+{% endblock %}

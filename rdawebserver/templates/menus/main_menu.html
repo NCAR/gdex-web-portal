@@ -1,0 +1,63 @@
+{% load decs_tags menu_tags %}
+
+<ul class="menu navbar-nav me-auto mb-2 mb-md-0 align-items-center">
+
+{% comment %}
+First render the data discovery mega menu defined in /settings/base.py
+{% endcomment %}
+
+    {% for menu in settings.NAVIGATION_BAR.menus %}
+        {% if menu.megamenu %}
+
+        <li class="nav-item dropdown d-flex flex-wrap justify-content-between mega-menu">
+            {% if page %}
+                {% with a=menu|is_active:page.url b=menu.submenus|is_active:page.url %}
+                    <a class="nav-link{% if a or b %} active{% endif %}" aria-current="page" href="{{ menu.url }}">{{ menu.title }}</a>
+                {% endwith %}
+            {% else %}
+                {% with a=menu|is_active:request.path b=menu.submenus|is_active:request.path %}
+                    <a class="nav-link{% if a or b %} active{% endif %}" aria-current="page" href="{{ menu.url }}">{{ menu.title }}</a>
+                {% endwith %}
+            {% endif %}
+            <button aria-expanded="false" aria-label="Expand/Collapse" class="btn dropdown-toggle px-3 px-md-0 mx-md-1" href="#" role="button" data-bs-toggle="dropdown" id="{{ menu.title | slugify }}"></button>
+            <div class="dropdown-menu">
+                <div class="container-lg">
+                    <div class="row mx-0 gx-0">
+                        {% for section in menu.megamenu %}
+                            <div class="col-12 col-md{% if section.links|length >= 8 %}-6{% endif %}">
+                                <h6 class="dropdown-header">{{ section.label }}</h6>
+                                <div class="row gx-0">
+                                    <div class="col-12 col-md">
+                                        <ul class="{% if section.links|length >= 8 %}row row-cols-1 row-cols-md-2{% endif %}">
+                                            {% for link in section.links %}
+                                                <li><a class="dropdown-item" href="{{ link.url }}">{{ link.title }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </li>
+
+        {% endif %}
+    {% endfor %}
+
+{% comment %}
+Next, render the rest of the main navigation menu defined in wagtailmenus
+{% endcomment %}
+    
+    {% for item in menu_items %}
+        <li class="nav-item{% if item.has_children_in_menu %} dropdown d-flex flex-wrap justify-content-between{% endif %}">
+            <a class="nav-link {{ item.active_class }}" aria-current="page" href="{{ item.href }}">{{ item.text }}</a>
+            {% if item.has_children_in_menu %}
+                <button aria-expanded="false" aria-label="Expand/Collapse" class="btn dropdown-toggle px-3 px-md-0 mx-md-1" data-bs-toggle="dropdown" id="{{ item.text | slugify }}" role="button" href="#"></button>
+                {% sub_menu item template="menus/sub_menu.html" %}
+            {% endif %}
+        </li>
+    {% endfor %}
+
+</ul>
+ 

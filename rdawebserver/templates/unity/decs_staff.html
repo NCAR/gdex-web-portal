@@ -1,0 +1,21 @@
+{% load wagtailcore_tags home_tags %}
+
+<div class="pt-3" id="people"> 
+    <h3>People Behind the RDA</h3>
+    <div id='staff' class='staff-list component container_lg'>
+    {% for staff in decs_staff %}
+        <div class="staff-person row gx-0"">
+            <div class="ps-2 ps-sm-3 text-gray-darkest">
+                <div class="staff-name">
+                    {{ staff.name }}
+                </div>                                
+                <div class="d-flex flex-column flex-sm-row">
+                    <div class="staff-email i-envelope--before text-gray-dark mb1 mb-sm-0 me-sm-4">
+                        {{ staff.email }}
+                    </div>
+                </div>
+            </div>                      
+        </div>
+    {% endfor %}
+    </div>
+</div>

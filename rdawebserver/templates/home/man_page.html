@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block content %}
+
+<div class='bg-white p-3'>
+<div class="d-grid d-print-flex">
+    <article class="main-content-wrapper">
+        <div class="main-content clearfix"> 
+            <div class="component contact bg-white p-3">
+                <pre>
+                    {{ page.body|richtext }}
+                </pre>
+            </div>
+        </div>
+    </article>
+</div>
+
+{% endblock %}
+

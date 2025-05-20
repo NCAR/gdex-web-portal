@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+<div>here></div>
+{% block messages %}
+    {% if messages %}
+    <div class='alert alert-info alert-dismissible fade show p-2 ps-3 pe-3 border border-1 rounded'>
+      <button type="button" class="i-times--after" data-dismiss="alert" aria-label="Close"></button>
+      <strong>Messages: </strong>
+        {% for message in messages %}
+        <div class='container-lg'>
+         <div class='d-flex'>
+           
+           <div>
+            <div class='d-inline-block'>
+             <i class='fas fa-exclamation-triangle'></i>
+            </div>
+            <div class='flex-grow-1 d-inline-block'>
+             {{message}}
+            </div>
+           </div>
+         </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endblock %}

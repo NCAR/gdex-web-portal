@@ -1,0 +1,17 @@
+{% load menu_tags %}
+
+<div class="col-12 col-md-5 py-2">
+    <div class="accordion" id="accordionNCAR">
+        <div id="ncarHeader" class="d-flex justify-content-between">
+            <h3 class="text-light pb-mb-2">NCAR</h3>
+                <button class="btn text-light px-2 collapsed" href="#ncarCollapseMenu" id="ncarCollapseButton" aria-label="NCAR Organization" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="ncarCollapseMenu"></button>
+        </div>
+        <div id="ncarCollapseMenu" class="collapse" aria-labelledby="ncarHeader" data-parent="#accordionNCAR">
+            <ul class="nav flex-column">
+                {% for item in menu_items %}
+                    <li class="nav-item {{ item.active_class }}"><a class="nav-link" href="{{ item.href }}">{{ item.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>

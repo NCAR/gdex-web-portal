@@ -1,0 +1,139 @@
+{% load wagtailcore_tags static wagtailimages_tags %}
+<html>
+<head>
+<script type="text/javascript" src="{% static 'js/d3.v5.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/metrics.js' %}"></script>
+<script>
+window.onload = init;
+function init()
+{
+    var curYear = new Date(Date.now()).getFullYear();
+    var tenYearsAgo = curYear - 10;
+    for( var i = tenYearsAgo; i<= curYear; i++)
+    {
+        d3.select('#years')
+        .append('div')
+        .classed('yearDiv', true)
+        .attr('active', 'false')
+        .text(i)
+        .on('click', function(){
+                ele = d3.select(this);
+                var year = ele.text()
+                if(ele.attr('active') == 'true')
+                {
+                    ele.attr('active', 'false');
+                    ele.transition().duration(500).style('background', 'rgb(30, 119, 180)');
+                    myGraph.removeData(year);
+                }
+                else
+                {
+                    if(d3.select('#tenYears').attr('active') == 'true')
+                        d3.select('#tenYears').dispatch('click');
+                    ele.attr('active', 'true');
+                    ele.transition().duration(500).style('background', '#FFA500');
+                    var oldKey = curkey
+                    curkey = "Number of Files Read";
+                    myGraph.updateGraphParams();
+                    myGraph.updateLines();
+                    if(myGraph.data.length == 1 && typeof(myGraph.data[0][0][oldKey]) == "object")
+                    {
+                    //setTimeout(function() {myGraph.addData('json/'+year+'_all.json', year)},500);
+                        myGraph.addData('/media/metrics/json/'+year+'_all.json', year)
+                    }
+                    else
+                    {
+                        myGraph.addData('/media/metrics/json/'+year+'_all.json', year)
+                    }
+                }
+                
+
+                });
+
+    }
+    var totalsString = 'Past 10 Years';
+    d3.select('#totals')
+        .append('div')
+        .classed('yearDiv', true)
+        .attr('id', 'tenYears')
+        .attr('active', 'false')
+        .text(totalsString)
+        .on('click', function() {
+                totele = d3.select(this);
+                if(totele.attr('active') == 'true')
+                {
+                totele.attr('active', 'false');
+                totele.transition().duration(500).style('background', 'rgb(30, 119, 180)');
+                myGraph.removeData(totalsString)
+                }
+                else
+                {
+                    totele.attr('active', 'true');
+                    totele.transition().duration(500).style('background', '#FFA500');
+                    //unclick all other 
+                    d3.select('#years')
+                    .selectAll('.yearDiv')
+                    .each(function(){
+                        var isActive = d3.select(this).attr('active')
+                        if(isActive == 'true')
+                        {
+                        d3.select(this).dispatch('click');
+                        }
+                        })
+                    myGraph.addData('/media/metrics/json/all10years.json', totalsString);
+                }
+                });
+    graphDiv = document.getElementById('graph');
+    aliasFile = '/media/metrics/aliases.json';
+    myGraph = new MetricsGraph(graphDiv, aliasFile);
+    myGraph.config.time.onlyMonth = true;
+    myGraph.config.initialKey = 'Methods by Unique User';
+
+    // Add some data
+    d3.select('#tenYears').dispatch('click');
+    
+}
+</script>
+<style>
+#graph
+{
+    width : 100%;
+    height : 100%;
+    background : white;
+}
+body
+{
+    background : white;
+    text-align : center;
+    margin-bottom : 5%;
+}
+.yearDiv
+{
+    cursor : pointer;
+    margin : 5px;
+    padding-left : 10px;
+    padding-right : 10px;
+    background : rgb(30, 119, 180);
+    color : white;
+    display : inline-block;
+    font-weight : 600;
+    border-radius : 2px;
+    border : 1px solid lightblue;
+    box-shadow : 0px 0px ;
+}
+.yearDiv:hover
+{
+    box-shadow : 0px 0px 5px 1px #ddd;
+}
+#years
+{
+    font-size : 1.5em;
+}
+</style>
+</head>
+<body>
+<div id=years>Compare Years:</div>
+<div id=totals>Yearly Totals:</div>
+<div id='graph'></div>
+
+</body>
+</html>

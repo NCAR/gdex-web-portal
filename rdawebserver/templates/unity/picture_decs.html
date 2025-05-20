@@ -1,0 +1,7 @@
+{% load static %}
+
+<picture>
+    <source type="image/webp" srcset="{% static 'unity/img/'|add:image|add:'.webp' %}">
+    <source type="image/jpeg+png" srcset="{% static 'unity/img/'|add:image|add:'.png' %}">
+    <img class="img-fluid" src="{% static 'unity/img/'|add:image|add:'.png' %}" alt="{{ alt }}">
+</picture>

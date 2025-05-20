@@ -1,0 +1,43 @@
+
+{% if page %}
+    <aside class="sidebar-nav mb-md-4 d-print-none" id="sidebar">
+        <div class="d-flex justify-content-between" id="sidebarHeader">
+            <h2 class="px-2 px-md-3 py-md-2">
+            {% if page.get_parent.url == '/' %} 
+                <a class="i-angle-left--before text-light" href="{{ page.url }}">{{ page.slug }}</a>
+            {% else %}
+                <a class="i-angle-left--before text-light" href="{{ page.get_parent.url }}">{{ page.get_parent.slug }}</a>
+            {% endif %}
+            </h2>
+            <button class="btn text-light px-2 d-md-none disabled" href="#sidebarMenu" id="sidebarCollapseButton" aria-label="Content Types" role="button" aria-expanded="false" aria-controls="sidebarMenu">
+            </button>
+        </div>
+        <div id="sidebarMenu" class="py-2" aria-labelledby="sidebar" data-parent="#sidebar">
+            <ul class="nav flex-column">
+                {% comment "Special case when the page's parent is the root" %} {% endcomment %}
+                {% if page.get_parent.url == '/' %} 
+                    {% for i in page.get_children %} 
+                        <li class="nav-item">
+                            <a class="nav-link {% if i.url == page.url %}active{% endif %}" href="{{ i.url }}">{{ i.title }}</a>
+                        </li>
+                    {% endfor %}          
+                {% else %}
+                    {% for i in page.get_siblings %} 
+                        <li class="nav-item">
+                            <a class="nav-link {% if i.url == page.url %}active{% endif %}" href="{{ i.url }}">{{ i.title }}</a>
+                            {% if i.url == page.url and page.get_children %}
+                                <ul class='nav flex-column ms-2'>
+                                {% for c in page.get_children %} 
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ c.url }}">{{ c.title }}</a>
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </li>
+                    {% endfor %}          
+                {% endif %}
+            </ul>
+        </div>
+    </aside>
+{% endif %}
