@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+
+<ul class='nav nav-tabs'>
+    <li class='nav-item'>
+	<a class='nav-link {% if request.path == "/resources/daas/" %}active{%endif%}' href='/resources/daas/'>Submission Home</a>
+    </li>
+    <li class='nav-item'>
+	<a class='nav-link' href='/resources/daas/my_submissions'>My Submissions</a>
+    <li class='nav-item'>
+	<a class='nav-link' href='/resources/daas/instructions-for-submission'>Form Instructions</a>
+    </li>
+    <li class='nav-item'>
+	<a class='nav-link' href='/resources/daas/decision-workflow'>Decision Workflow</a>
+    </li>
+    <li class='nav-item'>
+	<a class='nav-link' href='/resources/daas/terms-and-conditions'>Terms & Conditions</a>
+    </li>
+    <li class='nav-item'>
+	<a class='nav-link' href='/resources/daas/help'>Help</a>
+    </li>
+</ul>
+
+<div class="bg-white p-3">
+    <div class="d-grid d-print-flex">
+        <article class="main-content-wrapper">
+            <h2>{{ page.title }}</h2>
+            <div class="main-content clearfix"> 
+                <div>
+                    {{ page.body|richtext }}
+	        </div>
+                <hr>
+                <div>
+	            <h3>To start a new Dataset Submission Form, please sign into the RDA first and then click the button below:</h3> 
+                    <div class="col-12 mt2 mt-md4">
+                        <a class="btn btn-primary" href='https://submit-data.ucar.edu/'/>Start New Dataset Submission Form</a>
+                    </div>
+                    <div>
+                        <br/>
+                        For submitted forms or to continue to work on previously saved forms, please see <a href=/resources/daas/my_submissions/>My Submissions</a> tab above.
+                    </div>
+                </div>
+                <hr>
+                <div>
+                    {{ page.additional_information|richtext }}
+                    {% include "unity/picture_decs.html" with image="FlowChart3" alt="Data Submission Flow Chart" %}	            
+                </div>
+            </div>
+        </article>
+
+<!--
+        <aside class="sidebar-nav mb-md-4 d-print-none" id="sidebar">
+            <div class="d-flex justify-content-between" id="sidebarHeader">
+                <h2 class="px-2 px-md-3 py-md-2">
+                    <div class="i-angle-left--before text-light">Quick Help</a>
+                </h2>
+                <button class="btn text-light px-2 d-md-none disabled" href="#sidebarMenu" id="sidebarCollapseButton" aria-label="Content Types" role="button" aria-expanded="false" aria-controls="sidebarMenu">
+                </button>
+            </div>
+            <div id="sidebarMenu" class="py-2" aria-labelledby="sidebar" data-parent="#sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="https://rda.ucar.edu/#!daas/worksheet-instructions">How to fill out the Dataset Submission Form</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://rda.ucar.edu/#!daas/faqs">Frequently Asked Questions</a></li>
+                </ul>
+            </div>
+        </aside>
+-->
+
+    </div>
+</div>
+
+{% endblock %}

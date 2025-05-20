@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags static home_tags %}
+{% block body_class %}{% endblock %}
+{% block content %}
+
+<div class='bg-white p-3'>
+<div class="d-grid d-print-flex">
+    <article class="main-content-wrapper">
+        <div class="main-content clearfix"> 
+            <div class="bg-white p-3">
+                <div class="container row">
+                    <div class="pt-xl-2">
+                        <picture>
+                            <source type="image/webp" srcset="/media/original_images/2024_NSF_NCAR_RDA_Logo_Blue.webp">
+                            <source type="image/jpeg+png" srcset="/media/original_images/2024_NSF_NCAR_RDA_Logo_Blue.png">
+                            <img class="img-fluid float-end w-100 ps-3 pb-2 pb-sm-0" style="max-width: 400px" src="/media/original_images/2024_NSF_NCAR_RDA_Logo_Blue.png" alt="NCAR Research Data Archive logo">
+                        </picture>
+                        <h2 class="pt-3">{{ page.title }}</h2>
+                        <p id="summary">
+                            {{ page.body|richtext }}
+                        </p>
+                        {% if page.mission %}
+                            <p id="mission">
+                                {{ page.mission|richtext }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                    
+                {% if page.cts_text %}
+                    <hr>
+                    <div id="cts" class="container row">
+                        <div class="p-0">
+                        <picture>
+                            <source type="image/webp" srcset="/media/original_images/CoreTrustSeal-logo-transparent.webp">
+                            <source type="image/jpeg+png" srcset="/media/original_images/CoreTrustSeal-logo-transparent.png">
+                            <img class="img-fluid float-start w-100 pe-3" style="max-width: 200px" src="/media/original_images/CoreTrustSeal-logo.jpg" alt="CoreTrustSeal logo">
+                        </picture>
+                        <p>
+                            {{ page.cts_text|richtext }}
+                        </p>
+                        </div>
+                    </div>
+                {% endif %}
+
+            {% decs_staff %}
+
+            </div>
+        </div>
+    </article>
+</div>
+</div>
+
+{% endblock %}

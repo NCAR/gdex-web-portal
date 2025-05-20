@@ -1,0 +1,64 @@
+{% extends "socialaccount/base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Account Connections" %}{% endblock %}
+
+{% block content %}
+<article class="main-content-wrapper">
+
+    <h1>{% trans "Account Connections" %}</h1>
+
+    <div class='component single-column container-lg'>
+        <div class='row gx-0 bg-white p-3'>
+
+            {% if form.accounts %}
+            <p>{% blocktrans %}The account identities linked to your account are listed below.  If you wish to unlink an account identity,
+                select it below and continue with the 'Unlink' button.{% endblocktrans %}</p>
+
+            <form method="post" action="{% url 'socialaccount_connections' %}">
+                {% csrf_token %}
+
+                <fieldset>
+                    {% if form.non_field_errors %}
+                    <div id="errorMsg">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    {% for base_account in form.accounts %}
+                    {% with base_account.get_provider_account as account %}
+                    <div id="connections">
+                        <label for="id_account_{{ base_account.id }}">
+                            <input id="id_account_{{ base_account.id }}" type="checkbox" name="account" value="{{ base_account.id }}"/>
+                            <span class="socialaccount_provider {{ base_account.provider }} {{ account.get_brand.id }}">{{account.get_brand.name}}</span>
+                            ({{ account }})
+                        </label>
+                    </div>
+                    {% endwith %}
+                    {% endfor %}
+
+                    <div>
+                        <button class='btn btn-primary mt-2 mb-2' type="submit">{% trans 'Unlink account' %}</button>
+                    </div>
+                </fieldset>
+
+            </form>
+
+            {% else %}
+            <p>{% trans 'You currently have no social network accounts connected to this account.' %}</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class='component single-column container-lg'>
+        <div class='row gx-0 bg-white p-3'>
+            <h2>{% trans 'Link another account provider' %}</h2>
+            <p>To link an account provider to your primary account, select it below and follow the instructions to authenticate:</p>
+            <ul class="socialaccount_providers">
+                {% include "socialaccount/snippets/provider_list.html" with process="connect" %}
+            </ul>
+
+            {% include "socialaccount/snippets/login_extra.html" %}
+        </div>
+    </div>
+</article>
+
+{% endblock %}

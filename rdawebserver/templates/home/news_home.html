@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+{% load wagtailimages_tags %}
+
+{% block body_class %}{% if page.sidebar %} with-sidebar{% endif %}{% endblock %}
+
+{% block content %}
+
+<div class="d-grid d-print-flex"> 
+<article class="main-content-wrapper">
+
+    <div class="component grid-list container-lg">
+        <div class="row gx-0">
+
+            <div class="col-12 description">
+                <h2 class="mb-md-2">{{ page.title }}</h2>
+                <p class="mb-2 mb-md-4 text-black-50">
+                    {{ page.title_description|richtext }}
+                </p>
+            </div>
+
+            <div class="col-12">
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-2 g-md-4">
+
+                    {% for i in page.get_recent_posts %}
+                        <div class="col">
+                            <div class="card h-100">
+
+                                {% if i.image %}
+                                    <a href="{{ i.url }}">
+                                    <picture>
+                                        {% image i.image width-400 as my_image %}
+                                        <source type="image/jpeg+png" srcset="{{ my_image.url }}">
+                                        <img src="{{ my_image.url }}" alt="sample image" class="h-auto card-img-top p-2">
+                                    </picture>
+                                    </a>
+                                {% endif %} 
+
+                                <div class="card-body">
+                                    <h3 class="card-title"><a href="{{ i.url }}">{{ i.title }}</a></h3>
+                                    <p>{{ i.post_date }}</p>
+                                    <hr class="mt-0 mb-0">
+                                    <p class="card-text">{{ i.body|richtext|truncatewords_html:20 }}</p>
+                                </div>    
+
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="p-3 bg-white">
+        <h3 class="mb-md-2">Older Posts</h3>
+        <div class="d-block">
+            {% for year,posts in page.get_older_posts.items %}
+                <button data-bs-target="#posts{{year}}" class="btn btn-outline-primary ms-1 mb-1" data-bs-toggle="collapse" type="button">
+                    {{year}}
+                </button>
+                <div id="posts{{year}}" class="collapse ps-2 py-2">
+                    {% for post in posts %}
+                        <div>
+                            <div class="d-inline">
+                                {{post.post_date}}
+                            </div>
+                            <a href={{post.url}}>{{post.title}}</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</article>
+</div>
+
+{% endblock %}
+

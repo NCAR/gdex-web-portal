@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags static wagtailimages_tags %}
+
+{% block content %}
+<script type="text/javascript" src="{% static 'js/metrics.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/d3.v5.min.js' %}"></script>
+ 
+<article class="main-content-wrapper">
+<h1>{{ page.title }}</h1>
+<p class='font-size-lg text-black-50'>{{ page.body|richtext }}</p>
+
+<div class="component two-column container-lg">
+<div class='row gx-0 gx-md-4'>
+<div>
+<h4 id=rankingsTitle>Top 20 most popular datasets by:</h3>
+ <div id='month' class='timePeriod active'>Month</div> |
+  <div id='year' class='timePeriod'>Year</div> |
+  <div id='citations' class='timePeriod'>Citations</div>
+ <p id=citInfo>
+ Citation counts are compiled through information provided by publicly accessible APIs according to the guidelines developed through the <a href=https://              makedatacount.org/>https://makedatacount.org/</a> project. If journals do not provide citation information to these publicly accessible services, then this citation  information will not be included in RDA citation counts. Additionally citations that include dataset DOI are only the types included in these counts, so legacy       citations without DOIs, references found in publication acknowledgements, or references to a related publication that describes a dataset will not be included in     these counts.
+ </p>
+</div>
+<div id='rankings' style='height:800px' class="col-12 col-md-12 pb-3 pb-md-0">
+</div>
+</div>
+<script>
+setTimeout(init, 100);
+ myGraph = undefined;
+     function init()
+     {
+         element = document.getElementById('rankings');
+	 data = '/media/metrics/rankings/rankingsMonth.json';
+         myGraph = new RankingsGraph(element, data, 'Total Number of Unique Users', 'Top 20 datasets in past Month');
+         addActionListeners()
+     }
+     function addActionListeners()
+     {
+         year = d3.select('#year');
+         month = d3.select('#month');
+         citations = d3.select('#citations');
+ 
+         year.on('click', function(){
+             toggleActiveTimePeriod('#year');
+             myGraph.clear();
+	     data = '/media/metrics/rankings/rankingsYear.json';
+             myGraph = new RankingsGraph(element, data, 'Total Number of Unique Users', 'Top 20 datasets in past Year');
+             });
+         month.on('click', function(){
+             toggleActiveTimePeriod('#month');
+             myGraph.clear();
+	     data = '/media/metrics/rankings/rankingsMonth.json';
+             myGraph = new RankingsGraph(element, data, 'Total Number of Unique Users', 'Top 20 datasets in past Month');
+             });
+         citations.on('click', function(){
+             toggleActiveTimePeriod('#citations');
+             d3.select('#citInfo').style('display','block');
+             myGraph.clear();
+	     data = '/media/metrics/rankings/rankingsCitation.json';
+             myGraph = new RankingsGraph(element, data, null, 'Top 20 Most Cited Datasets');
+             });
+     }
+     function toggleActiveTimePeriod(id)
+     {
+         d3.select('#citInfo').style('display','none');
+         d3.selectAll('.timePeriod')
+             .attr('class', 'timePeriod');
+         d3.select(id)
+             .attr('class', 'timePeriod active');
+     }
+//element = document.getElementById('rankings')
+//data = '/media/metrics/rankings/rankingsCitation.json';
+//myGraph = new RankingsGraph(element, data, null, 'Top 20 Most Cited Datasets');
+//element = document.getElementById('graph')
+//data = '/media/metrics/rankings/rankingsMonth.json';
+//myGraph = new RankingsGraph(element, data, null, 'Total Number of Unique Users');
+
+//myGraph = new MetricsGraph(element);
+//myGraph.addData('/media/metrics/json/all10years.json');
+</script>
+<style>
+ #metricsTitle
+ {
+ text-align : center;
+ }
+ #allMetrics
+ {
+ text-align : center;
+ }
+ #rankingsTitle
+ {
+ display : inline;
+ }
+ .timePeriod
+ {
+ display : inline;
+ cursor : pointer;
+ color : #9999dd;
+ font-weight : 800;
+ user-select : none;
+ }
+ #citInfo
+ {
+ display : none;
+ margin : 0px;
+ }
+ .active
+ {
+ color : #ff11ff;
+ }
+ </style>
+
+</article>
+
+
+{% endblock %}
+

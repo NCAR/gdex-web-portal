@@ -1,0 +1,12 @@
+{% load static is_active %}
+
+<div class="subnav mt-auto bottom-border-0">
+  <ul class="nav nav-tabs nav-search-nav" id="search-nav" role="tablist">
+    <li class="nav-item mt-auto" role="presentation">
+      <a class="nav-link px-3 py-2 {% is_active request 'search' index=globus_portal_framework.index %}" id="search-tab" data-bs-toggle="tab" data-bs-target="#search-form-tab-pane" role="tab" aria-controls="search-form-tab-pane">Search</a>
+    </li>
+    <li class="mt-auto" role="presentation">
+      <a class="nav-link px-3 py-2 {% is_active request 'search-about' index=globus_portal_framework.index %}" id="about-tab" data-bs-toggle="tab" data-bs-target="#search-about-tab-pane" role="tab" aria-controls="about">About</a>
+    </li>
+  </ul>
+</div>

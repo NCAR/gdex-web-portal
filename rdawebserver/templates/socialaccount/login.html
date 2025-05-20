@@ -1,0 +1,35 @@
+{% extends "socialaccount/base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Sign in" %}{% endblock %}
+
+{% block content %}
+{% if process == "connect" %}
+    <h2>{% blocktrans with provider.name as provider %}Connect {{ provider }}{% endblocktrans %}</h2>
+    <p>{% blocktrans with provider.name as provider %}You are about to connect a new third party account from {{ provider }}.{% endblocktrans %}</p>
+{% else %}
+    <h2>{% blocktrans with provider.name as provider %}Sign in with {{ provider }}{% endblocktrans %}</h2>
+    <p>
+      {% if provider.name|lower == "globus" %}
+        {% blocktrans %}
+          Please log into Globus with your ORCID, and link your ORCID to your primary Globus account if you have a primary Globus account identity other than ORCID.
+          Instructions to link your ORCID to your Globus account will be provided on the Globus login page.
+          If you have linked your ORCID to your Globus account, you may log into Globus with any of your valid identity providers.
+        {% endblocktrans %}
+      {% else %}
+        {% blocktrans with provider.name as provider %}
+          You are about to sign in using a third party account from {{ provider }}.
+        {% endblocktrans %}
+      {% endif %}
+    </p>
+{% endif %}
+
+<div class="mt-1">
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn btn-primary btn-sm" type="submit">{% trans "Continue" %}</button>
+    <a href="/accounts/login" class="btn btn-light btn-sm ms-2">{% trans "Cancel" %}</a>
+  </form>
+</div>
+
+{% endblock %}

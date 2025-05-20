@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block content %}
+    <main class="container-lg py-3 pt-md-4">
+        <div class="text-center">
+            <h1 class="display-6 text-black mb-2">{{ page.header }}</h1>
+        </div>
+        <div class="component grid-list container-lg">
+            <div class="row gx-0">
+                <div class="col-12">
+                    <div class="row row-cols-1 g-2 g-md-4">
+                        {% for block in page.cards %}
+                            <div class="col">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h3 class="card-title">{{ block.value.title }}</h3>
+                                        <p class="card-text">{{ block.value.description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+{% endblock %}

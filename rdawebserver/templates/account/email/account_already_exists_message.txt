@@ -1,0 +1,14 @@
+{% extends "account/email/base_message.txt" %}
+{% load i18n %}
+
+{% block content %}
+You are receiving this email because you or someone else tried to signup for an
+account using email address:
+
+{{ email }}
+
+However, if you have previously used the RDA with another login, you can link it to this login. When linked, both logins will be able to access the same RDA account.
+To link to an existing account, log in with your existing account and connect here: https://rda.ucar.edu/accounts/social/connections
+
+
+{% endblock content %}

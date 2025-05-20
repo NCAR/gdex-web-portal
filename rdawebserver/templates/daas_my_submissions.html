@@ -1,0 +1,83 @@
+{% extends "daas/daas_page.html" %}
+
+
+{% block daas_content %}
+<div class='bg-white p-3'>
+<br>
+<h1>Welcome to My Submissions Dashboard</h1>
+<p> To start a new Dataset Submission Form, Please use the button below:</p>
+<div class="col-12 mt2 mt-md4 p-2">
+<a class="btn btn-primary" href='https://submit-data.ucar.edu/'/>Start New Dataset Submission Form</a>
+</div>
+<hr>
+<h3> Use the table below to:</h3>
+<ul>
+<li>
+    To edit or delete a Dataset Submission Form that is not yet submitted (Work in Progress).
+</li>
+<li>
+    To view a previously submitted Dataset Submission Form.
+</li>
+<li>
+    To view a Dataset Submission Form of an accepted dataset.
+</li>
+<li>
+    To view a Dataset Submission Form of a rejected dataset.
+</li>
+</ul>
+
+<br>
+{% if submissions|length > 10 %}
+<h4>Submissions by Others:</h4>
+{% else %}
+<h4>My Submissions:</h4>
+{% endif %}
+
+
+	<div class="d-grid d-print-flex">
+            <table class = table>
+<thead>
+<tr>
+<th scope="col">ID</th>
+<th scope="col">Title</th>
+<th scope="col">User</th>
+<th scope="col">Status</th>
+<th scope="col">Actions</th>
+<th scope="col">Submission Date</th>
+<th scope="col">Resolution Date</th>
+</tr>
+</tbody>
+
+
+      	{% for submission_id, full_title, status,sub_date,res_date,user in submissions %}
+<tr>
+<th scope="row">{{ submission_id }}</th>
+<td> {{ full_title }} </td>
+<td> {{ user }} </td>
+<td> {{ status }} </td>
+<td>
+<button class="m-1" onclick="location.href='https://rda.ucar.edu/resources/daas/get_full_submission?id={{ submission_id }}'" type=button> View </button> 
+{% if status == "Rejected" or status == "Submitted" %}
+<button class='m-1' onclick=location.href='https://rda.ucar.edu/resources/daas/accept?id={{ submission_id }}' type=button> Accept </button> 
+{%endif%}
+{% if status == "Submitted" %}
+<button class='m-1' onclick=location.href='https://rda.ucar.edu/resources/daas/reject?id={{ submission_id }}' type=button> Reject </button> 
+{%endif%}
+</td>
+<td> {{ sub_date }}</td>
+<td> 
+ {% if res_date.year > 2015 %}
+{{ res_date }} 
+{% endif %}
+</td>
+</tr>
+      	{% endfor %}
+</tbody>
+</table>
+      
+
+	</div>
+          
+</div>
+{% endblock %}
+

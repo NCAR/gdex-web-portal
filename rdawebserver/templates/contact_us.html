@@ -1,0 +1,88 @@
+{% if x %}
+found x
+{% endif %}
+{% if submitted %}
+    <center>
+        <h2>Request Received</h2>
+    </center>
+    <p>
+        Your message has been received and we will respond as soon as possible. Please note that we are not here 24/7. Business hours are 8 pm to 5 pm U.S. Mountain Time, Monday through Friday.
+    </p>
+    {% if show_modal_close %}
+        <center>
+            <form>
+                <input type="button" value="Close" onclick="hideModalWindow()">
+            </form>
+        </center>
+    {% endif %}
+
+{% else %}
+
+<div id="rdahelp_container">
+    <script id="rdahelp_script" language="javascript">
+        function check_form() {
+          if (document.rdahelp_form.email.value.length == 0) {
+            alert("You must enter your email address");
+            return;
+          }
+          if (!/^.+@(.+\.){1,}.+$/.test(document.rdahelp_form.email.value)) {
+            alert("Enter a valid email address");
+            return;
+          }
+          if (document.rdahelp_form.subject.value.length == 0) {
+            alert("You must enter a subject");
+            return;
+          }
+          if (document.rdahelp_form.request.value.length == 0) {
+            alert("You must enter information about your request");
+            return;
+          }
+          var words = document.rdahelp_form.request.value.split(' ')
+              .filter((word) => {
+            if (word != '') {
+              return word;
+            }
+          });
+          if (words.length < 10) {
+            alert("Your message does not contain enough information. A minimum of 10 words is required.");
+            return;
+          }
+          getContentFromPost('rdahelp_container', '/contact-us/',
+              'email=' + document.rdahelp_form.email.value + '&subject=' +
+              document.rdahelp_form.subject.value + '&request=' + document.
+              rdahelp_form.request.value + '&csrfmiddlewaretoken=' + document.
+              rdahelp_form.csrfmiddlewaretoken.value{% if from_modal_window %} + '&modal=true'{% endif %});
+        }
+    </script>
+    <h2>Send Us a Message</h2>
+    <div class="main-content clearfix">
+        <div class="component webform yellow-orange-border p-2 p-md-4">
+            {% if dsnum %}
+            <p>
+                <b class="text-danger">NOTE:</b> Do NOT send a request for data access unless you have already registered on our web site and are having trouble signing in. If you have not already registered, close this window and use the "Register Now" link at the top of our web site.
+            </p>
+            <p>
+                <b class="text-danger">WARNING:</b> Submitting multiple tickets for the same issue will result in your data access being blocked.
+            </p>
+            {% endif %}
+
+            <form name="rdahelp_form" action="javascript:void(0)">
+                {% csrf_token %}
+                Your email address:<br /><input class="fixedWidth16" type="text" name="email" size="40" /><br /><br />
+                Subject:<br /><input class="fixedWidth16" type="text" name="subject" size="40" value="{% if subject %}{{ subject }}{% elif dsnum %}Help for dataset ds{{ dsnum }}{% endif %}" {% if subject or dsnum %}readonly{% endif %}>
+                <br><br>
+                Your message
+                <br>
+                (be as specific as possible about why you are sending us a message):
+                <br>
+                <textarea class="fixedWidth16" name="request" rows="10" cols="60"></textarea>
+                <div class="mt-3 mb-2">
+                    <button class="btn btn-primary" onclick="check_form()">Send Message</button>
+                    {% if dsnum %}<button class="btn btn-primary ms-2" onclick="hideModalWindow()">Cancel</button>{% endif %}
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endif %}

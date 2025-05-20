@@ -1,0 +1,39 @@
+{% load wagtailcore_tags home_tags %}
+
+{% for alert in alerts %}
+    {% check_date alert.start_date alert.end_date as valid_date %}
+
+    {% if valid_date %}
+
+     <div class="alert alert-{{ alert.level }} alert-dismissible fade show px-0" role="alert">
+        <div class="container-lg py-1 py-md-3">
+            <div class="d-flex">
+                <div>
+                    {% if alert.level == 'info' %}
+                        <i class="fas fa-info-circle"></i>
+                    {% elif alert.level == 'warning' %}
+                        <i class="fas fa-exclamation-circle"></i>
+                    {% elif alert.level == 'danger' %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex flex-wrap">
+                        <span class="pe-3">{{ alert.message|richtext }}</span>
+                        {% if alert.related_page %}
+                            <a class="alert-url i-angle-right--after" href="{{ alert.related_page.url }}">Learn More</a>
+                        {% elif alert.related_url %}
+                            <a class="alert-url i-angle-right--after" href="{{ alert.related_url }}">Learn More</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <button type="button" class="i-times--after" data-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+{% endfor %}

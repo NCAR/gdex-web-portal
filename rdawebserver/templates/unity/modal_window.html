@@ -1,0 +1,72 @@
+<script type="text/javascript">
+
+function popModalWindow(w, h) {
+  document.getElementById('modal-window-content').innerHTML = '<center><span class="modal-loader"></span></center>';
+  mw = document.getElementById('modal-window');
+  mc = document.getElementById('modal-window-close');
+  if (w) {
+    mw.style.width = '75%';
+    if (h) {
+      mw.style.height = '60%';
+    }
+  }
+  mw_width = parseFloat(mw.offsetWidth) / document.body.offsetWidth;
+  mw.style.left = (1. - mw_width) / 2. * 100. + '%';
+  mc_width = parseFloat(mc.offsetWidth) / document.body.offsetWidth;
+  border_width = parseFloat(mw.style.borderWidth) / document.body.offsetWidth;
+  mc.style.left = parseFloat(mw.style.left) + (mw_width * 100.) - (mc_width / 2. * 100.) + - (border_width / 2. * 100.) + '%';
+  win_height = window.innerHeight
+      ? window.innerHeight
+      : document.body.clientHeight;
+  mw.style.top = (win_height - parseInt(mw.offsetHeight)) / 2 + 'px';
+  mc.style.top = parseInt(mw.style.top) - (mc.offsetHeight / 2) + (parseInt(mw.style.borderWidth) / 2) + 'px';
+  document.getElementById('shader').classList.replace('invisible', 'visible');
+  mw.classList.replace('invisible', 'visible');
+  mc.classList.replace('invisible', 'visible');
+}
+
+function hideModalWindow() {
+  document.getElementById('modal-window').classList.replace('visible', 'invisible');
+  document.getElementById('modal-window-close').classList.replace('visible', 'invisible');
+  document.getElementById('shader').classList.replace('visible', 'invisible');
+}
+
+function popModalWindowWithGetUrl(w, h, u) {
+  popModalWindow(w, h);
+  getAjaxContent('GET', null, u, 'modal-window-content');
+}
+
+function popModalWindowWithPostUrl(w, h, u, p) {
+  popModalWindow(w, h);
+  getAjaxContent('POST', p, u, 'modal-window-content');
+}
+
+function popModalWindowWithHTML(w, h, html) {
+  popModalWindow(w, h);
+  document.getElementById('modal-window-content').innerHTML = html;
+}
+
+</script>
+
+<link rel="stylesheet" type="text/css" href="/css/modal.css">
+
+{% comment %}
+-----
+The following modal window divs need style attributes because these are manipulated by Javascript. They are not able to be manipulated if they are in a CSS declaration.
+{% endcomment %}
+<div id="modal-window" class="invisible" style="width: 600px; height: 300px; padding: 10px; border: 15px solid #1a658f">
+    <div id="modal-window-wrapper">
+        <div id="modal-window-content">
+            <center>
+                <img id="modal-loader">
+                <div id="modal-loader-text"></div>
+            </center>
+        </div>
+    </div>
+</div>
+<div id="modal-window-close" class="invisible" style="width: 30px; height: 30px" onclick="hideModalWindow()"></div>
+<div id="shader" class="invisible"></div>
+{% comment %}
+End of modal window block.
+-----
+{% endcomment %}

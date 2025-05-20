@@ -1,0 +1,30 @@
+
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block content %}
+
+<ul class='nav nav-tabs'>
+<li class='nav-item'>
+<a class='nav-link {% if request.path == "/resources/daas/" %}active{%endif%}' href='/resources/daas'>Submission Home</a>
+</li>
+<li class='nav-item'>
+<a class='nav-link {% if request.path == "/resources/daas/my_submissions/" %}active{%endif%}' href='/resources/daas/my_submissions'>My Submissions</a>
+<li class='nav-item'>
+<a class='nav-link {% if request.path == "/resources/daas/instructions-for-submission/" %}active{%endif%}' href='/resources/daas/instructions-for-submission'>Form Instructions</a>
+</li>
+<li class='nav-item'>
+<a class='nav-link {% if request.path == "/resources/daas/decision-workflow/" %}active{%endif%}' href='/resources/daas/decision-workflow/'>Decision Workflow</a>
+</li>
+<li class='nav-item'>
+<a class='nav-link {% if request.path == "/resources/daas/terms-and-conditions/" %}active{%endif%}' href='/resources/daas/terms-and-conditions/'>Terms & Conditions</a>
+</li>
+<li class='nav-item'>
+<a class='nav-link {% if request.path == "/resources/daas/help/" %}active{%endif%}' href='/resources/daas/help/'>Help</a>
+</li>
+</ul>
+
+{% block daas_content %}{% endblock %}
+
+{% endblock %}

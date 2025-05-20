@@ -1,0 +1,8 @@
+{% load static %}
+{% get_media_prefix as MEDIA_PREFIX %}
+
+<picture>
+    <source srcset="{{ MEDIA_PREFIX|add:'original_images/'|add:image|add:'.webp' }}" type="image/webp">
+    <source srcset="{{ MEDIA_PREFIX|add:'original_images/'|add:image|add:'.png' }}"  type="image/jpeg+png">
+    <img class="img-fluid" src="{{ MEDIA_PREFIX|add:'original_images/'|add:image|add:'.png' }}" alt="{{ alt }}">
+</picture>

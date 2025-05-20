@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block body_class %}{% endblock %}
+
+{% block content %}
+    <main class="container-lg py-3 pt-md-4">
+        <div class="component list">
+            <h2>{{ page.header }}</h2>
+            {% for block in page.list %}
+            <div class="list-item p-3">
+                <div>{{ block.value.label }}</div>
+                <div>{{ block.value.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+{% endblock %}

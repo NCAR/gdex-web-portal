@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+{% load decs_tags %}
+
+{% block body_class %}{% if page.sidebar %} with-sidebar{% endif %}{% endblock %}
+
+{% block content %}
+
+{% if page.sidebar %} 
+    <div class="d-grid d-print-flex">
+{% endif %}
+        <article class="main-content-wrapper">
+            <h2>{{ page.header }}</h2>
+            <div class="main-content clearfix">
+
+                {% for link in page.links.all %}
+                    <div class="resources-main p-3">
+                        <div class="mb-3">
+                            <h2 class="mb-0">{{ link.long_name }}</h2>
+                            <p class="mb-0">{{ link.description|richtext }}</p>
+                        </div>
+                        <ul class="list-inline mb-2">
+                            <li>
+                                <a href="{% if link.doc_page.url %}{{ link.doc_page.url }}{% else %}{{ link.doc_url }}{% endif %}" class="i-angle-right--after">
+                                    {% if link.link_text %}{{ link.link_text }}{% else %}{{ link.long_name }}{% endif %}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                {% endfor %}
+
+                {% for doc in page.docs.all %}
+                    <div class="resources-main p-3">
+                        <div class="mb-3">
+                            <h2 class="mb-0">{{ doc.long_name }}</h2>
+                            <p class="mb-0">{{ doc.description|richtext }}</p>
+                        </div>
+                        <ul class="list-inline mb-2">
+                            <li><a href="{{ doc.file_name.url }}" class="i-file-pdf--before">{{ doc.file_name }}</a></li>
+                        </ul>
+                    </div>
+                {% endfor %}
+
+            </div>
+        </article>
+
+{% if page.sidebar %}
+    {% include "unity/sidebar.html" %}
+{% endif %}
+
+<!--
+        <aside class="sidebar-nav mb-md-4 d-print-none" id="sidebar">
+            <div class="d-flex justify-content-between" id="sidebarHeader">
+                <h2 class="px-2 px-md-3 py-md-2">
+                <a class="i-angle-left--before text-light" href="/resources">Resources</a>
+                </h2>
+                <button class="btn text-light px-2 d-md-none disabled" href="#sidebarMenu" id="sidebarCollapseButton" aria-label="Documentation" role="button" aria-expanded="false" aria-controls="sidebarMenu">
+                </button>
+            </div>
+            <div id="sidebarMenu" class="py-2" aria-labelledby="sidebar" data-parent="#sidebar">
+                <ul class="nav flex-column">
+                {% for menu in settings.NAVIGATION_BAR.menus %}
+                    {% if menu.title == "Resources" %}
+                        {% if menu.submenus %}
+                            {% for submenu in menu.submenus %}
+                                {% with a=submenu|is_active:page.url %}
+                                    <li class="nav-item"><a class="nav-link{% if a %} active{% endif %}" href="{{ submenu.url }}">{{ submenu.title }}</a></li>
+                                {% endwith %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                </ul>
+            </div>
+        </aside>
+-->
+
+    </div>
+{% endblock %}
