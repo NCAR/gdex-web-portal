@@ -264,7 +264,10 @@ def get_request(request, rqstid):
     try:
         rinfo = get_request_info(rindex)
         note = rinfo['subset_info']['note']
-        note = re.sub(r'^(\r\n|\n\r|\r|\n)', '', note)
+        if note:
+            note = re.sub(r'^(\r\n|\n\r|\r|\n)', '', note)
+        else:
+            note = ' '
         rinfo['subset_info']['note'] = note
     except ValueError:
         request_data = {"info": "Request not found", "rqstid": rqstid}
