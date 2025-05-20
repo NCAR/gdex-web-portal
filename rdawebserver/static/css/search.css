@@ -1,0 +1,83 @@
+/* CSS stylesheet for Globus Search */
+
+/* General */
+
+/* 
+Comment this section out to avoid overwriting Unity styles
+
+html, body {
+    font-family: museosans,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  h1 { font-size: 30px; }
+  h2 { font-size: 26px; }
+  h3 { font-size: 18px; }
+  h5 { font-size: 16px; }
+  h1, h2, h3, h4, h5, a {
+      color: #708FCA;
+      font-weight: 300;
+  }
+
+  End comment
+  */
+
+  .badge-primary {
+      background-color: #337ab7;
+  }
+  
+  /*************************
+   Main
+  *************************/
+  /* search bar */
+  
+  #search-form {
+      display: flex;
+      flex-direction: row;
+  }
+  
+  #search-form #search-input,
+  #search-form #search-btn {
+      font-size: 17px;
+      height: 42px;
+      border-radius: 4px;
+      text-indent: 10px;
+  }
+  #search-form #search-btn  {
+    color: #fff;
+    background: #186eb8;
+    border-color: #186eb8;
+  }
+  
+  #search-form #search-input {
+      flex-grow: 2;
+      margin-right: -42px;
+  }
+  
+  #results #search-result .result-item em {
+    font-weight: bold;
+  }
+  /* Media Queries */
+  @media (min-width: 768px) {
+    #search-form .input-group-btn {
+      display: none;
+    }
+    #search-form #search-input {
+      border-radius: 4px;
+    }
+  }
+  /* sidebar */
+  #sidebar .card .card-header h3.card-title{
+    font-weight: 300;
+  }
+  legend {
+      font-size: 16px;
+  }
+  fieldset.facet-fieldset legend {
+      border-bottom: 1px solid #ccc;
+  }
+  .fieldset-container {
+      max-height: 300px;
+  }

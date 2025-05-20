@@ -1,0 +1,13 @@
+.thumbnail
+{
+    width : 24px !important;
+    height : 24px !important;
+    display : inline !important;
+    margin-bottom : 1.875rem;
+}
+.fullheight
+{
+    width : 100% !important;
+    height : 100% !important;
+    margin-bottom : 1.875rem;
+}
