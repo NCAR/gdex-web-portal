@@ -12,7 +12,7 @@ from libpkg.metaformats import (dublin_core, datacite_4, fgdc, gcmd_dif,
                                 iso_19115_3, iso_19139, native)
 from libpkg.metaformats import settings as metaformat_settings
 from libpkg.strutils import strand
-from wagtail.core.models import Page
+from wagtail.models import Page
 
 from .models import MetadataFormatsPage
 
@@ -189,7 +189,7 @@ def get_record(request, oai_args, ctx):
                     iparts[-1],
                     request.GET['metadataPrefix'],
                     django_settings.RDADB['metadata_config_pg'],
-                    django_settings.RDADB['wagtail_config_pg'])})
+                    django_settings.RDADB['wagtail2_config_pg'])})
     return render(request, "oai/get_record.xml", context=ctx,
                   content_type="text/xml")
 
@@ -315,7 +315,7 @@ def list_records(request, oai_args, ctx):
                             dsid,
                             request.GET['metadataPrefix'],
                             django_settings.RDADB['metadata_config_pg'],
-                            django_settings.RDADB['wagtail_config_pg'])))
+                            django_settings.RDADB['wagtail2_config_pg'])))
 
         ctx.update({'metadata_records': mrecs})
         cursor.execute((
