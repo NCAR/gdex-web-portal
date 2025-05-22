@@ -1,0 +1,32 @@
+{# gsearch/templates/gsearch/dataset-search/globus-portal-framework/components/search-results.html #}
+<div>
+  {% for result in search.search_results %}
+  <div class="card my-3">
+    <div class="card-header">
+      <h3 class="search-title">
+        <a href="{{ result.dataset_url }}">{{result.title|default:'Result'}}</a>
+      </h3>
+    </div>
+    <div class="card-body">
+     {% for item in result.search_highlights %}
+      <div class="my-1">
+          {% if item.type == "date" %}
+            <strong>{{item.title}}:</strong> 
+            {{item.value | date:"d M Y"}}
+          {% elif item.title == "Description" %}
+            <strong>{{item.title}}:</strong>
+            <div>{{item.value | truncatechars:500}}</div>
+          {% elif item.name == "format" %}
+            {% for i in item.value %}
+              <span class="badge" style="background-color: #1A658F; color: #f0f0f0;">{{i}}</span>
+            {% endfor %}
+          {% else %}
+            <strong>{{item.title}}:</strong> 
+            {{item.value}}
+          {% endif %}
+      </div>
+     {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>

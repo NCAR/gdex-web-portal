@@ -1,0 +1,24 @@
+{% extends "gsearch/dataset-search/globus-portal-framework/base.html" %}
+{% load static index_template %}
+
+{% block title %}NSF NCAR RDA | Dataset Search{% endblock %}
+
+{% block headextras %}
+{% block search_head %}
+<!--
+<link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+-->
+{% endblock %}
+{{block.super}}
+{% endblock %}
+
+<!--
+{% block main_nav %}
+  {% block search_nav %}
+  {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-nav.html' as search_nav %}
+  {% include search_nav %}
+  {% endblock %}
+{% endblock %}
+-->
+
+{% block body %}{% endblock %}
