@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from dataset_description.models import DatasetDescriptionPage
-from wagtail.core.models import Page
+from wagtail.models import Page
 import re
 
 class Command(BaseCommand):
