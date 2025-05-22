@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static index_template %}
+
+{% block title %}{% endblock %}
+{% block search_head %}{% endblock %}
+
+{% block headextras %}
+{{block.super}}
+{% index_template 'gsearch/dataset-search/globus-portal-framework/components/base-head-extras.html' as bhe %}
+{% include bhe %}
+{% endblock %}
+
+<!-- Globus search content -->
+{% block content %}
+  {% block body %}
+  {% endblock %}
+{% endblock %}
