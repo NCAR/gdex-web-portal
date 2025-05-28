@@ -1,3 +1,14 @@
-<h2 class="h2">Searching and browsing the RDA</h2>
-<p class="lead">The RDA dataset search allows you to search for datasets by keyword and filter by facets. The facets are listed in the left-hand menu.</p>
-<p class="lead">The search is powered by Elasticsearch, which provides a powerful full-text search engine.</p>
+<p class="lead">
+    There are <span class="fw-bold">{{ datasets.numds }}</span> public datasets in the RDA.  
+    The RDA dataset search allows you to search for datasets by keyword and filter 
+    by facets. Facet descriptions are given below, including the number of datasets 
+    (in parentheses) in each.
+</p>
+<div id="facet-list" class="component list">
+    {% for facet in datasets.facets %}
+    <div class="list-item p-3">
+        <div>{{ facet.title }} ({{ facet.cnt }})</div>
+        <div>{{ facet.description }}</div>
+    </div>
+    {% endfor %}
+</div>

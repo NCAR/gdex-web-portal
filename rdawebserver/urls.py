@@ -27,14 +27,13 @@ urlpatterns = [
     path('datasets/', include('datasets.urls')),
     path('login/', include('login.urls')),
     path('globus/', include('globus.urls')),
+    path('gsearch/', include('gsearch.urls')),
     path('oai/', include("oai.urls")),
     path('lookfordata/', include('lookfordata.urls')),
     path('metaman/', include('metaman.urls')),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
     re_path(r'^accounts/profile/$', login_required(TemplateView.as_view(template_name='account/profile.html')), name='user_profile'),
-    path('gsearch/', include('globus_portal_framework.urls')),
-    path('gsearch/', include('social_django.urls', namespace='social')),
 ]
 
 
