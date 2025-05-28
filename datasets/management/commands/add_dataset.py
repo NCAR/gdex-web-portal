@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from wagtail.core.models import Page
+from wagtail.models import Page
 from datasets.models import DatasetsPage
 from dataset_description.models import DatasetDescriptionPage
 from dataset_citation.models import DatasetCitationPage

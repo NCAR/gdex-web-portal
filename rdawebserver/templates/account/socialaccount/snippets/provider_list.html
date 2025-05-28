@@ -1,0 +1,54 @@
+{% load socialaccount %}
+{% get_providers as socialaccount_providers %}
+
+<div class="col-xs-12 col-md-6 col-md-offset-3">
+
+{% for provider in socialaccount_providers %}
+
+{% if provider.id == "openid" %}
+    {% for brand in provider.get_brands %}
+        <div class='mb-1 '>
+            <button class='text-dark bg-light'>
+            <a title="{{brand.name}}" 
+               class="socialaccount_provider {{provider.id}} {{brand.id}}" 
+               href="{% provider_login_url provider.id openid=brand.openid_url process=process %}">{{brand.name}}
+            </a>
+            </button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="pb-2">
+    <a title="{{ provider.name }}" 
+       href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}"
+       class="socialaccount_provider {{ provider.id }}">
+        <button class="btn btn-light btn-block btn-sm">
+            <picture>
+                {% if provider.name|lower == "orcid" %}
+                    <source type="image/svg+xml" srcset="/media/images/logos/{{ provider.name|lower }}.svg">
+                {% endif %}
+                <source type="image/png" srcset="/media/images/logos/{{ provider.name|lower }}.png">
+                <img src="/media/images/logos/{{ provider.name|lower }}.png" class="pe-1" width="40em">
+            </picture>
+            Sign in with {{ provider.name }}
+        </button>
+    </a>
+</div>
+
+{% endfor %}
+
+<!--
+<div class="pb-2">
+    <a title="ucar" href="">
+        <button class="btn btn-light btn-block btn-sm">
+            <picture>
+                <source type="image/svg+xml" srcset="/media/images/logos/ucar-generaluse.svg">
+                <img src="/media/images/logos/ucar-generaluse.png" class="pe-1" width="40em">
+            </picture>
+            Sign in with UCAR CIT account
+        </button>
+    </a>
+</div>
+-->
+
+</div>

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+{% load wagtailimages_tags %}
+
+{% block content %}
+
+<article class="main-content-wrapper">
+
+<div class='container card pt-3 pb-4'>
+
+    <div class="mb-3 grid-container grid-3 article">
+    <div class="row">
+        <div class="col-4 justify-content-start text-start">       
+        {% if page.get_prev_sibling %}
+            <a class="btn pe-3 ps-1 btn-icon-gray" id="prev-post" href="{{ page.get_prev_sibling.url }}">
+                <i class="fas fa-arrow-left me-3"></i>
+                <span class="d-none d-md-inline">Previous Post</span>
+            </a>
+        {% endif %}
+        </div>
+
+        <div class="col-4 justify-content-center text-center">
+        <a class="btn px-3 btn-icon-gray" id="rda-news-home" href="/news">RDA News</a>
+        </div>
+
+        <div class="col-4 justify-content-end text-end">       
+        {% if page.get_next_sibling %}
+            <a class="btn ps-3 pe-1 btn-icon-gray" id="next-post" href="{{ page.get_next_sibling.url }}">
+                <span class="d-none d-md-inline">Next Post</span>
+                <i class="fas fa-arrow-right ms-3"></i>
+            </a>
+        {% endif %}
+        </div>
+
+    </div>
+    </div>
+
+    <div class='row justify-content-center text-dark-gray'>
+        <div class='d-flex col-lg-9 col-xl-8 justify-content-center'>  
+            <div class='ps-0'>
+                <h2>{{ page.title }}</h2>
+                <div class='component single-column container-lg'>
+                    {% if page.image %}
+                        {% image page.image width-400 as my_image %}
+                        <figure class="figure">
+                            <picture>
+                                <source type="image/jpeg+png" srcset="{{ my_image.url }}">
+                                <img src="{{ my_image.url }}" alt="alt test" class="figure-img img-fluid">
+                            </picture>
+                        </figure>
+                    {% endif %}
+                    <div class='pb-2'>
+                        <div class='d-inline text-secondary'>
+                            {{ page.post_date }}
+                        </div>
+                        <div class='d-inline ms-2 text-secondary'>
+                            Posted by: 
+                            {% if not page.news_authors.all %}
+                                <a href='mailto:rdahelp@ucar.edu'>RDA Team</a>
+                            {% else %}
+                                {% for iter in page.news_authors.all %}
+                                    <a href='mailto:{{ iter.author.email }}'>{{ iter.author.name }}</a>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if page.blogger_url %}
+                        <p class="bg-info p-1">
+                            <em>Note: This page was originally sourced from our Blogger page: 
+                                <a href="{{ page.blogger_url }}">{{ page.blogger_url }}</a>
+                            </em>
+                        </p>
+                    {% endif %}
+
+                    {{page.body|richtext}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</article>
+
+{% endblock %}
+

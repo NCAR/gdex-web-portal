@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags %}
+{% load lookfordata_tags %}
+
+{% block content %}
+
+    <script src="/js/xhr_content2.js"></script>
+    <script src="/js/popInfo.js"></script>
+    <script src="/js/animation.js"></script>
+    <script src="/js/jquery.js"></script>
+    <script src="{% static 'js/hashchange.js' %}"></script>
+    <script type="text/javascript">
+      var ajax_container = 'content_container';
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="/css/bubble.css">
+
+    <div id="content_container"></div>
+
+{% endblock %}

@@ -13,7 +13,7 @@ try:
     from urllib.parse import urlencode
 except Exception:
     from urllib import urlencode
-from wagtail.core.models import Page
+from wagtail.models import Page
 
 from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
                                 iso_19139, json_ld)
@@ -24,8 +24,10 @@ from api.common import (format_dataset_id, get_request_info,
                         get_request_index_from_rqstid,
                         request_type, get_dataset_info,
                         request_column_headers)
+from .CodeExample import CodeExample
 
 from dataaccess.matrix import Matrix
+from .forms import ISPDSubsetForm
 from dataset_description.models import DatasetDescriptionPage
 from home.utils import slug_list
 from globus.views import get_guest_collection_url
@@ -167,6 +169,34 @@ def get_documentation_table(request, dsnum):
     return render(request, template, documentation_json)
 
 
+def examples_page(request, dsnum):
+    hostname = get_hostname()
+    dsid = format_dataset_id(dsnum)
+    dsnum = format_dataset_id(dsnum, remove_ds=True)
+    api_uri = '/api/datasets/{}/documentation/'.format(dsid)
+    url = hostname + api_uri
+    documentation = requests.get(url)
+    documentation = documentation.content
+    documentation_json = json.loads(documentation)
+    if "HTTP_X_REQUESTED_WITH" in request.META:
+        template = "datasets/documentation_table.html"
+    else:
+        template = "datasets/documentation_table_page.html"
+        d = {'url': ""}
+        slist = slug_list(dsnum)
+        qs = Page.objects.type(DatasetDescriptionPage).filter(
+                               slug__in=slist).live().specific()
+        if len(qs) > 0:
+            d.update({
+                'dsid': qs[0].dsid,
+                'dsdoi': qs[0].dsdoi,
+                'dstitle': qs[0].dstitle})
+
+        documentation_json.update({'page': d})
+
+    return render(request, template, documentation_json)
+
+
 #@cache_page(4 * 24 * 60 * 60) # cache for 4 days
 def get_software_table(request, dsnum):
     hostname = get_hostname()
@@ -234,7 +264,10 @@ def get_request(request, rqstid):
     try:
         rinfo = get_request_info(rindex)
         note = rinfo['subset_info']['note']
-        note = re.sub(r'^(\r\n|\n\r|\r|\n)', '', note)
+        if note:
+            note = re.sub(r'^(\r\n|\n\r|\r|\n)', '', note)
+        else:
+            note = ' '
         rinfo['subset_info']['note'] = note
     except ValueError:
         request_data = {"info": "Request not found", "rqstid": rqstid}
@@ -352,6 +385,31 @@ def get_detailed_metadata(request, dsid):
                   {'page': d})
 
 
+def custom_subset(request, dsid):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = get_custom_subset_form(dsid, request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+
+            # redirect to a new URL:
+            return render(request, 'datasets/custom_subset_confirm.html',
+                          {'form': form})
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = get_custom_subset_form(dsid)
+
+    return render(request, 'datasets/ispdv4_subset.html', {'form': form})
+
+
+def get_custom_subset_form(dsid, post=None):
+    if dsid == 'd132002':
+        return ISPDSubsetForm(post)
+
+
 def metadata_view(request, dsid):
     if "HTTP_X_REQUESTED_WITH" not in request.META:
         return render(request, "404.html")
@@ -401,3 +459,27 @@ def metadata_view(request, dsid):
 
     md = md.replace("<", "&lt;").replace(">", "&gt;")
     return HttpResponse("<pre>" + md + "</pre>")
+
+
+def example_view(request, dsid):
+    """Displays page to get code examples."""
+    if request.GET:
+        param = request.GET.get('param', None)
+        example_type = request.GET.get('type', None)
+        start = request.GET.get('start', None)
+        end = request.GET.get('end', None)
+        is_remote = request.GET.get('is_remote', None)
+        if is_remote:
+            is_remote = is_remote.lower() == 'true'
+        else:
+            is_remote = False
+        example_type = request.GET.get('exampletype', 'image')
+        nlat = request.GET.get('nlat', 90)
+        slat = request.GET.get('slat', -90)
+        wlon = request.GET.get('wlon', -180)
+        elon = request.GET.get('elon', 180)
+        example_obj = CodeExample(dsid, start=start, end=end, is_remote=is_remote, selected_var=param, 
+                elon=elon,wlon=wlon,slat=slat,nlat=nlat, selected_type=example_type)
+        return HttpResponse(example_obj.get_code())
+    example_obj = CodeExample(dsid)
+    return render(request, "datasets/code_example.html", {'ctx':example_obj})

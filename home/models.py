@@ -4,21 +4,17 @@ from django.db import models
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
 
-from wagtail.core.models import Page, Orderable
-from wagtail.core.fields import RichTextField, StreamField
-from wagtail.core.blocks import BooleanBlock
-from wagtail.admin.edit_handlers import (
+from wagtail.models import Page, Orderable
+from wagtail.fields import RichTextField, StreamField
+from wagtail.blocks import BooleanBlock
+from wagtail.admin.panels import (
     FieldPanel,
     MultiFieldPanel,
     InlinePanel,
-    StreamFieldPanel,
     PageChooserPanel
 )
-from wagtail.images.edit_handlers import ImageChooserPanel
-from wagtail.documents.edit_handlers import DocumentChooserPanel
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
-from wagtail.snippets.edit_handlers import SnippetChooserPanel
 
 class NewsAuthorOrderable(Orderable):
     """ This allows us to select one or more news authors from snippets """
@@ -29,7 +25,7 @@ class NewsAuthorOrderable(Orderable):
     )
 
     panels = [
-        SnippetChooserPanel("author"),
+        FieldPanel("author"),
     ]
 
 @register_snippet
@@ -51,7 +47,7 @@ class NewsAuthor(models.Model):
             [
                 FieldPanel("name"),
                 FieldPanel("email"),
-                ImageChooserPanel("image"),
+                FieldPanel("image"),
             ],
             heading="Name and Email"
         )
@@ -71,7 +67,7 @@ class DecsStaff(models.Model):
 
     name = models.CharField(
         max_length=100,
-        help_text='DECS staff member name',
+        help_text='DECS staff member full name',
     )
     email = models.EmailField(
         max_length=100, 
@@ -91,7 +87,7 @@ class DecsStaff(models.Model):
             [
                 FieldPanel("name"),
                 FieldPanel("email"),
-                ImageChooserPanel("image"),
+                FieldPanel("image"),
             ],
             heading="Name, Email, and Image"
         )
@@ -360,7 +356,7 @@ class Card(Orderable, ClusterableModel):
 
     panels = [
         FieldPanel('title'),
-        ImageChooserPanel('image'),
+        FieldPanel('image'),
         MultiFieldPanel(
             [
                 PageChooserPanel('related_page'),
@@ -381,6 +377,7 @@ class GenericPage(Page):
     #page_options = StreamField([
     #    ('sidebar', BooleanBlock(required=True, help_text='Display With Sidebar')),
     #], block_counts={'sidebar':{'min_num':1,'max_num':1}},
+    #   use_json_field=True,
     #   blank=False)
 
     content_panels = Page.content_panels + [
@@ -456,7 +453,7 @@ class DocumentCard(ClusterableModel, Orderable):
     panels = [
         FieldPanel('long_name'),
         FieldPanel('description'),
-        DocumentChooserPanel('file_name')
+        FieldPanel('file_name')
     ]
 
 class DocumentLink(ClusterableModel, Orderable):
@@ -543,7 +540,7 @@ class NewsPage(Page):
             ],
             heading="Author(s)",
         ),
-        ImageChooserPanel('image'),
+        FieldPanel('image'),
     ]
     def get_next_sibling(self):
         siblings = list(self.get_siblings().live().specific())

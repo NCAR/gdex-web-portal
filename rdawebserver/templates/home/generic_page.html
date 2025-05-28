@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags static %}
+
+{% block body_class %}{% if page.sidebar %} with-sidebar{% endif %}{% endblock %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/generic_page.css' %}">
+
+    {% comment %}
+    Add a target attribute to each outline link so that the outline data opens
+        in a new window.
+    {% endcomment %}
+    <script src="/js/jquery.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $('a[href^="/cgi-bin/getOutline"]').attr('target', '_outline');
+    });
+    </script>
+
+{% if page.sidebar %} 
+    <div class="d-grid d-print-flex">
+{% endif %}
+
+<article class="main-content-wrapper">
+    <h1>{{ page.title }}</h1>
+    {{ page.intro|richtext }}
+    {% if page.table_of_contents %}
+        <div class="mb-2 sidebar-nav sidebarHeader p-2 ">
+            <h2 class='text-light '>On this page: </h2>
+            <div style='border-top: 1px solid #000' class="sidebar-nav">
+                {% for i in page.cards.all %} 
+                    - <a class='ps-0 pe-0 d-inline nav-link' href='#{{ i.title|slugify }}'>{{i.title}}</a>  <br>
+                {% endfor %}
+            </div>
+        </div> 
+    {% endif %}
+    {% for i in page.cards.all %} 
+        <div class='component single-column container-lg'>
+            <div class='row gx-0 bg-white p-3'>
+                <h2 id={{ i.title|slugify }}> {{ i.title }} </h2>
+                {% if i.image %}
+                    <div class='d-flex col-12 col-sm-6 p-0 order-sm-1'>
+	                {% load wagtailimages_tags %}
+                        <picture>
+                            {% if i.related_page %}
+                                <a href={{ i.related_page.url }} class='component-link'>
+                            {% elif i.link %}
+                                <a href={{ i.link }} class='component-link'>
+                            {% elif i.internal_link %}
+                                <a href={{ i.internal_link }} class='component-link'>
+                            {% endif %}
+                            {% image i.image original %}
+                            {% if i.related_page or i.link or i.internal_link %}
+	                        </a>
+                            {% endif %}
+                        </picture>
+	            </div>
+                    <div class='col-12 col-sm-6 p-2 p-sm-4 order-sm-0'>
+                        {{ i.text|richtext }}
+                    </div>
+                {% else %}
+                    {{ i.text|richtext }}
+                    {% if i.related_page %}
+                        <a href={{ i.related_page.url }} class='component-link i-angle-right--after'>
+                            {% if i.link_text %}{{ i.link_text }}{% else %}link{% endif %}
+                        </a>
+                    {% elif i.link %}
+                        <a href={{ i.link }} class='component-link i-angle-right--after'>
+                            {% if i.link_text %}{{ i.link_text }}{% else %}link{% endif %}
+                        </a>
+                    {% elif i.internal_link %}
+                        <a href={{ i.internal_link }} class='component-link i-angle-right--after'>
+                            {% if i.link_text %}{{ i.link_text }}{% else %}link{% endif %}
+                        </a>
+                    {% endif %}
+                {% endif %}
+                {% if i.taxonomyterm.all %}
+                    <div class='order-sm-1 pt-2'>
+                        {% for taxterm in i.taxonomyterm.all %}
+                            <a class='badge text-gray-dark' href='{{ taxterm.href }}'>{{ taxterm.term }}</a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>    
+    {% endfor %}
+    {{ page.body|richtext }}
+</article>
+
+{% if page.sidebar %}
+    {% include "unity/sidebar.html" %}
+    </div>
+{% endif %}
+
+{% endblock %}
+

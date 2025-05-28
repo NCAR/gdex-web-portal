@@ -1,0 +1,124 @@
+{% load decs_tags menu_tags %}
+
+{% with host_start=request.META.HTTP_HOST|slice:"0:3" %}
+
+<header class="sticky-top">
+    <nav class="navbar navbar-expand-md navbar-light align-items-start py-0">
+        <div class="container-fluid px-0">
+            <div class="row gx-0 flex-grow-1">
+                <div class="col-12">
+                    <div class="container-lg">
+                        <div class="row gx-0 py-md-2">
+                            <div class="col col-md-8 py-md-1">
+                                <div class="d-flex">
+                                    <div class="pe-1 my-1 my-md-0 nsf-logo align-self-center">
+                                        <a href="https://nsf.gov" title="U.S. NSF Home">
+                                            {% include "unity/picture_wagtail_media.html" with image="NSF_Official_logo" alt="NSF Logo" %}
+                                            <span class="sr-only">NCAR</span>
+                                        </a>
+                                    </div>
+                                    <div class="ps-2 my-1 py-md-0 align-self-center ncar-logo">
+                                        <div class="mb-0 small-ncar-logo">
+                                            <a href="/">
+                                                {% include "unity/picture_wagtail_media.html" with image="logo-ncar" alt="NSF NCAR" %}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="ms-auto px-0 py-md-0 d-md-none justify-content-end mobile-toggler">
+                                        <button aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mobile Menu" class="navbar-toggler collapsed btn border-start" data-bs-target="#navbarSupportedContent1,#navbarSupportedContent2" data-bs-toggle="collapse" id="menuIcon" type="button"></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="utility-menu col collapse d-none d-md-flex justify-content-end align-items-center pe-0">
+                                <div class="px-2">
+                                    <a href="mailto:rdahelp@ucar.edu">Contact Us</a>
+                                </div>
+                                {% if 'duser' in request.COOKIES %}
+                                    <div class="px-2 border-start">
+                                        <a href="/ajax/#!cgi-bin/dashboard">User Dashboard</a>
+                                    </div>
+                                    <div class="px-2 border-start">
+                                      <form method="post" action="{% url 'account_logout' %}">
+                                        {% csrf_token %}
+                                        {% if redirect_field_value %}
+                                        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+                                        {% endif %}
+                                        <button type="submit" 
+                                                class="" 
+                                                style="color:rgb(26,101,143);font-family:'Poppins','sans-serif';font-size:14px;font-weight:600;background:none;">
+                                           Sign Out
+                                        </button>
+                                      </form>
+                                    </div>
+                                {% else %}
+                                <div class="ps-2">
+                                    <a href="/accounts/login/?return={{ request.path }}" class="btn btn-pill btn-primary px-2 py-1 border-1" aria-label="Sign In">Sign In</a>
+                                </div>
+                               {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if host_start == "rda" %}
+                <div class="col-12 navbar-wrapper border-top">
+                    <div class="container-lg collapse navbar-collapse" id="navbarSupportedContent1">
+                        <div class="site-name mx-3 mx-md-0 my-2">
+                            <a href="/">Research Data Archive</a>
+                        </div>
+
+                        {% comment %}
+                           Render main navigation menu
+                        {% endcomment %}
+                        {% main_menu template="menus/main_menu.html" %}
+
+                        <form class="utility-menu d-flex ms-2" action="/dssearch/">
+                            <label class="sr-only" for="siteSearch">Search</label>
+                            <input aria-label="Search" class="form-control" id="siteSearch" type="search" name="words" placeholder="Search">
+                            <button aria-label="Search" class="text-white bg-org-dark" type="submit" >Search RDA</button>
+                        </form>
+
+                    </div>
+                </div>
+                {% endif %}
+
+                {% comment %}
+                   Mobile utility menu
+                {% endcomment %}
+                <div class="col-12 mobile-utility-menu px-2 d-md-none">
+                    <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent2">
+                        <div class="py-2 contact">
+                            <div>
+                                <a href="/contact-us/">Contact Us</a>
+                            </div>
+                        {% if 'duser' in request.COOKIES %}
+                            <div class="py-2">
+                                <a href="/ajax/#!cgi-bin/dashboard">User Dashboard</a>
+                            </div>
+                            <div class="py-2">
+                              <form method="post" action="{% url 'account_logout' %}">
+                                {% csrf_token %}
+                                {% if redirect_field_value %}
+                                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+                                {% endif %}
+                                  <button type="submit" 
+                                          class="" 
+                                          style="color:rgb(26,101,143);font-family:'Poppins','sans-serif';font-size:14px;font-weight:600;background:none;">
+                                     Sign Out
+                                  </button>
+                              </form>
+                            </div>
+                        {% else %}
+                            <div class="d-flex py-2">
+                                <a href="/accounts/login" class="btn btn-primary">Sign In</a>
+                            </div>
+                        {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+</header>
+
+{% endwith %}

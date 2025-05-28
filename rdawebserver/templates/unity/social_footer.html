@@ -1,0 +1,15 @@
+{% load wagtailcore_tags home_tags %}
+
+<div class="col-12 col-md py-2">
+<div class="social pt-2">
+    <h4>Follow the RDA:</h4>
+    <div class="social-icons text-light">
+        {% for item in social %}
+            <a href="{{ item.related_url }}" aria-label="{{ item.aria_label }}">
+                <i class="{{ item.icon_style }} {{ item.icon_name }}">
+                </i>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+</div>

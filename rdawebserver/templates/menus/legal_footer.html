@@ -1,0 +1,26 @@
+{% load menu_tags %}
+
+<div class="legal-footer py-3">
+    <div class="container-lg">
+        <div class="row">
+            <div class="col-12 d-print-none">
+                <p class="text-light copyright pe-md-2">© {% now 'Y' %} UCAR</p>
+                <ul class="nav flex-column flex-md-row">
+                    {% for item in menu_items %}
+                        <li class="nav-item {{ item.active_class }}">
+                            <a class="nav-link" href="{{ item.href }}">{{ item.text }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-12 text-gray-light">
+                <span class="d-block d-md-inline pt-2 pt-md-0"><b>Postal Address:</b></span>
+                <span>P.O. Box 3000, Boulder, CO 80307-3000</span>
+                <span class="d-none d-md-inline">&bull;</span>
+                <span class="d-block d-md-inline pt-2 pt-md-0"><b>Shipping Address:</b></span>
+                <span>3090 Center Green Drive, Boulder, CO 80301</span>
+            </div>
+        </div>
+    </div>
+</div>
+

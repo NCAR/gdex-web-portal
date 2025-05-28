@@ -1,0 +1,41 @@
+{% extends "daas/daas_page.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block daas_content %}
+<br/>
+        <div class="component list">
+            <h2>{{ page.title }}</h2>
+      
+        </div>
+        <div class="webform yellow-orange-border p-2 p-md-4">
+           
+<div class="font-weight-bold"> Section 1 of 4: Basic Information </div>
+    	<form class="row gx-0 gy-3" action="{% pageurl page %}" method="POST">
+            	{% csrf_token %}
+            	{% for field in form %}
+                        {% if forloop.counter == 9 %}
+                        <hr>
+			<div class="font-weight-bold"> Section 2 of 4: Dataset Characteristics </div>
+                	{% endif %}
+                        {% if forloop.counter == 17 %}
+                        <hr>
+			<div class="font-weight-bold"> Section 3 of 4: Contact Information </div>
+                	{% endif %}
+                        {% if forloop.counter == 23 %}
+                        <hr>
+			<div class="font-weight-bold"> Section 4 of 4: Supporting Information </div>
+                	{% endif %}
+        		<div class="col-12">
+			{{ field.label_tag }}{% if field.field.required %}<span class="required">*</span>{% endif %}
+			{{ field }}
+        		</div>
+		{% endfor %}
+    		<input class="btn btn-primary" type="submit">
+    	</form>
+        </div>
+        <div> 
+            {{ page.body|richtext }}
+        </div>
+          
+{% endblock %}

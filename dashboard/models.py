@@ -1,9 +1,9 @@
 from django.db import models
 
-from wagtail.core.models import Page
-from wagtail.core.fields import StreamField
-from wagtail.core import blocks
-from wagtail.admin.edit_handlers import StreamFieldPanel
+from wagtail.models import Page
+from wagtail.fields import StreamField
+from wagtail import blocks
+from wagtail.admin.panels import FieldPanel
 import sys
 
 # Create your models here.
@@ -25,12 +25,12 @@ class DashboardSection(blocks.StructBlock):
     button_position = blocks.ChoiceBlock(required=True, choices=DashboardButtonPosition.choices, default=DashboardButtonPosition.choices[0], blank=False, validators=[validate_button_position], help_text="Position of the optional button for the section (Top/Right is the default)")
 
 class DashboardPage(Page):
-    dashboard_sections = StreamField([
-        ('dashboard_section', DashboardSection()),
-    ], block_counts = {
-        'dashboard_section': {'min_num': 1},
-    }, default="", verbose_name="List of Dashboard Sections")
+    dashboard_sections = StreamField(
+            [('dashboard_section', DashboardSection()),],
+            block_counts={'dashboard_section': {'min_num': 1},},
+            default="", use_json_field=True,
+            verbose_name="List of Dashboard Sections")
     content_panels = Page.content_panels + [
-        StreamFieldPanel('dashboard_sections', classname="collapsible collapsed"),
+        FieldPanel('dashboard_sections', classname="collapsible collapsed"),
     ]
     is_creatable = False
