@@ -79,3 +79,8 @@ def https_url(result):
     path = os.path.join(parsed.path, "dataaccess")
     return urlunsplit((parsed.scheme, parsed.netloc, path, "", ""))
 
+def dataset_type(result):
+    """The dataset type.  Can either be 'P' or 'H'."""
+    if not result or "dataset_type" not in result[0]:
+        return None
+    return result[0]["dataset_type"]

@@ -37,6 +37,14 @@ def dataset_search(request, index):
         error = context['search'].get('error')
         if error:
             messages.error(request, error)
+        
+        # Reorder search results to put historical datasets last
+        search_results = context['search'].get('search_results', [])
+        if search_results:
+            historical_datasets = get_historical_datasets(search_results)
+            context['search']['search_results'] = [
+                result for result in search_results if result['dataset_type'] != 'H'
+            ] + historical_datasets
     
     context['datasets'] = get_dataset_counts()
     tvers = get_template_path('search.html', index=index)
@@ -106,3 +114,17 @@ def get_dataset_counts():
     mcursor.close()
     mconn.close()
     return s
+
+def get_historical_datasets(search_results):
+    """
+    Get historical datasets from the 'search_results' list and return
+    as a new list.
+    """
+    if not search_results or not isinstance(search_results, list):
+        return search_results
+
+    filtered_results = [
+        result for result in search_results if result['dataset_type'] == 'H'
+    ]
+    
+    return filtered_results
