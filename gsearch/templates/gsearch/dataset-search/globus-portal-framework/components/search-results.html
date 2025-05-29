@@ -8,24 +8,30 @@
       </h3>
     </div>
     <div class="card-body">
-     {% for item in result.search_highlights %}
-      <div class="my-1">
-          {% if item.type == "date" %}
-            <strong>{{item.title}}:</strong> 
-            {{item.value | date:"d M Y"}}
-          {% elif item.title == "Description" %}
-            <strong>{{item.title}}:</strong>
-            <div>{{item.value | truncatechars:500}}</div>
-          {% elif item.name == "format" %}
-            {% for i in item.value %}
-              <span class="badge" style="background-color: #1A658F; color: #f0f0f0;">{{i}}</span>
-            {% endfor %}
-          {% else %}
-            <strong>{{item.title}}:</strong> 
-            {{item.value}}
-          {% endif %}
-      </div>
-     {% endfor %}
+      {% if result.dataset_type == 'H' %}
+        <div class="mb-1 bg-warning text-dark p-2 rounded">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          For ancillary use only - not recommended as a primary research dataset. It has likely been superseded by newer and better datasets.
+        </div>
+      {% endif %}
+      {% for item in result.search_highlights %}
+        <div class="my-1">
+            {% if item.type == "date" %}
+              <strong>{{item.title}}:</strong> 
+              {{item.value | date:"d M Y"}}
+            {% elif item.title == "Description" %}
+              <strong>{{item.title}}:</strong>
+              <div>{{item.value | truncatechars:500}}</div>
+            {% elif item.name == "format" %}
+              {% for i in item.value %}
+                <span class="badge" style="background-color: #1A658F; color: #f0f0f0;">{{i}}</span>
+              {% endfor %}
+            {% else %}
+              <strong>{{item.title}}:</strong> 
+              {{item.value}}
+            {% endif %}
+        </div>
+      {% endfor %}
     </div>
   </div>
   {% endfor %}
