@@ -269,12 +269,20 @@ def submit_transfer(request):
     for file in selected:
         logger.debug('[submit_transfer] file: {}'.format(file))
 
-        # trim leading '/data/' or '/data/OS/' from path if present.  Trim whitespace at ends.
-        if (source_endpoint_id == settings.GLOBUS_STRATUS_ENDPOINT_ID and file.find('/data/OS/',0,9) == 0):
-            file = file.replace('/data/OS/','',1).strip()
-        elif (source_endpoint_id == settings.GLOBUS_DATA_ENDPOINT_ID and file.find('/data/',0,6) == 0):
-            file = file.replace('/data/','',1).strip()
-        
+        # Trim leading '/data/', '/data/OS/', or OSDF pathnames from path if present.
+        if file.startswith('/data/OS/'):
+            file = file.replace('/data/OS/', '', 1)
+        elif file.startswith('/data/'):
+            file = file.replace('/data/', '', 1)
+        elif file.startswith('/'+settings.OSDF_STRATUS_PATH):
+            file = file.replace('/'+settings.OSDF_STRATUS_PATH, '', 1)
+        elif file.startswith('/'+settings.OSDF_DATA_PATH):
+            file = file.replace('/'+settings.OSDF_DATA_PATH, '', 1)
+
+        # Remove leading '/' from file path if present.
+        if file.startswith('/'):
+            file = file.lstrip('/')
+
         if source_endpoint_id == settings.GLOBUS_CGD_ENDPOINT_ID:
             source_path = get_guest_collection_file_path(dsid, file)
         else:
