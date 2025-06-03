@@ -2,23 +2,20 @@ from django.shortcuts import render
 from django.conf import settings
 from urllib.parse import urlparse
 from django.contrib import messages
+import json
 
 from globus_portal_framework.gsearch import (
     post_search, get_search_query, 
     get_search_filters, get_template,
     get_template_path
 )
-from globus_portal_framework.gclients import load_search_client
-
-import psycopg2
-import json
-import sys
+from api.common import (
+    get_wagtail_config, get_search_config, 
+    init_connection_new, close_connection
+)
 
 import logging
 logger = logging.getLogger(__name__)
-
-wdb_config = settings.RDADB['wagtail2_config_pg']
-metadb_config = settings.RDADB['metadata_config_pg']
 
 def dataset_search(request, index):
     context = {}
@@ -54,21 +51,18 @@ def get_dataset_counts():
     """
     Get the number of RDA datasets and facet titles, dataset counts, and descriptions
     """
-    wconn = psycopg2.connect(**wdb_config)
-    wcursor = wconn.cursor()
+    wconn, wcursor = init_connection_new(config=get_wagtail_config())
     q = "select refine_filters from lookfordata_lookfordatapage"
     wcursor.execute(q)
     res = wcursor.fetchone()
-    wcursor.close()
-    wconn.close()
+    close_connection(wconn, wcursor)
     if not res:
         logger.error("No refine_filters found in lookfordata_lookfordatapage")
         return None
 
     filters = json.loads(res[0])
 
-    mconn = psycopg2.connect(**metadb_config)
-    mcursor = mconn.cursor()
+    mconn, mcursor = init_connection_new(config=get_search_config())
     cond = "(d.type = 'P' or d.type = 'H') and d.dsid < 'd999000'"
     q = "select count(distinct dsid) from search.datasets as d where " + cond
 
@@ -111,8 +105,8 @@ def get_dataset_counts():
                 facet['cnt'] = res[0]
             s['facets'].append(facet)
 
-    mcursor.close()
-    mconn.close()
+    close_connection(mconn, mcursor)
+
     return s
 
 def get_historical_datasets(search_results):
