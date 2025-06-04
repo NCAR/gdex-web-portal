@@ -127,7 +127,6 @@
     attribution: "© OpenStreetMap",
   }).addTo(map);
 
-  // Global variables
   var userLocation = null;
   var userMarker = null;
   var markers = [];
@@ -202,7 +201,6 @@
       )} km away
         `;
 
-      // Remove existing line
       if (nearestHealthyLine) {
         map.removeLayer(nearestHealthyLine);
       }
@@ -221,7 +219,6 @@
         }
       ).addTo(map);
 
-      // Add popup to the line
       nearestHealthyLine.bindPopup(`
             <div>
                 <strong>Route to Nearest Healthy Cache</strong><br>
@@ -235,7 +232,6 @@
       nearestHealthyDiv.innerHTML = "<strong>No healthy caches found</strong>";
     }
 
-    // Show the distance info panel
     distanceInfo.style.display = "";
   }
 
@@ -248,7 +244,6 @@
     userLocation = e.latlng;
     var radius = e.accuracy;
 
-    // Remove existing user marker if it exists
     if (userMarker) {
       map.removeLayer(userMarker);
     }
@@ -312,11 +307,9 @@
 
   // Function to update markers and lists
   function updateMapData(downCaches, healthyCaches) {
-    // Clear existing markers (except user marker)
     markers.forEach((marker) => map.removeLayer(marker));
     markers = [];
 
-    // Clear existing line
     if (nearestHealthyLine) {
       map.removeLayer(nearestHealthyLine);
       nearestHealthyLine = null;
@@ -454,7 +447,7 @@
       );
     }
 
-    // Fit map to show all markers
+    // Fit map to show all points
     if (markers.length > 0) {
       var group = new L.featureGroup(markers);
       map.fitBounds(group.getBounds().pad(0.1));
@@ -463,7 +456,7 @@
 
   initializeMap();
 
-  // Auto refresh data every 5 minutes - 300000 ms = 5 mins
+  // 300000 ms = 5 mins -> Auto refresh
   setInterval(function () {
     fetch("{% url 'cache_data_api' %}")
       .then((response) => response.json())
