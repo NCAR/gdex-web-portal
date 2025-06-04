@@ -8,6 +8,8 @@
     <div class="card shadow-sm mb-4">
       <div class="card-body">
         <h1 class="card-title text-center mb-3">Outage Map</h1>
+        <p class="text-center text-muted mb-3">
+          This interactive map displays cache servers that are currently down or have unknown status. If you grant location access, the map will also show you the nearest working cache server
         <div
           id="map"
           style="
@@ -42,7 +44,7 @@
                 alt="Origin"
                 style="height: 24px; vertical-align: middle"
               />
-              OK Cache
+              Nearest Working Cache
             </div>
           </div>
         </div>
@@ -195,7 +197,7 @@
 
     if (nearestHealthy) {
       nearestHealthyDiv.innerHTML = `
-            <strong>Nearest OK Cache:</strong><br>
+            <strong>Nearest Working Cache:</strong><br>
             ${nearestHealthy.name} - ${nearestHealthy.distance.toFixed(
         2
       )} km away
@@ -374,7 +376,7 @@
                     <p><strong>Type:</strong> ${nearestHealthyCache.type}</p>
                     <p><strong>Status:</strong> <span class="${statusClass}">${nearestHealthyCache.status}</span></p>
                     <p><strong>Distance:</strong> ${nearestHealthyCache.distance.toFixed(2)} km</p>
-                    <p><em>Nearest OK Cache</em></p>
+                    <p><em>Nearest Working Cache</em></p>
                 </div>
             `);
       markers.push(healthyMarker);
@@ -396,7 +398,7 @@
       ).addTo(map);
       nearestHealthyLine.bindPopup(`
         <div>
-            <strong>Route to Nearest OK Cache</strong><br>
+            <strong>Route to nearest working cache</strong><br>
             <strong>Cache:</strong> ${nearestHealthyCache.name}<br>
             <strong>Distance:</strong> ${nearestHealthyCache.distance.toFixed(2)} km
         </div>
