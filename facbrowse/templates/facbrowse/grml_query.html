@@ -1,0 +1,1466 @@
+{% if error %}{% comment %}IF_ERROR{% endcomment %}
+<p>
+    An error occurred: {{ error }}
+</p>
+{% else %}{% comment %}IF_ERROR{% endcomment %}
+<div id="top_of_list"></div>
+<script id="calendar_script" language="javascript" type="text/javascript" src="/js/calendar.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/calendar.css">
+{% if listtyp == "opendap" or listtyp == "subset" %}{% comment %}IF_L1{% endcomment %}
+<style id="refine_style" type="text/css">
+div.refine {
+  background-color: #eff5df;
+  padding: 10px;
+  margin-top: 5px;
+</style>
+<script id="subset_script" language="javascript">
+selected_grid_value = "{{ grids.0.0 }}";
+must_make_spatial=false;
+{% if gindex %}
+tindex = "{{ gindex }}";
+{% else %}
+tindex = "";
+{% endif %}
+
+function submitDataRequest(nvp) {
+  submit_button = document.getElementById("submit_button");
+  submit_button.disabled = true;
+  submit_button.innerHTML = "Submitting...";
+  {% if alert_csv %}
+  popModalWindowWithHTML(600, 300, "This output format option is only " +
+      "available when the following selections have been made:<ul><li><i>" +
+      "ONE</i> parameter from the <b>Parameter(s)</b> menu</li><li><i>ONE" +
+      "</i> vertical level displayed or selected from the <b>Vertical " +
+      "Level(s)</b> menu</li><li><i>Data for a single gridpoint</i> has been " +
+      "selected from the <b>Spatial Selection</b> menu</li></ul>Once your " +
+      "request has met these requirements, you will be able to submit it.");
+  submit_button.disabled = false;
+  submit_button.innerHTML = "Submit Request";
+  return;
+  {% endif %}
+  if (changed_selection) {
+    alert("You made one or more changes to your selections. You must click " +
+        "the update button at the bottom of the selections pane to continue.");
+    return;
+  }
+  levels_actually_selected =
+      {% if selected.levs %}true{% else %}false{% endif %};
+  product_actually_selected =
+      {% if selected.prods %}true{% else %}false{% endif %};
+  grid_definition_actually_selected =
+      {% if selected.gdef %}true{% else %}false{% endif %};
+  ofmt = "";
+  if (document.selections.ofmt) {
+    for (n = 1; n < document.selections.ofmt.length; ++n) {
+      if (document.selections.ofmt[n].checked) {
+        ofmt = document.selections.ofmt[n].value;
+        break;
+      }
+    }
+  }
+  let post_data = "dsid={{ dsid }}";
+  if (ofmt.length > 0) {
+    post_data += "&rtype=T";
+  } else {
+    post_data += "&rtype=S";
+  }
+  {% if can_compress %}
+  if (typeof document.compressions.compress != "undefined" &&
+      document.compressions.compress.length > 0) {
+    for (n = 0; n < document.compressions.compress.length; ++n) {
+      if (document.compressions.compress[n].checked &&
+          document.compressions.compress[n].value.length > 0) {
+        post_data += "&afmt=" + document.compressions.compress[n].value;
+        break;
+      }
+    }
+  }
+  {% endif %}
+  {% if can_combine %}
+  if (typeof document.combinations.combine != "undefined" &&
+      document.combinations.combine.length > 0) {
+    for (n = 0; n < document.combinations.combine.length; ++n) {
+      if (document.combinations.combine[n].checked &&
+          document.combinations.combine[n].value.length > 0) {
+        post_data += "&" + document.combinations.combine[n].value + "=Y";
+        break;
+      }
+    }
+  }
+  {% endif %}
+  post_data += "&rinfo=gui%3Dyes;dsnum%3D{{ dsid }}";
+  if (typeof(document.selections.startDate) != "undefined") {
+    post_data += ";startdate%3D" + document.selections.startDate.value + " " +
+        document.selections.startTime.value + ";enddate%3D" +
+        document.selections.endDate.value + " " +
+        document.selections.endTime.value;
+  }
+  post_data += ";parameters%3D";
+  if (!document.selections.parameter[0].selected) {
+    started = false;
+    for (n = 1; n < document.selections.parameter.length; ++n) {
+      if (document.selections.parameter[n].selected) {
+        if (started) {
+          post_data += ",";
+        }
+        post_data += document.selections.parameter[n].value.substr(0, document.selections.parameter[n].value.indexOf("[!]"));
+        started=true;
+      }
+    }
+  }
+  if (typeof(document.selections.product) != "undefined") {
+    if (!document.selections.product[0].selected) {
+      post_data += ";product%3D";
+      let prod_vals = new Array()
+      for (n=1; n < document.selections.product.length; ++n) {
+        if (document.selections.product[n].selected) {
+          prod_vals.push(document.selections.product[n].value);
+        }
+      }
+      post_data += prod_vals.join(",")
+    }
+  }
+  if (typeof(document.selections.grid_definition) != "undefined") {
+    if (document.selections.grid_definition.selectedIndex > 0) {
+      if (!grid_definition_actually_selected) {
+        alert("You must update your request selections before you can " +
+            "continue.");
+        changed_selection = true;
+        return;
+      }
+      post_data += ";grid_definition%3D" + document.selections.grid_definition[
+          document.selections.grid_definition.selectedIndex].value;
+    } else {
+      {% if listtyp == "subset" %}
+      post_data += ";grid_definition%3D" +
+          document.selections.grid_definition.value;
+      {% elif listtyp == "opendap" %}
+      alert("You must choose a grid from the menu");
+      submit_button.disabled = false;
+      submit_button.innerHTML = "Get URL";
+      return;
+      {% endif %}
+    }
+  } else {
+    {% if listtyp == "opendap" %}
+    post_data += ";grid_definition%3D" + selected_grid_value;
+    {% endif %}
+  }
+  if (typeof(document.selections.level) != "undefined" &&
+      !document.selections.level[0].selected) {
+    post_data += ";level%3D";
+    let lev_vals = new Array();
+    for (n = 1; n < document.selections.level.length; n++) {
+      if (document.selections.level[n].selected) {
+        if (!levels_actually_selected) {
+          alert("You must update your request selections before you can " +
+              "continue. " + n + " " + levels_actually_selected);
+          changed_selection = true;
+          return;
+        }
+        lev_vals.push(document.selections.level[n].value);
+      }
+    }
+    post_data += lev_vals.join(",");
+  }
+  if (document.selections.ensemble) {
+    {% if listtyp == "opendap" %}
+    if (document.selections.ensemble.selectedIndex == 0) {
+      alert("You must choose an option from the Ensemble menu");
+      return;
+    }
+    {% endif %}
+    if (document.selections.ensemble.selectedIndex > 0) {
+      post_data += ";ens%3D" + document.selections.ensemble[
+          document.selections.ensemble.selectedIndex].value;
+    }
+  }
+  if (ofmt.length > 0) {
+    post_data += ";ofmt%3D" + ofmt;
+  }
+  {% if is_subconv %}
+  if (document.getElementById("ststep") &&
+      document.getElementById("ststep").checked) {
+    post_data += ";ststep%3Dyes";
+  }
+  {% endif %}
+  if (tindex.length > 0) {
+    post_data += ";tindex%3D" + tindex;
+  }
+  {% if 'init' in request.POST and request.POST.init == "yes" %}
+  post_data += ";dates%3Dinit";
+  {% endif %}
+  if (typeof drawboxmap_init != "undefined" &&
+      document.getElementById(drawboxmap_init.map_div_id) &&
+      typeof(checkMapInputs) != "undefined" && !checkMapInputs()) {
+    submit_button.disabled = false;
+    submit_button.innerHTML = "Submit Request";
+    return;
+  }
+  if (must_make_spatial) {
+    if (document.selections.spatial) {
+      if (document.selections.spatial.selectedIndex == 0) {
+        alert("You must make a geospatial selection before you can submit " +
+            "your request");
+        return;
+      }
+    } else {
+      if (document.getElementById('gdrawboxmap_slat').value == '-90' &&
+          document.getElementById('gdrawboxmap_nlat').value == '90' &&
+          document.getElementById('gdrawboxmap_wlon').value == '-180' &&
+          document.getElementById('gdrawboxmap_elon').value == '180') {
+        alert("You must make a geospatial selection before you can submit " +
+            "your request");
+        return;
+      }
+    }
+  }
+  let rnote_bounds = "";
+  if (document.selections.spatial) {
+    if (document.selections.spatial.selectedIndex == 1) {
+      nlat = document.getElementById("gdrawboxmap_nlat").value;
+      slat = document.getElementById("gdrawboxmap_slat").value;
+      wlon = document.getElementById("gdrawboxmap_wlon").value;
+      elon = document.getElementById("gdrawboxmap_elon").value;
+      if (nlat == slat || wlon == elon) {
+        alert("You did not specify a box - the latitudes and longitudes must " +
+            "be different");
+        submit_button.disabled = false;
+        submit_button.innerHTML = "Submit Request";
+        return;
+      }
+      if (nlat != "90" || slat != "-90" || wlon != "-180" || elon != "180") {
+        post_data += ";nlat%3D" + nlat + ";slat%3D" + slat + ';wlon%3D' + wlon +
+            ";elon%3D" + elon;
+        rnote_bounds = "- Spatial subsetting (bounding box):\n    Latitudes " +
+            "(top/bottom): " + nlat + " / " + slat + "\n    Longitudes " +
+            "(left/right): " + wlon + " / " + elon + "\n";
+      }
+    } else if (document.selections.spatial.selectedIndex == 2) {
+      nlat = document.selections.ts_lat.value;
+      wlon = document.selections.ts_lon.value;
+      if (nlat.length > 0 && wlon.length > 0) {
+        post_data += ";nlat%3D" + nlat + ";slat%3D" + nlat + ";wlon%3D" + wlon +
+            ";elon%3D" + wlon;
+        rnote_bounds = "- Spatial subsetting (single gridpoint):\n    " +
+            "Latitude: " + nlat + "\n    Longitude: " + wlon + "\n";
+      }
+    } else if (document.selections.spatial.selectedIndex == 3) {
+      if (document.selections.nlat_four.value.length > 0) {
+        post_data += ";nlat%3D" + document.selections.nlat_four.value +
+            ";slat%3D" + document.selections.slat_four.value + ";wlon%3D" +
+            document.selections.wlon_four.value + ";elon%3D" +
+            document.selections.elon_four.value;
+        rnote_bounds = "- Spatial subsetting (four points):\n    Latitudes " +
+            "(top/bottom): " + document.selections.nlat_four.value + " / " +
+            document.selections.slat_four.value + "\n    Longitudes " +
+            "(left/right): " + document.selections.wlon_four.value + " / " +
+            document.selections.elon_four.value + "\n";
+      }
+    }
+  } else {
+    map_container = document.getElementById("drawboxmap_container");
+    if (map_container != null && map_container.style.display == "block" &&
+        (document.getElementById("gdrawboxmap_slat").value != "-90" ||
+        document.getElementById("gdrawboxmap_nlat").value != "90" ||
+        document.getElementById("gdrawboxmap_wlon").value != "-180" ||
+        document.getElementById("gdrawboxmap_elon").value != "180")) {
+      nlat = document.getElementById("gdrawboxmap_nlat").value;
+      slat = document.getElementById("gdrawboxmap_slat").value;
+      wlon = document.getElementById("gdrawboxmap_wlon").value;
+      elon = document.getElementById("gdrawboxmap_elon").value;
+      post_data += ";nlat%3D" + nlat + ";slat%3D" + slat + ";wlon%3D" + wlon +
+          ";elon%3D" + elon;
+      rnote_bounds = "- Spatial subsetting (bounding box):\n    Latitudes " +
+          "(top/bottom): " + nlat + " / " + slat + "\n    Longitudes " +
+          "(left/right): " + wlon + " / " + elon + "\n";
+    }
+  }
+  {% if listtyp == "opendap" %}
+  if (nvp) {
+    post_data += ";" + nvp;
+  }
+  {% endif %}
+  {% autoescape off %}
+  post_data += "&rnote={{ rnote.ofmt }}{{ rnote.dates }}{{ rnote.parameters }}{{ rnote.levels }}{{ rnote.products }}{{ rnote.grids }}" + rnote_bounds;
+  {% endautoescape %}
+  {% if listtyp == "subset" %}
+  getContentFromPost("ds_content", "/php/dsrqst.php", post_data);
+  {% elif listtyp == "opendap" %}
+  document.getElementById("dap_response").style.display = "block";
+  getContent("dap_response",
+      "__SCRIPT_URL__?dsnum={{ dsid }}&action=getDAPURL&" + post_data, null,
+      loadDAPURL);
+  {% endif %}
+  changed_selection = false;
+}
+
+{% if listtyp == "opendap" %}
+function loadDAPURL() {
+  r=document.getElementById("dap_response");
+  if (r.innerHTML.substr(0,6) == "Error:") {
+    r.innerHTML='<span style="color: red">"+r.innerHTML+"</span>';
+  }
+  else {
+    document.getElementById("dap_url").value="https://rda.ucar.edu/opendap/"+r.innerHTML;
+    r.innerHTML="<p>The OPeNDAP URL for your selections is shown above. You can use the URL in your OPeNDAP-enabled tool(s). This URL will <em>not</em> work in your browser unless you know how to construct the proper OPeNDAP requests yourself.</p>";
+  }
+  r.style.display="block";
+  document.getElementById("submit_button").innerHTML = "Request Completed";
+  for (n=0; n < document.selections.elements.length; n++)
+    document.selections.elements[n].disabled=true;
+  elems=document.getElementsByTagName("img");
+  for (n=0; n < elems.length; n++) {
+    if (elems[n].className == "calendar")
+      elems[n].onclick=function(){};
+  }
+}
+{% endif %}
+last_spatial_selection = 0;
+
+function showSpatial() {
+/*
+  if (typeof google == "undefined") {
+    document.selections.spatial.selectedIndex=0;
+    return;
+  }
+*/
+  if ((document.selections.spatial.selectedIndex == 2 || document.selections.spatial.selectedIndex == 3) && document.selections.grid_definition && document.selections.grid_definition.selectedIndex == 0) {
+    alert("You must first choose a Grid from the menu to use this spatial selection option");
+    document.selections.spatial.selectedIndex = last_spatial_selection;
+    return;
+  }
+  if (typeof google == "undefined") {
+    elist=document.getElementsByClassName('manual_input');
+    for (n=0; n < elist.length; ++n) {
+      elist[n].style.display='none';
+    }
+    if (document.selections.spatial.selectedIndex == 1) {
+      document.getElementById("manual_lat_lon").style.display='block';
+    } else if (document.selections.spatial.selectedIndex == 2) {
+      document.getElementById("manual_point").style.display='block';
+    }
+  } else {
+    elist = document.getElementsByClassName('map_containers');
+    for (n = 0; n < elist.length; ++n) {
+      elist[n].style.display = 'none';
+    }
+    if (document.selections.spatial.selectedIndex > 0) {
+      handle_name = document.selections.spatial[document.selections.spatial.selectedIndex].value;
+      eval("handle = map.handles." + handle_name);
+      center = handle.getCenter();
+      document.getElementById(handle_name + 'map_container').style.display = 'block';
+      google.maps.event.trigger(handle, 'resize');
+      handle.setCenter(center);
+    }
+    if (document.selections.spatial.selectedIndex == 2) {
+      document.getElementById("grid_ts").style.display = 'block';
+      document.getElementById("grid_four").style.display = 'none';
+    } else if (document.selections.spatial.selectedIndex == 3) {
+      document.getElementById("grid_ts").style.display = 'none';
+      document.getElementById("grid_four").style.display = 'block';
+    }
+  }
+  last_spatial_selection = document.selections.spatial.selectedIndex;
+  showChangedSelections();
+}
+
+function showSpatial_old() {
+  e=document.getElementById('map_container');
+  if (e.style.display == 'none' || e.style.display == '') {
+    e.style.display='block';
+    loadDrawBoxMap('drawboxmap',20.,0.);
+    scrollTo('map_container');
+  }
+  else
+    hideSpatial_old();
+}
+
+function hideSpatial_old() {
+  document.getElementById('map_container').style.display='none';
+}
+
+function getKeyCode(e) {
+  ev= (window.event) ? event : e;
+  keyCode= (ev.charCode) ? ev.charCode : ev.keyCode;
+  return keyCode;
+}
+</script>
+{% endif %}{% comment %}IF_L1{% endcomment %}
+<script id="grid_selections_script" language="javascript">
+changed_selection = false;
+changed_format = false;
+
+function showChangedSelections() {
+  if (!changed_selection) {
+    {% if listtyp == "subset" %}
+    document.getElementById("submit_pane").innerHTML = '<p>You have changed ' +
+        'one or more selections above. <button class="btn btn-primary px-2 ' +
+        'py-1 border-1" onclick="submitSelections()">Click Here</button> to ' +
+        'update your selections and then you will be able to submit your ' +
+        'request.</p>';
+    {% elif listtyp == "opendap" %}
+    document.getElementById("submit_pane").innerHTML = '<p>You have changed ' +
+        'one or more selections above. <button class="btn btn-primary px-2 ' +
+        'py-1 border-1" onclick="submitSelections()">Click Here</button> to ' +
+        'update your selections and then you will be able to get the OPeNDAP ' +
+        'URL.</p>';
+    {% endif %}
+    changed_selection = true;
+  }
+}
+
+function submitSelections() {
+  if (!changed_selection) {
+    return;
+  }
+  let post_data = "";
+  if (document.selections.ifmt && document.selections.ifmt.selectedIndex > 0) {
+    post_data += '&ifmt=' + document.selections.ifmt[
+        document.selections.ifmt.selectedIndex].value;
+  }
+  let ds = document.selections.startDate.value + " " +
+      document.selections.startTime.value;
+  let de = document.selections.endDate.value + " " +
+      document.selections.startTime.value;
+  if (!validateDate("selections.startDate")) {
+    return;
+  }
+  if (!validateDate("selections.endDate")) {
+    return;
+  }
+  if (document.selections.startDate.value.length != 10 ||
+      document.selections.endDate.value.length != 10) {
+    alert("Enter dates/times as \'YYYY-MM-DD\'");
+    return;
+  }
+  s = new Array('0', '0', '0', '0', '-', '0', '0', '-', '0', '0', ' ', '0', '0',
+      ':', '0', '0');
+  e = new Array('9', '9', '9', '9', '-', '9', '9', '-', '9', '9', ' ', '9', '9',
+      ':', '9', '9');
+  for (n = 0; n < 16; ++n) {
+    if (ds.charAt(n) < s[n] || de.charAt(n) < s[n] || ds.charAt(n) > e[n] ||
+        de.charAt(n) > e[n]) {
+      alert("Enter dates/times as \'YYYY-MM-DD HH:MM\'");
+      return;
+    }
+  }
+  if (ds > de) {
+    alert("The start date must precede the end date");
+    return;
+  }
+  post_data += '&startDate=' + document.selections.startDate.value +
+      '&startTime=' + document.selections.startTime.value + '&endDate=' +
+      document.selections.endDate.value + '&endTime=' +
+      document.selections.endTime.value;
+  if (document.selections.parameter[0].selected) {
+    for (n = 1; n < document.selections.parameter.length; ++n) {
+      document.selections.parameter[n].selected = false;
+    }
+  } else {
+    let params = new Array()
+    for (n = 1; n < document.selections.parameter.length; ++n) {
+      if (document.selections.parameter[n].selected) {
+        params.push(document.selections.parameter[n].value);
+      }
+    }
+    if (params.length > 0) {
+      post_data += "&parameter=" + params.join("&parameter=");
+    }
+  }
+  if (document.selections.level && !document.selections.level[0].selected) {
+    let levs = new Array();
+    for (n = 1; n < document.selections.level.length; ++n) {
+      if (document.selections.level[n].selected) {
+        levs.push(document.selections.level[n].value);
+      }
+    }
+    if (levs.length > 0) {
+      post_data += "&level=" + levs.join("&level=");
+    }
+  }
+  if (document.selections.product && !document.selections.product[0].selected) {
+    let prods = new Array()
+    for (n = 1; n < document.selections.product.length; ++n) {
+      if (document.selections.product[n].selected) {
+        prods.push(document.selections.product[n].value);
+      }
+    }
+    if (prods.length > 0) {
+      post_data += "&product=" + prods.join("&product=");
+    }
+  }
+  if (document.selections.grid_definition &&
+      document.selections.grid_definition.selectedIndex > 0) {
+    post_data += '&grid_definition=' + document.selections.grid_definition[
+        document.selections.grid_definition.selectedIndex].value;
+  }
+  if (document.selections.ensemble &&
+      document.selections.ensemble.selectedIndex > 0) {
+    post_data += '&ensemble=' + document.selections.ensemble[
+        document.selections.ensemble.selectedIndex].value;
+  }
+  {% if gindex %}
+  post_data += '&gindex={{ gindex }}';
+  {% elif groups and groups|length > 1 %}
+  if (document.selections.gindex.selectedIndex > 0) {
+    post_data += '&gindex=' + document.selections.gindex[
+        document.selections.gindex.selectedIndex].value;
+  }
+  {% endif %}
+  if (document.selections.spatial) {
+    if (document.selections.spatial.selectedIndex == 1) {
+      if (document.getElementById("manual_lat_lon").style.display == 'block') {
+        nlat = document.getElementById("manual_nlat").value;
+        slat = document.getElementById("manual_slat").value;
+        wlon = document.getElementById("manual_wlon").value;
+        elon = document.getElementById("manual_elon").value;
+      } else {
+        nlat = document.getElementById("gdrawboxmap_nlat").value;
+        slat = document.getElementById("gdrawboxmap_slat").value;
+        wlon = document.getElementById("gdrawboxmap_wlon").value;
+        elon = document.getElementById("gdrawboxmap_elon").value;
+      }
+      if (nlat != "90" || slat != "-90" || wlon != "-180" || elon != "180") {
+        post_data += '&nlat=' + nlat + '&slat=' + slat + '&wlon=' + wlon +
+            '&elon=' + elon + '&map_zoom=';
+        if (map) {
+          post_data += map.handles.drawbox.getZoom();
+        } else {
+          post_data += '-1';
+        }
+      }
+    } else if (document.selections.spatial.selectedIndex == 2) {
+      nlat = document.selections.ts_lat.value;
+      wlon = document.selections.ts_lon.value;
+      if (nlat.length > 0 && wlon.length > 0) {
+        post_data += '&nlat=' + nlat + '&wlon=' + wlon + '&map_clat=' + nlat +
+            '&map_clon=' + wlon + '&map_zoom=' + map.handles.marker.getZoom();
+      }
+    } else if (document.selections.spatial.selectedIndex == 3) {
+      post_data += '&nlat=' + document.selections.nlat_four.value + '&slat=' +
+          document.selections.slat_four.value + '&wlon=' +
+          document.selections.wlon_four.value + '&elon=' +
+          document.selections.elon_four.value + '&map_clat=' +
+          geocode_marker.getPosition().lat() + '&map_clon=' +
+          geocode_marker.getPosition().lng() + '&map_zoom=' +
+          map.handles.marker.getZoom();
+    }
+  } else if (document.getElementById("gdrawboxmap_nlat")) {
+    nlat = document.getElementById("gdrawboxmap_nlat").value;
+    slat = document.getElementById("gdrawboxmap_slat").value;
+    wlon = document.getElementById("gdrawboxmap_wlon").value;
+    elon = document.getElementById("gdrawboxmap_elon").value;
+    if (nlat != "90" || slat != "-90" || wlon != "-180" || elon != "180") {
+      post_data += '&nlat=' + nlat + '&slat=' + slat + '&wlon=' + wlon +
+          '&elon=' + elon + '&map_zoom=' + map.handles.drawbox.getZoom();
+    }
+  }
+  if (document.selections.ptfile && document.selections.ptfile.value.length >
+      0) {
+    post_data += '&ptfile=' + document.selections.ptfile.value;
+  }
+  post_data += '&scrollTop=' + document.documentElement.scrollTop{% if 'init' in request.POST and request.POST.init == "yes"%} + '&init=yes'{% endif %};
+  if (document.selections.ofmt) {
+    for (n = 1; n < document.selections.ofmt.length; ++n) {
+      if (document.selections.ofmt[n].checked) {
+        post_data += '&ofmt=' + document.selections.ofmt[n].value;
+        break;
+      }
+    }
+    if (n == document.selections.ofmt.length) {
+      post_data += '&ofmt=native';
+    }
+  }
+  {% if is_subconv %}
+  if (document.getElementById("ststep") &&
+      document.getElementById("ststep").checked) {
+    post_data += '&ststep=on';
+  }
+  {% endif %}
+  if (changed_format) {
+    post_data += '&nfmt=yes';
+  }
+  post_data += "&csrfmiddlewaretoken={{ csrf_token }}";
+  getContentFromPost('ds_content',
+      '/datasets/{{ dsid }}/facbrowse/{{ listtyp }}/query/grml/',
+      post_data.substr(1),
+      'Updating your {% if listtyp == "subset" %}request{% elif listtyp == "opendap" %}selections{% else %}list{% endif %} ...');
+  window.scrollTo(0, 0);
+  changed_selection = false;
+}
+
+function toggleTimeOptions() {
+  t = document.getElementById("t_opt");
+  i = document.getElementById("ststep_arrow");
+  if (t.classList.contains("d-none")) {
+    t.classList.replace("d-none", "d-block");
+    i.classList.replace("fa-angle-down", "fa-angle-up");
+  } else {
+    t.classList.replace("d-block", "d-none");
+    i.classList.replace("fa-angle-up", "fa-angle-down");
+  }
+}
+
+function clearAnnulus() {
+  if (annulus != null) {
+    annulus.setMap(null);
+    annulus = null;
+  }
+}
+
+function clearMap() {
+  if (typeof annulus != "undefined") {
+    clearAnnulus();
+    if (map && map.handles && map.handles.marker) {
+      google.maps.event.trigger(map.handles.marker, 'idle');
+    }
+  }
+}
+</script>
+<h2 class="font-weight-bolder">{% if listtyp == "weblist" %}Web Download Files{% elif listtyp == "subset" %}Get a Subset{% elif listtyp == "gladelist" %}GLobally Accessible Data Environment (GLADE) Files{% endif %}</h2>
+{% if listtyp == "opendap" or listtyp == "subset" %}{% comment %}IF_L2{% endcomment %}
+<div class="component single-column container-lg mb-2">
+    <div class="row gx-0 bg-light p-2">
+        <h4 class="font-weight-bolder">Refine Your Selections:</h4>
+{% endif %}{% comment %}IF_L2{% endcomment %}
+{% if fcodes|length > 0 %}{% comment %}IF_FCODES{% endcomment %}
+<form name="selections">
+    {% if listtyp == "weblist" %}
+    <b>The Web Download file list was created from the following selections:</b>
+    {% endif %}
+    {% if listtyp == "gladelist" %}
+    <b>The GLADE file list was created from the following selections:</b>
+    {% endif %}
+    <ul>
+        {% if gindex %}
+        <div class="mt-2">
+            <b class="text-uppercase">Dataset Product:</b>&nbsp;{{ request.POST.gtitle }}
+        </div>
+        {% elif groups and groups|length > 1 %}
+        <div class="mt-2">
+            <b class="text-uppercase">Dataset Product:</b>&nbsp;
+            <select name="gindex" onchange="showChangedSelections()">
+                <option value="">All</option>
+                {% for group in groups %}
+                <option value="{{ group.gindex }}">{{ group.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        {% if listtyp != "opendap" %}
+        <div class="mt-2">
+            <b class="text-uppercase">{% if listtyp == "subset" %}Input&nbsp;{% endif %}Data Format:</b>&nbsp;
+            {% if input_formats|length > 1 %}
+            <select name="ifmt" onchange="showChangedSelections()">
+                <option value="">All</option>
+                {% for ifmt in input_formats %}
+                <option value="{{ ifmt.code }}[!]{{ ifmt.description }}" __DATA_FORMATS__.SELECTED>{{ ifmt.description }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+            {{ input_formats.0.description }}
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if listtyp == "subset" %}
+        <div class="mt-2">
+            <b class="text-uppercase">Output Format:</b>&nbsp;&nbsp;
+            <input type="radio" name="ofmt" value="native"{% if 'ofmt' not in request.POST or request.POST.ofmt == "native" %}checked{% endif %} onclick="showChangedSelections()">&nbsp;Same as input{% if can_convert_to_netcdf %}&nbsp;&nbsp;<input type="radio" name="ofmt" value="netCDF"{% if 'ofmt' in request.POST and request.POST.ofmt == "netCDF" %}checked{% endif %} onclick="showChangedSelections()">&nbsp;Converted to netCDF{% endif %}{% if can_convert_to_csv %}&nbsp;&nbsp;<input id="radio_csv" type="radio" name="ofmt" value="csv"{% if 'ofmt' in request.POST and request.POST.ofmt == "csv" %}checked{% endif %} onclick="showChangedSelections()">&nbsp;Converted to CSV{% endif %}
+        </div>
+        {% endif %}
+        <div class="mt-2">
+            <nobr><b class="text-uppercase">{% if 'init' in request.POST and request.POST.init == "yes" %}Initialization (Reference){% else %}Valid{% endif %} Date Range:</b></nobr>
+            &nbsp;<input type="text" name="startDate" class="font-monospace" size="10" maxlength="10" value="{{ min_start|slice:"0:10" }}" onchange="showChangedSelections()">
+            <select name="startTime" onchange="changed_selection=true">
+                {% with sel_time=min_start|slice:"11:16" %}
+                {% for time in times %}
+                <option value="{{ time }}"{% if time == sel_time %} selected{% endif %}>{{ time }}</option>
+                {% endfor %}
+                {% endwith %}
+            </select>
+            <b class="text-uppercase ms-2 me-2">to</b>
+            <input type="text" name="endDate" class="font-monospace" size="10" maxlength="10" value="{{ max_end|slice:"0:10" }}" onchange="showChangedSelections()">
+            <select name="endTime" onchange="changed_selection=true">
+                {% with sel_time=max_end|slice:"11:16" %}
+                {% for time in times %}
+                <option value="{{ time }}"{% if time == sel_time %} selected{% endif %}>{{ time }}</option>
+                {% endfor %}
+                {% endwith %}
+            </select>
+            {% if show_topt %}
+            <div class="mb-2">
+                <a class="text-body text-uppercase small" href="javascript:void(0)" onclick="toggleTimeOptions()">More date/time options<i id="ststep_arrow" class="fa fa-angle-{% if ststep.selected %}up{% else %}down{% endif %} fa-lg p-1"></i></a>
+                <div id="t_opt" class="d-{% if ststep.selected %}block{% else %}none{% endif %}">
+                    <label for="ststep">
+                        <input type="checkbox" name="ststep" id="ststep"{% if ststep.selected %} checked{% endif %}{% if ststep.disabled %} disabled{% endif %} onchange="showChangedSelections()">&nbsp;Split output files into one timestep per file
+                    </label>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% if num_params_removed %}
+        <p class="alert alert-warning mb-1 mt-1">
+            <i class="fas fa-exclamation-triangle fa-lg pe-1"></i>{{ num_params_removed }}{% if num_params_removed > 1 %} parameters were{% else %} parameter was{% endif %} removed from the list because{% if num_params_removed > 1 %} they{% else %} it{% endif %} did not match your selections
+        </p>
+        {% endif %}
+        <div class="mt-2">
+            <b class="text-uppercase">Parameter(s):</b>&nbsp;
+            <select class="align-top" name="parameter" multiple{% if parameters|length > 7 %} size="7"{% endif %} onchange="showChangedSelections()">
+                <option value="">All available</option>
+                {% for param in parameters %}
+                <option value="{{ param.0 }}[!]{{ param.1 }}" selected>{{ param.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if levels|length > 0 %}
+        {% if num_levels_removed %}
+        <p class="alert alert-warning mb-1 mt-1">
+            <i class="fas fa-exclamation-triangle fa-lg pe-1"></i>{{ num_levels_removed }}{% if num_levels_removed > 1 %} levels were{% else %} level was{% endif %} removed from the list because{% if num_levels_removed > 1 %} they{% else %} it{% endif %} did not match your selections
+        </p>
+        {% endif %}
+        <div class="mt-2">
+            <b class="text-uppercase"><nobr>Vertical Level(s):</nobr></b>&nbsp;
+            {% if levels|length == 1 and selected.levs|length == 0 %}
+            {{ levels.0.1 }}
+            {% else %}
+            <select class="align-top" name="level" multiple {% if levels|length > 7 %} size="7"{% endif %} onchange="showChangedSelections()">
+                <option value=""{% if selected.levs|length == 0 %} selected{% endif %}>All available</option>
+                {% for lev in levels %}
+                <option value="{{ lev.0 }}"{% if lev.2 %} selected{% endif %}>{{ lev.1 }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if products|length > 0 %}
+        <div class="mt-2">
+            <b class="text-uppercase"><nobr>Gridded Product:</nobr></b>&nbsp;
+            {% if products|length == 1 and selected.prods|length == 0 %}
+            {{ products.0.1 }}
+            {% else %}
+            <select class="align-top" name="product" multiple{% if products|length > 7 %} size="7"{% endif %} onchange="showChangedSelections()">
+                <option value=""{% if selected.prods|length == 0 %} selected{% endif %}>All available</option>
+                {% for prod in products %}
+                <option value="{{ prod.0 }}"{% if prod.0 in selected.prods %} selected{% endif %}>{{ prod.1 }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if grids|length > 0 %}
+        <div class="mt-2">
+            <b class="text-uppercase"><nobr>Grid:</nobr></b>&nbsp;
+            {% if grids|length == 1 and not selected.gdef %}
+            {% autoescape off %}{{ grids.0.1 }}{% endautoescape %}
+            {% else %}
+            <select class="align-top" name="grid_definition" onchange="showChangedSelections();clearMap()">
+                <option value=""{% if not selected.gdef %} selected{% endif %}>{% if listtyp == "opendap" %}You must choose one{% else %}All available{% endif %}</option>
+                {% autoescape off %}
+                {% for grid in grids %}
+                <option value="{{ grid.0 }}"{% if selected.gdef and grid.0 in selected.gdef %} selected{% endif %}>{{ grid.1 }}</option>
+                {% endfor %}
+                {% endautoescape %}
+            </select>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if can_spatially_subset %}
+        <div class="mt-2">
+            <b class="text-uppercase"><nobr>Spatial Selection:</nobr></b>&nbsp;
+            {% if is_multi_spatial %}
+            <select name="spatial" onChange="showSpatial()">
+                <option value="">All available data</option>
+                <option value="drawbox"{% if 'map_clat' not in request.POST and 'nlat' in request.POST %} selected{% endif %}>Data within a bounding box</option>
+                <option value="marker"{% if 'map_clat' in request.POST and 'nlat' in request.POST and 'slat' not in request.POST %} selected{% endif %}>Data for a single gridpoint</option>
+                <option value="marker"{% if 'map_clat' in request.POST and 'nlat' in request.POST and 'slat' in request.POST %} selected{% endif %}>Data for four points surrounding a location</option>
+            </select>
+            {% endif %}
+            <div id="drawboxmap_container" class="map_containers" style="display: {% if 'nlat' in request.POST and 'map_clat' not in request.POST or not is_multi_spatial %}block{% else %}none{% endif %}; padding: 10px">
+                <div class="component two-column container-lg">
+                    <div class="row gx-0">
+                        <div class="col-12 col-md-6">
+                            <div id="drawboxmap" class="ms-4" style="width: 500px; height: 400px; border: thick solid #30658b">
+                                Waiting for the map to load ...
+                            </div>
+                            <div class="ms-4" style="width: 500px">
+                                <div style="float: left; margin-top: 3px">
+                                    <b class="text-uppercase">Zoom:</b>&nbsp;
+                                </div>
+                                <div style="float: left; margin-top: 3px; margin-right: 3px">
+                                    <a href="javascript:void(0)" onclick="zoomOut(map.handles.drawbox, 1, 'mark')"><i class="fas fa-minus-square"></i></a>
+                                </div>
+                                <div style="position: relative; float: left; height: 18px; width: 60px; margin-top: 6px">
+                                    <div class="tick scale" style="left: 0px"></div>
+                                    <div class="tick scale" style="left: 6px"></div>
+                                    <div class="tick scale" style="left: 12px"></div>
+                                    <div class="tick scale" style="left: 18px"></div>
+                                    <div class="tick scale" style="left: 24px"></div>
+                                    <div class="tick scale" style="left: 30px"></div>
+                                    <div class="tick scale" style="left: 36px"></div>
+                                    <div class="tick scale" style="left: 42px"></div>
+                                    <div class="tick scale" style="left: 48px"></div>
+                                    <div class="tick scale" style="left: 54px"></div>
+                                    <div id="mark" class="tick marker" style="left: 0px"></div>
+                                </div>
+                                <div style="float: left; margin-top: 3px">
+                                    <a href="javascript:void(0)" onclick="zoomIn(map.handles.drawbox, 10, 'mark')"><i class="fas fa-plus-square"></i></a>
+                                </div>
+                                <div style="float: right">
+                                    <input name="gdrawboxmap_mode" id="pan" class="me-1" type="radio" onClick="defineDrag()" checked><span class="text-uppercase">Pan Map</span><input name="gdrawboxmap_mode" id="draw" class="ms-2 me-1" type="radio" onClick="defineDrag()"><span class="text-uppercase">Draw Box</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="row gx-0">
+                                <div class="col-12 col-md-12">
+                                    <b class="text-uppercase">Interactive Map Instructions:</b>
+                                    <br>
+                                    <ul class="mt-0">
+                                        <li>
+                                            Use the '<span class="text-uppercase">Pan Map</span>' option to drag and center the map on your area of interest
+                                        </li>
+                                        <li>
+                                            Use the '<span class="text-uppercase">Draw Box</span>' option to drag a box around your area of interest. You can also manually enter bounding latitudes and longitudes in the text boxes below:
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="row gx-0 mt-2">
+                                <div class="col-12 col-md-4"></div>
+                                <div class="col-12 col-md-4 text-center">
+                                    <nobr><b class="text-uppercase"><sup>&dagger;</sup>&nbsp;North:</b> <input class="font-monospace" type="text" id="gdrawboxmap_nlat" size="3" value="{{ bounds.nlat|default:"90" }}" onBlur="checkInput(this)"></nobr>
+                                </div>
+                                <div class="col-12 col-md-4"></div>
+                            </div>
+                            <div class="row gx-0 mt-2">
+                                <div class="col-12 col-md-4 text-right">
+                                    <nobr><b class="text-uppercase"><sup>&dagger;</sup>&nbsp;West:</b> <input class="font-monospace" type="text" id="gdrawboxmap_wlon" size="4" value="{{ bounds.wlon|default:"-180" }}" onBlur="checkInput(this)"></nobr>
+                                </div>
+                                <div class="col-12 col-md-4 text-center">
+                                    <a href="javascript:void(0)" class="btn btn-pill btn-primary px-2 py-1 border-1" onclick="resetToFullGlobalSelection(); showChangedSelections()">Reset</a>
+                                </div>
+                                <div class="col-12 col-md-4 text-left">
+                                    <nobr><b class="text-uppercase"><sup>&dagger;</sup>&nbsp;East:</b> <input class="font-monospace" type="text" id="gdrawboxmap_elon" size="4" value="{{ bounds.elon|default:"180" }}" onBlur="checkInput(this)"></nobr>
+                                </div>
+                            </div>
+                            <div class="row gx-0 mt-2">
+                                <div class="col-12 col-md-4"></div>
+                                <div class="col-12 col-md-4 text-center">
+                                    <nobr><b class="text-uppercase"><sup>&dagger;</sup>&nbsp;South:</b> <input class="font-monospace" type="text" id="gdrawboxmap_slat" size="3" value="{{ bounds.slat|default:"-90" }}" onBlur="checkInput(this)"></nobr>
+                                </div>
+                                <div class="col-12 col-md-4"></div>
+                            </div>
+                            <div class="row gx-0 mt-2">
+                                <div class="col-12 col-md-12">
+                                    <ul class="mt-0">
+                                        <b><sup>&dagger;</sup></b>&nbsp;Latitudes and longitudes must be specified in whole degrees
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="manual_lat_lon" class="manual_input" style="display: {% if show_manual_display %}block{% else %}none{% endif %}">
+                <p>
+                    The interactive Google map is not available. To specify a spatial subset, manually enter your desired latitude and longitude bounds in the boxes provided.
+                </p>
+                <table class="nice" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td>&nbsp;&nbsp;</td>
+                        <td>
+                            <nobr>North<span style="color: red">*</span>: <input class="fixedWidth14" type="text" id="manual_nlat" size="3" value="{{ bounds.nlat|default:"90" }}" onBlur="checkInput(this)"></nobr>
+                        </td>
+                        <td>&nbsp;&nbsp;</td>
+                    </tr>
+                    <tr height="45">
+                        <td>
+                            <nobr>West<span style="color: red">*</span>: <input class="fixedWidth14" type="text" id="manual_wlon" size="4" value="{{ bounds.wlon|default:"-180" }}" onBlur="checkInput(this)"></nobr>
+                        </td>
+                        <td align="center">
+                            <input type="button" value="Reset" onClick="resetToFullGlobalSelection(); showChangedSelections()">
+                        </td>
+                        <td>
+                            <nobr>East<span style="color: red">*</span>: <input class="fixedWidth14" type="text" id="manual_elon" size="4" value="{{ bounds.elon|default:"180" }}" onBlur="checkInput(this)"></nobr>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;&nbsp;</td>
+                        <td>
+                            <nobr>South<span style="color: red">*</span>: <input class="fixedWidth14" type="text" id="manual_slat" size="3" value="{{ bounds.slat|default:"-90" }}" onBlur="checkInput(this)"></nobr>
+                        </td>
+                        <td>&nbsp;&nbsp;</td>
+                    </tr>
+                    <tr height="130">
+                        <td colspan="3">
+                            <span class="nice"><span style="color: red">*</span>Latitudes and longitudes must be specified in whole degrees</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            {% if is_multi_spatial %}
+            <div id="markermap_container" class="map_containers" style="display: {% if 'map_clat' in request.POST %}block{% else %}none{% endif %}; padding: 10px">
+                <div class="component two-column container-lg mb-0">
+                    <div class="row gx-0">
+                        <div class="col-12 col-md-6">
+                            <div id="markermap" class="ms-4" style="width: 500px; height: 400px; border: thick solid #30658b">
+                                Waiting for the map to load ...
+                            </div>
+                            <div class="ms-4" style="width: 500px">
+                                <div style="float: left; margin-top: 3px">
+                                    <b class="text-uppercase">Zoom:</b>&nbsp;
+                                </div>
+                                <div style="float: left; margin-top: 3px; margin-right: 3px">
+                                    <a href="javascript:void(0)" onclick="zoomOut(map.handles.marker,2,'mark2')"><i class="fas fa-minus-square"></i></a>
+                                </div>
+                                <div style="position: relative; float: left; height: 18px; width: 72px; margin-top: 6px">
+                                    <div class="tick scale" style="left: 0px"></div>
+                                    <div class="tick scale" style="left: 6px"></div>
+                                    <div class="tick scale" style="left: 12px"></div>
+                                    <div class="tick scale" style="left: 18px"></div>
+                                    <div class="tick scale" style="left: 24px"></div>
+                                    <div class="tick scale" style="left: 30px"></div>
+                                    <div class="tick scale" style="left: 36px"></div>
+                                    <div class="tick scale" style="left: 42px"></div>
+                                    <div class="tick scale" style="left: 48px"></div>
+                                    <div class="tick scale" style="left: 54px"></div>
+                                    <div class="tick scale" style="left: 60px"></div>
+                                    <div class="tick scale" style="left: 66px"></div>
+                                    <div id="mark2" class="tick marker" style="left: 0px"></div>
+                                </div>
+                                <div style="float: left; margin-top: 3px">
+                                    <a href="javascript:void(0)" onclick="zoomIn(map.handles.marker, 13, 'mark2')"><i class="fas fa-plus-square"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <b class="text-uppercase">Map Instructions:</b>
+                            <br>
+                            <ul>
+                                <span class="text-uppercase">Pan and zoom</span> to your area of interest
+                                <br>
+                                <strong>- OR -</strong>
+                                <br>
+                                <span class="text-uppercase">Enter</span> the name of a <span class="text-uppercase">location</span>:
+                                <br>
+                                <input id="geoloc" type="text" size="50" onkeypress="if (getKeyCode(event) == 13) { doGeocode(); return false; }">
+                                <br>
+                                <a class="btn btn-primary px-2 py-1 border-1 mt-1" href="javascript:void(0)" onclick="doGeocode()">Find Location</a>
+                            </ul>
+                            <div id="grid_ts" class="mt-2" style="display: {% if 'slat' not in request.POST %}block{% else %}none{% endif %}">
+                                <p>
+                                    When you have zoomed in far enough, the locations of the gridpoints will begin to show. Click the icon of the gridpoint for which you want to get a time series of the data.
+                                </p>
+                                <p>
+                                    Gridpoint: (<input name="ts_lat" type="text" class="fixedWidth14" size="12" value="{{ point.nlat }}" readonly />, <input name="ts_lon" type="text" class="fixedWidth14" size="12" value="{{ point.wlon }}" readonly />)
+                                </p>
+                            </div>
+                            <div id="grid_four" class="mt-2" style="display: {% if 'slat' in request.POST %}block{% else %}none{% endif %}">
+                                <p>
+                                    When you have zoomed in far enough and the gridpoints begin to show, click on the map to set or change the currently selected location. The four gridpoints surrounding the selected location will be highlighted.
+                                </p>
+                                <p>
+                                    <div style="float: left">
+                                        <span class="text-uppercase">North, West</span>: (<input name="nlat_four" type="text" class="fixedWidth14" size="12" value="{{ bounds.nlat }}" readonly />, <input name="wlon_four" type="text" class="fixedWidth14" size="12" value="{{ bounds.wlon }}" readonly />)
+                                    </div>
+                                    <div style="float: right; margin-top: 15px">
+                                        <span class="text-uppercase">South, East</span>: (<input name="slat_four" type="text" class="fixedWidth14" size="12" value="{{ bounds.slat }}" readonly />, <input name="elon_four" type="text" class="fixedWidth14" size="12" value="{{ bounds.elon }}" readonly />)
+                                    </div>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="manual_point" class="manual_input" style="display: none">
+                <p>
+                    The interactive Google map is not available. To specify a single gridpoint, manually enter the latitude and longitude of the desired point in the boxes provided. You will need to know the exact latitude and longitude values or your request may fail to process.
+                </p>
+                <p>
+                    Gridpoint: (<input name="manual_ts_lat" type="text" class="fixedWidth14" size="12" value="" />, <input name="manual_ts_lon" type="text" class="fixedWidth14" size="12" value="" />)
+                </p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if listtyp == "weblist" or listtyp == "gladelist" %}
+        <div class="mt-2">
+            <b class="text-uppercase">Partial Filename:</b>&nbsp;<input class="font-monospace" type="text" name="ptfile" size="30" value="{{ request.POST.ptfile }}" oninput="showChangedSelections()">&nbsp;<span class="small">(you can use either '*' or '%' to match one or more characters)</span>
+        </div>
+        {% endif %}
+    </ul>
+</form>
+{% if listtyp == "weblist" or listtyp == "gladelist" %}
+<p>
+    If you change any of these selections, be sure to <a href="javascript:void(0)" class="btn btn-primary px-2 py-1 border-1" onclick="submitSelections()">Update the List</a>&nbsp;. You can also <a class="btn btn-primary px-2 py-1 border-1" href="javascript:void(0)" onclick="getAjaxContent('GET', '', '/datasets/{{ dsid }}/facbrowse/{{ listtyp }}/customize/{% if gindex %}?gindex={{ gindex }}{% endif %}', 'ds_content')">Create a New List</a>&nbsp;.
+</p>
+{% endif %}
+{% endif %}{% comment %}IF_FCODES{% endcomment %}
+{% if listtyp == "opendap" or listtyp == "subset" %}
+    </div>
+</div>
+{% endif %}
+{% if listtyp == "subset" or listtyp == "opendap" %}{% comment %}IF_L3{% endcomment %}
+{% include "facbrowse/submit.html" %}
+{% if can_spatially_subset %}{% comment %}IF_SPATIAL_SUBSET{% endcomment %}
+<style id="zoom_style" type="text/css">
+.tick {
+  position: absolute;
+  width: 3px;
+  height: 18px;
+  top: 0px;
+}
+.scale {
+  background-color: #c3d7ee;
+}
+.marker {
+  background-color: #ffb931;
+}
+</style>
+<script id="gmap_script" src="/js/gmaps3.js" type="text/javascript"></script>
+<script id="gmapkey_script_3" language="javascript">
+var ival_gmapkey_callback=null;
+var ival_custom_callback=null;
+var ival_count=0;
+function doGMapKeyCallback() {
+  ival_count++;
+  if (typeof google == "undefined") {
+    if (ival_count > 20) {
+      clearInterval(ival_gmapkey_callback);
+      alert("Google Maps failed to load - the Google server is not responding. If reloading the page doesn't help, you will need to enter coordinates manually. In some cases, spatial subsetting may not be available at all.");
+    }
+    return;
+  }
+  map = {
+    loaded: false,
+    onchangefunc: showChangedSelections,
+    options: {
+      streetViewControl: false,
+      scrollwheel: false,
+      disableDoubleClickZoom: true,
+      scaleControl: true,
+      fullscreenControl: false,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    },
+    handles: {
+      drawbox: null,
+      marker: null
+    },
+    load: function(o) {
+      var map_div=document.getElementById(o.map_div_id);
+      var handle=new google.maps.Map(map_div,map.options);
+      handle.setCenter(new google.maps.LatLng(o.center_lat,o.center_lon));
+      handle.setZoom(o.zoom_level);
+      if (o.control_size == null || o.control_size.length == 0) {
+        handle.set('panControl',false);
+        handle.set('zoomControl',false);
+      } else {
+        handle.set('panControl',true);
+        handle.set('zoomControl',true);
+        if (o.control_size == "small") {
+          handle.set('zoomControlOptions',{style: google.maps.ZoomControlStyle.SMALL});
+        } else if (o.control_size == "large") {
+          handle.set('zoomControlOptions',{style: google.maps.ZoomControlStyle.LARGE});
+        }
+      }
+      map.loaded=true;
+      return handle;
+    }
+  };
+  clearInterval(ival_gmapkey_callback);
+}
+
+var callback_called=false;
+function gmap3_key_callback() {
+  if (callback_called) {
+    return;
+  }
+  clearInterval(ival_gmapkey_callback);
+  ival_gmapkey_callback=setInterval("doGMapKeyCallback()",100);
+  callback_called=true;
+}
+
+if (typeof gmap3_loaded != "undefined" && !gmap3_loaded) {
+  var scr=document.createElement('script');
+  scr.setAttribute('type','text/javascript');
+  scr.setAttribute('src','{{ gmap_api_url }}?key={{ gmap_api_key }}&loading=async&callback=gmap3_key_callback');
+  document.body.appendChild(scr);
+  gmap3_loaded=true;
+}
+
+registerAjaxCallback('gmap3_key_callback');
+</script>
+<script id="maps_script" language="javascript">
+var geocodeIcon = null, geocode_marker = null;
+
+function doGeocode() {
+  g = new google.maps.Geocoder();
+  g.geocode({"address": document.getElementById("geoloc").value}, function(results, status) {
+    if (status == google.maps.GeocoderStatus.OK) {
+      if (geocode_marker != null) {
+        geocode_marker.setMap(null);
+        geocode_marker = null;
+      }
+      geocode_marker = new google.maps.Marker({position: results[0].geometry.location, icon: getGeocodeIcon()});
+      geocode_marker.setMap(map.handles.marker);
+      max_zoom = 13;
+      if (document.selections.spatial.selectedIndex == 3) {
+        map.handles.marker.setZoom(max_zoom);
+        setTimeout(() => { showFourPoints(getGridCode(), results[0].geometry.location, true)}, 500);
+      } else {
+        map.handles.marker.setCenter(results[0].geometry.location);
+        map.handles.marker.setZoom(MIN_ZOOM_START);
+      }
+      z = map.handles.marker.getZoom();
+      document.getElementById('mark2').style.left = ( (z - 2) * 6) + "px";
+    }
+  });
+}
+
+ival_d = 0;
+
+function doTheDrawBoxLoad() {
+  if (typeof loadDrawBoxMapJS == "function") {
+    clearInterval(ival_d);
+    let map_clat = ({{ request.POST.nlat|default:"0" }} +
+        {{ request.POST.slat|default:"0" }}) / 2;
+    let wlon = {{ request.POST.wlon|default:"0" }};
+    let elon = {{ request.POST.elon|default:"0" }};
+    let map_clon = (wlon + elon) / 2;
+    if (wlon > elon) {
+      map_clon += 180;
+      if (map_clon > 180) {
+        map_clon -= 360;
+      }
+    }
+    loadDrawBoxMapJS('drawboxmap', map_clat, map_clon,
+        {{ request.POST.map_zoom|default:"1"}}, '');
+    var m = document.getElementById('mark');
+    m.style.left = (parseInt(m.style.left) +
+        ({{ request.POST.map_zoom|default:"1" }} - 1) * 6) + "px";
+  }
+}
+
+function doDrawBoxLoad() {
+  ival_d = setInterval("doTheDrawBoxLoad()", 100);
+}
+
+registerAjaxCallback('doDrawBoxLoad');
+{% if is_multi_spatial %}
+ival_m = 0, ival_m2 = 0;
+markerIcon = null, annulusIcon = null;
+last_bounds = null;
+markerArray = null, annulus = null, annuli = null;
+this_grid = 0, last_grid = 0, last_x = 0, last_y = 0;
+click4_added = false;
+MIN_ZOOM_START = 6;
+min_zoom = MIN_ZOOM_START, last_zoom = 0;
+
+function addMarkerMapEvent() {
+  if (map && map.handles && map.handles.marker && map.handles.marker != null) {
+    clearInterval(ival_m2);
+    google.maps.event.addListener(map.handles.marker, "resize", function() {
+      if (document.selections.spatial.selectedIndex == 2) {
+        if (geocode_marker != null) {
+          geocode_marker.setMap(null);
+        }
+        if (annulus != null) {
+          annulus.setMap(map.handles.marker);
+        }
+        if (annuli != null) {
+          for (n = 0; n < 4; ++n) {
+            annuli[n].setMap(null);
+          }
+        }
+      } else if (document.selections.spatial.selectedIndex == 3) {
+        if (annulus != null) {
+          annulus.setMap(null);
+        }
+        if (annuli != null) {
+          for (n = 0; n < 4; ++n) {
+            annuli[n].setMap(map.handles.marker);
+          }
+        }
+        if (geocode_marker != null) {
+          geocode_marker.setMap(map.handles.marker);
+        }
+      }
+      google.maps.event.trigger(map.handles.marker, 'idle');
+    });
+    google.maps.event.addListener(map.handles.marker, "dragend", function() {
+      last_zoom = 0;
+    });
+    google.maps.event.addListener(map.handles.marker, "idle", function() {
+      this_zoom = map.handles.marker.getZoom();
+      if (this_zoom >= min_zoom) {
+        if (last_zoom == 0 || this_zoom < last_zoom) {
+          bounds = map.handles.marker.getBounds();
+          this_grid = getGridCode();
+          submitRequest('https://' + location.host + '/cgi-bin/datasets/getGridpoints?db=WGrML&code=' + this_grid + '&nlat=' + bounds.getNorthEast().lat() + '&slat=' + bounds.getSouthWest().lat() + '&wlon=' + bounds.getSouthWest().lng() + '&elon=' + bounds.getNorthEast().lng(),function() {
+            if (xhr.readyState == 4) {
+              array = eval('(' + xhr.responseText + ')');
+              if (this_grid != last_grid) {
+                for (n = 0; n < last_y; ++n) {
+                  for (m = 0; m < last_x; ++m) {
+                    if (markerArray[n][m] != 0) {
+                      markerArray[n][m].setVisible(false);
+                    }
+                  }
+                  markerArray[n] = null;
+                }
+                markerArray = null;
+              }
+              last_grid = this_grid;
+              last_x = array.x;
+              last_y = array.y;
+              if (markerArray == null) {
+                markerArray = new Array(array.y);
+                for (n = 0; n < array.y; ++n) {
+                  markerArray[n] = new Array(array.x);
+                  for (m = 0; m < array.x; markerArray[n][m++] = 0);
+                }
+              }
+              if (array.locdata.length > 0) {
+                last_zoom=map.handles.marker.getZoom();
+                if (document.selections.spatial.selectedIndex != 3 && min_zoom == MIN_ZOOM_START) {
+                  min_zoom = last_zoom;
+                }
+                for (n = 0; n < array.locdata.length; ++n) {
+                  if (markerArray[array.locdata[n][0]][array.locdata[n][1]] == 0) {
+                    markerArray[array.locdata[n][0]][array.locdata[n][1]] = new google.maps.Marker({position: new google.maps.LatLng(array.locdata[n][2], array.locdata[n][3]),  icon: getMarkerIcon()});
+                    markerArray[array.locdata[n][0]][array.locdata[n][1]].setMap(map.handles.marker);
+                  } else {
+                    markerArray[array.locdata[n][0]][array.locdata[n][1]].setVisible(true);
+                    if (document.selections.spatial.selectedIndex == 3) {
+                      google.maps.event.clearListeners(markerArray[array.locdata[n][0]][array.locdata[n][1]], "click");
+                    }
+                  }
+                  if (document.selections.spatial.selectedIndex == 2) {
+                    google.maps.event.addListener(markerArray[array.locdata[n][0]][array.locdata[n][1]], "click", function() {
+                      document.selections.ts_lat.value = this.getPosition().lat();
+                      document.selections.ts_lon.value = this.getPosition().lng();
+                      if (annulus != null) {
+                        annulus.setMap(null);
+                        annulus = null;
+                      }
+                      annulus = new google.maps.Marker({position: this.getPosition(), icon: getAnnulusIcon()});
+                      annulus.setMap(map.handles.marker);
+                    });
+                  }
+                }
+              }
+              if (document.selections.spatial.selectedIndex == 2) {
+                google.maps.event.clearListeners(map.handles.marker, "click");
+                click4_added = false;
+              } else if (document.selections.spatial.selectedIndex == 3) {
+                if (annulus != null) {
+                  annulus.setMap(null);
+                }
+                if (!click4_added) {
+                  google.maps.event.addListener(map.handles.marker, "click", function(e) {
+                    if (geocode_marker != null) {
+                      geocode_marker.setMap(null);
+                      geocode_marker = null;
+                    }
+                    geocode_marker = new google.maps.Marker({position: e.latLng, icon: getGeocodeIcon()});
+                    geocode_marker.setMap(this);
+                    setTimeout(() => {showFourPoints(this_grid, e.latLng, false)}, 500);
+                  });
+                  click4_added = true;
+                }
+              }
+              last_bounds = bounds;
+            }
+          });
+        }
+      } else {
+        if (markerArray != null) {
+          for (n = 0; n < markerArray.length; ++n) {
+            for (m = 0; m < markerArray[n].length; ++m) {
+              if (markerArray[n][m] != 0) {
+                markerArray[n][m].setVisible(false);
+              }
+            }
+          }
+          last_zoom = 0;
+        }
+      }
+    });
+  }
+}
+
+function showFourPoints(grid, latLng, recenter) {
+  submitRequest('https://' + location.host + '/cgi-bin/datasets/getGridpoints?db=WGrML&code=' + grid + '&lat=' + latLng.lat() + '&lon=' + latLng.lng(), function() {
+    if (xhr.readyState == 4) {
+      min_zoom = MIN_ZOOM_START;
+      last_zoom = 0;
+      array = eval('(' + xhr.responseText + ')');
+      if (annuli == null) {
+        annuli = new Array(4);
+      } else {
+        for (n = 0; n < 4; ++n) {
+          annuli[n].setMap(null);
+        }
+      }
+      min_lat = array.locdata[0][2];
+      min_lon = array.locdata[0][3];
+      max_lat = min_lat;
+      max_lon = min_lon;
+      for (n = 1; n < 4; ++n) {
+        if (array.locdata[n][2] < min_lat) {
+          min_lat = array.locdata[n][2];
+        }
+        if (array.locdata[n][2] > max_lat) {
+          max_lat = array.locdata[n][2];
+        }
+        if (array.locdata[n][3] < min_lon) {
+          min_lon = array.locdata[n][3];
+        }
+        if (array.locdata[n][3] > max_lon) {
+          max_lon = array.locdata[n][3];
+        }
+      }
+      document.selections.nlat_four.value = max_lat;
+      document.selections.wlon_four.value = min_lon;
+      document.selections.slat_four.value = min_lat;
+      document.selections.elon_four.value = max_lon;
+      if (recenter) {
+        map.handles.marker.setCenter(new google.maps.LatLng((max_lat + min_lat) / 2., (max_lon + min_lon) / 2.));
+      }
+      for (n = 0; n < array.locdata.length; ++n) {
+        annuli[n] = new google.maps.Marker({position: new google.maps.LatLng(array.locdata[n][2], array.locdata[n][3]), icon: getAnnulusIcon()});
+        annuli[n].setMap(map.handles.marker);
+        while (map.handles.marker.getZoom() > 2 && !map.handles.marker.getBounds().contains(annuli[n].getPosition())) {
+          if (recenter) {
+            zoomOut(map.handles.marker, 2, 'mark2');
+          } else {
+            map.handles.marker.setCenter(new google.maps.LatLng((max_lat + min_lat) /2., (max_lon + min_lon) / 2.));
+            recenter=true;
+          }
+        }
+      }
+    }
+  });
+}
+
+function getGridCode() {
+  if (document.selections.grid_definition) {
+    return document.selections.grid_definition[document.selections.grid_definition.selectedIndex].value;
+  } else {
+    return selected_grid_value;
+  }
+}
+
+function getMarkerIcon() {
+  if (markerIcon == null) {
+    markerIcon={
+      anchor: new google.maps.Point(8, 8),
+      origin: new google.maps.Point(0, 0),
+      size: new google.maps.Size(16, 16),
+      url: 'https://' + location.host + '/images/gmaps/circle_cross_red_16x16.png'
+    };
+  }
+  return markerIcon;
+}
+
+function getAnnulusIcon() {
+  if (annulusIcon == null) {
+    annulusIcon = {
+      anchor: new google.maps.Point(12, 12),
+      size: new google.maps.Size(24, 24),
+      url: 'https://' + location.host + '/images/gmaps/annulus.png'
+    };
+  }
+  return annulusIcon;
+}
+
+function getGeocodeIcon() {
+  if (geocodeIcon == null) {
+    geocodeIcon = {
+      anchor: new google.maps.Point(16, 32),
+      origin: new google.maps.Point(0, 0),
+      size: new google.maps.Size(32, 32),
+      url: 'https://' + location.host + '/images/gmaps/blue-dot.png'
+    };
+  }
+  return geocodeIcon;
+}
+
+function doTheMarkerLoad() {
+  if (typeof loadMarkerMapJS == "function") {
+    clearInterval(ival_m);
+    loadMarkerMapJS('markermap', 0, 0, 2, '');
+    ival_m2 = setInterval("addMarkerMapEvent()", 100);
+  }
+}
+
+function doMarkerLoad() {
+  ival_m = setInterval("doTheMarkerLoad()", 100);
+}
+
+registerAjaxCallback('doMarkerLoad');
+{% endif %}
+</script>
+<div id="gpwaiter" style="display: none; width: 500px; height: 400px; background-color: white; opacity: 0.9; filter: alpha(opacity=90); color: #a0a0a0; text-align: center">
+    <img style="margin-top: 150px" src="/images/loader.gif">
+    <br>
+    Loading...
+</div>
+{% if 'map_clat' in request.POST %}{% comment %}IF_MAP_CLAT{% endcomment %}
+<script id="maps_return_marker_script" language="javascript">
+ival_t = 0;
+
+function doTheZoomAndCenter() {
+  if (map.loaded && map.handles.marker != null) {
+    clearInterval(ival_t);
+    ll = new google.maps.LatLng({{ request.POST.map_clat}}, {{ request.POST.map_clon }});
+    map.handles.marker.setCenter(ll);
+    map.handles.marker.setZoom({{ request.POST.map_zoom }});
+    m = document.getElementById('mark2');
+    m.style.left = (parseInt(m.style.left) + {{ tick_position }}) + "px";
+    if (document.selections.spatial.selectedIndex == 2) {
+      clearAnnulus();
+      annulus = new google.maps.Marker({position: ll, icon: getAnnulusIcon()});
+      annulus.setMap(map.handles.marker);
+      document.getElementById("grid_ts").style.display = 'block';
+      document.getElementById("grid_four").style.display = 'none';
+    } else if (document.selections.spatial.selectedIndex == 3) {
+      geocode_marker = new google.maps.Marker({position: map.handles.marker.getCenter(), icon: getGeocodeIcon()});
+      geocode_marker.setMap(map.handles.marker);
+      setTimeout(() => { showFourPoints(getGridCode(), map.handles.marker.getCenter(), true) }, 500);
+      document.getElementById("grid_ts").style.display = 'none';
+      document.getElementById("grid_four").style.display = 'block';
+    }
+  }
+}
+
+function zoomAndCenterTheMap() {
+  ival_t = setInterval("doTheZoomAndCenter()", 100);
+}
+
+registerAjaxCallback('zoomAndCenterTheMap');
+</script>
+{% elif 'nlat' in request.POST and 'slat' in request.POST and request.POST.nlat != request.POST.slat %}{% comment %}IF_MAP_CLAT{% endcomment %}
+<script id="maps_return_box_script" language="javascript">
+ival_b = 0;
+
+function addTheBoxManually() {
+  if (map && map.loaded) {
+    clearInterval(ival_b);
+    drawBoxFromManualInput();
+  }
+}
+
+function drawTheBox() {
+  ival_b = setInterval("addTheBoxManually()", 100);
+}
+
+registerAjaxCallback('drawTheBox');
+</script>
+{% endif %}{% comment %}IF_MAP_CLAT{% endcomment %}
+{% endif %}{% comment %}IF_SPATIAL_SUBSET{% endcomment %}
+{% else %}{% comment %}IF_L3{% endcomment %}
+{% include "facbrowse/filelist.html" %}
+{% endif %}{% comment %}IF_L3{% endcomment %}
+{% endif %}{% comment %}IF_ERROR{% endcomment %}

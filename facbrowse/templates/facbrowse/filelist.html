@@ -1,0 +1,302 @@
+{% load facbrowse_tags %}
+{% with list_length=fcodes|length max_files=5000 page_size=500 fd_args=dsid|add:","|add:db %}
+{% if list_length > max_files %}
+<p class="alert alert-danger mb-1 mt-3">
+    <b>Unable to Create Your File List</b>
+</p>
+<p class="ms-3">
+    Your selections match <b>{{ list_length }}</b> files and the maximum displayable number is <b>{{ max_files }}</b>. Either update your selections to narrow your list, or use the complete file list.
+</p>
+{% else %}
+{% with files=fcodes|file_data:fd_args pages=list_length|pages:page_size %}
+<script id="file_table_script" language="javascript">
+var file_data = new Array(
+  {% for file in files.0 %}
+  ["{{ file.id }}", "{{ file.id|data_link:dsid }}", "{{ file.format|snake_to_capital }}", {{ file.units }}, "{{ file.start_date|date_time }}", "{{ file.end_date|date_time }}", "{{ file.file_format }}", {{ file.data_size }}],
+  {% endfor %}
+);
+var sorted = 0;
+var do_sort = {% if request.POST.endDate|length > 0 %}0{% else %}1{% endif %};
+
+function createTableBody(page_start) {
+  let end = page_start + {{ page_size }};
+  if (end > file_data.length) {
+    end = file_data.length;
+  }
+  let body = "";
+  if (do_sort != sorted) {
+    file_data.reverse();
+    sorted = 1 - sorted;
+  }
+  for (n = page_start; n < end; ++n) {
+    let e = file_data[n];
+    body +=
+        '<tr>' +
+        {% if fcodes|length > 1 %}
+        '<td class="text-center"><input type="checkbox" name="sfile" ' +
+        'value="' + e[0] + '" onclick="checkBox(this, ' + (n-page_start) +
+        ')">' + '</td>' +
+        {% endif %}
+        '<td class="text-left"><a href="' + e[1] + '">' +
+        e[1].split("/").reverse()[0] + '</a></td>' +
+        '<td class="text-center">' + e[2] + '</td>' +
+        '<td class="text-center">' + e[3] + ' {% if db == "WGrML" %}Grids{% elif db == "WObML" %}Observations{% endif %}</td>' +
+        '<td class="text-center">' + e[4] + '</td>' +
+        '<td class="text-center">' + e[5] + '</td>' +
+        {% if files.1 %}
+        '<td class="text-center">' + e[6] + '</td>' +
+        {% endif %}
+        '<td class="text-center">' + e[7] + '</td>' +
+        '<td class="text-center"><a href="/ajax/#cgi-bin/transform?xml=/datasets/{{ dsid }}/metadata/wfmd/' + e[0] + '.{% if db|slice:"0:1" == "W" %}{{ db|slice:"1:" }}{% else %}{{ db }}{% endif %}" target="_blank" title="Detailed file metadata view" alt="Detailed file metadata view"><i class="pe-1 fas fa-info-circle"></i></a></td>' +
+        '</tr>';
+  }
+  document.getElementById("file_table_body").innerHTML = body;
+  document.getElementById("list_start").innerHTML = (page_start+1);
+  document.getElementById("list_end").innerHTML = end;
+}
+
+function reverseFiles() {
+  do_sort = 1 - do_sort;
+  arrow = document.getElementById("file_arrow");
+  anchor = document.getElementById("file_arrow_anchor");
+  title = anchor.getAttribute("title");
+  if (arrow.classList.contains("fa-angle-down")) {
+    arrow.classList.replace("fa-angle-down", "fa-angle-up");
+    title = title.replace("descending", "ascending");
+  } else {
+    arrow.classList.replace("fa-angle-up", "fa-angle-down");
+    title = title.replace("ascending", "descending");
+  }
+  anchor.setAttribute("alt", title);
+  anchor.setAttribute("title", title);
+  createTableBody(0);
+}
+
+{% if list_length > 1 %}
+var lastchecked = -1;
+var num_checked = 0;
+
+function checkBox(box, idx) {
+  let f = document.file_list;
+  num_checked = parseInt(f.numChecked_top.value);
+  let fsize = parseFloat(f.totsize_top.value) + 0.001;
+  if (box.checked) {
+    fsize += file_data[idx][7];
+    ++num_checked;
+  } else {
+    fsize -= file_data[idx][7];
+    num_checked--;
+  }
+  let offset = 0
+  for (n = 0; n < f.elements.length; ++n) {
+    if (f.elements[n].type != "checkbox" || f.elements[n].name ==
+        "curl_subset_control") {
+      ++offset;
+    } else {
+      break;
+    }
+  }
+  idx += offset;
+  if (box.checked && f.rangeswitch_top[1].checked && lastchecked >= 0) {
+    var start= (idx > lastchecked) ? lastchecked+1 : idx+1;
+    var end= (idx > lastchecked) ? idx : lastchecked;
+    for (n = start, m = start-offset; n <= end; ++n, ++m) {
+        if (!f.elements[n].checked) {
+          f.elements[n].checked = true;
+          fsize += file_data[m][7];
+          ++num_checked;
+        }
+    }
+  }
+  if (num_checked > 0) {
+    lastchecked = idx;
+  } else {
+    lastchecked = -1;
+  }
+  f.numChecked_top.value = num_checked;
+  if (typeof(f.numChecked_bottom) != "undefined") {
+    f.numChecked_bottom.value = num_checked;
+  }
+  f.totsize_top.value = "" + fsize;
+  idx = f.totsize_top.value.indexOf(".");
+  if (idx > 0 && idx != (f.totsize_top.value.length - 3)) {
+    f.totsize_top.value = f.totsize_top.value.substr(0, idx+3);
+  }
+  if (typeof(f.totsize_bottom) != "undefined") {
+    f.totsize_bottom.value = f.totsize_top.value;
+  }
+}
+
+function toggleRangeSelection(r) {
+  if (r.value == "off") {
+    document.file_list.rangeswitch_top[0].checked = true;
+    document.file_list.rangeswitch_bottom[0].checked = true;
+    lastchecked = -1;
+  } else {
+    document.file_list.rangeswitch_top[1].checked = true;
+    document.file_list.rangeswitch_bottom[1].checked = true;
+  }
+}
+
+function gotoPage(page_idx) {
+  let elist = null;
+  if (page_idx < 0) {
+    elist = document.getElementsByClassName("page-item");
+    for (n = 0; n < elist.length; ++n) {
+      if (elist[n].classList.contains("active")) {
+        n = parseInt(elist[n].id.replace("page", ""));
+        if (page_idx == -2) {
+          if (n > 0) {
+            --n;
+          }
+          page_idx = n;
+        } else if (page_idx == -1) {
+          page_idx = n + 1;
+          if (page_idx > {{ pages|length|add:"-1" }}) {
+            page_idx = {{ pages|length|add:"-1" }};
+          }
+        }
+        break;
+      }
+    }
+  }
+  let this_id = "page" + page_idx;
+  if (document.getElementById(this_id).classList.contains("active")) {
+    return;
+  }
+  createTableBody(page_idx * {{ page_size }});
+  if (elist == null) {
+    elist = document.getElementsByClassName("page-item");
+  }
+  for (n = 0; n < elist.length; ++n) {
+    if (elist[n].id == this_id) {
+      elist[n].classList.add("active");
+    } else {
+      elist[n].classList.remove("active");
+    }
+  }
+}
+
+function doScriptSubmit() {
+  nc = document.file_list.numChecked_top.value;
+  if (nc == "0") {
+    alert("To use this option, select at least one file from the list. To " +
+        "download a single file, simply click its name in the table.");
+    return;
+  } else {
+    document.file_list.action = '/cgi-bin/datasets/webread';
+    document.file_list.submit();
+  }
+}
+{% endif %}
+</script>
+<div id="filetable">
+    <center>
+        <p>
+            Showing files <b id="list_start">1</b> to <b id="list_end">{% if list_length > page_size %}{{ page_size }}{% else %}{{ list_length }}{% endif %}</b> of <b>{{ list_length }}</b> total.
+        </p>
+    </center>
+    {% if list_length > 500 %}
+    <nav>
+        <ul id="paginate_bar" class="pagination justify-content-center mb-0">
+            <li id="pagefirst" class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="gotoPage(0)" aria-label="First"><i aria-hidden="true" class="fas fa-angle-double-left fa-lg"></i><span class="sr-only">First</span></a>
+            </li>
+            <li id="pageprevious" class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="gotoPage(-2)" aria-label="Previous"><i aria-hidden="true" class="fas fa-angle-left fa-lg"></i><span class="sr-only">Previous</span></a>
+            </li>
+            {% for page in list_length|pages:page_size %}
+            <li id="page{{ forloop.counter0 }}" class="page-item{% if forloop.counter0 == 0 %} active{% endif %}">
+                <a class="page-link" href="javascript:void(0)" onclick="gotoPage({{ forloop.counter0 }})" aria-label="{{ page }}">{{ page }}<span class="sr-only">{{ page }}</span></a>
+            </li>
+            {% endfor %}
+            <li id="pagenext" class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="gotoPage(-1)" aria-label="Next"><i aria-hidden="true" class="fas fa-angle-right fa-lg"></i><span class="sr-only">Next</span></a>
+            </li>
+            <li id="pagelast" class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="gotoPage({{ pages|length|add:"-1" }})" aria-label="Last"><i aria-hidden="true" class="fas fa-angle-double-right fa-lg"></i><span class="sr-only">Last</span></a>
+            </li>
+        </ul>
+    </nav>
+    <center>
+        <div class="small mb-1">
+            (Maximum of 500 entries per page)
+        </div>
+    </center>
+    {% endif %}
+    <form name="file_list" method="post" target="_script">
+        {% include "facbrowse/download_opts.html" with location="top" %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        {% if fcodes|length > 1 %}
+                        <th></th>
+                        {% endif %}
+                        <th class="text-left">
+                            Filename <a id="file_arrow_anchor" class="text-white text-decoration-underline" href="javascript:void(0)" onclick="reverseFiles()" alt="Re-sort {% if request.POST.endDate|length > 0 %}descending{% else %}ascending{% endif %}" title="Re-sort {% if request.POST.endDate|length > 0 %}descending{% else %}ascending{% endif %}"><i id="file_arrow" class="fas fa fa-angle-{% if request.POST.endDate|length > 0 %}down{% else %}up{% endif %}"></i></a>
+                        </th>
+                        <th class="text-center">
+                            Data Format
+                        </th>
+                        <th class="text-center">
+                            File Contents
+                        </th>
+                        <th class="text-center" colspan="2">
+                            Valid Date Range
+                        </th>
+                        {% if files.1 %}
+                         <th class="text-center">
+                             Archive<br><nobr>&nbsp;&nbsp;Format <sup><span class="infosrc" onmouseover="popInfo(this, 'archive_format', '', 'left', 'bottom')" onmouseout="hideInfo('archive_format')"><i class="fas fa-info-circle fa-lg"></i></span></sup></nobr>
+                         </th>
+                        {% endif %}
+                         <th class="text-center">
+                             Size<br>(Mbytes)
+                         </th>
+                         <th class="text-center">
+                             More Details<br><i class="fas fa-external-link-alt" alt="opens in a new window" title="opens in a new window"></i>
+                         </th>
+                    </tr>
+                </thead>
+                <tbody id="file_table_body">
+                    <tr>
+                        <td colspan="10" class="text-center">
+                            <div class="text-center mt-3" id="loading">
+                                <strong>&nbsp;Loading ... &nbsp;&nbsp;</strong>
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                            </div>
+                            <img src="/images/transpace.gif" onload="createTableBody(0)">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% include "facbrowse/download_opts.html" with location="bottom" %}
+        <input type="hidden" name="dsnum" value="{{ dsid }}">
+        <input type="hidden" name="parameters">
+        <input type="hidden" name="level">
+        <input type="hidden" name="product">
+        <input type="hidden" name="sd">
+        <input type="hidden" name="ed">
+        {% if data_domain %}
+        <input type="hidden" name="server" value="https://{{ data_domain }}/{{ dsid }}">
+        {% endif %}
+        {% if rda_data_path %}
+        <input type="hidden" name="directory" value="{{ rda_data_path }}">
+        {% endif %}
+    </form>
+    {% if list_length > 500 %}
+    <nav>
+        <ul class="pagination justify-content-center mb-0">
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+<center class="small mt-1">
+    <a href="javascript:void(0)" onclick="document.documentElement.scrollTop = document.getElementById('ds_content').offsetTop - document.getElementsByTagName('header')[0].offsetHeight" alt="Go to top of page" title="Go to top of page">Top of page</a>
+</center>
+{% endwith %}
+{% endif %}
+{% endwith %}

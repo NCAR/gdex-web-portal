@@ -1,0 +1,314 @@
+{% load static decs_tags %}
+<script id="calendar_script" language="javascript" type="text/javascript" src="/js/calendar.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/calendar.css">
+<script id="gmap_script" src="/js/gmaps3.js" type="text/javascript"></script>
+{% include "facbrowse/gmapkey3.js" %}
+<script id="maps_script" language="javascript">
+ival_d = 0;
+
+function doTheDrawBoxLoad() {
+  if (typeof loadDrawBoxMapJS == "function") {
+    clearInterval(ival_d);
+    let map_clat = ({{ request.POST.nlat|default:"0" }} +
+        {{ request.POST.slat|default:"0" }}) / 2;
+    let wlon = {{ request.POST.wlon|default:"0" }};
+    let elon = {{ request.POST.elon|default:"0" }};
+    let map_clon = (wlon + elon) / 2;
+    if (wlon > elon) {
+      map_clon += 180;
+      if (map_clon > 180) {
+        map_clon -= 360;
+      }
+    }
+    loadDrawBoxMapJS('drawboxmap', map_clat, map_clon,
+        {{ request.POST.map_zoom|default:"1"}}, '');
+    var m = document.getElementById('mark');
+    m.style.left = (parseInt(m.style.left) +
+        ({{ request.POST.map_zoom|default:"1" }} - 1) * 6) + "px";
+  }
+}
+
+function doDrawBoxLoad() {
+  ival_d = setInterval("doTheDrawBoxLoad()", 100);
+}
+
+registerAjaxCallback('doDrawBoxLoad');
+</script>
+<script id="gmap_drawbox" src="{% static 'js/gmap_drawbox.js' %}" type="text/javascript"></script>
+<script id="obml_script" language="javascript">
+changed_selection = false;
+
+function showChangedSelections() {
+  if (!changed_selection) {
+    changed_selection = true;
+  }
+}
+
+sdate = "{{ start_date }}";
+edate = "{{ end_date }}";
+
+function doCustomize() {
+  {% if listtyp == "subset" %}
+  if (!changed_selection && document.customize.startDate.value <= sdate &&
+      document.customize.endDate.value >= edate &&
+      !drawboxmap_data.box.getMap()) {
+    popModalWindowWithHTML(300, 150,
+        "<div style="text-align: center; margin-top: 30px">You <strong>must" +
+        "</strong> make at least one selection before you can continue.</div>");
+    return;
+  }
+  {% endif %}
+  let post_data = "";
+  if (document.getElementById("gdrawboxmap_nlat").value.length > 0) {
+    post_data += "&nlat=" + document.getElementById("gdrawboxmap_nlat").value;
+  }
+  if (document.getElementById("gdrawboxmap_slat").value.length > 0) {
+    post_data += "&slat=" + document.getElementById("gdrawboxmap_slat").value;
+  }
+  if (document.getElementById("gdrawboxmap_wlon").value.length > 0) {
+    post_data += "&wlon=" + document.getElementById("gdrawboxmap_wlon").value;
+  }
+  if (document.getElementById("gdrawboxmap_elon").value.length > 0) {
+    post_data += "&elon=" + document.getElementById("gdrawboxmap_elon").value;
+  }
+  if (document.customize.gindex) {
+    if (document.customize.gindex.nodeName == "SELECT") {
+      idx = document.customize.gindex.selectedIndex;
+      if (idx > 0) {
+        post_data += '&gindex=' + document.customize.gindex[idx].value +
+            '&gtitle=' + document.customize.gindex[idx].text;
+      }
+    } else {
+      post_data += '&gindex=' + document.customize.gindex.value + '&gtitle=' +
+          document.customize.gtitle.value;
+    }
+  }
+  post_data += "&startDate=" + document.customize.startDate.value +
+      "&endDate=" + document.customize.endDate.value;
+  {% if listtyp == "subset" %}
+    post_data += "&startTime=" + document.customize.startTime[
+        document.customize.startTime.selectedIndex].value + "&endTime=" +
+        document.customize.endTime[
+        document.customize.endTime.selectedIndex].value;
+  {% endif %}
+  if (typeof(document.customize.platform_type) != "undefined" &&
+      document.customize.platform_type.selectedIndex > 0) {
+    post_data += "&platform_type=" + document.customize.platform_type[
+        document.customize.platform_type.selectedIndex].value;
+  }
+  if (typeof(document.customize.data_type) != "undefined" &&
+      !document.customize.data_type[0].selected) {
+    for (n = 1; n < document.customize.data_type.length; ++n) {
+      if (document.customize.data_type[n].selected) {
+        post_data += "&data_type=" + document.customize.data_type[n].value;
+      }
+    }
+  }
+  if (document.customize.id.value.length > 0) {
+    post_data += "&id=" + document.customize.id.value + "&id_match=";
+    for (n = 0; n < document.customize.id_match.length; ++n) {
+      if (document.customize.id_match[n].checked) {
+        post_data += document.customize.id_match[n].value;
+        break;
+      }
+    }
+  }
+  post_data += "&csrfmiddlewaretoken={{ csrf_token }}";
+  getContentFromPost("ds_content",
+      "/datasets/{{ dsid }}/facbrowse/{{ listtyp }}/query/obml/",
+      post_data.substr(1), "Checking your selections...");
+  document.documentElement.scrollTop =
+      document.getElementById('ds_content').offsetTop -
+      document.getElementsByTagName('header')[0].offsetHeight;
+}
+</script>
+<style id="zoom_style" type="text/css">
+.tick {
+  position: absolute;
+  width: 3px;
+  height: 18px;
+  top: 0px;
+}
+.scale {
+  background-color: #c3d7ee;
+}
+.marker {
+  background-color: #ffb931;
+}
+</style>
+{% if listtyp == "weblist" %}
+<h2 class="font-weight-bolder"><i class="fas fa-file-download pe-2"></i>Web Download Files - Create a File List</h2>
+{% elif listtyp == "gladelist" %}
+<h2 class="font-weight-bolder"><i class="fas fa-file-download pe-2"></i>GLobally Accessible Data Environment (GLADE) Files</h2>
+{% endif %}
+{% if listtyp == "weblist" or listtyp == "gladelist" %}
+<p>
+    Make selections from the following options (or accept the defaults) and then click the "Continue" button below. You will get a list of {% if listtyp == "gladelist" %}GLADE{% endif %} data files that match your selections, and you will have further opportunity to refine your list.
+</p>
+{% if recent_start_date %}
+<p>
+    You can also view only the <a href="javascript:void(0)" onclick="showMostRecent()">most recently-added</a> data files.
+</p>
+{% endif %}
+{% endif %}
+<ul class="pt-1">
+    <form name="customize" action="post" onsubmit="return doCustomize()">
+        {% if gindex %}
+        <div class="mt-2">
+            <b class="text-uppercase me-2">Dataset Product:</b>&nbsp;{{ gtitle }}
+            <input type="hidden" name="gindex" value="{{ gindex }}">
+            <input type="hidden" name="gtitle" value="{{ gtitle }}">
+        </div>
+        {% elif groups and groups|length > 1 %}
+        <div class="mt-2">
+            <b class="text-uppercase me-2">Dataset Product:</b>
+            <select name="gindex" onchange="changed_selection=true">
+                <option value="">All</option>
+                {% for group in groups %}
+                <option value="{{ group.gindex }}">{{ group.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div class="mt-2">
+            <b class="text-uppercase me-2">Temporal Selection:</b>
+            <input class="font-monospace ms-1" type="text" name="startDate" size="10" maxlength="10" value="{{ start_date }}">
+            <i class="fas fa-calendar-alt fa-lg ms-1" onclick="showCalendar('calendar_div', 'customize.startDate')"></i>
+            <b class="text-uppercase ms-2 me-1">to</b>
+            <input class="font-monospace ms-1" type="text" name="endDate" size="10" maxlength="10" value="{{ end_date }}">
+            <i class="fas fa-calendar-alt fa-lg ms-1" onclick="showCalendar('calendar_div', 'customize.endDate')"></i>
+        </div>
+        <div class="mt-2">
+            {% if platforms|length > 1 %}
+            <b class="text-uppercase me-2">Platform Type:</b>
+            <select class="ms-1" name="platform_type" onchange="changed_selection=(this.selectedIndex > 0)">
+                <option value="">All</option>
+                {% for platform in platforms %}
+                <option value="{{ platform.code }}">{{ platform.name }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+            <b class="text-uppercase me-2">Platform Type:</b>&nbsp;{{ platforms.0.name }}
+            {% endif %}
+        </div>
+        {% if data_types %}
+        <div class="mt-2">
+            {% if data_types|length > 1 %}
+            <b class="text-uppercase me-2">Variable/Data Type(s):</b>
+            <select class="align-top ms-1" name="data_type" multiple onchange="changed_selection=(this.selectedIndex > 0)">
+                <option value="" selected>All available</option>
+                {% for data_type in data_types %}
+                <option value="{{ data_type.code }}">{{ data_type.name }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+            <b class="text-uppercase me-2">Variable/Data Type(s):</b>&nbsp;{{ data_types.0.name }}
+            {% endif %}
+        </div>
+        {% endif %}
+        <div class="mt-2">
+            <b class="text-uppercase me-2">Spatial Selection:</b>
+            <span class="small">(for detailed information, view a <a href="javascript:void(0)" onclick="popModalWindowWithHTML(300, 100, '<center><p class=&quot;mt-2&quot;>The following map shows 3&deg; squares containing one or more observations:</p><img src=&quot;/datasets/{{ dsid }}/metadata/spatial_coverage.gif&quot;></center>')">coverage map</a> or use the <a href="/ajax/#cgi-bin/datasets/stationViewer?dsid={{ dsid }}&init=yes" target="_stn_viewer">interactive station viewer <sup><i class="fas fa-external-link-alt"></i></sup></a></span>
+            <ul>
+                Enter a full or partial platform ID: <input class="font-monospace" type="text" name="id" size="10" oninput="changed_selection=(this.value.length > 0);document.getElementById('interactive_map').style.display= changed_selection ? 'none' : 'block'"> <input class="ms-2 me-1" type="radio" name="id_match" value="exact" checked>exact match <input class="ms-2 me-1" type="radio" name="id_match" value="partial">any part
+                <div id="interactive_map">
+                    <b>- OR -</b>
+                    <br>
+                    Using the interactive map and the controls below the map, pan/zoom to your area of interest and then draw a box around the area for where you want observations (the default is the entire globe).
+                    <br>
+                    <div id="drawboxmap_container" class="map_containers" style="display: block; padding: 10px">
+                        <div class="component two-column container-lg mb-0">
+                            <div class="row gx-0">
+                                <div class="col-12 col-md-6">
+                                    <div id="drawboxmap" class="ms-4" style="width: 500px; height: 400px; border: thick solid #30658b">
+                                        Waiting for the map to load ...
+                                    </div>
+                                    <div class="ms-4" style="width: 500px">
+                                        <div style="float: left; margin-top: 3px">
+                                            <b class="text-uppercase">Zoom:</b>&nbsp;
+                                        </div>
+                                        <div style="float: left; margin-top: 3px; margin-right: 3px">
+                                            <a href="javascript:void(0)" onclick="zoomOut(map.handles.drawbox, 1, 'mark')"><i class="fas fa-minus-square"></i></a>
+                                        </div>
+                                        <div style="position: relative; float: left; height: 18px; width: 60px; margin-top: 6px">
+                                            <div class="tick scale" style="left: 0px"></div>
+                                            <div class="tick scale" style="left: 6px"></div>
+                                            <div class="tick scale" style="left: 12px"></div>
+                                            <div class="tick scale" style="left: 18px"></div>
+                                            <div class="tick scale" style="left: 24px"></div>
+                                            <div class="tick scale" style="left: 30px"></div>
+                                            <div class="tick scale" style="left: 36px"></div>
+                                            <div class="tick scale" style="left: 42px"></div>
+                                            <div class="tick scale" style="left: 48px"></div>
+                                            <div class="tick scale" style="left: 54px"></div>
+                                            <div id="mark" class="tick marker" style="left: 0px"></div>
+                                        </div>
+                                        <div style="float: left; margin-top: 3px">
+                                            <a href="javascript:void(0)" onclick="zoomIn(map.handles.drawbox, 10, 'mark')"><i class="fas fa-plus-square"></i></a>
+                                        </div>
+                                        <div style="float: right">
+                                            <input name="gdrawboxmap_mode" id="pan" class="me-1" type="radio" onClick="defineDrag()" checked><span class="text-uppercase">Pan Map</span><input name="gdrawboxmap_mode" id="draw" class="ms-2 me-1" type="radio" onClick="defineDrag()"><span class="text-uppercase">Draw Box</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="row gx-0">
+                                        <div class="col-12 col-md-12">
+                                            <b class="text-uppercase">Interactive Map Instructions:</b>
+                                            <br>
+                                            <ul class="mt-0">
+                                                <li>
+                                                    Use the '<span class="text-uppercase">Pan Map</span>' option to drag and center the map on your area of interest
+                                                </li>
+                                                <li>
+                                                    Use the '<span class="text-uppercase">Draw Box</span>' option to drag a box around your area of interest. You can also manually enter bounding latitudes and longitudes in the text boxes below:
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="row gx-0 mt-2">
+                                        <div class="col-12 col-md-4"></div>
+                                        <div class="col-12 col-md-4 text-center">
+                                            <nobr><b class="text-uppercase"><sup>&dagger;</sup>&nbsp;North:</b> <input class="font-monospace" type="text" id="gdrawboxmap_nlat" size="3" value="" onBlur="checkInput(this)"></nobr>
+                                        </div>
+                                        <div class="col-12 col-md-4"></div>
+                                    </div>
+                                    <div class="row gx-0 mt-2">
+                                        <div class="col-12 col-md-4 text-end">
+                                            <nobr><b class="text-uppercase"><sup>&dagger;</sup>&nbsp;West:</b> <input class="font-monospace" type="text" id="gdrawboxmap_wlon" size="4" value="" onBlur="checkInput(this)"></nobr>
+                                        </div>
+                                        <div class="col-12 col-md-4 text-center">
+                                            <a href="javascript:void(0)" class="btn btn-pill btn-primary px-2 py-1 border-1" onclick="resetToFullGlobalSelection(); showChangedSelections()">Reset</a>
+                                        </div>
+                                        <div class="col-12 col-md-4 text-start">
+                                            <nobr><b class="text-uppercase"><sup>&dagger;</sup>&nbsp;East:</b> <input class="font-monospace" type="text" id="gdrawboxmap_elon" size="4" value="" onBlur="checkInput(this)"></nobr>
+                                        </div>
+                                    </div>
+                                    <div class="row gx-0 mt-2">
+                                        <div class="col-12 col-md-4"></div>
+                                        <div class="col-12 col-md-4 text-center">
+                                            <nobr><b class="text-uppercase"><sup>&dagger;</sup>&nbsp;South:</b> <input class="font-monospace" type="text" id="gdrawboxmap_slat" size="3" value="" onBlur="checkInput(this)"></nobr>
+                                        </div>
+                                        <div class="col-12 col-md-4"></div>
+                                    </div>
+                                    <div class="row gx-0 mt-2">
+                                        <div class="col-12 col-md-12">
+                                            <ul class="mt-0">
+                                                <b><sup>&dagger;</sup></b>&nbsp;Latitudes and longitudes must be specified in whole degrees
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ul>
+        </div>
+        <center class="mt-2">
+            <a class="btn btn-primary px-2 py-1 border-1" href="javascript:void(0)" onclick="doCustomize()">Continue</a>
+            <a class="btn btn-primary px-2 py-1 border-1 ms-2" href="javascript:void(0)" onclick="document.customize.reset()">Reset</a>
+        </center>
+    </form>
+</ul>
+<div id="calendar_div" class="calendar"></div>

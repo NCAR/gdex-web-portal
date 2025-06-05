@@ -1,0 +1,116 @@
+{% if error %}{% comment %}IF_ERROR{% endcomment %}
+<p>
+    An error occurred: {{ error }}
+</p>
+{% else %}{% comment %}IF_ERROR{% endcomment %}
+<script id="calendar_script" language="javascript" type="text/javascript" src="/js/calendar.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/calendar.css">
+<script id="grid_selections_script" language="javascript">
+var changed_selection = false;
+
+function showChangedSelections() {
+  if (!changed_selection) {
+    changed_selection = true;
+  }
+}
+
+function submitSelections() {
+  if (!changed_selection) {
+    return;
+  }
+  let post_data = "";
+}
+</script>
+<h2 class="font-weight-bolder">{% if listtyp == "weblist" %}Web Download Files{% elif listtyp == "subset" %}Get a Subset{% elif listtyp == "gladelist" %}GLobally Accessible Data Environment (GLADE) Files{% endif %}</h2>
+{% if listtyp == "subset" %}{% comment %}IF_L2{% endcomment %}
+<div class="component single-column container-lg mb-2">
+    <div class="row gx-0 bg-light p-2">
+        <h4 class="font-weight-bolder">Refine Your Selections:</h4>
+{% endif %}{% comment %}IF_L2{% endcomment %}
+{% if fcodes|length > 0 %}{% comment %}IF_FCODES{% endcomment %}
+<form name="selections">
+    {% if listtyp == "weblist" %}
+    <b>The Web Download file list was created from the following selections:</b>
+    {% endif %}
+    {% if listtyp == "gladelist" %}
+    <b>The GLADE file list was created from the following selections:</b>
+    {% endif %}
+    <ul>
+        {% if gindex %}
+        <div class="mt-2">
+            <b class="text-uppercase">Dataset Product:</b>&nbsp;{{ request.POST.gtitle }}
+        </div>
+        {% elif groups and groups|length > 1 %}
+        <div class="mt-2">
+            <b class="text-uppercase">Dataset Product:</b>&nbsp;
+            <select name="gindex" onchange="showChangedSelections()">
+                <option value="">All</option>
+                {% for group in groups %}
+                <option value="{{ group.gindex }}">{{ group.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div class="mt-2">
+            <b class="text-uppercase me-2">Temporal Selection:</b>
+            <input class="font-monospace ms-1" type="text" name="startDate" size="10" maxlength="10" value="{{ min_start }}">
+            <i class="fas fa-calendar-alt fa-lg ms-1" onclick="showCalendar('calendar_div', 'selections.startDate')"></i>
+            <b class="text-uppercase ms-2 me-1">to</b>
+            <input class="font-monospace ms-1" type="text" name="endDate" size="10" maxlength="10" value="{{ max_end }}">
+            <i class="fas fa-calendar-alt fa-lg ms-1" onclick="showCalendar('calendar_div', 'selections.endDate')"></i>
+        </div>
+        <div class="mt-2">
+            {% if platforms|length > 1 or 'platform_type' in selected %}
+            <b class="text-uppercase me-2">Platform Type:</b>
+            <select class="ms-1" name="platform_type" onchange="changed_selection=(this.selectedIndex > 0)">
+                <option value="">All</option>
+                {% for platform in platforms %}
+                <option value="{{ platform.0 }}"{% if 'platform_type' in selected and platform.0 == selected.platform_type %} selected{% endif %}>{{ platform.1 }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+            <b class="text-uppercase me-2">Platform Type:</b>&nbsp;{{ platforms.0.1 }}
+            {% endif %}
+        </div>
+        {% if data_types %}
+        <div class="mt-2">
+            {% if data_types|length > 1 %}
+            <b class="text-uppercase me-2">Variable/Data Type(s):</b>
+            <select class="align-top ms-1" name="data_type" multiple onchange="changed_selection=(this.selectedIndex > 0)">
+                <option value=""{% if 'data_type' not in request.POST %} selected{% endif %}>All available</option>
+                {% for data_type in data_types %}
+                <option value="{{ data_type.0 }}"{% if data_type.0 in selected.data_types %} selected{% endif %}>{{ data_type.1 }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+            <b class="text-uppercase me-2">Variable/Data Type(s):</b>&nbsp;{{ data_type.0.1 }}<input type="hidden" name="data_type" value="{{ data_type.0.0 }}">
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if 'id' in request.POST or 'nlat' in request.POST %}
+        <div class="mt-2">
+            <b class="text-uppercase me-2">Spatial Selection:</b>&nbsp;
+            {% if 'id' in request.POST %}
+            ID = <i>{{ request.POST.id }}</i> ({{ request.POST.id_match }})
+            {% else %}
+            Geographic Bounding Box = {{ request.POST.slat }}&deg; to {{ request.POST.nlat }}&deg; latitude and {{ request.POST.wlon }}&deg; to {{ request.POST.elon }}&deg; longitude
+            {% endif %}
+        </div>
+        {% endif %}
+    </ul>
+</form>
+{% if listtyp == "weblist" or listtyp == "gladelist" %}
+<p>
+    If you change any of these selections, be sure to <a href="javascript:void(0)" class="btn btn-primary px-2 py-1 border-1" onclick="submitSelections()">Update the List</a>&nbsp;. You can also <a class="btn btn-primary px-2 py-1 border-1" href="javascript:void(0)" onclick="getAjaxContent('GET', '', '/datasets/{{ dsid }}/facbrowse/{{ listtyp }}/customize/{% if gindex %}?gindex={{ gindex }}{% endif %}', 'ds_content')">Create a New List</a>&nbsp;.
+</p>
+{% endif %}
+{% endif %}{% comment %}IF_FCODES{% endcomment %}
+{% if listtyp == "subset" %}
+    </div>
+</div>
+{% endif %}
+{% if listtyp == "weblist" or listtyp == "gladelist" %}
+{% include "facbrowse/filelist.html" %}
+{% endif %}
+<div id="calendar_div" class="calendar"></div>
+{% endif %}{% comment %}IF_ERROR{% endcomment %}

@@ -1,0 +1,98 @@
+{% load facbrowse_tags %}
+<div class="component single-column container-lg mb-2">
+    <div class="row gx-0 bg-info p-2">
+        <h4 class="font-weight-bolder">Submit Your Request:</h4>
+        <div id="submit_pane">
+            {% if fcodes|length == 0 %}
+            <div class="alert alert-danger text-center mb-2">
+                Your selections do not match any data files, so no subset can be created.
+            </div>
+            {% else %}
+            {% if num_not_whole == 0 and not large_request %}
+            <p>
+                <font color="red">Based on your selections so far, you need whole data files from this dataset. You may continue to refine your selections{% if can_spatially_subset %}, <a href="javascript:void(0)" onclick="must_make_spatial=true;document.getElementById(&quot;submit_button&quot;).disabled=false;showSpatial()">make a geospatial selection</a>{% endif %}, or if you are done, you can select the files you need from the <a href="/datasets/{{ dsid }}/listopt/web/{% if gindex %}?g={{ gindex }}{% endif %}">file list</a> instead.</font>
+            </p>
+            {% else %}
+            <p>
+                According to the selections that you have made,{% if large_request %} we are not able to determine the size of your request, but it will likely be very large. You can still submit this request, <i>but if the total volume is too large, it may be rejected</i>. Or you can adjust your selections to narrow down the size.{% else %} your subset request matches <strong>{{ fcodes|length }} RDA data files</strong>.{% endif %}
+            {% if volume < 1000000000000 %}
+            {% if ststep.selected %}
+            </p>
+            <p>
+                {% if 'preset' in request.POST %}
+                {% if request.POST.preset|slice:"0:3" == "WRF" %}
+                <b>Note for WRF users:</b> Because the WRF preprocessor requires input files that contain only one timestep,
+                {% elif request.POST.preset|slice:"0:8" == "FLEXPART" %}
+                By default, files for FLEXPART input are served as one timestep per file, so
+                {% endif %}
+                {% else %}
+                Because you have opted to receive your data as one timestep per file,
+                {% endif %}
+                <span class="underline">you will receive the above number of files times the number of timesteps in each file that match your selections</span>, and these files will only contain data records that match your selections. Each file will have the prefix "YYYYMMDDHHMM", which will indicate the <span class="underline">valid</span> time of the data as year, month, day, hour, and minute.
+            </p>
+            <p>
+            {% else %}
+            {% if 'ofmt' in request.POST and request.POST.ofmt == "csv" %}
+                The output from the matching data files <strong>will be combined into one CSV file</strong>.
+            {% else %}
+                You will receive this number of files, except that these files will only contain data records that match your selections.
+            {% endif %}
+            {% endif %}
+{% if not large_request %}  The total{% if can_compress %} uncompressed{% endif %} volume is estimated at <strong>{{ volume|convert_file_bytes }}</strong>.{% endif %} Please make sure that you can handle this volume of data before you submit your request{% if can_compress %} or choose a compression option below{% endif %}.
+            </p>
+            {% else %}
+            <p style="color: red">
+                Because of the very large size of this request, it may be rejected.
+            </p>
+            {% endif %}
+            {% if can_compress %}
+            <div>
+                <strong>Data Compression Options:</strong>
+                <form name="compressions">
+                    <ul style="margin-top: 0px">
+                        <nobr>
+                            <input type="radio" name="compress" id="compress_none" value="" checked /><label for="compress_none">none</label>
+                        </nobr>
+                        <nobr>
+                            <input class="ms-1" type="radio" name="compress" id="compress_gz" value="GZ" /><label for="compress_gz">gzip (.gz)</label>
+                        </nobr>
+                        <nobr>
+                            <input class="ms-1" type="radio" name="compress" id="compress_bz2" value="BZ2" /><label for="compress_bz2">bzip2 (.bz2)</label>
+                        </nobr>
+                        <nobr>
+                            <input class="ms-1" type="radio" name="compress" id="compress_z" value="Z" /><label for="compress_z">Unix (.Z)</label>
+                        </nobr>
+                        <nobr>
+                            <input class="ms-1" type="radio" name="compress" id="compress_zip" value="ZIP" /><label for="compress_zip">Zip (.zip)</label>
+                        </nobr>
+                    </ul>
+                </form>
+            </div>
+            {% endif %}
+            {% if can_combine %}
+            <div>
+                <strong>File Combination Options:</strong>
+                <p>
+                    If you choose an option, many smaller files will be combined into fewer larger files using the method you choose. This will reduce the number of files that you will need to download from our server, but you will need to be able to separate the files on your end.
+                </p>
+                <form name="combinations">
+                    <ul style="margin-top: 0px">
+                        <nobr>
+                            <input type="radio" name="combine" id="combine_none" value="" checked /><label for="combine_none">none</label>
+                        </nobr>
+                        <nobr>
+                            <input class="ms-1" type="radio" name="combine" id="combine_tar" value="tflag" /><label for="combine_tar">Unix tar</label>
+                        </nobr>
+                    </ul>
+                </form>
+            </div>
+            {% endif %}
+            {% endif %}
+            <center>
+                <button id="submit_button" class="btn btn-primary px-2 py-1 border-1" onclick="submitDataRequest()"{% if num_not_whole == 0 and not large_request %} disabled{% endif %}>Submit Request</button>
+                <button class="btn btn-primary px-2 py-1 border-1 ms-2" onclick="$.get('/datasets/{{ dsid }}/facbrowse/subset/customize/{% if gindex in request.POST %}?gindex={{ request.POST.gindex }}{% endif %}', replace_ds_content)">Start Over</button>
+            </center>
+            {% endif %}
+        </div>
+    </div>
+</div>

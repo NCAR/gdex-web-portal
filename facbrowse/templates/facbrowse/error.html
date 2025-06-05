@@ -1,0 +1,15 @@
+{% if error == "toomany" %}
+<p>
+    You have exceeded the maximum number of outstanding requests for this dataset.  If you have finished downloading the data from any of your outstanding requests, you can purge the files so that the request doesn't count towards your total.
+</p>
+{% elif error == "no_customization" %}
+<p>
+    Customization is not available for this dataset.
+</p>
+{% elif error == "multiple_services" %}
+multiple services!
+{% elif error == "service_unavailable" or error == "file_check_error" %}
+<p>
+    This service is not currently available. Please check back later.
+</p>
+{% endif %}
