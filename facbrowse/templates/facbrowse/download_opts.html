@@ -1,0 +1,122 @@
+<script id="globus_script" language="javascript">
+function downloadViaGlobus(g_type, dsnum, cancel_url, rqst_params) {
+  if (g_type == "3") {
+    nc = document.file_list.numChecked_top.value;
+    if (parseInt(nc) < 1) {
+      alert("To use this option, please select at least one file from the " +
+          "list.");
+      return;
+    }
+  }
+  form = document.createElement("form");
+  document.body.appendChild(form);
+  form.method = "POST";
+  form.action = "/globus/filelist/";
+  dsid = document.createElement("input");
+  dsid.type = "hidden";
+  dsid.name = "dsid";
+  dsid.value = "ds" + dsnum;
+  form.appendChild(dsid);
+  cookies = decodeURIComponent(document.cookie).split("; ");
+  for (n = 0; n < cookies.length; ++n) {
+    pair = cookies[n].split("=");
+    if (pair.length == 2) {
+      if (pair[0] == "duser") {
+        email = document.createElement("input");
+        email.type = "hidden";
+        email.name = "email";
+        email.value = pair[1];
+        x = email.value.indexOf(":");
+        if (x > 0) {
+          email.value = email.value.substring(0, x);
+        }
+        form.appendChild(email);
+      } else if (pair[0] == "csrftoken") {
+        csrftoken = document.createElement("input");
+        csrftoken.type = "hidden";
+        csrftoken.name = "csrfmiddlewaretoken";
+        csrftoken.value = pair[1];
+        form.appendChild(csrftoken);
+      }
+    }
+  }
+  c_url = document.createElement("input");
+  c_url.type = "hidden";
+  c_url.name = "cancelurl";
+  c_url.value = cancel_url;
+  form.appendChild(c_url);
+  if (typeof(rqst_params) != "undefined") {
+    r_params = document.createElement("input");
+    r_params.type = "hidden";
+    r_params.name = "rqstParams";
+    r_params.value = rqst_params;
+    form.appendChild(r_params);
+  }
+  if (g_type == "3") {
+    f = document.file_list;
+    for (n = 0; n < f.elements.length; ++n) {
+      if (f.elements[n].type == "checkbox" && f.elements[n].name == "sfile" &&
+          f.elements[n].checked) {
+        eval("gfile" + n + " = document.createElement('input')");
+        eval("gfile" + n + ".type = 'hidden'");
+        eval("gfile" + n + ".name = 'files[]'");
+        eval("gfile" + n + ".value = '/data/ds" + dsnum + "/" +
+            f.elements[n].value + "'");
+        eval("form.appendChild(gfile" + n + ")");
+      }
+    }
+  }
+  form.submit();
+}
+</script>
+<div class="alert alert-info mb-2">
+    {% if listtyp == "gladelist" %}
+    <b>To get data files:</b>
+    <ul>
+        GLADE data files are directly accessible from any NCAR computing system that has the /glade partition mounted on it.  The files can be opened in place on GLADE or copied to your local computer using the Unix "cp" command.
+    </ul>
+    {% else %}
+    <b class="text-uppercase">Download Options:</b>
+    <ul>
+        {% if list_length == 1 %}
+        <li>
+            Click the filename link to download it
+        </li>
+        {% else %}
+        <li>
+            Select one or more files and download them using <div class="btn btn-outline-primary px-2 py-1 border-1" onclick="downloadViaGlobus('3', '{{ dsid }}', 'https://rda.ucar.edu/tab_close.html')">Globus</div> <a href="https://www.globus.org/file-transfer" target="_globus"><em>What is Globus?</em></a>
+        </li>
+        <li>
+            Select one or more files and <div class="btn btn-outline-primary px-2 py-1 border-1" onclick="doScriptSubmit()">Create</div> a
+            <select name="script_{{ location }}" onChange="document.file_list.script_{{ location }}.selectedIndex=this.selectedIndex">
+                <option value="csh">Unix</option>
+                <option value="bat">Windows</option>
+            </select>
+            download script <sup><i class="fas fa-external-link-alt fa-lg pe-1" alt="opens in a new window" title="opens in a new window"></i></sup> using
+            <select name="stype_{{ location }}" onChange="document.file_list.stype_{{ location }}.selectedIndex=this.selectedIndex">
+                <option value="wget">Wget</option>
+                <option value="curl">cURL</option>
+                <option value="python">Python</option>
+            </select>
+            <a href="javascript:void(0)" onclick="popModalWindowWithGetUrl(600, 300, '/html/getFileList/script_help.html')"><sup><i class="fas fa-info-circle fa-lg"></i></sup></a>
+        </li>
+        <li class="py-1">
+            <div class="py-1">
+                Click the individual filename links to download files one-at-a-time
+            </div>
+        </li>
+        {% endif %}
+    </ul>
+    {% endif %}
+    {% if list_length > 1 %}
+    <div class="mt-1">
+        <div class="btn btn-outline-primary px-2 py-1" onclick="doReset()">Reset Checkboxes</div>
+        <div class="d-inline-block ms-3">
+            <b class="text-uppercase">Range selection</b> <a href="javascript:void(0)" onclick="popModalWindowWithGetUrl(600, 300, '/html/getFileList/range_help.html')"><sup><i class="fas fa-info-circle fa-lg pe-1"></i></sup></a> is <input type="radio" name="rangeswitch_{{ location }}" value="off" onclick="toggleRangeSelection(this)" checked> <b class="text-uppercase">off</b> <input type="radio" name="rangeswitch_{{ location }}" value="on" onclick="toggleRangeSelection(this)"> <b class="text-uppercase">on</b>
+        </div>
+        <div class="d-inline-block ms-3">
+            Total <b class="text-uppercase">volume</b> of <input type="text" class="font-monospace text-right" name="numChecked_{{ location }}" value="0" size="6" class="totsize"> selected files <input type="text" class="font-monospace text-right" name="totsize_{{ location }}" value="0.00" size="10" class="totsize" readonly> <b class="text-uppercase">Mbytes</b>
+        </div>
+    </div>
+    {% endif %}
+</div>

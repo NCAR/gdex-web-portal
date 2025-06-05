@@ -1,0 +1,306 @@
+{% load decs_tags %}
+{% if curl_subset %}
+<style id="curl_style" type="text/css">
+.curl {
+  color: brown;
+  font-size: 16px;
+}
+</style>
+{% endif %}
+{% if presets %}
+<script id="presets_script" language="javascript">
+    function setPreset() {
+
+      // the preset menu was changed, so reset all of the parameter checkboxes
+      for (n = 0; n < document.customize.elements.length; ++n) {
+        if (document.customize.elements[n].type == "checkbox" && document.customize.elements[n].checked) {
+          document.customize.elements[n].checked = false;
+        }
+      }
+      if (document.customize.preset.selectedIndex > 0) {
+
+        // a preset was selected
+        p = document.customize.preset[document.customize.preset.selectedIndex].value;
+        for (n = 0; n < document.customize.elements.length; ++n) {
+          {% for preset in presets %}
+          if (document.customize.elements[n].type == "checkbox" && p == '{{ preset.description }}') {
+            arr = document.customize.elements[n].value.split("[!]");
+            arr = arr[0].split(",");
+            for (m = 0; m < arr.length; ++m) {
+              {% for code in preset.codes %}
+              {% if forloop.counter > 1 %}} else {% endif %}if (arr[m] == "{{ code }}") {
+                document.customize.elements[n].checked = true;
+              {% endfor %}
+              }
+            }
+          }
+          {% endfor %}
+        }
+      }
+    }
+</script>
+{% endif %}
+<script id="calendar_script" language="javascript" type="text/javascript" src="/js/calendar.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/calendar.css" />
+<script id="customize_script" language="javascript">
+sdate = '{{ start_date }} {{ start_time }}';
+edate = '{{ end_date }} {{ end_time }}';
+
+function doCustomize() {
+  parameters = '';
+  if (document.customize.startDate.value.length != 10 || document.customize.endDate.value.length != 10) {
+    popModalWindowWithHTML(600, 200,
+        "<h3>Error</h3>" +
+        "Dates must be entered as 'YYYY-MM-DD'.");
+    return false;
+  }
+  isGoodDate = true;
+  for (n = 0; n < 10; ++n) {
+    if (n <= 3 || n == 5 || n == 6 || n == 8 || n == 9) {
+      if (document.customize.startDate.value.charAt(n) < '0' || document.customize.startDate.value.charAt(n) > '9' || document.customize.endDate.value.charAt(n) < '0' || document.customize.endDate.value.charAt(n) > '9') {
+        isGoodDate = false;
+      }
+    } else if (n == 4 || n == 7) {
+      if (document.customize.startDate.value.charAt(n) != '-' || document.customize.endDate.value.charAt(n) != '-') {
+        isGoodDate = false;
+      }
+    }
+  }
+  if (!isGoodDate) {
+    popModalWindowWithHTML(600, 200,
+        "<h3>Error</h3>" +
+        "Dates must be entered as 'YYYY-MM-DD'.");
+    return false;
+  }
+  if ((document.customize.startDate.value + ' ' + document.customize.startTime.value) > (document.customize.endDate.value + ' ' + document.customize.endTime.value)) {
+    popModalWindowWithHTML(600, 200,
+        "<h3>Error</h3>" +
+        "The start date must precede the end date.");
+    return false;
+  }
+  if ((document.customize.startDate.value + ' ' + document.customize.startTime.value) < sdate) {
+    popModalWindowWithHTML(600, 250,
+        "<h3>Warning</h3>" +
+        "You have requested data prior to " + sdate + ", which is the earliest available date/time.  The start date/time will be reset.");
+    document.customize.startDate.value = sdate.substr(0, 10);
+    document.customize.startTime.value = sdate.substr(11, 5);
+  }
+  if ((document.customize.endDate.value + ' ' + document.customize.endTime.value) > edate) {
+    popModalWindowWithHTML(600, 250,
+        "<h3>Warning</h3>" +
+        "You have requested data beyond " + edate + ", which is the latest available date/time.  The end date/time will be reset.");
+    document.customize.endDate.value = edate.substr(0, 10);
+    document.customize.endTime.value = edate.substr(11, 5);
+  }
+  num_checkboxes = 0;
+  num_checked = 0;
+  for (n = 0; n < document.customize.elements.length; ++n) {
+    if (document.customize.elements[n].name == "parameter") {
+        ++num_checkboxes;
+        if (document.customize.elements[n].checked) {
+          ++num_checked;
+        }
+    }
+  }
+  if (num_checked == 0) {
+    popModalWindowWithHTML(600, 200,
+        "<h3>Error</h3>" +
+        "You must choose at least one parameter from the list.");
+    return false;
+  }
+  for (n = 0; n < document.customize.elements.length; ++n) {
+    if (document.customize.elements[n].name == "parameter" && document.customize.elements[n].checked) {
+      if (parameters.length > 0) {
+        parameters += '&';
+      }
+      parameters += 'parameter=' + document.customize.elements[n].value;
+    }
+  }
+  parameters += '&startDate=' + document.customize.startDate.value + '&startTime=' + document.customize.startTime.value + '&endDate=' + document.customize.endDate.value + '&endTime=' + document.customize.endTime.value;
+  {% if listtyp != "subset" %}
+  if (document.customize.ptfile && document.customize.ptfile.value.length > 0) {
+    parameters += '&ptfile=' + document.customize.ptfile.value;
+  }
+  {% endif %}
+  if (document.customize.gindex) {
+    if (document.customize.gindex.nodeName == "SELECT") {
+      idx = document.customize.gindex.selectedIndex;
+      if (idx > 0) {
+        parameters += '&gindex=' + document.customize.gindex[idx].value +
+            '&gtitle=' + document.customize.gindex[idx].text;
+      }
+    } else {
+      parameters += '&gindex=' + document.customize.gindex.value + '&gtitle=' +
+          document.customize.gtitle.value;
+    }
+  }
+  if (document.customize.preset && document.customize.preset.selectedIndex > 0) {
+    parameters += '&preset=' + document.customize.preset[document.customize.preset.selectedIndex].value;
+  }
+  if (document.customize.date_type) {
+    for (n = 0; n < document.customize.date_type.length; ++n) {
+        if (document.customize.date_type[n].checked && document.customize.date_type[n].value == "init") {
+          parameters += '&init=yes';
+        }
+    }
+  }
+  parameters += "&csrfmiddlewaretoken={{ csrf_token }}";
+  getContentFromPost('ds_content', '/datasets/{{ dsid }}/facbrowse/{{ listtyp }}/query/grml/', parameters, 'Checking your selections ...');
+  window.scrollTo(0, 0);
+}
+
+function showMostRecent() {
+  post_data = "startDate={{ recent_start_date }}&startTime=00:00&endDate=" +
+      "&endTime=&csrfmiddlewaretoken={{ csrf_token }}";
+  let params = new Array();
+  for (n = 0; n < document.customize.elements.length; ++n) {
+    if (document.customize.elements[n].name == "parameter") {
+      params.push(document.customize.elements[n].value);
+    }
+  }
+  if (params.length > 0) {
+    post_data += "&parameter=" + params.join("&parameter=");
+  }
+  {% if gindex %}
+  post_data += "&gindex={{ gindex }}&gtitle={{ gtitle }}";
+  {% endif %}
+  getContentFromPost('ds_content',
+      '/datasets/{{ dsid }}/facbrowse/{{ listtyp }}/query/grml/', post_data,
+      'Checking your selections ...');
+}
+</script>
+
+{% if listtyp == "subset" %}
+<h2 class="font-weight-bolder"><i class="fas fa-pizza-slice pe-2"></i>Get a Subset</h2>
+<p>
+    A subset is a partial selection of the records from each data file.  Make selections from the following options to request a subset of data that matches your selections (you will then have further opportunity to refine your subset), and then click the "Continue" button below.
+</p>
+<p>
+    <a href="/resources/web-services/" target="_scriptsubmit">Can I submit requests without going through this interface?</a> <sup><i class="fas fa-external-link-alt" alt="opens in a new window" title="opens in a new window"></i></sup>
+</p>
+{% elif listtyp == "weblist" %}
+<h2 class="font-weight-bolder"><i class="fas fa-file-download pe-2"></i>Web Download Files - Create a File List</h2>
+{% elif listtyp == "gladelist" %}
+<h2 class="font-weight-bolder"><i class="fas fa-file-download pe-2"></i>GLobally Accessible Data Environment (GLADE) Files</h2>
+{% endif %}
+{% if listtyp == "weblist" or listtyp == "gladelist" %}
+<p>
+    Make selections from the following options (or accept the defaults) and then click the "Continue" button below. You will get a list of {% if listtyp == "gladelist" %}GLADE{% endif %} data files that match your selections, and you will have further opportunity to refine your list.
+</p>
+{% if recent_start_date %}
+<p>
+    You can also view only the <a href="javascript:void(0)" onclick="showMostRecent()">most recently-added</a> data files.
+</p>
+{% endif %}
+{% endif %}
+<ul class="pt-1">
+    <form name="customize" action="post" onsubmit="return doCustomize()">
+        {% if gindex %}
+        <div class="mt-2">
+            <b class="text-uppercase">Dataset Product:</b>&nbsp;{{ gtitle }}
+            <input type="hidden" name="gindex" value="{{ gindex }}">
+            <input type="hidden" name="gtitle" value="{{ gtitle }}">
+        </div>
+        {% elif groups and groups|length > 1 %}
+        <div class="mt-2">
+            <b class="text-uppercase">Dataset Product:</b>&nbsp;
+            <select name="gindex" onchange="changed_selection=true">
+                <option value="">All</option>
+                {% for group in groups %}
+                <option value="{{ group.gindex }}">{{ group.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div class="mt-2">
+            <b class="text-uppercase">Temporal Selection:</b>
+            <input class="font-monospace ms-1" type="text" name="startDate" size="10" maxlength="10" value="{{ set_start }}">
+            <select class="ms-1" name="startTime" onchange="changed_selection=true">
+                {% for time in times %}
+                <option value="{{ time }}" {% if time == start_time %}selected{% endif %}>{{ time }}</option>
+                {% endfor %}
+            </select>
+            <i class="fas fa-calendar-alt fa-lg ms-1" onclick="showCalendar('calendar_div', 'customize.startDate')"></i>
+            <b class="text-uppercase ms-2 me-1">to</b>
+            <input class="font-monospace ms-1" type="text" name="endDate" size="10" maxlength="10" value="{{ end_date }}">
+            <select class="ms-1" name="endTime" onchange="changed_selection=true">
+                {% for time in times %}
+                <option value="{{ time }}" {% if time == end_time %}selected{% endif %}>{{ time }}</option>
+                {% endfor %}
+            </select>
+            <i class="fas fa-calendar-alt fa-lg ms-1" onclick="showCalendar('calendar_div', 'customize.endDate')"></i>
+            {% if set_start != start_date %}&nbsp;(set for the most recent {% if tnum > 1 %}{{ tnum }}&nbsp;{% endif %}{{ tunit }}, but data go back to {{ start_date }}){% endif %}
+            <div class="component single-column container-lg mb-2">
+                <div class="row gx-0">
+                    <div class="col-auto col-md-auto">
+                        <div class="form-check ms-3">
+                            <input class="form-check-input" type="radio" name="date_type" id="_valid" value="valid" checked>
+                            <label class="form-check-label" for="_valid">Valid Time</label>
+                        </div>
+                    </div>
+                    <div class="col-auto col-md">
+                        <div class="form-check ms-3">
+                            <input class="form-check-input" type="radio" name="date_type" id="_init" value="init">
+                            <label class="form-check-label" for="_init">Initialization (Reference) Time</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-2">
+            <b class="text-uppercase">{% if curl_subset %}<sup>&dagger;</sup> {% endif %}Parameter Selection:</b> (you must choose at least one; there is no default)
+            <ul class="mt-0">
+                {% if presets %}
+                <nobr>Parameter presets:&nbsp;
+                <select name="preset" onchange="setPreset()">
+                    <option>None chosen</option>
+                    {% for preset in presets %}
+                    <option value="{{ preset.description }}">{{ preset.description }}</option>
+                    {% endfor %}
+                </select>
+                <a href="javascript:void(0)" onclick="popModalWindowWithHTML(600, 300, '{% include_strip "facbrowse/presets.html" %}')">&nbsp;<i class="fas fa-info-circle"></i></a></nobr>
+                <br>
+                <br>
+                {% endif %}
+                <div class="component two-column container-lg overflow-hidden mb-1">
+                    {% for p in parameters %}
+                    <div class="row gx-0">
+                        <div class="col-12 col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="parameter" id="param{{ p.0.index }}" value="{{ p.0.codes }}[!]{{ p.0.long_name }}">
+                                <label class="form-check-label" for="param{{ p.0.index }}">{{ p.0.long_name }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            {% if p.1 %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="parameter" id="param{{ p.1.index }}" value="{{ p.1.codes }}[!]{{ p.1.long_name }}">
+                                <label class="form-check-label" for="param{{ p.1.index }}">{{ p.1.long_name }}</label>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if curl_subset %}
+                <b><sup>&dagger;</sup></b> This dataset has data files that can be subsetted using <a href="http://curl.haxx.se/" target="_blank">cURL&nbsp;<sup><i class="fas fa-external-link-alt" alt="opens in a new window" title="opens in a new window"></i></sup></a>.  If you make one or more parameter selections, you will get more information about this in your list of data files.
+                {% endif %}
+            </ul>
+        </div>
+        {% if part_file %}
+        <div class="mt-2">
+            <b class="text-uppercase">Partial Filename:</b>&nbsp;<sup><a href="javascript:void(0)" onmouseover="popInfo(this, 'pfnhelp', '#f0f0ff', 'center', 'bottom')" onmouseout="hideInfo('pfnhelp')"><i class="fas fa-info-circle fa-lg"></i></a></sup>&nbsp;<input type="text" name="ptfile" class="font-monospace" size="30" value="{{ part_file.value }}">&nbsp;<small>(you can use either <font color="green">*</font> or <font color="green">%</font> to match one or more characters)</small>
+        </div>
+        <div id="pfnhelp" class="info">
+            If you know a filename or partial filename, you can enter it and your file list will only contain data files that match your entry.
+        </div>
+        {% endif %}
+        <br>
+        <center class="mt-2">
+            <a href="javascript:void(0)" class="btn btn-primary px-2 py-1 border-1" onclick="doCustomize()">Continue</a>
+            <a href="javascript:void(0)" class="btn btn-primary px-2 py-1 border-1 ms-2" onclick="document.customize.reset()">Reset</a>
+        </center>
+    </form>
+</ul>
+<div id="calendar_div" class="calendar"></div>
+<img src="/images/transpace.gif" onload="window.scrollTo(0, document.getElementsByTagName('header')[0].offsetHeight)">
