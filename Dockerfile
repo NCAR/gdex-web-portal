@@ -73,7 +73,7 @@ cat <<EOFCAT > /usr/local/bin/start_web_server
 /usr/local/gdexweb/manage.py makemigrations
 /usr/local/gdexweb/manage.py migrate
 /usr/local/gdexweb/manage.py collectstatic --noinput
-python3.11 /usr/local/gdexweb/manage.py ensuresuperuser
+python /usr/local/gdexweb/manage.py ensuresuperuser
 gunicorn --bind 0.0.0.0:443 --workers 4 gdexwebserver.wsgi
 EOFCAT
 EOF
