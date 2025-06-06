@@ -34,22 +34,52 @@ jobs:
       - name: Export secrets
         id: secrets
         run: |
+          echo "DSSDB_USERNAME=${{ secrets.DSSDB_USERNAME }}" >> $GITHUB_ENV
+          echo "DSSDB_PASSWORD=${{ secrets.DSSDB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DSSDB_HOST=${{ secrets.DSSDB_HOST }}" >> $GITHUB_ENV
+          echo "DSSDB_DBNAME=${{ secrets.DSSDB_DBNAME }}" >> $GITHUB_ENV
           echo "WAGTAIL_USERNAME=${{ secrets.WAGTAIL_USERNAME }}" >> $GITHUB_ENV
           echo "WAGTAIL_PASSWORD=${{ secrets.WAGTAIL_PASSWORD }}" >> $GITHUB_ENV
           echo "WAGTAIL_HOST=${{ secrets.WAGTAIL_HOST }}" >> $GITHUB_ENV
           echo "WAGTAIL_DBNAME=${{ secrets.WAGTAIL_DBNAME }}" >> $GITHUB_ENV
           echo "WAGTAIL_PORT=${{ secrets.WAGTAIL_PORT }}" >> $GITHUB_ENV
+          echo "METADATA_USERNAME=${{ secrets.METADATA_USERNAME }}" >> $GITHUB_ENV
+          echo "METADATA_PASSWORD=${{ secrets.METADATA_PASSWORD }}" >> $GITHUB_ENV
+          echo "METADATA_HOST=${{ secrets.METADATA_HOST }}" >> $GITHUB_ENV
+          echo "METADATA_DBNAME=${{ secrets.METADATA_DBNAME }}" >> $GITHUB_ENV
           echo "DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}" >> $GITHUB_ENV
           echo "DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}" >> $GITHUB_ENV
           echo "DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL}}" >> $GITHUB_ENV
+          echo "DJANGO_DEV_SECRET=${{ secrets.DJANGO_DEV_SECRET }}" >> $GITHUB_ENV
+          echo "DJANGO_PRODUCTION_SECRET=${{ secrets.DJANGO_PRODUCTION_SECRET }}" >> $GITHUB_ENV
+          echo "ORCID_AUTH_APP_CLIENT_ID=${{ secrets.ORCID_AUTH_APP_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "ORCID_AUTH_APP_SECRET=${{ secrets.ORCID_AUTH_APP_SECRET }}" >> $GITHUB_ENV
+          echo "GLOBUS_AUTH_APP_CLIENT_ID=${{ secrets.GLOBUS_AUTH_APP_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "GLOBUS_AUTH_APP_SECRET=${{ secrets.GLOBUS_AUTH_APP_SECRET }}" >> $GITHUB_ENV
+          echo "GLOBUS_APP_CLIENT_ID=${{ secrets.GLOBUS_APP_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "GLOBUS_APP_CLIENT_SECRET=${{ secrets.GLOBUS_APP_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "GLOBUS_APP_PRIVATE_KEY=${{ secrets.GLOBUS_APP_PRIVATE_KEY }}" >> $GITHUB_ENV
+          echo "GLOBUS_TRANSFER_REFRESH_TOKEN=${{ secrets.GLOBUS_TRANSFER_REFRESH_TOKEN }}" >> $GITHUB_ENV
+          echo "GLOBUS_AUTH_REFRESH_TOKEN=${{ secrets.GLOBUS_AUTH_REFRESH_TOKEN }}" >> $GITHUB_ENV
+          echo "GMAP_API_KEY=${{ secrets.GMAP_API_KEY }}" >> $GITHUB_ENV
       - name: Build a new version of container
         run: >
           docker build --platform linux/amd64
           --build-arg VERSION_NUMBER=$VERSION_NUMBER
+          --secret id=DSSDB_USERNAME --secret id=DSSDB_PASSWORD --secret id=DSSDB_HOST
+          --secret id=DSSDB_DBNAME
           --secret id=WAGTAIL_USERNAME --secret id=WAGTAIL_PASSWORD
           --secret id=WAGTAIL_HOST --secret id=WAGTAIL_PORT --secret id=WAGTAIL_DBNAME
+          --secret id=METADATA_USERNAME --secret id=METADATA_PASSWORD --secret id=METADATA_HOST
+          --secret id=METADATA_DBNAME
           --secret id=DJANGO_SUPERUSER_USERNAME --secret id=DJANGO_SUPERUSER_PASSWORD
           --secret id=DJANGO_SUPERUSER_EMAIL
+          --secret id=ORCID_AUTH_APP_CLIENT_ID --secret id=ORCID_AUTH_APP_SECRET
+          --secret id=GLOBUS_AUTH_APP_CLIENT_ID --secret id=GLOBUS_AUTH_APP_SECRET
+          --secret id=GLOBUS_APP_CLIENT_ID --secret id=GLOBUS_APP_CLIENT_SECRET
+          --secret id=GLOBUS_APP_PRIVATE_KEY
+          --secret id=GLOBUS_TRANSFER_REFRESH_TOKEN --secret id=GLOBUS_AUTH_REFRESH_TOKEN
+          --secret id=GMAP_API_KEY
           -t dattore/gdex-web-portal:v$VERSION_NUMBER
           --no-cache .
       - name: Push the new image to Docker Hub
