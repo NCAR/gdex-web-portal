@@ -1,0 +1,51 @@
+<script id="submit_adoptdoi_script" language="javascript">
+function verifyDOI() {
+  if (document.adopt.doi.value.length == 0) {
+    alert("You must enter a DOI to adopt");
+    return false;
+  }
+  if (document.adopt.doi.value.substr(0, 3) != "10.") {
+    alert("You must enter a valid DOI");
+    return false;
+  }
+  loadSlug(null, 'adopt/{{ data.dsid }}/', 'vdoi=' + document.adopt.doi.value + '&csrfmiddlewaretoken={{ csrf_token }}');
+  return true;
+}
+</script>
+{% if 'verified' in data %}
+    {% if data.verified %}
+        {% if data.usable %}
+            {% if 'error' in data %}
+            <h2>An Error Occurred</h2>
+            <p>
+                {{ data.error }}
+            </p>
+            {% else %}
+            <h2>DOI Successfully Adopted</h2>
+            <p>
+                The DOI that you entered has been successfully adopted. You can view the DOI registration at our DOI registration and management service: <a href="https://commons.datacite.org/doi.org/doi:{{ data.vdoi }}" target="_doi_reg">https://commons.datacite.org/doi.org/doi:{{ data.vdoi }}</a>.
+            </p>
+            {% endif %}
+        {% else %}
+        <h2>DOI Already In Use</h2>
+        <p>
+            The DOI that you entered is already in use by the RDA. This DOI cannot be adopted.
+        </p>
+        {% endif %}
+    {% else %}
+    <h2>DOI Not Found</h2>
+    <p>
+        The DOI that you entered does not exist, or is not registered with DataCite. This DOI cannot be adopted.
+    </p>
+    {% endif %}
+{% else %}
+<h2>Adopt an External DOI for RDA Dataset {{ data.dsid }}</h2>
+<center>
+    <form name="adopt" action="javascript:void(0)" onsubmit="return verifyDOI()">
+        <div class="mt-2">
+            <h5 class="d-inline-block">External DOI:</h5>&nbsp;<input type="text" name="doi" size="30" placeholder="10.xxx.../yyy...">
+        </div>
+        <button class="btn btn-primary px-2 py-1 border-1 mt-2">Continue</button>
+    </form>
+</center>
+{% endif %}

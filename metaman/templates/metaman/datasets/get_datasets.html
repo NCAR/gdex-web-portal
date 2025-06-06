@@ -1,0 +1,40 @@
+<script id="dataset_script" language="javascript">
+function doDatasetFormSubmit() {
+  var d = document.dataset_form.dataset.value;
+  var index = d.indexOf("  ");
+  while (index >= 0) {
+    d = d.substr(0, index) + d.substr(index+1, 32768);
+    index = d.indexOf("  ");
+  }
+  index = d.indexOf(" ");
+  while (index == 0) {
+    d = d.substr(1, 32768);
+    index = d.indexOf(" ");
+  }
+  var added_dataset = false;
+  const r = /^d[0-9]{6}$/;
+  var dvals = d.split(" ");
+  for (m = 0; m < dvals.length; ++m) {
+    if (!r.test(dvals[m])) {
+      alert("Enter the dataset(s) as dnnnnnn");
+      return false;
+    }
+    if (dvals[m] != "{{ edit_dsid }}") {
+      addItem('{{ type }}_datasets_field', dvals[m]);
+      added_dataset = true;
+    }
+  }
+  return added_dataset;
+}
+</script>
+<center>
+    <h2>Add {{ type|capfirst }} Dataset(s)</h2>
+    <form name="dataset_form" action="javascript:void(0)" onsubmit="return doDatasetFormSubmit()">
+        Enter the white-space-separated dataset(s) you wish to add:
+        <br>
+        <input type="text" class="fixedWidth14" name="dataset" size="50">
+        <br>
+        <br>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.dataset_form.submit()">Add Dataset(s)</button>
+    </form>
+</center>

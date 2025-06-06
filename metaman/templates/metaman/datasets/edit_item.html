@@ -1,0 +1,17 @@
+{% if error %}
+<p>
+    {{ error }}
+</p>
+{% else %}
+<center>
+    <h2>{{ title }}</h2>
+    <form>
+        <select onchange="editItem('{{ item }}', this.value)">
+            <option value="">Choose from list</option>
+            {% for option in options %}
+            <option value="{{ option.value }}">{{ option.description }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</center>
+{% endif %}

@@ -1,0 +1,11 @@
+<center>
+    <h2>Add a Dataset Contact</h2>
+    <form name="contact_form">
+        <select onchange="addItem('contacts_field', this.value, 'contact')">
+            <option value="">Choose a contact</option>
+            {% for contact in contacts %}
+            <option value="{{ contact }}">{{ contact }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</center>

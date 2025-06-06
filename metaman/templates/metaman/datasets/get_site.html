@@ -1,0 +1,52 @@
+<script id="site_script" language="javascript">
+function checkSiteForm() {
+  if (document.site_form.url.value.substr(0,7) != "http://" && document.site_form.url.value.substr(0,8) != "https://" && document.site_form.url.value.substr(0,6) != "ftp://") {
+    alert("Enter a valid URL");
+    return false;
+  }
+  if (document.site_form.description.value.length == 0) {
+    alert("Enter a URL description");
+    return false;
+  }
+  if (document.site_form.description.value.indexOf("\"") >= 0) {
+    alert("Double quotes are not allowed in the description (single quotes are okay)");
+    return false;
+  }
+  var i=document.site_form.url.value+'[!]'+document.site_form.description.value;
+  {% if 'replace_item' in data %}
+  replaceItem('related_sites_field', '{{ data.replace_item }}', i);
+  {% else %}
+  addItem('related_sites_field', i);
+  {% endif %}
+  return true;
+}
+</script>
+<center>
+    <h2>{% if 'replace_item' in data %}Edit{% else %}Add{% endif %} a Related Website</h2>
+</center>
+<p>
+    Required fields are denoted by a <font color="red"><span class="var18">*</span></font>.  All other fields are optional.
+</p>
+<center>
+    <form name="site_form" action="javascript:void(0)" onsubmit="return checkSiteForm()">
+        <div class="component two-column container-lg overflow-hidden mb-3">
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2"></div>
+                <div class="col-12 col-md-10 text-start">
+                    <font color="red"><span class="var18">*</span></font>URL: (e.g. - <i>https://rda.ucar.edu/pub/reanalyses.html</i> or <i>ftp://ftp.ncdc.noaa.gov</i>)
+                    <br>
+                    <input type="text" class="fixedWidth14" name="url" size="80" value="{{ data.url }}">
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2"></div>
+                <div class="col-12 col-md-10 text-start">
+                    <font color="red"><span class="var18">*</span></font>Description:
+                    <br>
+                    <input type="text" class="fixedWidth14" name="description" size="80" value="{{ data.description }}">
+               </div>
+            </div>
+        </div>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.site_form.submit()">{% if 'replace_item' in data %}Save Changes{% else %}Add Website{% endif %}</button>
+    </form>
+</center>

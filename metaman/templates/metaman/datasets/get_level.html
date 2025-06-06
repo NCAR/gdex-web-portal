@@ -1,0 +1,212 @@
+<script id="level_script" language="javascript">
+function setValueAndUnits() {
+  var t = document.level_form.ltype[document.level_form.ltype.selectedIndex].value;
+  var list = document.level_form.lunits;
+  while (list.length > 0) {
+    for (n = 0; n < list.length; ++n)
+      list.options[n] = null;
+  }
+  if (document.level_form.lvalue) {
+    document.level_form.lvalue.disabled = false;
+  } else {
+    document.level_form.ltop.disabled = false;
+    document.level_form.lbottom.disabled = false;
+  }
+  if (t == "Isobaric level") {
+    list.options[list.length] = new Option("millibars", "mbar");
+    list.options[list.length] = new Option("hectopascals", "hPa");
+    document.level_form.lunits.disabled = false;
+    return;
+  } else if (t == "Potential temperature level") {
+    list.options[list.length] = new Option("deg K", "deg K");
+    document.level_form.lunits.disabled = true;
+    return;
+  } else if (t == "Sigma level") {
+    list.options[list.length] = new Option("sigma", "sigma");
+    document.level_form.lunits.disabled = true;
+    return;
+  } else if (t == "Specified height above ground or water surface" || t == "Specified height below ground or water surface") {
+    list.options[list.length] = new Option("meters", "m");
+    list.options[list.length] = new Option("feet", "feet");
+    document.level_form.lunits.disabled = false;
+    return;
+  } else if (t == "Isobaric layer") {
+    list.options[list.length] = new Option("millibars", "mbar");
+    list.options[list.length] = new Option("hectopascals", "hPa");
+    document.level_form.lunits.disabled = false;
+    return;
+  } else if (t == "Isopycnal layer") {
+    list.options[list.length] = new Option("sigma-theta", "sigma-theta");
+    document.level_form.lbottom.disabled = true;
+    document.level_form.lunits.disabled = true;
+    return;
+  }
+  if (document.level_form.lvalue) {
+    document.level_form.lvalue.value = '0';
+    document.level_form.lvalue.disabled = true;
+  } else {
+    document.level_form.ltop.value='0';
+    document.level_form.lbottom.value='0';
+    document.level_form.ltop.disabled=true;
+    document.level_form.lbottom.disabled=true;
+  }
+  document.level_form.lunits.selectedIndex=0;
+  document.level_form.lunits.disabled=true;
+}
+
+function doLevelFormSubmit() {
+  var lu = "";
+  if (document.level_form.ltype.selectedIndex == 0) {
+    alert("Choose the type of {% if data.type == "level" %}level{% else %}layer{% endif %}");
+    return false;
+  }
+  if (document.level_form.lvalue) {
+    var goodvalue = true;
+    if (document.level_form.lvalue.value.length == 0) {
+      alert("Enter a value(s) for the level(s)");
+      return false;
+    }
+    if (document.level_form.lunits.length > 0)
+      lu = document.level_form.lunits[document.level_form.lunits.selectedIndex].value;
+    var levels = document.level_form.lvalue.value.split(',');
+    for (x = 0; x < levels.length; ++x) {
+      levels[x] = levels[x].replace(/^\s+|\s+$/g, '');
+      if (levels[x].length == 0) {
+        goodvalue = false;
+      }
+      if (goodvalue) {
+        for (n = 0; n < levels[x].length; ++n) {
+          if ((levels[x].charAt(n) < '0' || levels[x].charAt(n) > '9') && levels[x].charAt(n) != '.') {
+            goodvalue = false;
+            break;
+          }
+        }
+      }
+      if (!goodvalue) {
+        alert("Enter level values as positive integers or floating point numbers");
+        return false;
+      }
+      var l = document.level_form.ltype[document.level_form.ltype.selectedIndex].value + '[!]' + levels[x] + '[!]' + lu;
+      addItem('levels_field', l);
+    }
+  } else {
+    var goodvalue = true;
+    if (document.level_form.ltop.value.length == 0) {
+      alert("Enter a value(s) for the layer top(s)");
+      return false;
+    }
+    if (document.level_form.lbottom.value.length == 0) {
+      alert("Enter a value(s) for the layer bottom(s)");
+      return false;
+    }
+    if (document.level_form.lunits.length > 0)
+      lu = document.level_form.lunits[document.level_form.lunits.selectedIndex].value;
+    var layer_tops = document.level_form.ltop.value.split(',');
+    var layer_bottoms = document.level_form.lbottom.value.split(',');
+    if (layer_tops.length != layer_bottoms.length) {
+      alert("The specified number of layer tops and layer bottoms do not agree");
+      return false;
+    }
+    for (x = 0; x < layer_tops.length; ++x) {
+      layer_tops[x] = layer_tops[x].replace(/^\s+|\s+$/g, '');
+      if (layer_tops[x].length == 0) {
+        goodvalue = false;
+      }
+      if (goodvalue) {
+        for (n = 0; n < layer_tops[x].length; ++n) {
+          if ((layer_tops[x].charAt(n) < '0' || layer_tops[x].charAt(n) > '9') && layer_tops[x].charAt(n) != '.') {
+            goodvalue = false;
+            break;
+          }
+        }
+      }
+      if (!goodvalue) {
+        alert("Enter layer top values as positive integer or floating point numbers");
+        return false;
+      }
+      layer_bottoms[x] = layer_bottoms[x].replace(/^\s+|\s+$/g, '');
+      if (layer_bottoms[x].length == 0) {
+        goodvalue = false;
+      }
+      if (goodvalue) {
+        for (n = 0; n < layer_bottoms[x].length; ++n) {
+          if ((layer_bottoms[x].charAt(n) < '0' || layer_bottoms[x].charAt(n) > '9') && layer_bottoms[x].charAt(n) != '.') {
+            goodvalue = false;
+            break;
+          }
+        }
+      }
+      if (!goodvalue) {
+        alert("Enter layer bottom values as positive integer or floating point numbers");
+        return false;
+      }
+      var l = document.level_form.ltype[document.level_form.ltype.selectedIndex].value + '[!]' + layer_tops[x] + '[!]' + layer_bottoms[x] + '[!]' + lu;
+      addItem('levels_field', l);
+    }
+  }
+  return true;
+}
+
+function fillBottom() {
+  var t = document.level_form.ltype[document.level_form.ltype.selectedIndex].value;
+  if (t == "Isopycnal layer")
+    document.level_form.lbottom.value = document.level_form.ltop.value;
+}
+</script>
+<center>
+    <h2>Add {% if data.type == "layer" %}a {% endif %}Vertical {% if data.type == "level" %}Levels{% else %}Layer{% endif %}
+</h2>
+    <form name="level_form" action="javascript:void(0)" onsubmit="return doLevelFormSubmit()">
+        <div class="component two-column container-lg overflow-hidden mb-1">
+            <div class="row gx-0 gx-md-1 mb-2">
+                <div class="col-12 col-md-4 text-end">
+                    <font color="red">*</font>Choose the type:
+                </div>
+                <div class="col-12 col-md-8 text-start">
+                    <select name="ltype" onChange="setValueAndUnits()">
+                        <option value="">choose one</option>
+                        {% for option in data.level_options %}
+                        <option value="{{ option.value }}">{{ option.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% if data.type == "level" %}
+            <div class="row gx-0 gx-md-1 mb-2">
+                <div class="col-12 col-md-4 text-end">
+                    <font color="red">*</font>Enter the value(s):
+                </div>
+                <div class="col-12 col-md-8 text-start">
+                    <input type="text" class="fixedWidth14" name="lvalue" size="50"><br><small>(enter multiple values separated by commas; must be positive integers or floating point numbers)</small>
+                </div>
+            </div>
+            {% else %}
+            <div class="row gx-0 gx-md-1 mb-2">
+                <div class="col-12 col-md-4 text-end">
+                    <font color="red">*</font>Enter the *TOP* value:
+                </div>
+                <div class="col-12 col-md-8 text-start">
+                    <input type="text" class="fixedWidth14" name="ltop" size="10" onBlur="fillBottom()"> <small>(must be a positive integer or floating point number)</small>
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mb-2">
+                <div class="col-12 col-md-4 text-end">
+                    <font color="red">*</font>Enter the *BOTTOM* value:
+                </div>
+                <div class="col-12 col-md-8 text-start">
+                    <input type="text" class="fixedWidth14" name="lbottom" size="10"> <small>(must be a positive integer or floating point number)</small>
+                </div>
+            </div>
+            {% endif %}
+            <div class="row gx-0 gx-md-1 mb-2">
+                <div class="col-12 col-md-4 text-end">
+                    <font color="red">*</font>Choose the units:
+                </div>
+                <div class="col-12 col-md-8 text-start">
+                    <select name="lunits"><option value="">first choose the type</option></select>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.level_form.submit()">Add {% if data.type == "level" %}Level(s){% else %}a Layer{% endif %}</button>
+    </form>
+</center>

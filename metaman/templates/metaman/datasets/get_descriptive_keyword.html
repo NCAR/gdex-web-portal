@@ -1,0 +1,61 @@
+{% if error %}
+<p>
+    An error occurred: {{ error }}
+</p>
+{% elif 'search' in request.POST %}
+{% include "metaman/datasets/selection.html" with type=keyword_type %}
+{% else %}
+<center>
+    <script id="keyword_form_script" language="javascript">
+    function checkButtons() {
+      if (!document.get_keyword_form.toggle[1].checked) {
+        document.get_keyword_form.toggle[1].checked = true;
+        document.get_keyword_form.toggle[0].checked = false;
+      }
+    }
+
+    function checkForm() {
+      let f = document.get_keyword_form;
+      if (!f.toggle[0].checked && !f.toggle[1].checked) {
+        alert("Choose one of the options");
+        return false;
+      }
+      if (f.toggle[1].checked && f.search.value.length == 0) {
+        alert("You have not entered any search criteria");
+        return false;
+      }
+      var b = document.getElementById("submit_button");
+      b.innertHTML = "Working...";
+      b.disabled = true;
+      getContentFromPost('modal-window-content', 'get_{{ keyword_type }}/', 'search=' + f.search.value + '&csrfmiddlewaretoken={{ csrf_token }}');
+      return true;
+    }
+    </script>
+    {% with 'A, E, I, O, U' as vowels %}
+    <h2>Add a{% if keyword_title|slice:"0:1" in vowels %}n{% endif %} {{ keyword_title }} Keyword</h2>
+    {% endwith %}
+    <form name="get_keyword_form" action="javascript:void(0)" onsubmit="return checkForm()">
+        <div class="component two-column container-lg overflow-hidden mb-3">
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2"></div>
+                <div class="col-12 col-md-auto">
+                    <input id="show_all" type="radio" name="toggle" onclick="document.get_keyword_form.search.value='SHOW_ALL'">
+                </div>
+                <div class="col-12 col-md-8 text-start">
+                    <label for="show_all">show all {{ keyword_title }} keywords</label>
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2"></div>
+                <div class="col-12 col-md-auto">
+                    <input type="radio" name="toggle">
+                </div>
+                <div class="col-12 col-md-8 text-start">
+                    search for {{ keyword_title }} keywords containing the word(s):&nbsp;<input type="text" class="fixedWidth14" name="search" size="20" onfocus="checkButtons()">
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary px-2 py-1 border-1" id="submit_button" onclick="document.get_keyword_form.submit()">Go</button>
+    </form>
+</center>
+{% endif %}

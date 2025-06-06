@@ -1,0 +1,29 @@
+{% if toggle_access %}
+<h2>Web Access for {{ dsid }}</h2>
+<p>
+    Web access to the data files in {{ dsid }} has been successfully turned <b class="text-decoration-underline">{{ inet_option }}</b>.
+</p>
+{% else %}
+<script id="toggleWeb_script" language="javascript">
+function toggleWeb() {
+  if (!document.toggle_web.elements[0].checked) {
+    alert("There is nothing to submit");
+  } else {
+    getContentFromPost('metaman_content', 'web-file-access/{{ dsid }}/', 'inetOption=' + document.toggle_web.elements[0].value + '&csrfmiddlewaretoken={{ csrf_token }}');
+  }
+}
+</script>
+<h2>Web Access for {{ dsid }}</h2>
+<p>
+    Web access to this dataset from the RDA web server is currently turned <b class="text-decoration-underline">{{ current_setting }}</b>.
+</p>
+<ul>
+    <form name="toggle_web" action="javascript:void(0)" onsubmit="toggleWeb()">
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="toggle_checkbox" value="{{ new_setting }}">
+            <label class="form-check-label" for="toggle_checkbox">Check this box to turn {{ new_setting }} web access</label>
+        </div>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.toggle_web.submit()">Submit</button>
+    </form>
+</ul>
+{% endif %}

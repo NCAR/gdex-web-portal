@@ -1,0 +1,35 @@
+<script id="version_script" language="javascript">
+function submitVersion(v) {
+  document.getElementById("metaman_content").innerHTML='<center><img src="/images/loader.gif" /><br /><span style="color: #a0a0a0">Loading...</span></center>';
+  getContentFromPost('metaman_content', 'edit/{{ dsid }}/', 'version=' + v + '&csrfmiddlewaretoken={{ csrf_token }}');
+}
+</script>
+<h2>Change History for {{ dsid }}</h2>
+<p>
+    The following table contains changes to the dataset since it has been under CVS control (version information from the old SCCS are no longer available). Click a CVS version number to seed the Metadata Manager with that version.
+</p>
+<center>
+    <p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th align="center">CVS Version</th>
+                    <th align="left">Date/Time (MST)</th>
+                    <th align="left">Specialist</th>
+                    <th align="left">Commit Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for version in versions %}
+                <tr>
+                    <td align="center"><a href="javascript:submitVersion('{{ version.key }}')">{{ version.key }}</a></td>
+                    <td align="left"><nobr>{{ version.data.timestamp }}</nobr></td>
+                    <td align="left">{{ version.data.specialist }}</td>
+                    <td align="left">{{ version.data.commit_msg }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </p>
+    <a href="javascript:void(0)" onclick="window.scrollTo(0, 0)">Back to Top</a>
+</center>

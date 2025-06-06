@@ -1,0 +1,216 @@
+<script id="preprint_script" language="javascript">
+function checkPreprintForm() {
+  var c;
+  var foundOneOfRequired=false;
+  if (document.preprint_form.ds_rel.selectedIndex == 0) {
+    alert("Choose how the dataset is related to this conference publication");
+    return false;
+  }
+  if (document.preprint_form.authlist.value.length == 0) {
+    alert("Enter the list of authors");
+    return false;
+  }
+
+  // clean up author list
+  var idx=document.preprint_form.authlist.value.indexOf(".  ");
+  while (idx > 0) {
+    document.preprint_form.authlist.value=document.preprint_form.authlist.value.substr(0,idx+1)+document.preprint_form.authlist.value.substr(idx+2,32768);
+    idx=document.preprint_form.authlist.value.indexOf(".  ");
+  }
+  idx=document.preprint_form.authlist.value.indexOf(" ,");
+  while (idx > 0) {
+    document.preprint_form.authlist.value=document.preprint_form.authlist.value.substr(0,idx)+document.preprint_form.authlist.value.substr(idx+1,32768);
+    idx=document.preprint_form.authlist.value.indexOf(" ,");
+  }
+  for (n=0; n < document.preprint_form.authlist.value.length; n++) {
+    if ((n+1) < document.preprint_form.authlist.value.length) {
+        if (document.preprint_form.authlist.value.charAt(n) == '.' && document.preprint_form.authlist.value.charAt(n+1) >= 'A' && document.preprint_form.authlist.value.charAt(n+1) <= 'Z')
+          document.preprint_form.authlist.value=document.preprint_form.authlist.value.substr(0,n+1)+' '+document.preprint_form.authlist.value.substr(n+1,32768);
+    }
+  }
+  if (document.preprint_form.pubyear.value.length == 0) {
+    alert("Enter the year of publication");
+    return false;
+  }
+  if (document.preprint_form.pubyear.value.length != 4) {
+    alert("Enter a valid year of publication");
+    return false;
+  }
+  if (document.preprint_form.pubtitle.value.length == 0) {
+    alert("Enter the publication title");
+    return false;
+  }
+  if (document.preprint_form.conf.value.length == 0) {
+    alert("Enter the name of the conference");
+    return false;
+  }
+  if (document.preprint_form.host.value.length == 0) {
+    alert("Enter the name of the host");
+    return false;
+  }
+  if (document.preprint_form.loc.value.length == 0) {
+    alert("Enter the location of the conference");
+    return false;
+  }
+  if (document.preprint_form.pages.value.length > 0) {
+    if (document.preprint_form.pages.value.indexOf("-") < 0) {
+      alert("Enter the page range as 'NN-nn'");
+      return false;
+    } else {
+      foundOneOfRequired=true;
+    }
+  }
+  if (document.preprint_form.doi.value.length > 0) {
+    if (document.preprint_form.doi.value.indexOf("10.") != 0 || document.preprint_form.doi.value.length < 9 || document.preprint_form.doi.value.indexOf("/") != 7) {
+      alert("The DOI must be of the form '10.nnnn/X...'.  Please enter a valid DOI.");
+      return false;
+    } else {
+      foundOneOfRequired=true;
+    }
+  }
+  if (document.preprint_form.url.value.length > 0) {
+    if(document.preprint_form.url.value.indexOf("http://") < 0 && document.preprint_form.url.value.indexOf("https://") < 0 && document.preprint_form.url.value.indexOf("ftp://") < 0) {
+      alert("Enter the full URL, including the leading 'http://', 'https://', or 'ftp://'");
+      return false;
+    } else {
+      foundOneOfRequired=true;
+    }
+  }
+  if (!foundOneOfRequired) {
+    alert("You must enter at least one of the pages, the DOI, or a URL");
+    return false;
+  }
+  c=document.preprint_form.authlist.value.charAt(document.preprint_form.authlist.value.length-1);
+  while (c == ' ') {
+    document.preprint_form.authlist.value=document.preprint_form.authlist.value.substr(0,document.preprint_form.authlist.value.length-1);
+    c=document.preprint_form.authlist.value.charAt(document.preprint_form.authlist.value.length-1);
+  }
+  c=document.preprint_form.pubyear.value.charAt(document.preprint_form.pubyear.value.length-1);
+  while (c < '0' || c > '9') {
+    document.preprint_form.pubyear.value=document.preprint_form.pubyear.value.substr(0,document.preprint_form.pubyear.value.length-1);
+    c=document.preprint_form.pubyear.value.charAt(document.preprint_form.pubyear.value.length-1);
+  }
+  c=document.preprint_form.pubtitle.value.charAt(document.preprint_form.pubtitle.value.length-1);
+  while (c == ' ' || c == '.') {
+    document.preprint_form.pubtitle.value=document.preprint_form.pubtitle.value.substr(0,document.preprint_form.pubtitle.value.length-1);
+    c=document.preprint_form.pubtitle.value.charAt(document.preprint_form.pubtitle.value.length-1);
+  }
+  c=document.preprint_form.conf.value.charAt(document.preprint_form.conf.value.length-1);
+  while (c == ' ') {
+    document.preprint_form.conf.value=document.preprint_form.conf.value.substr(0,document.preprint_form.conf.value.length-1);
+    c=document.preprint_form.conf.value.charAt(document.preprint_form.conf.value.length-1);
+  }
+  c=document.preprint_form.host.value.charAt(document.preprint_form.host.value.length-1);
+  while (c == ' ') {
+    document.preprint_form.host.value=document.preprint_form.host.value.substr(0,document.preprint_form.host.value.length-1);
+    c=document.preprint_form.host.value.charAt(document.preprint_form.host.value.length-1);
+  }
+  c=document.preprint_form.loc.value.charAt(document.preprint_form.loc.value.length-1);
+  while (c == ' ') {
+    document.preprint_form.loc.value=document.preprint_form.loc.value.substr(0,document.preprint_form.loc.value.length-1);
+    c=document.preprint_form.loc.value.charAt(document.preprint_form.loc.value.length-1);
+  }
+  var i='preprint[!]'+document.preprint_form.authlist.value+'[!]'+document.preprint_form.pubyear.value+'[!]'+document.preprint_form.pubtitle.value+'[!]'+document.preprint_form.host.value+'[+]'+document.preprint_form.loc.value+'[+]'+document.preprint_form.pages.value+'[+]'+document.preprint_form.conf.value;
+  i += '[!]ds_rel:' + document.preprint_form.ds_rel[document.preprint_form.ds_rel.selectedIndex].value;
+  if (document.preprint_form.doi.value.length > 0) {
+    i+='[!]doi:'+document.preprint_form.doi.value;
+  }
+  if (document.preprint_form.url.value.length > 0) {
+    i+='[!]url:'+document.preprint_form.url.value;
+  }
+  if (document.preprint_form.annotation.value.length > 0) {
+    i+='[!]comment:'+document.preprint_form.annotation.value;
+  }
+  {% if 'replace_item' in data %}
+  replaceItem('references_field', '{{ data.replace_item }}', i);
+  {% else %}
+  addItem('references_field', i);
+  {% endif %}
+  return true;
+}
+</script>
+<center>
+    <h2>{% if 'replace_item' in data %}Edit{% else %}Add{% endif %} a Conference Proceeding Reference</h2>
+</center>
+<p>
+    Required fields are denoted by a <font color="red"><span class="var18">*</span></font>.  At least one field denoted by a <font color="green"><span class="var18">*</span></font> is required.
+</p>
+<form name="preprint_form" action="javascript:void(0)" onsubmit="return checkPreprintForm()">
+    <div class="component two-column container-lg overflow-hidden mb-3">
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <font color="red"><span class="body-font-large">*</span></font>Relationship to the dataset:
+                <select class="d-block" name="ds_rel">
+                    <option>(choose one)</option>
+                    {% for option in data.relation_options %}
+                    <option value="{{ option.value }}" {% if 'ds_rel' in data and data.ds_rel == option.value %}selected{% endif %}>The dataset {{ option.description }} this conference publication.</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <font color="red"><span class="var18">*</span></font>Author(s): (e.g. - <i>Jones, J., S. Smith, and P. Davis</i>)<br><input type="text" class="fixedWidth14" name="authlist" size="80" value="{% if 'authors' in data %}{{ data.authors }}{% endif %}">
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <font color="red"><span class="var18">*</span></font>Year Published:&nbsp;<input type="text" class="fixedWidth14" name="pubyear" size="4" maxlength="4" value="{% if 'pub_year' in data %}{{ data.pub_year }}{% endif %}">
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <font color="red"><span class="var18">*</span></font>Title of Preprint:<br><input type="text" class="fixedWidth14" name="pubtitle" size="80" value="{% if 'pub_title' in data %}{{ data.pub_title }}{% endif %}">
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <font color="red"><span class="var18">*</span></font>Name of Conference:<br><input type="text" class="fixedWidth14" name="conf" size="80" value="{% if 'conference' in data %}{{ data.conference }}{% endif %}">
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <font color="red"><span class="var18">*</span></font>Host:&nbsp;(e.g. - <i>Amer. Meteor. Soc.</i>)<br><input type="text" class="fixedWidth14" name="host" size="30" value="{% if 'host' in data %}{{ data.host }}{% endif %}">
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <font color="red"><span class="var18">*</span></font>Location:&nbsp;(e.g. - <i>San Diego, CA</i>)<br><input type="text" class="fixedWidth14" name="loc" size="50" value="{% if 'location' in data %}{{ data.location }}{% endif %}">
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <font color="green"><span class="var18">*</span></font>Pages:&nbsp;(e.g. - <i>16-37</i>)&nbsp;<input type="text" class="fixedWidth14" name="pages" size="10" value="{% if 'pages' in data %}{{ data.pages }}{% endif %}">
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <font color="green"><span class="var18">*</span></font>Digital Object Identifier: (prefix/suffix only, e.g. - <i>10.1002/joc.1166</i>)<br /><input type="text" class="fixedWidth14" name="doi" size="80" value="{% if 'doi' in data %}{{ data.doi }}{% endif %}">
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <font color="green"><span class="var18">*</span></font>URL pointing to the article online:&nbsp;<input type="text" class="fixedWidth14" name="url" size="50" value="{% if 'url' in data %}{{ data.url }}{% endif %}">
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1 mt-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                Annotation (which will appear just below the reference; no HTML allowed):<br /><input type="text" class="fixedWidth14" name="annotation" size="80" value="{% if 'annotation' in data %}{{ data.annotation }}{% endif %}" />
+            </div>
+        </div>
+    </div>
+    <center>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.preprint_form.submit()">{% if 'replace_item' in data %}Save Changes{% else %}Add Reference{% endif %}</button>
+    </center>
+</form>

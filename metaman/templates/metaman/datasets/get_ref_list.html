@@ -1,0 +1,52 @@
+<script id="reflist_script" language="javascript">
+function checkRefListForm() {
+  if (document.reflist_form.url.value.indexOf("http://") < 0 && document.reflist_form.url.value.indexOf("https://") < 0 && document.reflist_form.url.value.indexOf("ftp://") < 0) {
+    alert("Enter the full URL, including the leading 'http://', 'https://', or 'ftp://'");
+    return false;
+  }
+  if (document.reflist_form.description.value.length == 0) {
+    alert("Enter a URL description");
+    return false;
+  }
+  if (document.reflist_form.description.value.indexOf("\"") >= 0) {
+    alert("Double quotes are not allowed in the description (single quotes are okay)");
+    return false;
+  }
+  var i = document.reflist_form.url.value + '[!]' + document.reflist_form.description.value;
+  {% if edit_item %}
+  replaceItem('reflists_field', '{{ edit_item }}', i);
+  {% else %}
+  addItem('reflists_field', i);
+  {% endif %}
+  return true;
+}
+</script>
+<center>
+    <h2>{% if edit_item %}Edit{% else %}Add{% endif %} a List of References</h2>
+</center>
+<p>
+    Required fields are denoted by a <font color="red"><span class="var18">*</span></font>.  All other fields are optional.
+</p>
+<center>
+    <form name="reflist_form" action="javascript:void(0)" onSubmit="return checkRefListForm()">
+        <div class="component two-column container-lg overflow-hidden mb-3">
+            <div class="row gx-0 gx-md-1">
+                <div class="col-12 col-md-2"></div>
+                <div class="col-12 col-md-10 text-start">
+                    <font color="red"><span class="var18">*</span></font> URL: (e.g. - <i>https://rda.ucar.edu/pub/reanalyses.html</i> or <i>ftp://ftp.ncdc.noaa.gov</i>)
+                    <br>
+                    <input type="text" class="fixedWidth14" name="url" size="80" value="{% if url %}{{ url }}{% endif %}">
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1">
+                <div class="col-12 col-md-2"></div>
+                <div class="col-12 col-md-10 text-start">
+                    <font color="red"><span class="var18">*</span></font> Description:<br><input type="text" class="fixedWidth14" name="description" size="80" value="{% if description %}{{ description }}{% endif %}">
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+        <button class="btn btn-primary px-2 py-1 border-1" onClick="document.reflist_form.submit()">{% if edit_item %}Save Changes{% else %}Add List{% endif %}</button>
+    </form>
+</center>

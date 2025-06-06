@@ -1,0 +1,114 @@
+{% autoescape off %}
+<h2>{% if action == "assign" %}Assign a DOI to{% elif action == "supersede" %}Supersede the DOI for{% endif %} Dataset {{ dsid }}</h2>
+{% if error %}
+<p>
+    An error occurred: '{{ error }}'
+</p>
+{% elif already_active %}
+<p>
+    This dataset already has an active DOI: <span class="underline">{{ adoi }}</span>.  If you wish to supersede this DOI, use the "Supersede" link in the menu instead.
+</p>
+{% elif noactive %}
+<p>
+    This dataset does not have an active DOI, so there is nothing to supersede. If you wish to assign a DOI to this dataset, use the "Create" link in the menu instead.
+</p>
+{% else %}
+<p>
+    <img src="/images/check.gif" width="16" height="16" />&nbsp;The dataset passed all of the internal checks.
+</p>
+{% if action == "assign" %}
+<p>
+    The DOI assignment process for this dataset was tested and it succeeded. Below is the citation for this dataset that will be provided to users so that they can cite the dataset in their publications.  Make sure it is correct, because it should not be changed once the DOI is assigned. For that reason, after DOI assignment, the <em>Title, Data Authors, Data Contributors, and Dataset Updates</em> fields for this dataset <strong>will be locked</strong>.
+    <div id="citation" style="border: thin solid black; padding: 5px; margin-bottom: 10px"></div>
+    If everything looks good, click the "Continue" button to assign a real DOI to the dataset, or the "Cancel" button to abort.
+</p>
+<p>
+    <em>If you are not sure if everything looks okay, you should <strong>NOT</strong> proceed with DOI creation at this time.</em>
+</p>
+<div class="overflow-auto">
+    <div class="d-inline-block float-start">
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="window.location = '/metaman/manage-dataset-dois/'">Cancel</button>
+    </div>
+    <div class="d-inline-block float-end">
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="loadSlug(null, 'create/{{ dsid }}/', 'passedTest=true&adoi={{ adoi }}&csrfmiddlewaretoken={{ csrf_token }}');window.scrollTo(0, 0)">Continue</button>
+    </div>
+</div>
+<script id="citation_script">
+function changeCitation() {
+  if (document.citation) {
+    var style = document.citation.style[document.citation.style.selectedIndex].value;
+  } else {
+    var style = 'esip';
+  }
+  document.getElementById("citation").innerHTML = "Loading the citation...<br><br>";
+  getContent('citation', '/cgi-bin/datasets/citation?dsnum={{ dsid }}&style=' + style);
+}
+registerAjaxCallback('changeCitation');
+</script>
+{% elif action == "supersede" %}
+<p>
+    The DOI assignment process for this dataset was tested and it succeeded.
+</p>
+<div>
+    <form action="javascript:void(0)">
+        Enter the reason for superseding the old DOI in the text box below.
+        <ul>
+            <li>
+                This information will be displayed to users on the landing page of the old DOI.
+            </li>
+            <li>
+                You do not need to point users to the current version of the dataset, as the landing page for the old DOI will already do that automatically.
+            </li>
+            <li>
+                HTML is allowed and the rules for this field are the same as for a dataset Abstract/Summary.
+            </li>
+        </ul>
+        <div id="save_msg_response_div" class="d-none mt-1"></div>
+        <div id="text_div" class="d-block">
+            <textarea class="fixedWidth14" id="msg" rows="10" cols="90"></textarea>
+            <div>
+                <button class="btn btn-primary px-2 py-1 border-1 mt-1" onclick="saveMessage()">Save and Continue</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="buttons_div" class="d-none mt-1">
+    Click the "Continue" button to supersede the current DOI ({{ adoi }}) and assign a new one, or the "Cancel" button to abort.
+    <div class="overflow-auto mt-2">
+        <div class="d-inline float-start">
+            <button class="btn btn-primary px-2 py-1 border-1" onclick="loadSlug(null, 'supersede/{{ dsid }}/', 'abort=true&adoi={{ adoi }}&csrfmiddlewaretoken={{ csrf_token }}');window.scrollTo(0, 0)">Cancel</button>
+        </div>
+        <div class="d-inline float-end">
+            <button class="btn btn-primary px-2 py-1 border-1" onclick="loadSlug(null, 'supersede/{{ dsid }}/', 'passedTest=true&adoi={{ adoi }}&csrfmiddlewaretoken={{ csrf_token }}');window.scrollTo(0, 0)">Continue</button>
+        </div>
+    </div>
+</div>
+<script id="save_script">
+function saveMessage() {
+  document.getElementById("text_div").classList.replace("d-block", "d-none");
+  var e = document.getElementById("save_msg_response_div");
+  e.innerHTML = "Saving...";
+  e.classList.replace("d-none", "d-block");
+  var m = document.getElementById("msg").value;
+  if (m.length == 0) {
+    alert("A reason for superseding the old DOI is required.");
+    return;
+  }
+  m = m.replace(/%/g,"%25").replace(/&/g,"%26");
+  getAjaxContent('POST', 'saveMessage=true&message=' + m + '&adoi={{ adoi }}&csrfmiddlewaretoken={{ csrf_token }}', 'supersede/{{ dsid }}/', 'save_msg_response_div', null, showButtons);
+}
+
+function showButtons() {
+  var e = document.getElementById("save_msg_response_div");
+  if (e.innerHTML == "Success") {
+    e.innerHTML = '<img src="/images/check.gif" width="16" height="16">&nbsp;Your information was successfully saved.';
+    document.getElementById("buttons_div").classList.replace("d-none", "d-block");
+  } else {
+    e.classList.replace("d-none", "d-block");
+    document.getElementById("text_div").classList.replace("d-none", "d-block");
+  }
+}
+</script>
+{% endif %}
+{% endif %}
+{% endautoescape %}

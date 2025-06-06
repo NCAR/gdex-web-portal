@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if page.slug == "metaman" %}
+<img src="/images/transpace.gif" onload="location='manage-datasets'">
+{% else %}
+<script language="javascript" type="text/javascript" src="/js/xhr_content2.js"></script>
+<link rel="stylesheet" href="/css/bubble.css">
+<script language="javascript" type="text/javascript" src="/js/popInfo.js"></script>
+<script id="load_metaman_content_script" type="text/javascript">
+    function loadMetamanContent(i, p) {
+      setActiveMenuItem(i);
+      getContentFromPost('metaman_content', '/cgi-bin/internal/metaman', p);
+    }
+
+    function loadSlug(i, s, p) {
+      document.getElementById("metaman_content").innerHTML = '<div class="text-center mt-3" id="loading"><strong>Loading ... &nbsp;&nbsp;</strong><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>';
+      setActiveMenuItem(i);
+      getContentFromPost('metaman_content', s, p);
+      anc_func = window.scrollTo(0, 0);
+    }
+
+    function setActiveMenuItem(i) {
+      if (i != null) {
+        const elist = document.getElementsByClassName("metaman-menu-item");
+        for (n = 0; n < elist.length; ++n) {
+          elist[n].classList.remove('active');
+        }
+        i.classList.add('active');
+      }
+    }
+</script>
+<style>
+    #metaman-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 7fr;
+      gap: 20px;
+      padding: 10px;
+    }
+</style>
+<h1>Metadata Manager</h1>
+<div class="metaman" id="metaman-wrapper">
+    <div id="metaman_menu">
+        <div class="sidebar-nav mt-0 py-2">
+            <ul class="nav flex-column">
+                {% for item in page.menu %}
+                <li class="nav-item" style="margin-left: 0.625em; text-indent: -0.625em">
+                    <a class="metaman-menu-item nav-link d-inline-block" href="javascript:void(0)" onclick="loadSlug(this, {% if item.value.requires_existing_dsid %}'choose-existing-dataset/', 'slug={{ item.value.title|slugify }}&description={{ item.value.description|urlencode }}&parent={{ page.slug }}&csrfmiddlewaretoken={{ csrf_token }}'{% else %}'{{ item.value.title|slugify }}/', 'csrfmiddlewaretoken={{ csrf_token }}'{% endif %})">&bull;&nbsp;{{ item.value.title }}</a>
+                </li>
+                {% endfor %}
+                <li class="nav-item">&nbsp;</li>
+                <li class="nav-item" style="margin-left: 0.625em; text-indent: -0.625em">
+                    <a class="nav-link d-inline-block" href="javascript:void(0)" onclick="popModalWindowWithGetUrl(400, 300, 'show-words/')">&bull;&nbsp;Spellcheck DB</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div style="grid-column: 2">
+        <ul class="nav nav-tabs" id="manager_tabs" role="tablist">
+        {% with page.get_parent as parent %}
+            {% for child in parent.get_children.specific %}
+                <li class="nav-item" role="manage">
+                    <a class="nav-link px-3 py-2 {% if child.slug == page.slug %}active{% endif %}" id="description-tab" data-toggle="tab" href="#" role="tab" aria-controls="description" aria-selected="{% if child.slug == page.slug %}true{% else %}false{% endif %}" onclick="location='/{{ parent.slug }}/{{ child.slug }}'">{{ child.tab_title }}</a>
+                </li>
+            {% endfor %}
+        {% endwith %}
+        </ul>
+        <div id="metaman_content" class="bg-white p-2">
+            <h2>{{ page.title }}</h2>
+            <p>
+                Select an action from the options in the menu to the left:
+            </p>
+            <ul>
+                {% for item in page.menu %}
+                <li>
+                    <span class="text-decoration-underline">{{ item.value.title }}</span> - {{ item.value.description }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% if 'editId' in request.GET %}
+<img src="/images/transpace.gif" onload="loadSlug(null, 'edit/{{ request.GET.editId }}/', 'csrfmiddlewaretoken={{ csrf_token }}')">
+{% endif %}
+{% endif %}
+{% endblock %}

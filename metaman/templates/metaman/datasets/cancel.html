@@ -1,0 +1,10 @@
+<h2>Cancel Dataset ID {{ dsid }}</h2>
+{% if database_error %}
+<p>
+    <b>Database Error:</b> {{ database_error }}
+</p>
+{% else %}
+<p>
+    This dataset ID has been successfully returned to the pool of available IDs.
+</p>
+{% endif %}

@@ -1,0 +1,22 @@
+<h2>Reorder the Author List</h2>
+<p>
+    Order the authors by adjusting the numbers in the boxes to the left of the author names.  The ordering that you specify will be the ordering that is used in the data citation.
+</p>
+<center>
+    <form name="order_form" action="javascript:void(0)">
+        <div class="component two-column container-lg overflow-hidden mb-3">
+            {% for author in authors %}
+            <div class="row gx-0 gx-md-1 mb-1">
+                <div class="col-12 col-md-3 text-end">
+                    <input class="fixedWidth16" style="text-align: right" type="text" value="{{ forloop.counter }}" size="2">
+                </div>
+                <div class="col-12 col-md-9 text-start">
+                    {{ author }}<input type="hidden" value="{{ author }}">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <br>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="orderAndUpdateAuthors({{ authors|length }})">Reorder the Authors</button>
+    </form>
+</center>

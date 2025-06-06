@@ -1,0 +1,47 @@
+<h2>Editing the Metadata for Dataset {{ dsid }}</h2>
+{% if database_error %}
+<p>
+    A database error occurred: <font color="red">{{ database_error }}</font>
+</p>
+{% elif lock_user %}
+<p>
+    This dataset is currently locked by <span class="text-decoration-underline">{{ lock_user }}</span>. If you have an immediate need to edit the metadata, see the named specialist.
+</p>
+{% else %}
+<script id="uncommitted_script" language="javascript">
+function doChangeFormSubmit() {
+  if (document.change_form.clear_changes[0].checked) {
+    document.getElementById("metaman_content").innerHTML = '<center><img src="/images/loader.gif" /><br /><span style="color: #a0a0a0">Loading...</span></center>';
+    getContentFromPost('metaman_content', 'edit/{{ dsid }}/', 'clear_changes=yes&csrfmiddlewaretoken={{ csrf_token }}');
+  } else if (document.change_form.clear_changes[1].checked) {
+    document.getElementById("metaman_content").innerHTML = '<center><img src="/images/loader.gif" /><br /><span style="color: #a0a0a0">Loading...</span></center>';
+    getContentFromPost('metaman_content', 'edit/{{ dsid }}/', 'clear_changes=no&csrfmiddlewaretoken={{ csrf_token }}');
+  } else {
+    alert("Please choose one of the options");
+  }
+}
+</script>
+<p>
+    This dataset has changes that have been recorded but not yet committed.  What would you like to do?
+</p>
+<form name="change_form">
+    <div class="component two-column container-lg overflow-hidden mb-1">
+        <div class="row gx-0 gx-md-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <label for="clear_changes_yes"><input type="radio" name="clear_changes" id="clear_changes_yes" value="yes" />&nbsp;Discard the uncommitted changes and start with the last committed version of the dataset</label>
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-8">
+                <label for="clear_changes_no"><input type="radio" name="clear_changes" id="clear_changes_no" value="no" />&nbsp;Start with the uncommitted changes</label>
+            </div>
+        </div>
+    </div>
+    <br>
+    <center>
+        <a class="btn btn-pill btn-primary px-2 py-1 border-1" href="javascript:void(0)" onclick="doChangeFormSubmit()">Continue</a>
+    </center>
+</form>
+{% endif %}

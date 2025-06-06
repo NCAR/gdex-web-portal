@@ -1,0 +1,52 @@
+<script id="redundancy_script">
+function checkRedundancyForm() {
+  if (document.redundancy_form.url.value.length == 0 && document.redundancy_form.name.value.length == 0) {
+    alert("You must specify a URL or name/address for the redundant source");
+    return false;
+  }
+  else if (document.redundancy_form.name.value.length > 0 && document.redundancy_form.address.value.length == 0) {
+    alert("You must specify an address for the named source");
+    return false;
+  }
+  else if (document.redundancy_form.url.value.length > 0 && document.redundancy_form.url.value.match(/^(http(s){0,1}|ftp):\/\/(.){1,}$/) == null) {
+    alert("You must specify a syntactically-correct URL");
+    return false;
+  }
+  var url = document.redundancy_form.url.value.replace(/%/g, "%25");
+  let i = url + '[!]' + document.redundancy_form.name.value + '[!]' + document.redundancy_form.address.value.replace(/\n/g, '\\n');
+  {% if 'replace_item' in data %}
+  replaceItem('redundancys_field', '{{ data.replace_item }}'.replace(/\n/g, '\\n'), i);
+  {% else %}
+  addItem('redundancys_field', i);
+  {% endif %}
+  return true;
+}
+</script>
+<center>
+    <h2>{% if 'replace_item' in data %}Edit{% else %}Add{% endif %} a Dataset Redundancy</h2>
+</center>
+<p>
+    Enter information for a source that could serve this dataset's content if NCAR and the RDA were to cease to exist. The source does not need to have an exact copy of the RDA data (e.g. the content in the RDA could be derived from the source).</p><p>At least <strong>ONE</strong> of the following is required:
+</p>
+<form name="redundancy_form" action="javascript:void(0)" onsubmit="return checkRedundancyForm()">
+    <div style="border: thin solid black; margin-bottom: 10px; padding: 10px">
+        Website URL:
+        <br>
+        <input name="url" type="text" size="120" value="{{ data.url }}">
+    </div>
+    <strong>- OR -</strong>
+    <div style="border: thin solid black; margin-top: 10px; padding: 10px">
+        Name of individual or organization:
+        <br>
+        <input name="name" type="text" size="120" value="{{ data.name }}">
+        <br>
+        <br>
+        Physical address:
+        <br>
+        <textarea name="address" style="height: 8em; width: 100%">{{ data.address }}</textarea>
+    </div>
+    <br>
+    <center>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.redundancy_form.submit()">{% if 'replace_item' in data %}Save Changes{% else %}Add Redundancy{% endif %}</button>
+    </center>
+</form>

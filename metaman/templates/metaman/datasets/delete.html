@@ -1,0 +1,16 @@
+<h2>Delete Dataset {{ request.POST.id }}</h2>
+{% if database_error %}
+<p>
+    <b>Database Error:</b> {{ database_error }}
+</p>
+{% elif published %}
+<p>
+    This dataset is not a work-in-progress dataset, or a valid publication date has been assigned. It cannot be deleted.
+</p>
+{% else %}
+<ul>
+    {% for message in message_list %}
+    <li>{{ message.value }}</li>
+    {% endfor %}
+</ul>
+{% endif %}

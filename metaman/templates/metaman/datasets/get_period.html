@@ -1,0 +1,391 @@
+<script id="period_script" language="javascript">
+function doPeriodFormSubmit() {
+  let frm = document.period_form;
+  let p = "";
+  if (frm.period_type[0].checked) {
+    if (frm.syr.value > frm.eyr.value) {
+      alert("The start year must precede or equal the end year");
+      return false;
+    }
+    if (frm.smo.value.length > 0 && (frm.smo.value < "01" || frm.smo.value > "12")) {
+      alert("The start month must be between 01 and 12");
+      return false;
+    }
+    if (frm.sdy.value.length > 0 && (frm.sdy.value < "01" || frm.sdy.value > "" + new Date(document.period_form.syr.value, frm.smo.value, 0).getDate())) {
+      alert("The start day is out of range");
+      return false;
+    }
+    if (frm.emo.value.length > 0 && (frm.emo.value < "01" || frm.emo.value > "12")) {
+      alert("The end month must be between 01 and 12");
+      return false;
+    }
+    if (frm.edy.value.length > 0 && (frm.edy.value < "01" || frm.edy.value > "" + new Date(frm.eyr.value, frm.emo.value, 0).getDate())) {
+      alert("The end day is out of range");
+      return false;
+    }
+    var fields=new Array("syr", "smo", "sdy", "shr", "smin", "ssec", "eyr", "emo",
+        "edy", "ehr", "emin", "esec", "tz");
+    var flen=new Array(4, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 5);
+    var msg1=new Array("start year", "start month", "start day", "start hour",
+        "start minute", "start second", "end year", "end month", "end day",
+        "end hour", "end minute", "end second", "time zone");
+    var msg2=new Array("YYYY", "MM", "DD", "HH", "mm", "SS", "YYYY", "MM", "DD",
+        "HH", "mm", "SS", "+/- ZZzz");
+    var sep=new Array("", "-", "-", " ", ":", ":", "[!]", "-", "-", " ",
+        ":", ":", " ");
+    var shr = false, ehr = false, tz = false;
+    if (frm.shr.value.length > 0 && frm.smin.value.length == 0) {
+      frm.smin.value = '00';
+    }
+    if (frm.ehr.value.length > 0 && frm.emin.value.length == 0) {
+      frm.emin.value = '00';
+    }
+    if (frm.shr.value.length > 0 || frm.ehr.value.length > 0) {
+      if (frm.tz.value.charAt(0) != '-' && frm.tz.value.charAt(0) != '+') {
+        alert("Enter the time zone as + or - ZZzz");
+        return false;
+      }
+      for (n = 1; n < frm.tz.value; ++n) {
+        if (frm.tz.value.charAt(n) < '0' || frm.tz.value.charAt(0) > '9') {
+          alert("Enter the time zone as + or - ZZzz");
+          return false;
+        }
+      }
+    }
+    if (frm.tz.value == "-0000") {
+      frm.tz.value = "+0000";
+    }
+    for (n = 0; n < fields.length; ++n) {
+      eval("var v=frm." + fields[n] + ".value");
+      if (v.length != 0 && v.length != flen[n]) {
+        alert("Re-enter the " + msg1[n] + " as " + msg2[n]);
+        return false;
+      }
+      if (msg1[n] == "time zone") {
+        m = 1;
+      } else {
+        m = 0;
+      }
+      for (; m < v.length; ++m) {
+        if (v.charAt(m) < '0' || v.charAt(m) > '9') {
+          alert(msg1[n] + " must be numeric");
+          return false;
+        }
+      }
+      if (fields[n] == "tz") {
+        tz = true;
+      } else if (v.length > 0) {
+        if (fields[n] == "eyr" && shr) {
+          p += ' ' + frm.tz.value;
+        }
+        p += sep[n] + v;
+        if (fields[n] == "shr") {
+          shr = true;
+        } else if (fields[n] == "ehr") {
+          ehr = true;
+        }
+      }
+    }
+    if (p.indexOf("[!]") < 0) {
+      alert("You must at least enter an end year");
+      return false;
+    }
+    if ((shr || ehr) && !tz) {
+      alert("Fill in the time offset");
+      return false;
+    }
+    if (ehr) {
+      p += ' ' + frm.tz.value;
+    }
+    p += "[!]" + frm.gid[frm.gid.selectedIndex].value;
+  } else {
+    if (parseInt(frm.psyr.value) < parseInt(frm.peyr.value)) {
+      alert("The start year must precede or equal the end year");
+      return false;
+    }
+    if (frm.psyr.value.length < 4) {
+      alert("Re-enter the start year as YYYY or YYYYY");
+      return false;
+    }
+    if (frm.peyr.value.length < 4) {
+      alert("Re-enter the end year as YYYY or YYYYY");
+      return false;
+    }
+    if (frm.psmo.value.length > 0 && (frm.psmo.value < "01" || frm.psmo.value > "12")) {
+      alert("The start month must be between 01 and 12");
+      return false;
+    }
+    if (frm.pemo.value.length > 0 && (frm.pemo.value < "01" || frm.pemo.value > "12")) {
+      alert("The end month must be between 01 and 12");
+      return false;
+    }
+    p = frm.psyr.value;
+    if (frm.psmo.value.length > 0) {
+      p += "-" + frm.psmo.value;
+    }
+    p += "[!]" + frm.peyr.value;
+    if (frm.pemo.value.length > 0) {
+      p += "-" + frm.pemo.value;
+    }
+    p += "[!]" + frm.pgid[frm.pgid.selectedIndex].value + "[!]BCE";
+  }
+  {% if 'replace_item' in data %}
+  replaceItem('periods_field', '{{ data.replace_item }}', p);
+  {% else %}
+  addItem('periods_field', p);
+  {% endif %}
+  return true;
+}
+
+function checkFor(x,m,t) {
+  if (t.value.length == 0) {
+    return;
+  };
+  eval("var xx = document.period_form." + x + ".value");
+  if (xx.length == 0) {
+    t.value = "";
+    alert("You must first enter a " + m);
+  }
+}
+
+function toggleTypes(v, h) {
+  document.getElementById(v).classList.replace("d-none", "d-block");
+  document.getElementById(h).classList.replace("d-block", "d-none");
+}
+</script>
+<center>
+    <h2>{% if 'replace_item' in data %}Edit{% else %}Add{% endif %} a Data Period</h2>
+</center>
+<p>
+    Required fields are denoted by a <font color="red">*</font>.  All other fields are optional. See the legend below for header descriptions.
+</p>
+{% if data.is_elevation %}
+<p>
+    <font color="red">
+        This dataset has been identified as an elevation dataset, so the period has been automatically set.
+    </font>
+    <img src="/images/transpace.gif" onload="document.dsedit.periods_field.value=''">
+</p>
+{% endif %}
+<center>
+    <form name="period_form" action="javascript:void(0)" onsubmit="return doPeriodFormSubmit()">
+        <center class="mb-2">
+            Type of period:&nbsp;&nbsp;<input type="radio" name="period_type" onchange="toggleTypes('modern', 'paleo')"{% if data.period_type == "modern" %} checked{% endif %}> CE (modern)&nbsp;&nbsp;<input type="radio" name="period_type" onchange="toggleTypes('paleo', 'modern')"{% if data.period_type == "paleo" %} checked{% endif %}> BCE (paleo)
+        </center>
+        <div id="modern" class="component two-column container-lg overflow-hidden w-50 mb-1 d-{% if data.period_type == "modern" %}block{% else %}none{% endif %}">
+            <div class="row gx-0 gx-md-1">
+                <div class="col-12 col-md-2"></div>
+                <div class="col-12 col-md-1 text-center">
+                    <font color="red">*</font><small>YYYY</small>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    -
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <small>MM</small>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    -
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <small>DD</small>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <small>HH</small>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    :
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <small>mm</small>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    :
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <small>SS</small>
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mb-1">
+                <div class="col-12 col-md-2 text-end">
+                    <font color="red">*</font>Start:
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="syr" size="4" maxlength="4" value="{% if data.is_elevation %}9999{% else %}{{ data.syr }}{% endif %}">
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    -
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="smo" size="2" maxlength="2" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.smo }}" onkeyup="checkFor('syr', 'start year', this)"{% endif %}>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    -
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="sdy" size="2" maxlength="2" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.sdy }}" onkeyup="checkFor('smo', 'start month', this)"{% endif %}>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="shr" size="2" maxlength="2" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.shr }}" onkeyup="checkFor('sdy', 'start day', this)"{% endif %}>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    :
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="smin" size="2" maxlength="2" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.smin }}" onkeyup="checkFor('shr', 'start hour', this)"{% endif %}>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    :
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="ssec" size="2" maxlength="2" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.ssec }}" onkeyup="checkFor('smin', 'start minute', this)"{% endif %}>
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mb-1">
+                <div class="col-12 col-md-2 text-end">
+                    <font color="red">*</font>End:
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="eyr" size="4" maxlength="4" value="{% if data.is_elevation %}9999{% else %}{{ data.eyr }}{% endif %}">
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    -
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="emo" size="2" maxlength="2" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.emo }}" onkeyup="checkFor('eyr', 'end year', this)"{% endif %}>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    -
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="edy" size="2" maxlength="2" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.edy }}" onkeyup="checkFor('emo', 'end month', this)"{% endif %}>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="ehr" size="2" maxlength="2" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.ehr }}" onkeyup="checkFor('edy','end day',this)"{% endif %}>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    :
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="emin" size="2" maxlength="2" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.emin }}" onkeyup="checkFor('ehr', 'end hour', this)"{% endif %}>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    :
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="esec" size="2" maxlength="2" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.esec }}" onkeyup="checkFor('emin', 'end minute', this)"{% endif %}>
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mb-1">
+                <div class="col-12 col-md-3 text-end">
+                    <b><font color="green">*</font></b>Timezone:
+                </div>
+                <div class="col-12 col-md-9 text-start">
+                    <input class="font-monospace text-center" type="text" name="tz" size="5" maxlength="5" {% if data.is_elevation %}value="" readonly{% else %}value="{{ data.tz }}"{% endif %}>&nbsp;<small>+/-ZZzz</small>
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mb-1">
+                <div class="col-12 col-md-3 text-end">
+                    Group ID&nbsp;<sup><a href="help/tperiods.group_id/" target="_blank"><i class="fas fa-info-circle"></i></a></sup>:
+                </div>
+                <div class="col-12 col-md-9 text-start">
+                    <select name="gid">
+                        <option value="Entire Dataset">Entire Dataset</option>
+                        {% for option in data.group_options %}
+                        <option value="{{ option.value }}"{% if option.value == data.grpid %} selected{% endif %}>{{ option.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div id="paleo" class="component two-column container-lg overflow-hidden w-50 mb-1 d-{% if data.period_type == "paleo" %}block{% else %}none{% endif %}">
+            <div class="row gx-0 gx-md-1">
+                <div class="col-12 col-md-5"></div>
+                <div class="col-12 col-md-2 text-center">
+                    <font color="red">*</font><small>(Y)YYYY</small>
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    -
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <small>MM</small>
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mb-1">
+                <div class="col-12 col-md-5 text-end">
+                    <font color="red">*</font>Start:
+                </div>
+                <div class="col-12 col-md-2 text-center">
+                    <input class="font-monospace text-center" type="text" name="psyr" size="5" maxlength="5" value="{{ data.psyr }}">
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    -
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="psmo" size="2" maxlength="2" value="{{ data.psmo }}" onkeyup="checkFor('psyr', 'start year', this)">
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mb-1">
+                <div class="col-12 col-md-5 text-end">
+                    <font color="red">*</font>End:
+                </div>
+                <div class="col-12 col-md-2 text-center">
+                    <input class="font-monospace text-center" type="text" name="peyr" size="5" maxlength="5" value="{{ data.peyr }}">
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    -
+                </div>
+                <div class="col-12 col-md-1 text-center">
+                    <input class="font-monospace text-center" type="text" name="pemo" size="2" maxlength="2" value="{{ data.pemo }}" onkeyup="checkFor('peyr', 'end year', this)">
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mb-1">
+                <div class="col-12 col-md-5 text-end">
+                    Group ID&nbsp;<sup><a href="help/tperiods.group_id/" target="_blank"><i class="fas fa-info-circle"></i></a></sup>:
+                </div>
+                <div class="col-12 col-md-7 text-start">
+                    <select name="pgid">
+                        <option value="Entire Dataset">Entire Dataset</option>
+                        {% for option in data.group_options %}
+                        <option value="{{ option.value }}"{% if option.value == data.grpid %} selected{% endif %}>{{ option.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <br>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.period_form.submit()">{% if 'replace_item' in data %}Save Changes{% else %}Add Period{% endif %}</button>
+    </form>
+</center>
+<b>Legend:</b>
+<div class="small lh-sm">
+    <font color="red">*</font>YYYY = 4-digit year (required)
+    <br>
+    MM = 2-digit month (optional)
+    <br>
+    DD = 2-digit day (optional)
+    <br>
+    HH = 2-digit hour (optional)
+    <br>
+    mm = 2-digit minute (optional)
+    <br>
+    SS = 2-digit second (optional)
+    <br>
+    <b><font color="green">*</font></b>ZZzz = 2-digit hour and 2-digit minute offset from UTC (required if hour is present, otherwise optional)
+    <br>
+    <br>
+    Group ID:
+    <ul>
+        <p>
+            For multiple data periods, you can associate the <i>dsarch</i>-specified group IDs with the data periods.  If you are not specifying multiple data periods, you can ignore this field.
+        </p>
+        <ul>
+            <li>
+                If one data period is associated with a group ID, all data periods must be associated with a group ID.  Only one data period can be connected to each group ID and you cannot specify more data periods than there are group IDs.  On the dataset home page, the title of a group ID will appear next to the associated data period to qualify the meaning of the period.
+            </li>
+            <li>
+                If you don't associate any group IDs with the data periods, the periods will be representative of the entire dataset and they will not carry individual comments.
+            </li>
+        </ul>
+    </ul>
+</div>

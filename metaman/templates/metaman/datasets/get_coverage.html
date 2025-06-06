@@ -1,0 +1,599 @@
+<script id="coverage_script" language="javascript">
+function doCov1FormSubmit() {
+  var params = "coverage_type=" + document.cov1_form.coverage_types[document.cov1_form.coverage_types.selectedIndex].value + "&csrfmiddlewaretoken=" + get_csrf_token();
+  getContentFromPost('modal-window-content', 'get_coverage/', params);
+}
+
+function trimValue(v) {
+  if (v.indexOf('.') > 0) {
+    while (v.charAt(v.length-1) == '0') {
+      v=v.slice(0,-1);
+    }
+    if (v.charAt(v.length-1) == '.') {
+      v=v.slice(0,-1);
+    }
+  }
+  return v;
+}
+
+function checkValue(v,t) {
+  for (n=0; n < v.length; n++) {
+    if (v.charAt(n) < '0' || v.charAt(n) > '9') {
+      if (v.charAt(n) == '.' && t == 'r') {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function doCov2FormSubmit() {
+  if (typeof(do_computeDxDy) == "function") {
+    do_computeDxDy();
+  }
+  var f=document.cov2_form;
+  var grid_definition='{{ data.coverage_type }}';
+  var x=grid_definition;
+  if (f.numx) {
+    if (f.numx.value.length == 0) {
+      alert("Enter the number of longitudes");
+      return false;
+    }
+    if (!checkValue(f.numx.value,'w')) {
+      alert("Enter the number of longitudes as a positive whole number");
+      return false;
+    }
+    x+='[!]'+f.numx.value;
+  }
+  if (f.numy) {
+    if (f.numy.value.length == 0) {
+      alert("Enter the number of latitudes");
+      return false;
+    }
+    if (!checkValue(f.numy.value,'w')) {
+      alert("Enter the number of latitudes as a positive whole number");
+      return false;
+    }
+    x+='[!]'+f.numy.value;
+  }
+  if (f.slon) {
+    if (f.slon.value.length == 0) {
+      alert("Enter the longitude of the first gridpoint");
+      return false;
+    }
+    if (!checkValue(f.slon.value,'r')) {
+      alert("Enter the first gridpoint longitude as a positive real number");
+      return false;
+    } else {
+      f.slon.value=trimValue(f.slon.value);
+    }
+    if (f.slonh.selectedIndex == 0) {
+      alert("Choose the hemisphere of the first gridpoint longitude");
+      return false;
+    }
+    x+='[!]'+f.slon.value+f.slonh[f.slonh.selectedIndex].value;
+  }
+  if (f.slat) {
+    if (f.slat.value.length == 0) {
+      alert("Enter the latitude of the first gridpoint");
+      return false;
+    }
+    if (!checkValue(f.slat.value,'r')) {
+      alert("Enter the first gridpoint latitude as a positive real number");
+      return false;
+    } else {
+      f.slat.value=trimValue(f.slat.value);
+    }
+    if (f.slath.selectedIndex == 0) {
+      alert("Choose the hemisphere of the first gridpoint latitude");
+      return false;
+    }
+    x+='[!]'+f.slat.value+f.slath[f.slath.selectedIndex].value;
+  }
+  if (f.elon) {
+    if (f.elon.value.length == 0) {
+      alert("Enter the longitude of the last gridpoint");
+      return false;
+    }
+    if (!checkValue(f.elon.value,'r')) {
+      alert("Enter the last gridpoint longitude as a positive real number");
+      return false;
+    } else {
+      f.elon.value=trimValue(f.elon.value);
+    }
+    if (f.elonh.selectedIndex == 0) {
+      alert("Choose the hemisphere of the last gridpoint longitude");
+      return false;
+    }
+    x+='[!]'+f.elon.value+f.elonh[f.elonh.selectedIndex].value;
+  }
+  if (f.elat) {
+    if (f.elat.value.length == 0) {
+      alert("Enter the latitude of the last gridpoint");
+      return false;
+    }
+    if (!checkValue(f.elat.value,'r')) {
+      alert("Enter the last gridpoint latitude as a positive real number");
+      return false;
+    } else {
+      f.elat.value=trimValue(f.elat.value);
+    }
+    if (f.elath.selectedIndex == 0) {
+      alert("Choose the hemisphere of the last gridpoint latitude");
+      return false;
+    }
+    x+='[!]'+f.elat.value+f.elath[f.elath.selectedIndex].value;
+  }
+  if (f.projlon) {
+    if (f.projlon.value.length == 0) {
+      alert("Enter a value for the projection longitude");
+      return false;
+    }
+    if (!checkValue(f.projlon.value,'r')) {
+      alert("Enter the latitude at which the resolutions are valid as a positive real number");
+      return false;
+    } else {
+      f.projlon.value=trimValue(f.projlon.value);
+    }
+    x+='[!]'+f.projlon.value+f.projlonh[f.projlonh.selectedIndex].value;
+  }
+  if (grid_definition != "mercator" && f.reslat) {
+    if (f.reslat.value.length == 0) {
+      alert("Enter a value for the latitude at which the resolutions are valid");
+      return false;
+    }
+    if (!checkValue(f.reslat.value,'r')) {
+      alert("Enter the latitude at which the resolutions are valid as a positive real number");
+      return false;
+    } else {
+      f.reslat.value=trimValue(f.reslat.value);
+    }
+    x+='[!]'+f.reslat.value+f.reslath[f.reslath.selectedIndex].value;
+  }
+  if (f.xres) {
+    if (f.xres.value.length == 0) {
+      alert("Enter a value for the x-direction resolution");
+      return false;
+    }
+    if (parseFloat(f.xres.value) < 0.) {
+    alert("The lower left longitude cannot be greater than the upper right longitude");
+    return false;
+    }
+    if (f.xres.value.charAt(0) == '.') {
+      f.xres.value='0'+f.xres.value;
+    }
+    f.xres.value=trimValue(f.xres.value);
+    idx=f.xres.value.indexOf('.');
+    if (idx > 0 && (f.xres.value.length-idx) > 10) {
+      f.xres.value=f.xres.value.substring(0,idx+11);
+    }
+    x+='[!]'+f.xres.value;
+  }
+  if (f.yres) {
+    if (f.yres.value.length == 0) {
+      alert("Enter a value for the y-direction resolution");
+      return false;
+    }
+    if (parseFloat(f.yres.value) < 0.) {
+    alert("The lower left latitude cannot be greater than the upper right latitude");
+    return false;
+    }
+    if (f.yres.value.charAt(0) == '.') {
+      f.yres.value='0'+f.yres.value;
+    }
+    f.yres.value=trimValue(f.yres.value);
+    idx=f.yres.value.indexOf('.');
+    if (idx > 0 && (f.yres.value.length-idx) > 10)
+      f.yres.value=f.yres.value.substring(0,idx+11);
+    x+='[!]'+f.yres.value;
+  }
+  if (f.circles) {
+    if (f.circles.value.length == 0) {
+    alert("Enter the number of latitude circles between the Equator and the Pole");
+    return false;
+    }
+    if (!checkValue(f.circles.value,'w')) {
+      alert("Enter the number of latitude circles as a positive whole number");
+      return false;
+    }
+    x+='[!]'+f.circles.value;
+  }
+  if (grid_definition == "mercator" && f.reslat) {
+    if (f.reslat.value.length == 0) {
+      alert("Enter a value for the latitude at which the resolutions are valid");
+      return false;
+    }
+    if (!checkValue(f.reslat.value,'r')) {
+      alert("Enter the latitude at which the resolutions are valid as a positive real number");
+      return false;
+    } else {
+      f.reslat.value=trimValue(f.reslat.value);
+    }
+    x+='[!]'+f.reslat.value+f.reslath[f.reslath.selectedIndex].value;
+  }
+  if (f.pole) {
+    if (f.pole.selectedIndex == 0) {
+      alert("Choose a projection pole");
+      return false;
+    }
+    x+='[!]'+f.pole[f.pole.selectedIndex].value;
+  }
+  if (f.spar1) {
+    if (f.spar1.value.length == 0) {
+      alert("Enter a value for the first standard parallel");
+      return false;
+    }
+    if (!checkValue(f.spar1.value,'r')) {
+      alert("Enter the first standard parallel as a positive real number");
+      return false;
+    } else {
+      f.spar1.value=trimValue(f.spar1.value);
+    }
+    x+='[!]'+f.spar1.value+f.spar1h[f.spar1h.selectedIndex].value;
+  }
+  if (f.spar2) {
+    if (f.spar2.value.length == 0) {
+      alert("Enter a value for the second standard parallel");
+      return false;
+    }
+    if (!checkValue(f.spar2.value,'r')) {
+      alert("Enter the second standard parallel as a positive real number");
+      return false;
+    } else {
+      f.spar2.value=trimValue(f.spar2.value);
+    }
+    x+='[!]'+f.spar2.value+f.spar2h[f.spar2h.selectedIndex].value;
+  }
+  if (f.gtype && f.gtype[1].checked) {
+    x+='[!]'+f.gtype[1].value;
+  }
+  if (f.extent && f.extent[1].checked) {
+    x+='[!]'+f.extent[1].value;
+  }
+  {% if 'replace_item' in data %}
+  replaceItem('coverages_field', '{{ data.replace_item }}', x)
+  {% else %}
+  addItem('coverages_field', x)
+  {% endif %}
+  return true;
+}
+{% if data.coverage_type == "latLon" or data.coverage_type == "mercator" %}
+setInterval("do_computeLLDxDy()", 300);
+
+function do_computeLLDxDy() {
+  var f=document.cov2_form;
+  if (f.numx.value.length > 0 && f.numy.value.length > 0 && f.slon.value.length > 0 && f.slonh.selectedIndex > 0 && f.slat.value.length > 0 && f.slath.selectedIndex > 0 && f.elon.value.length > 0 && f.elonh.selectedIndex > 0 && f.elat.value.length > 0 && f.elath.selectedIndex > 0) {
+    var elon=parseFloat(f.elon.value);
+    if (f.elonh[f.elonh.selectedIndex].value == 'W') {
+      elon=-elon;
+    }
+    var slon=parseFloat(f.slon.value);
+    if (f.slonh[f.slonh.selectedIndex].value == 'W') {
+      slon=-slon;
+    }
+    var spacing=parseFloat(f.numx.value);
+    if (f.gtype[0].checked) {
+      spacing-=1.;
+    }
+    var londiff=elon-slon;
+    if (londiff <= 0.) {
+      londiff+=360.;
+    }
+    f.xres.value=(londiff/spacing).toFixed(4);
+    if (f.xres.value.indexOf(".") > 0) {
+      while (f.xres.value.slice(-1) == '0') {
+        f.xres.value=f.xres.value.slice(0,-1);
+      }
+      if (f.xres.value.slice(-1) == '.') {
+        f.xres.value=f.xres.value.slice(0,-1);
+      }
+    }
+    var elat=parseFloat(f.elat.value);
+    if (f.elath[f.elath.selectedIndex].value == 'S') {
+      elat=-elat;
+    }
+    var slat=parseFloat(f.slat.value);
+    if (f.slath[f.slath.selectedIndex].value == 'S') {
+      slat=-slat;
+    }
+    spacing=parseFloat(f.numy.value);
+    if (f.gtype[0].checked) {
+      spacing-=1.;
+    }
+    f.yres.value=(Math.abs(elat-slat)/spacing).toFixed(4);
+    if (f.yres.value.indexOf(".") > 0) {
+      while (f.yres.value.slice(-1) == '0') {
+        f.yres.value=f.yres.value.slice(0,-1);
+      }
+      if (f.yres.value.slice(-1) == '.') {
+        f.yres.value=f.yres.value.slice(0,-1);
+      }
+    }
+  }
+}
+{% elif data.coverage_type == "gaussLatLon" %}
+setInterval("do_computeGLLDxDy()",300);
+
+function do_computeGLLDxDy() {
+  var f=document.cov2_form;
+  if (f.numx.value.length > 0 && f.numy.value.length > 0 && f.slon.value.length > 0 && f.slonh.selectedIndex > 0 && f.slat.value.length > 0 && f.slath.selectedIndex > 0 && f.elon.value.length > 0 && f.elonh.selectedIndex > 0 && f.elat.value.length > 0 && f.elath.selectedIndex > 0) {
+    var elon=parseFloat(f.elon.value);
+    if (f.elonh[f.elonh.selectedIndex].value == 'W') {
+      elon=-elon;
+    }
+    var slon=parseFloat(f.slon.value);
+    if (f.slonh[f.slonh.selectedIndex].value == 'W') {
+      slon=-slon;
+    }
+    var spacing=parseFloat(f.numx.value)-1.;
+    var londiff=elon-slon;
+    if (londiff <= 0.) {
+      londiff+=360.;
+    }
+    f.xres.value=(londiff/spacing).toFixed(4);
+    if (f.xres.value.indexOf(".") > 0) {
+      while (f.xres.value.slice(-1) == '0') {
+        f.xres.value=f.xres.value.slice(0,-1);
+      }
+      if (f.xres.value.slice(-1) == '.') {
+        f.xres.value=f.xres.value.slice(0,-1);
+      }
+    }
+    var elat=parseFloat(f.elat.value);
+    if (f.elath[f.elath.selectedIndex].value == 'S') {
+      elat=-elat;
+    }
+    var slat=parseFloat(f.slat.value);
+    if (f.slath[f.slath.selectedIndex].value == 'S') {
+      slat=-slat;
+    }
+    spacing=parseFloat(f.numy.value)-1.;
+    f.gll_yres.value=(Math.abs(elat-slat)/spacing).toFixed(4);
+    if (f.gll_yres.value.indexOf(".") > 0) {
+      while (f.gll_yres.value.slice(-1) == '0') {
+        f.gll_yres.value=f.gll_yres.value.slice(0,-1);
+      }
+      if (f.gll_yres.value.slice(-1) == '.') {
+        f.gll_yres.value=f.gll_yres.value.slice(0,-1);
+      }
+    }
+  }
+}
+{% elif data.coverage_type == "polarStereographic" %}
+{% endif %}
+</script>
+<center>
+    <h2>{% if 'replace_item' in data %}Edit{% else %}Add{% endif %} Coverage Information</h2>
+    {% if 'coverage_type' not in data %}
+    <form name="cov1_form" action="javascript:void(0)" onsubmit="javascript:void(0)">
+        <select name="coverage_types" onchange="doCov1FormSubmit()">
+            <option value="">choose coverage type</option>
+            {% for option in data.coverage_options %}
+            <option value="{{ option.value }}">{{ option.description }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% else %}
+    <form name="cov2_form" action="javascript:void(0)" onsubmit="return doCov2FormSubmit()">
+        {% if data.coverage_type == "latLon" or data.coverage_type == "mercator" %}
+        <p>
+            <h4><font color="red">*</font>{{ data.coverage_type }} Grid Information:</h4>
+        </p>
+        <div class="mt-1">
+            <input type="radio" name="gtype" value="point"{% if 'grid_cell' not in data or not data.grid_cell %} checked{% endif %} onchange="computeLLDxDy()">&nbsp;gridpoint<span style="margin-left: 10px"></span><input type="radio" name="gtype" value="cell"{% if 'grid_cell' in data and data.grid_cell %} checked{% endif %} onchange="computeLLDxDy()">&nbsp;gridcell
+        </div>
+        <div class="mt-1">
+            Dimensions (X,Y):&nbsp;<input type="text" name="numx" class="fixedWidth14" size="4" value="{{ data.grid_nx }}">&nbsp;longitudes by&nbsp;<input type="text" name="numy" class="fixedWidth14" size="4" value="{{ data.grid_ny }}">&nbsp;latitudes
+        </div>
+        <div style="border: thin solid black; margin: 5px">
+            Bounding Box:
+            <div style="text-align: left; padding-left: 10px; padding-right: 5px">
+                This information should be entered in the same orientation as the grid exists in the data file(s). If there are multiple orientations for the dataset, create a separate coverage entry for each one.
+        </div>
+        <ul>
+            <div class="mt-1">
+                First Gridpoint (e.g. GRID(1,1) in a Fortran array) -- Longitude:<span style="margin-left: 5px; margin-right: 15px"><input type="text" name="slon" class="fixedWidth14" size="8" value="{{ data.grid_slon }}">&nbsp;
+                <select name="slonh" onchange="clearTimeout(ll_compute_timeout);computeLLDxDy()">
+                    <option value=""></option>
+                    <option value="E"{% if data.grid_slon_h == "E" %} selected{% endif %} >E</option>
+                <    option value="W"{% if data.grid_slon_h == "W" %} selected{% endif %} >W</option>
+                </select>
+                </span>Latitude:<span style="margin-left: 5px; margin-right: 15px"><input type="text" name="slat" class="fixedWidth14" size="9" value="{{ data.grid_slat }}">&nbsp;
+                <select name="slath">
+                    <option value=""></option>
+                    <option value="N"{% if data.grid_slat_h == "N" %} selected{% endif %}>N</option>
+                    <option value="S"{% if data.grid_slat_h == "S" %} selected{% endif %}>S</option>
+                </select></span>
+            </div>
+            <div class="mt-1">
+                Last Gridpoint (e.g. GRID(X,Y) in a Fortran array) -- Longitude:<span style="margin-left: 5px; margin-right: 15px"><input type="text" name="elon" class="fixedWidth14" size="8" value="{{ data.grid_elon }}">&nbsp;
+                <select name="elonh" onchange="clearTimeout(ll_compute_timeout);computeLLDxDy()">
+                    <option value=""></option>
+                    <option value="E"{% if data.grid_elon_h == "E" %} selected{% endif %}>E</option>
+                    <option value="W"{% if data.grid_elon_h == "W" %} selected{% endif %}>W</option>
+                </select>
+                </span>Latitude:<span style="margin-left: 5px; margin-right: 15px"><input type="text" name="elat" class="fixedWidth14" size="9" value="{{ data.grid_elat }}">&nbsp;
+                <select name="elath" onchange="clearTimeout(ll_compute_timeout);computeLLDxDy()">
+                    <option value=""></option>
+                    <option value="N"{% if data.grid_elat_h == "N" %} selected{% endif %}>N</option>
+                    <option value="S"{% if data.grid_elat_h == "S" %} selected{% endif %}>S</option>
+                </select></span>
+            </div>
+        </ul>
+        </div>
+        Computed Resolution:&nbsp;<input type="text" name="xres" class="fixedWidth14" size="6" value="{{ data.grid_xres }}" style="background-color: #f5f5f5" readonly>&nbsp;degrees longitude by&nbsp;{% if data.coverage_type == "mercator" %}~&nbsp;{% endif %}<input type="text" name="yres" class="fixedWidth14" size="6" value="{{ data.grid_yres }}" style="background-color: #f5f5f5" readonly>&nbsp;degrees latitude
+        {% elif data.coverage_type == "gaussLatLon" %}
+        <p>
+            <h4><font color="red">*</font>Gaussian Latitude/Longitude Grid Information:</h4>
+        </p>
+        <div class="mt-1">
+            Dimensions (X,Y):&nbsp;<input type="text" name="numx" class="fixedWidth14" size="4" value="{{ data.grid_nx }}">&nbsp;longitudes by&nbsp;<input type="text" name="numy" class="fixedWidth14" size="4" value="{{ data.grid_ny }}">&nbsp;latitudes
+        </div>
+        <div style="border: thin solid black; margin: 5px">
+        Bounding Box:
+        <div style="text-align: left; padding-left: 10px; padding-right: 5px">This information should be entered in the same orientation as the grid exists in the data file(s). If there are multiple orientations for the dataset, create a separate coverage entry for each one.</div>
+        <ul>
+            <div class="mt-1">
+                First Gridpoint (e.g. GRID(1,1) in a Fortran array) -- Longitude:<span style="margin-left: 5px; margin-right: 15px"><input type="text" name="slon" class="fixedWidth14" size="8" value="{{ data.grid_slon }}">&nbsp;
+                <select name="slonh" onchange="clearTimeout(gll_compute_timeout);computeGLLDxDy()">
+                    <option value=""></option>
+                    <option value="E"{% if data.grid_slonh == "E" %} selected{% endif %} >E</option>
+                    <option value="W"{% if data.grid_slonh == "W" %} selected{% endif %} >W</option>
+                </select>
+                </span>Latitude:<span style="margin-left: 5px; margin-right: 15px"><input type="text" name="slat" class="fixedWidth14" size="9" value="{{ data.grid_slat }}">&nbsp;
+                <select name="slath">
+                    <option value=""></option>
+                    <option value="N"{% if data.grid_slat_h == "N" %} selected{% endif %} >N</option>
+                    <option value="S"{% if data.grid_slat_h == "S" %} selected{% endif %} >S</option>
+                </select></span>
+            </div>
+            <div class="mt-1">
+                Last Gridpoint (e.g. GRID(X,Y) in a Fortran array) -- Longitude:<span style="margin-left: 5px; margin-right: 15px"><input type="text" name="elon" class="fixedWidth14" size="8" value="{{ data.grid_elon }}">&nbsp;
+                <select name="elonh" onchange="clearTimeout(gll_compute_timeout);computeGLLDxDy()">
+                    <option value=""></option>
+                    <option value="E"{% if data.grid_elon_h == "E" %} selected{% endif %} >E</option>
+                    <option value="W"{% if data.grid_elon_h == "W" %} selected{% endif %} >W</option>
+                </select>
+                </span>Latitude:<span style="margin-left: 5px; margin-right: 15px"><input type="text" name="elat" class="fixedWidth14" size="9" value="{{ data.grid_elon }}">&nbsp;
+                <select name="elath" onchange="clearTimeout(gll_compute_timeout);computeGLLDxDy()">
+                    <option value=""></option>
+                    <option value="N"{% if data.grid_elon_h == "N" %} selected{% endif %}>N</option>
+                    <option value="S"{% if data.grid_elon_h == "S" %} selected{% endif %}>S</option>
+                </select></span>
+            </div>
+        </ul>
+        </div>
+        <div class="mt-1">
+            Number of circles between Equator and Pole:&nbsp;<input type="text" name="circles" class="fixedWidth14" size="6" value="{{ data.grid_circles }}">
+        </div>
+        <div class="mt-1">
+            Computed Resolution:&nbsp;<input type="text" name="xres" class="fixedWidth14" size="6" value="{{ data.grid_xres }}" style="background-color: #f5f5f5" readonly>&nbsp;degrees longitude by&nbsp;~<input type="text" name="gll_yres" class="fixedWidth14" size="6" value="" style="background-color: #f5f5f5" readonly>&nbsp;degrees latitude
+        </div>
+        <img src="/images/transpace.gif" onload="computeGLLDxDy()">
+        {% elif data.coverage_type == "lambertConformal" %}
+        <p>
+            <h4><font color="red">*</font>Lambert Conformal Grid Information:</h4>
+            <ul>
+                <div class="mt-1">
+                    Dimensions (X,Y):&nbsp;<input type="text" name="numx" class="fixedWidth14" size="4" value="{{ data.grid_nx }}">&nbsp;x-coordinate&nbsp;by&nbsp;<input type="text" name="numy" class="fixedWidth14" size="4" value="{{ data.grid_ny }}">&nbsp;y-coordinate
+                </div>
+                <div class="mt-1">
+                    Southwest gridpoint:&nbsp;&nbsp;Longitude:&nbsp;<input type="text" name="slon" class="fixedWidth14" size="7" value="{{ data.grid_slon }}">&nbsp;
+                    <select name="slonh">
+                        <option value=""></option>
+                        <option value="E"{% if data.grid_slon_h == "E" %} selected{% endif %}>E</option>
+                        <option value="W"{% if data.grid_slon_h == "W" %} selected{% endif %}>W</option>
+                    </select>&nbsp;&nbsp;Latitude:&nbsp;<input type="text" name="slat" class="fixedWidth14" size="6" value="{{ data.grid_slat }}">&nbsp;
+                    <select name="slath">
+                        <option value=""></option>
+                        <option value="N"{% if data.grid_slat_h == "N" %} selected{% endif %}>N</option>
+                        <option value="S"{% if data.grid_slat_h == "S" %} selected{% endif %}>S</option>
+                    </select>
+                </div>
+                <div class="mt-1">
+                    Resolution:&nbsp;<input type="text" name="xres" class="fixedWidth14" size="7" value="{{ data.grid_xres }}">&nbsp;km&nbsp;x&nbsp;<input type="text" name="yres" class="fixedWidth14" size="7" value="{{ data.grid_yres }}">&nbsp;km at&nbsp;<input type="text" name="reslat" class="fixedWidth14" size="7" value="{{ data.grid_reslat }}">&nbsp;
+                    <select name="reslath">
+                        <option value=""></option>
+                        <option value="N"{% if data.grid_reslat_h == "N" %} selected{% endif %}>N</option>
+                        <option value="S"{% if data.grid_reslat_h == "S" %} selected{% endif %}>S</option>
+                    </select>
+                </div>
+                <div class="mt-1">
+                    Projection Longitude:&nbsp;<input type="text" name="projlon" class="fixedWidth14" size="7" value="{{ data.grid_projlon }}">&nbsp;
+                    <select name="projlonh">
+                        <option value=""></option>
+                        <option value="E"{% if data.grid_projlon_h == "E" %} selected{% endif %}>E</option>
+                        <option value="W"{% if data.grid_projlon_h == "W" %} selected{% endif %}>W</option>
+                    </select>
+                </div>
+                <div class="mt-1">
+                    Projection Pole:&nbsp;
+                    <select name="pole">
+                        <option value=""></option>
+                        <option value="N"{% if data.grid_pole == "N" %} selected{% endif %}>North</option>
+                        <option value="S"{% if data.grid_pole == "S" %} selected{% endif %}>Sorth</option>
+                    </select>
+                </div>
+                <div class="mt-1">
+                    Standard Parallels:&nbsp;<input type="text" name="spar1" class="fixedWidth14" size="7" value="{{ data.grid_parallel1 }}">&nbsp;
+                    <select name="spar1h">
+                        <option value=""></option>
+                        <option value="N"{% if data.grid_parallel1_h == "N" %} selected{% endif %}>N</option>
+                        <option value="S"{% if data.grid_parallel1_h == "S" %} selected{% endif %}>S</option>
+                    </select>
+                    &nbsp;and&nbsp;<input type="text" name="spar2" class="fixedWidth14" size="7" value="{{ data.grid_parallel2 }}">&nbsp;
+                    <select name="spar2h">
+                        <option value=""></option>
+                        <option value="N"{% if data.grid_parallel2_h == "N" %} selected{% endif %}>N</option>
+                        <option value="S"{% if data.grid_parallel2_h == "S" %} selected{% endif %}>S</option>
+                    </select>
+                </div>
+            </ul>
+        </p>
+        {% elif data.coverage_type == "polarStereographic" %}
+        <h4><font color="red">*</font>Polar Stereographic Grid Information:</h4>
+        Enter grid information as follows:
+        <pre style="text-align: left">
+                            +-------------+-------------+
+                            |             |             |
+                         +  |             |   @ = Projection Pole (N or S)
+                         y  |             |  /          |
+                            |             | /           |
+                            | - - - - - - @ - - - - - - |
+                            |             |             |
+                         -  |             |<------------|----- Projection Longitude (parallel to
+                         y  |             |             |      -y axis extending away from pole)
+                            |             |             |
+                            O-------------+-------------+
+                            |      -x           +x
+                            |
+                            O = Southwest Gridpoint
+        </pre>
+        <div class="mt-1">
+            Dimensions (X,Y):&nbsp;<input type="text" name="numx" class="fixedWidth14" size="4" value="{{ data.grid_nx }}">&nbsp;columns &nbsp;by&nbsp;<input type="text" name="numy" class="fixedWidth14" size="4" value="{{ data.grid_ny }}">&nbsp;rows
+        </div>
+        <div class="mt-1">
+            Southwest Gridpoint:&nbsp;&nbsp;Longitude:&nbsp;<input type="text" name="slon" class="fixedWidth14" size="7" value="{{ data.grid_swlon }}">&nbsp;
+            <select name="slonh">
+                <option value=""></option>
+                <option value="E"{% if data.grid_swlon_h == "E" %} selected{% endif %}>E</option>
+                <option value="W"{% if data.grid_swlon_h == "W" %} selected{% endif %}>W</option>
+            </select>
+            &nbsp;&nbsp;Latitude:&nbsp;<input type="text" name="slat" class="fixedWidth14" size="6" value="{{ data.grid_swlat }}">&nbsp;
+            <select name="slath">
+                <option value=""></option>
+                <option value="N"{% if data.grid_swlat_h == "N" %} selected{% endif %}>N</option>
+                <option value="S"{% if data.grid_swlat_h == "S" %} selected{% endif %}>S</option>
+            </select>
+        </div>
+        <div class="mt-1">
+            Grid Spacing:&nbsp;<input type="text" name="xres" class="fixedWidth14" size="6" value="{{ data.grid_xres }}">&nbsp;km&nbsp;by&nbsp;<input type="text" name="yres" class="fixedWidth14" size="6" value="{{ data.grid_yres }}">&nbsp;km at 60&deg; latitude
+        </div>
+        <div class="mt-1">
+            Projection Longitude:&nbsp;<input type="text" name="projlon" class="fixedWidth14" size="7" value="{{ data.grid_projlon }}">&nbsp;
+            <select name="projlonh">
+                <option value=""></option>
+                <option value="E"{% if data.grid_projlon_h == "E" %} selected{% endif %}>E</option>
+                <option value="W"{% if data.grid_projlon_h == "W" %} selected{% endif %}>W</option>
+            </select>
+        </div>
+        <div class="mt-1">
+            Projection Pole:&nbsp;
+            <select name="pole">
+                <option value=""></option>
+                <option value="N"{% if data.grid_pole == "N" %} selected{% endif %}>North</option>
+                <option value="S"{% if data.grid_pole == "S" %} selected{% endif %}>Sorth</option>
+            </select>
+        </div>
+        <div class="mt-1">
+            <input type="radio" name="extent" value="full"{% if 'grid_truncated' not in data or not data.grid_truncated %} checked{% endif %}>&nbsp;full grid<span style="margin-right: 15px"></span><input type="radio" name="extent" value="truncated"{% if 'grid_truncated' in data and data.grid_truncated %} checked{% endif %}>&nbsp;truncated at equator
+        </div>
+        {% endif %}
+        <div class="mt-2">
+            <button class="btn btn-primary px-2 py-1 border-1" onclick="document.cov2_form.submit()">{% if 'replace_item' in data %}Save Changes{% else %}Add Coverage{% endif %}</button>
+        </div>
+    </form>
+    {% endif %}
+</center>

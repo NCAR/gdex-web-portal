@@ -1,0 +1,15 @@
+<div style="margin-top: 20px">
+    <center>
+        <h2>Add a Publication Reference</h2>
+        <form>
+            <select onchange="if (this.value.length > 0) { getContent('modal-window-content', 'get_' + this.value + '/'); }">
+                <option value="" selected>choose one</option>
+                <option value="book_ref">Book</option>
+                <option value="bookchapter_ref">Book Chapter</option>
+                <option value="preprint_ref">Conference Proceeding</option>
+                <option value="journal_ref">Journal Article</option>
+                <option value="technote_ref">Technical Report</option>
+            </select>
+        </form>
+    </center>
+</div>

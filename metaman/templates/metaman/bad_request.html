@@ -1,0 +1,8 @@
+<h2>Bad Request</h2>
+<p>
+    {% if missing_key %}
+    The request is missing a mandatory key: "{{ missing_key }}".
+    {% elif bad_value %}
+    The request has a bad value for the mandatory key: "{{ bad_value.key }}".
+    {% endif %}
+</p>

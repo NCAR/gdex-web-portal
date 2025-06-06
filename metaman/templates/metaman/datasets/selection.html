@@ -1,0 +1,33 @@
+{% if results|length > 0 %}
+<script id="selection_script" language="javascript">
+function process_selection(v, t) {
+  if (v == "choose_all") {
+    for (n = 2; n < document.selection_form.menu.length; ++n) {
+      addItem(t + '_field', document.selection_form.menu[n].value, false);
+    }
+  } else {
+    addItem(t + '_field', v);
+  }
+}
+</script>
+{% endif %}
+<center>
+    {% if results|length > 0 %}
+    <form name="selection_form">
+        <select name="menu" onchange="process_selection(this.value, '{{ type }}s')">
+            <option value="">Choose from the list</option>
+            {% if results|length > 1 %}
+            <option value="choose_all">Choose everything in the list</option>
+            {% endif %}
+            {% for result in results %}
+                <option value="{{ result.0 }}[!]{{ result.1 }}">{{ result.0 }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% else %}
+    <p>
+        No keywords match your search criteria
+    </p>
+    {% endif %}
+    <button class="btn btn-primary px-2 py-1 border-1 mt-2" onclick="popAdd('{{ type|capfirst }}')">New Search</button>
+</center>
