@@ -74,6 +74,7 @@ jobs:
           --secret id=METADATA_DBNAME
           --secret id=DJANGO_SUPERUSER_USERNAME --secret id=DJANGO_SUPERUSER_PASSWORD
           --secret id=DJANGO_SUPERUSER_EMAIL
+          --secret id=DJANGO_DEV_SECRET --secret id=DJANGO_PRODUCTION_SECRET
           --secret id=ORCID_AUTH_APP_CLIENT_ID --secret id=ORCID_AUTH_APP_SECRET
           --secret id=GLOBUS_AUTH_APP_CLIENT_ID --secret id=GLOBUS_AUTH_APP_SECRET
           --secret id=GLOBUS_APP_CLIENT_ID --secret id=GLOBUS_APP_CLIENT_SECRET
