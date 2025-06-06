@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'gsearch',
     'home',
     'oai',
-    'login',
+    #'login',
     'lookfordata',
     'metaman',
     'search',
@@ -486,3 +486,5 @@ SOCIALACCOUNT_STORE_TOKENS = True
 
 GMAP_API_URL = "https://maps.googleapis.com/maps/api/js"
 GMAP_API_KEY = local_settings.gmap_api_key
+
+ICOOKIE = local_settings.ICOOKIE
