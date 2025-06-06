@@ -46,6 +46,8 @@ RUN \
 --mount=type=secret,id=DJANGO_SUPERUSER_USERNAME,env=DJANGO_SUPERUSER_USERNAME \
 --mount=type=secret,id=DJANGO_SUPERUSER_PASSWORD,env=DJANGO_SUPERUSER_PASSWORD \
 --mount=type=secret,id=DJANGO_SUPERUSER_EMAIL,env=DJANGO_SUPERUSER_EMAIL \
+--mount=type=secret,id=DJANGO_DEV_SECRET,env=DJANGO_DEV_SECRET \
+--mount=type=secret,id=DJANGO_PRODUCTION_SECRET,env=DJANGO_PRODUCTION_SECRET \
 <<EOF
 cat <<EOFCAT > /usr/local/gdexweb/gdexwebserver/settings/local_settings.py
 wagtail_config = {
@@ -60,6 +62,11 @@ DJANGO_SUPERUSER = {
     'username': "$DJANGO_SUPERUSER_USERNAME",
     'email': "$DJANGO_SUPERUSER_EMAIL",
     'password': "$DJANGO_SUPERUSER_PASSWORD",
+}
+
+DJANGO_SECRET_KEYS = {
+    'dev_secret': "$DJANGO_DEV_SECRET",
+    'production_secret': "$DJANGO_PRODUCTION_SECRET",
 }
 EOFCAT
 EOF
