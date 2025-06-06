@@ -1,0 +1,11 @@
+<p>
+    There are <b>{{ numds }}</b> public datasets in the CISL RDA.  You can begin browsing the datasets by choosing one of the facets in the menu to the left.  Facet descriptions are given below, along with the number (in parentheses) of datasets in each.
+</p>
+<div class="desc-grid">
+    {% for o in facets %}
+    <div>
+        <div class="fs16px bold"><span class="text-decoration-underline">{{ o.title }}</span> <small class="text-dark-gray">({{ o.cnt }})</small></div>
+        <div class="mb-15px ml10px pe-30px">{{ o.description }}</div>
+    </div>
+    {% endfor %}
+</div>

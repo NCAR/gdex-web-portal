@@ -1,0 +1,61 @@
+{% load wagtailcore_tags %}
+
+{% with n=datasets|length %}
+{% if n > 1 %}
+<script id="dscompare" language="javascript">
+function submitCompare() {
+  var dslist = new Array();
+  var num_checked = 0;
+  for (n = 0; n < document.compare.elements.length; ++n) {
+    if (document.compare.elements[n].checked) {
+      dslist.push(document.compare.elements[n].value);
+    }
+  }
+  if (dslist.length != 2) {
+    alert("Check the boxes of exactly TWO datasets that you would like to compare.");
+    return;
+  }
+  document.getElementById('lookfordata-content').innerHTML = '<center><span style="color: #808080">Comparing...</span> <img src="/images/wait-lights.gif"></center>';
+  location = '/lookfordata/compare/?cmp1=' + dslist[0] + '&cmp2=' + dslist[1];
+}
+</script>
+{% endif %}
+<div id="breadcrumbs" class="bg-info lh-sm">
+    Showing datasets with these attributes
+    {% for bc in breadcrumbs %}
+    <i class="fas fa-angle-right"></i> <a class="bc-link" href="javascript:void(0)" onclick="slideOutFrom('{{ bc.refine_by }}', '')"><nobr>{{ bc.category }}</nobr></a> : {{ bc.browse_by }} <small class="text-gray-dark">({{ bc.count }})</small>
+    {% endfor %}
+</div>
+{% if n > 1 %}
+<form name="compare" action="javascript:void(0)" method="get">
+    <div id="compare" class="bg-light">
+        <div id="compare-left">
+            Select two datasets and <a href="javascript:void(0)" class="btn btn-outline-primary" onclick="submitCompare()">Compare</a> them.
+        </div>
+        <div id="compare-right">
+            <a href="/lookfordata/" class="btn btn-outline-primary">New Search</a>
+        </div>
+    </div>
+{% endif %}
+    {% for ds in datasets %}
+    <div class="dsentry" itemscope itemtype="http://schema.org/Dataset">
+        {% if 'historical' in ds %}
+        <i class="fas fa-exclamation-triangle"></i>&nbsp;
+        <span class="text-danger">
+            For ancillary use only - not recommended as a primary research dataset.  It has likely been superseded by newer and better datasets.
+        </span>
+        <br>
+        {% endif %}
+        <div{% if n > 1 %} class="form-check"{% endif %}>
+            {% if n > 1 %}<input class="form-check-input" type="checkbox" name="cmp" id="cmp{{ forloop.counter }}" value="{{ ds.dsid }}"><label class="form-check-label" for="cmp{{ forloop.counter }}">{{ forloop.counter }}. {% endif %}<b itemprop="name">{{ ds.title }}</b> <span class="text-gray-dark">({{ ds.dsid }})</span> <a href="/datasets/{{ ds.dsid }}/" target="_blank" itemprop="url"><i class="fas fa-link"></i></a>{% if n > 1 %}</label>{% endif %}
+        </div>
+        <div class="browseSummary" itemprop="description">
+            {{ ds.summary|richtext }}
+        </div>
+    </div>
+    <br>
+    {% endfor %}
+{% if n > 1 %}
+</form>
+{% endif %}
+{% endwith %}

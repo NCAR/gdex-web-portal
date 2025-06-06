@@ -1,0 +1,35 @@
+<div>
+{% if error %}
+    ERROR: {{ error }}
+{% else %}
+    View listings of our {{ listtyp }}-accessible data file holdings and download the files.  You can download files one-by-one by clicking their links, or you can take advantage of the tools that we provide that will allow you to easily download many files.  Your options are:
+    <div class="component two-column container-lg overflow-hidden mt-3">
+        <div class="row gx-0 gx-md-2">
+            <div class="col-12 col-md-2"></div>
+            <div class="col-12 col-md-4 p-2 m-1" style="background-color: #dbe2e9">
+                <h2 class="text-center fw-bolder mb-1">Faceted Browse</h2>
+                <div class="position-relative h-100">
+                    <p class="pb-2">
+                        Interactively browse the {{ listtyp}}-accessible collection of data files and make selections to create a list of only the files you need. <span style="color: red">Please note</span> that this is not a subsetting service. You will still receive whole data files as they exist in our archive.
+                    </p>
+                    <div class="position-absolute" style="bottom: 2.75rem">
+                        <a class="component-link i-angle-right--after" href="javascript:void(0)" onclick="getAjaxContent('GET', '', '/datasets/{{ dsid }}/facbrowse/{{ listapp }}/customize/{% if group %}?gindex={{ group }}{% endif %}', 'ds_content')">Link</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 p-2 m-1" style="background-color: #dbe2e9">
+                <h2 class="text-center fw-bolder mb-1">Complete File List</h2>
+                <div class="position-relative h-100">
+                    <p class="pb-2">
+                        View a hierarchical listing of the full collection of data files.
+                    </p>
+                    <div class="position-absolute" style="bottom: 2.75rem">
+                        <a class="component-link i-angle-right--after" href="javascript:void(0)" onclick="$.get('/datasets/{{ dsid }}/filelist{% if group %}/{{ group }}{% endif %}{% if listtyp == "Glade" %}?fl=glade{% endif %}', replace_ds_content)">Link</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-2"></div>
+        </div>
+    </div>
+{% endif %}
+</div>
