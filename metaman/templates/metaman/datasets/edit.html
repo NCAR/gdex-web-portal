@@ -1,0 +1,1582 @@
+{% if error %}
+<p>
+    <b>Error:</b> {{ error }}
+</p>
+{% else %}
+<script id="metaman_script" language="javascript">
+var ldimg = new Image(16, 16);
+ldimg.src = "/images/loading3.gif";
+var changed_title_field = false;
+var changed_authors_field = false;
+var changed_contributors_field = false;
+var changed_update_frequency_field = false;
+var changed_logo_field = false;
+var changed_summary_field = false;
+var changed_sciencekeywords_field = false;
+var changed_platforms_field = false;
+var changed_instruments_field = false;
+var changed_projects_field = false;
+var changed_supports_projects_field = false;
+var changed_iso_topic_field = false;
+var changed_ds_type_field = false;
+var changed_ds_curation_field = false;
+var changed_access_restrictions_field = false;
+var changed_usage_restrictions_field = false;
+var changed_access_code_field = false;
+var changed_references_field = false;
+var changed_reflists_field = false;
+var changed_related_sites_field = false;
+var changed_related_dois_field = false;
+var changed_related_datasets_field = false;
+var changed_acknowledgement_field = false;
+var changed_contacts_field = false;
+var changed_redundancys_field = false;
+var changed_periods_field = false;
+var changed_temporal_frequencys_field = false;
+var changed_data_types_field = false;
+var changed_formats_field = false;
+var changed_varlist_field = false;
+var changed_levels_field = false;
+var changed_coverages_field = false;
+var changed_license_field = false;
+
+function popLogoLibrary() {
+  document.getElementById('modal-window-content').innerHTML='<br><br><img src="/images/cyan-loader-snake.gif" vspace="10" /><br>Loading...';
+  popModalWindowWithGetUrl(800, 480, 'show-logos/');
+}
+
+function commitFieldChange(f, a) {
+  eval("var changed = changed_" + f + "_field");
+  if (changed) {
+    var e = document.getElementById(f + '_field');
+    var params = 'dsid={{ dsid }}&fv=';
+    if (e.nodeName == "INPUT" || e.nodeName == "TEXTAREA") {
+      var v = e.value.replace(/%/g, "%25");
+      var v = e.value.replace(/&/g, "%26");
+      params += v;
+    } else if (e.nodeName == "SELECT") {
+      if (e.attributes.getNamedItem("multiple") != null) {
+        var wrote_one = false;
+        for (n = 0; n < e.length; ++n) {
+          if (e[n].selected) {
+            if (wrote_one) {
+              params += "\n";
+            }
+            params += e[n].value;
+            wrote_one = true;
+          }
+        }
+        if (e.id == "formats_field") {
+          if (!document.dsedit.ascii_url.disabled) {
+            params += '&ascii_url=' + document.dsedit.ascii_url.value;
+          }
+          if (!document.dsedit.binary_url.disabled) {
+            params += '&binary_url=' + document.dsedit.binary_url.value;
+          }
+        }
+      } else {
+        params += e[e.selectedIndex].value;
+      }
+    } else {
+      alert("Field type '" + e.nodeName + "' not recognized");
+      return;
+    }
+    params = params.replace(/\+/g, "%2B") + '&csrfmiddlewaretoken={{ csrf_token }}';
+    document.getElementById(f + '_status').src = ldimg.src;
+    if (a) {
+      getContentFromPost(f + '_status_div', 'commit-field/' + f + '/', params);
+    } else {
+      document.getElementById(f + '_status_div').innerHTML = getContentFromSynchronousPost(f + '_status_div', 'commit-field/' + f + '/', params);
+    }
+    eval("changed_" + f + "_field = false");
+  }
+}
+
+function openSection(s) {
+  e = document.getElementById(s);
+  document.getElementById(s + '_trimg').classList.replace("fa-angle-right", "fa-angle-down");
+  e.style.display = 'block';
+}
+
+function toggleSection(s) {
+  e = document.getElementById(s);
+  if (e.style.display == "none" || e.style.display.length == 0) {
+    openSection(s);
+  } else {
+    document.getElementById(s + '_trimg').classList.replace("fa-angle-down", "fa-angle-right");
+    e.style.display = 'none';
+  }
+}
+
+function openField(f) {
+  e = document.getElementById(f);
+  document.getElementById(f + "_trimg").classList.replace("fa-angle-right", "fa-angle-down");
+  e.style.display = 'block';
+}
+
+function toggleField(f, a) {
+  e = document.getElementById(f);
+  if (e.style.display == "none" || e.style.display.length == 0) {
+    openField(f);
+  } else {
+    document.getElementById('errors').style.visibility = 'hidden';
+    document.getElementById(f + "_trimg").classList.replace("fa-angle-down", "fa-angle-right");
+    e.style.display = 'none';
+    if (typeof a == "undefined") {
+      commitFieldChange(f, true);
+    } else {
+      commitFieldChange(f, a);
+    }
+  }
+}
+
+function popAdd(x) {
+  if (new Array("Contact", "Contributor", "DataType", "Instrument", "Layer", "Level", "Platform", "Project", "Redundancy", "Reference", "Sciencekeyword", "Site", "SupportsProject", "TemporalFrequency").includes(x)) {
+    x = x.replace(/[A-Z]/g, (match) => ("_" + match).toLowerCase());
+    popModalWindowWithGetUrl(800, 480, 'get' + x + '/');
+  } else if (x == "Author") {
+    popModalWindowWithPostUrl(800, 480, 'get_author/', 'edit_dsid={{ dsid }}&csrfmiddlewaretoken={{ csrf_token }}');
+  } else if (x == "Coverage" || x == "Period") {
+    if (document.dsedit.data_types_field.value.length == 0) {
+      alert("You must first add at least one entry to the Data Type field before you can add " + x.toLowerCase() + " information.")
+      return;
+    }
+    popModalWindowWithPostUrl(800, 480, 'get_' + x.toLowerCase() + '/', 'edit_dsid={{ dsid }}&data_types=' + document.dsedit.data_types_field.value + '&csrfmiddlewaretoken={{ csrf_token }}');
+  } else if (x == "RelatedDataset") {
+    popModalWindowWithPostUrl(800, 480, 'get_datasets/', 'edit_dsid={{ dsid }}&type=related&csrfmiddlewaretoken={{ csrf_token }}');
+  } else if (x == "RefList") {
+    popModalWindowWithGetUrl(800, 480, 'get_ref_list/');
+  } else if (x == "RelatedDOI") {
+    popModalWindowWithGetUrl(800, 480, 'get_doi/');
+  } else {
+    popModalWindowWithPostUrl(800, 480, '/cgi-bin/internal/metaman', 'action=get' + x + '&id={{ dsid }}&a=y');
+  }
+}
+
+function popEdit(x) {
+  var e = document.getElementById(x + 's_field');
+  if (e.value.length == 0) {
+    alert("There is nothing to edit");
+    return;
+  }
+  let v = e.value;
+  v = v.replace(/%/g, "%25");
+  v = v.replace(/&/g, "%26");
+  params = 'itemList=' + v + '&csrfmiddlewaretoken={{ csrf_token }}';
+  params = params.replace(/\+/g, "%2B");
+  popModalWindowWithPostUrl(800, 480, 'edit_' + x + '/', params);
+}
+
+function popRemove(x) {
+  let params = 'edit_dsid={{ dsid }}&field=' + x + '&items=' + document.getElementById(x + 's_field').value;
+  params = params.replace(/\+/g, "%2B");
+  popModalWindowWithPostUrl(800, 480, 'remove/', params + '&csrfmiddlewaretoken={{ csrf_token }}');
+}
+
+function addItem(field, entry, alert_already_entered = true) {
+  let x = document.getElementById(field);
+  let test = x.value;
+  let idx = test.indexOf(entry);
+  while (idx >= 0) {
+    if ((idx == 0 && ((idx + entry.length) == test.length || test.charAt(idx + entry.length) == "\n")) || (idx > 0 && test.charAt(idx-1) == "\n" && ((idx + entry.length) == test.length || test.charAt(idx + entry.length) == "\n"))) {
+      if (alert_already_entered) {
+        alert("Entry '" + entry + "' is already in the list");
+      }
+      hideModalWindow();
+      return;
+    }
+    test = test.substr(idx + entry.length, 32768);
+    idx = test.indexOf(entry);
+  }
+  if (x.value.length > 0 && x.value.charAt(x.value.length-1) != "\n") {
+    x.value += "\n";
+  }
+  x.value += entry;
+  x.scrollTop = x.scrollHeight;
+  eval("changed_" + field + " = true");
+  hideModalWindow();
+}
+
+function editItem(f, i) {
+  var x;
+  if (i.indexOf("journal") == 0) {
+    x = 'journal_ref';
+  } else if (i.indexOf("preprint") == 0) {
+    x = 'preprint_ref';
+  } else if (i.indexOf("technical_report") == 0) {
+    x = 'technote_ref';
+  } else if (i.indexOf("book_chapter") == 0) {
+    x = 'bookChapter_ref';
+  } else if (i.indexOf("book") == 0) {
+    x = 'book_ref';
+  } else {
+    x = f;
+  }
+  i = i.replace(/%/g, "%25");
+  i = i.replace(/&/g, "%26");
+  var params = "editItem=" + i;
+  params = params.replace(/\+/g, "%2b");
+  idx = document.cookie.indexOf("csrftoken=");
+  if (idx > 0) {
+    token = document.cookie.substr(idx + 10);
+    idx = token.indexOf(";");
+    if (idx > 0) {
+      token = token.substr(0, idx);
+    }
+    params += "&edit_dsid={{ dsid }}&csrfmiddlewaretoken=" + token;
+  }
+  popModalWindowWithPostUrl(800, 480, 'get_' + x + '/', params);
+}
+
+function replaceItem(f, i, r) {
+  var x = document.getElementById(f);
+  if ( (index=x.value.indexOf(i + '\n')) < 0) {
+    if ( (index=x.value.indexOf(i)) < 0) {
+      return;
+    }
+  }
+  if (index + i.length + 1 <= x.value.length) {
+    r += '\n';
+  }
+  x.value = x.value.substr(0, index) + r + x.value.substr(index + i.length + 1, 32768);
+  eval("changed_" + f + " = true");
+  hideModalWindow();
+}
+
+function replaceItemPos(f, p, r) {
+  var x = document.getElementById(f);
+  parts = x.value.split("\n");
+  parts[p] = r;
+  x.value = parts.join("\n");
+  eval("changed_" + f + " = true");
+  hideModalWindow();
+}
+
+function removeItem(f, i) {
+  var x = document.getElementById(f);
+  i = i.replace(/&quot;/g, '\"');
+  index = x.value.indexOf(i + '\n');
+  if (index < 0) {
+    index = x.value.indexOf(i, -i.length);
+  }
+  x.value = x.value.substr(0, index) + x.value.substr(index + i.length + 1, 32768);
+  eval("changed_" + f + " = true");
+  hideModalWindow();
+  if (f == "data_types_field") {
+    affectPeriodsField();
+  }
+}
+
+function startCommitChanges() {
+  var f = document.getElementsByClassName("metaman-field");
+  for (n = 0; n < f.length; ++n) {
+    if (f[n].style.display == "block") {
+      eval("var changed = changed_" + f[n].id + "_field;");
+      if (changed) {
+        toggleField(f[n].id, false);
+      }
+    }
+  }
+  var i = document.getElementsByClassName("commit-status");
+  var num_changed = 0;
+  var num_errors = 0;
+  for (n = 0; n < i.length; ++n) {
+    if (i[n].src.indexOf("alert.gif") > 0 || i[n].src.indexOf("x.gif") > 0) {
+      ++num_errors;
+      ++num_changed;
+    } else if (i[n].src.indexOf("circle-dash.jpeg") < 0)
+      ++num_changed;
+  }
+  if (num_changed == 0) {
+    alert("You did not change any fields, so there are no changes to commit");
+    return;
+  }
+  if (num_errors > 0) {
+    if (num_errors == 1) {
+      alert("There is an error that must be fixed before your changes can be committed");
+    } else {
+      alert("There are " + num_errors + " errors that must be fixed before your changes can be committed");
+    }
+    return;
+  }
+
+  // check that all required fields are provided
+  if (document.getElementById("title_field").value.length == 0) {
+    alert("You must provide a dataset title");
+    openSection('ds_cite');
+    openField('title');
+    return;
+  }
+  if (document.getElementById("contributors_field").value.length == 0) {
+    alert("You must specify at least one data contributor");
+    openSection('ds_cite');
+    openField('contributors');
+    return;
+  }
+  if (document.getElementById("summary_field").value.length == 0) {
+    alert("You must provide a dataset summary");
+    openSection('ds_info');
+    openField('summary');
+    return;
+  }
+  if (document.getElementById("sciencekeywords_field").value.length == 0) {
+    alert("You must specify at least one variable");
+    openSection('ds_info');
+    openField('variables');
+    return;
+  }
+  if (document.getElementById("platforms_field").value.length == 0) {
+    alert("You must specify at least one platform");
+    openSection('ds_info');
+    openField('platforms');
+    return;
+  }
+  if (document.getElementById("iso_topic_field").selectedIndex == 0) {
+    alert("You must choose an ISO topic from the menu");
+    openSection('ds_info');
+    openField('iso_topic');
+    return;
+  }
+  if (document.getElementById("ds_type_field").selectedIndex == 0) {
+    alert("You must choose a dataset type from the menu");
+    openSection('ds_access');
+    openField('ds_type');
+    return;
+  }
+  if (document.getElementById("contacts_field").value.length == 0) {
+    alert("You must specify at least one dataset specialist");
+    openSection('ds_support');
+    openField('contacts');
+    return;
+  }
+  if (document.getElementById("periods_field") && document.getElementById("periods_field").value.length == 0) {
+    alert("You must specify at least one temporal range for the dataset");
+    openSection('content_metadata');
+    openField('periods');
+    return;
+  }
+  if (document.getElementById("data_types_field") && document.getElementById("data_types_field").value.length == 0) {
+    alert("You must specify at least one data type for the dataset");
+    return;
+  }
+  if (document.getElementById("formats_field")) {
+    var m = document.getElementById("formats_field");
+    for (n = 0; n < m.options.length; ++n) {
+      if (m.options[n].selected) {
+        n = m.options.length;
+      }
+    }
+    if (n == m.options.length) {
+      alert("You must select at least one data format from the menu");
+      return;
+    }
+  }
+  popModalWindowWithHTML(800, 480, '<center><form name="cvs_form" action="javascript:void(0)" onsubmit="return commitChanges()"><div style="text-align: left; margin-top: 30px"><font color="red">*</font>&nbsp;<b>Enter a message for CVS about the change(s) that you made:</b><br><input type="text" class="fixedWidth14" name="comment" id="comment" size="90" /></div><br><br><button class="btn btn-primary px-2 py-1 border-1" onclick="document.cvs_form.submit()">Continue</button></form></center><img src="/images/transpace.gif" onload="document.cvs_form.comment.focus()" />');
+}
+
+function commitChanges() {
+  if (document.cvs_form.comment.value.length < 4) {
+    alert("Please enter a comment about the changes that you made");
+    return false;
+  }
+  document.getElementById("metaman_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
+  getContentFromPost('metaman_content', 'commit-changes/{{ dsid }}/', 'cvscomment=' + document.cvs_form.comment.value + '&csrfmiddlewaretoken={{ csrf_token }}');
+  hideModalWindow();
+  window.scrollTo(0, 0);
+}
+
+function discardChanges() {
+  if (confirm("Are you sure you want to discard your changes?")) {
+    document.getElementById("metaman_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
+    getContent('metaman_content', 'discard-changes/{{ dsid }}/');
+  }
+}
+
+var words_requested = new Array();
+
+function requestWords(b, w) {
+  b.disabled = true;
+  let already_requested = false;
+  for (n = 0; n < words_requested.length; ++n) {
+    if (w == words_requested[n]) {
+      already_requested = true;
+    }
+  }
+  if (!already_requested) {
+    r = getContentFromSynchronousRequest(null, "/metaman/spellcheck-request?words=" + encodeURIComponent(w) + "&dsid={{ dsid }}");
+    alert(r);
+    if (r.indexOf("Success") == 0) {
+      words_requested.push(w);
+    }
+  } else {
+    alert("Your request has already been received.");
+  }
+  b.disabled = false;
+}
+
+function showErrors(i, h) {
+  e=document.getElementById('errors');
+  e.style.visibility='hidden';
+  let idx = h.indexOf("Misspelled/unrecognized");
+  if (idx >= 0) {
+    let words = h.substring(idx);
+    idx = words.indexOf("corrected:");
+    if (idx > 0) {
+      words = words.substring(idx + 10);
+      if (words.indexOf("<br><i>") == 0) {
+        words = words.substr(7);
+      }
+      idx = words.indexOf("</i>");
+      if (idx > 0) {
+        words = words.substring(0, idx);
+      }
+    }
+    h += "<br><br><button class=\"btn btn-outline-light px-1 py-0 border-1\" onclick=\"requestWords(this, '" + words.replaceAll("&apos;", "") + "')\">Request</button> spellchecker additions";
+  }
+  e.innerHTML='<div style="display:inline; float: left; width: 95%">' + h + '</div><div style="display: inline; float: right; margin-top: -5px"><img src="/images/close.gif" /></div>';
+  popInfo(i, 'errors', null, 'left-22', 'btop-12');
+}
+
+function popDataCitation(d) {
+  if (changed_title_field || changed_authors_field || changed_contributors_field || changed_update_frequency_field) {
+    alert("Save your changes first by closing any fields that you have changed");
+  } else {
+    popModalWindowWithGetUrl(750, 200, '/cgi-bin/datasets/citation?dsnum=' + d + '&style=gdj&temp=yes');
+  }
+}
+
+function popAuthorReorderTool() {
+  let v = document.getElementById('authors_field').value;
+  if (v.length == 0) {
+    alert("The author field is empty.");
+    return;
+  }
+  parts = v.split("\n");
+  if (parts[parts.length-1].length == 0) {
+    parts.pop();
+  }
+  if (parts.length == 1) {
+    alert("The author field only contains one author.");
+    return;
+  }
+  popModalWindowWithPostUrl(800, 480, 'reorder-authors/', 'authorList=' + v + '&csrfmiddlewaretoken={{ csrf_token }}');
+}
+
+function popContributorCitationTool() {
+  let v = document.getElementById('contributors_field').value;
+  if (v.length == 0) {
+    alert("The contributor field is empty.");
+    return;
+  }
+  parts = v.split("\n");
+  if (parts[parts.length-1].length == 0) {
+    parts.pop();
+  }
+  if (parts.length == 1) {
+    alert("There is only one contributor. It is automatically included in the data citation unless you have also specified one or more authors.");
+    return;
+  }
+  var citable = 'true';
+  if (document.getElementById('authors_field').value.length > 0) {
+    citable = 'false';
+  }
+  p = 'action=cite&contributorList=' + v.replace(/&/g, "%26") + '&citable=' + citable + '&csrfmiddlewaretoken={{ csrf_token }}';
+  popModalWindowWithPostUrl(800, 400, 'cite-contributors/', p);
+}
+
+function submitContributorsForOrdering() {
+  var num_checked = 0;
+  var p = '';
+  for (n = 0; n < document.cite_form.elements.length; ++n) {
+    if (document.cite_form.elements[n].type == "checkbox") {
+      if (document.cite_form.elements[n].checked) {
+        p += document.cite_form.elements[n].value.replace(/\[\!\]N$/, "[!]Y") + '\n';
+        ++num_checked;
+      } else {
+        p += document.cite_form.elements[n].value.replace(/\[\!\]Y$/, "[!]N") + '\n';
+      }
+    }
+  }
+  if (num_checked == 0) {
+    alert("You must select at least one data contributor");
+    return;
+  }
+  getContentFromPost('modal-window-content', 'cite-contributors/', 'action=order&contributorList=' + p.replace(/&/g, "%26") + '&csrfmiddlewaretoken={{ csrf_token }}');
+}
+
+function orderAndUpdateAuthors(num_authors) {
+  var used = new Array(num_authors);
+  for (n = 0; n < num_authors; ++n) {
+    used[n] = 0;
+  }
+  var authors = new Array(num_authors);
+  for (n = 0; n < document.order_form.elements.length; ++n) {
+    if (document.order_form.elements[n].type == "text" && document.order_form.elements[n+1].type == "hidden") {
+      idx = parseInt(document.order_form.elements[n].value);
+      if (idx < 1 || idx > num_authors) {
+        alert("Order values must be in the range from 1 to " + num_authors);
+        return;
+      }
+      if (used[idx-1] == 0) {
+        used[idx-1] = 1;
+        authors[idx-1] = document.order_form.elements[++n].value;
+      } else {
+        alert("Order values must be unique");
+        return;
+      }
+    }
+  }
+  var p = '';
+  for (n = 0; n < num_authors; ++n) {
+    p += authors[n] + '\n';
+  }
+  document.getElementById('authors_field').value = p;
+  changed_authors_field = true;
+  hideModalWindow();
+}
+
+function orderAndUpdateContributors(num_contribs) {
+  var used = new Array(num_contribs);
+  var cites = new Array(num_contribs);
+  var non_cites = new Array();
+  for (n = 0; n < num_contribs; ++n) {
+    used[n] = 0;
+  }
+  for (n = 0; n < document.order_form.elements.length; ++n) {
+    if (document.order_form.elements[n].type == "text" && document.order_form.elements[n+1].type == "hidden") {
+      l = parseInt(document.order_form.elements[n].value);
+      if (l < 1 || l > num_contribs) {
+        alert("Order values must be in the range from 1 to " + num_contribs);
+        return;
+      }
+      if (used[l-1] == 0) {
+        used[l-1] = 1;
+        cites[l-1] = document.order_form.elements[++n].value;
+      } else {
+        alert("Order values must be unique");
+        return;
+      }
+    } else if (document.order_form.elements[n].type == "hidden") {
+      non_cites.push(document.order_form.elements[n].value);
+    }
+  }
+  var p = '';
+  for (n = 0; n < num_contribs; ++n) {
+    p += cites[n] + '\n';
+  }
+  for (n = 0; n < non_cites.length; ++n) {
+    p += non_cites[n] + '\n';
+  }
+  document.getElementById('contributors_field').value = p;
+  changed_contributors_field = true;
+  hideModalWindow();
+}
+
+function moveCursor(f, pos) {
+  if (pos < 1) {
+    pos = 1;
+  }
+  var e = document.getElementById(f);
+  if (pos > e.value.length) {
+    pos = e.value.length;
+  }
+  e.setSelectionRange(pos-1, pos);
+  e.focus();
+}
+
+function formatURLEnable() {
+  document.dsedit.ascii_url.disabled = true;
+  document.dsedit.binary_url.disabled = true;
+  for (n = 0; n < document.dsedit.formats_field.options.length; ++n) {
+    if (document.dsedit.formats_field.options[n].value == "proprietary_ASCII" && document.dsedit.formats_field.options[n].selected) {
+      document.dsedit.ascii_url.disabled = false;
+    }
+    if (document.dsedit.formats_field.options[n].value == "proprietary_Binary" && document.dsedit.formats_field.options[n].selected) {
+      document.dsedit.binary_url.disabled = false;
+    }
+  }
+}
+
+function affectPeriodsField() {
+  if (!document.getElementById("periods_field")) {
+    return;
+  }
+  let b = (document.getElementById("iso_topic_field")[document.getElementById("iso_topic_field").selectedIndex].value == "elevation")
+      || (document.getElementById("data_types_field").value.indexOf("model_simulation") >= 0);
+  document.getElementById("temporal_period_add").disabled = b;
+  document.getElementById("temporal_period_edit").disabled = b;
+  document.getElementById("temporal_period_remove").disabled = b;
+  document.getElementById("temporal_period_clear").disabled = b;
+  if (b) {
+    document.getElementById("periods_field").value = "9999[!]9999[!]Entire Dataset";
+    changed_periods_field = true;
+    commitFieldChange("periods", true);
+  } else if (document.getElementById("periods_field").value.indexOf("9999[!]9999[!]Entire Dataset") >= 0 && !b) {
+    removeItem('periods_field', "9999[!]9999[!]Entire Dataset");
+  }
+}
+</script>
+<style id="metaman_style">
+.metaman-field-container, .metaman-field {
+  display: none;
+  margin-left: 15px;
+  margin-bottom: 10px;
+}
+img.commit-status {
+  width: 16px;
+  height: 16px;
+}
+img.icon-size {
+  width: 16px;
+  height: 16px;
+}
+</style>
+
+<h2>Editing the Metadata for Dataset {{ dsid }}</h2>
+
+{% if version != "latest_version" %}
+<p>
+    <img src="/images/alert.gif">&nbsp;<font color="red">You have chosen to edit an older version ({{ version }}) of the dataset metadata.  Just be aware that if you save changes from here, this dataset may not reflect some or all of the changes made after version {{ version }} (but those changes can still be recovered later if necessary).</font>
+</p>
+{% endif %}
+
+<div class="mb-2">
+    <p>
+        Clicking the link for a header will reveal all of the fields under that header.
+    </p>
+    <p>
+        Clicking the link for an individual field will open it so that you can view its contents and make changes.  Clicking the field link again will close the field, check for errors, and record any changes you made to that field.
+    </p>
+    <p>
+        Once you have made all of your changes, you will need to click the "Commit Changes" button below.  This will save your changes, update the metadata database, and refresh the dataset description.
+    </p>
+    <font color="red">*</font> denotes a required field
+</div>
+<form name="dsedit" action="javascript:void(0)">
+    <div class="mb-1">
+        {% with a=errors.curation_level|length b=errors.contacts|length c=errors.redundancies|length %}
+        <i class="fas fa-angle-{% if a > 0 or b > 0 or c > 0 %}down{% else %}right{% endif %} pe-1" id="ds_service_trimg"></i><a href="javascript:void(0)" onclick="toggleSection('ds_service')"><strong>Dataset Curation</strong></a>
+        <div class="text-muted ms-2">
+            (curation level, dataset type, dataset specialist, dataset redundancies)
+        </div>
+        <div class="metaman-field-container"{% if a > 0 or b > 0 or c > 0 %} style="display: block"{% endif %}" id="ds_service">
+            <div class="component two-column container-lg overflow-hidden mb-1">
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="ds_curation_status_div">
+                            <img class="commit-status" id="ds_curation_status" src="/images/{% if a > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if a > 0 %} onclick="showErrors(this, '{{ errors.curation_level|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-{% if a > 0 %}down{% else %}right{% endif %} pe-1" id="ds_curation_trimg"></i><a href="javascript:void(0)" onclick="toggleField('ds_curation')">Curation Level</a><font color="red">*</font>&nbsp;<span class="small">(more information)</span>&nbsp;<a href="https://rda.ucar.edu/rdadocs/RDA_Dataset_Curation_Level.pdf" target="_curation_level_help"><img class="w-auto h-auto" src="/images/newwin.jpg"></a>
+                        <br>
+                        <div class="metaman-field" id="ds_curation"{% if a > 0 %} style="display: block"{% endif %}>
+                            <select id="ds_curation_field" onchange="changed_ds_curation_field=true">
+                                <option value="">choose one</option>
+                                {% for option in curation_level_options %}
+                                <option value="{{ option.value }}"{% if option.value == curation_level %} selected{% endif %}>{{ option.description }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="ds_type_status_div">
+                            <img class="commit-status" id="ds_type_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="ds_type_trimg"></i><a href="javascript:void(0)" onclick="toggleField('ds_type')">Dataset Type</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="ds_type">
+                            <select id="ds_type_field" onchange="changed_ds_type_field=true">
+                                <option value="">choose one</option>
+                                {% for option in dataset_type_options %}
+                                <option value="{{ option.value }}"{% if dataset_type == option.value %} selected{% endif %}>{{ option.description }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if has_doi %}
+                            <br>
+                            <small>NOTE: "internal" is not an option because this dataset has an active DOI;  if you want to make the dataset internal, you will need to terminate the DOI first</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="contacts_status_div">
+                            <img class="commit-status" id="contacts_status" src="/images/{% if b > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}" {% if b > 0 %} onclick="showErrors(this, '{{ errors.contacts|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-{% if b > 0 %}down{% else %}right{% endif %} pe-1" id="contacts_trimg"></i><a href="javascript:void(0)" onclick="toggleField('contacts')">Dataset Specialist(s)</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="contacts"{% if b > 0 %} style="display: block"{% endif %}>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div>
+                                    <textarea class="fixedWidth14 w-100" id="contacts_field" style="height: 5em; resize: none" disabled>{{ contacts }}</textarea>
+                                </div>
+                                <div>
+                                    <div class="d-inline float-start">
+                                        <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Contact')">Add</button>
+                                    </div>
+                                    <div class="d-inline float-end">
+                                        <button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('contact')">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="redundancys_status_div">
+                            <img class="commit-status" id="redundancys_status" src="/images/{% if c > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}" {% if c > 0 %} onclick="showErrors(this, '{{ errors.redundancies|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-{% if c > 0 %}down{% else %}right{% endif %} pe-1" id="redundancys_trimg"></i><a href="javascript:void(0)" onclick="toggleField('redundancys')">Dataset Redundancies</a><font color="red">*</font>&nbsp;<span class="text-muted">(other non-RDA copies of this dataset, which need not be exact copies)</span>
+                        <br>
+                        <div class="metaman-field" id="redundancys"{% if c > 0 %} style="display: block"{% endif %}>
+                            <div>
+                                Are there any other known copies of this dataset? These copies do not need to be exact copies of the RDA dataset.
+                                <div class="ms-2">
+                                    <input type="radio" name="redundancies_exist" value="yes" onchange="document.dsedit.redundancys_field.value='yes'+document.dsedit.redundancys_field.value.replace(/^no/,''); changed_redundancys_field=true" {% if redundancies_exist == "yes" %}checked{% endif %} />&nbsp;<strong>Yes</strong>, there is a copy/version of this dataset at one or more other data repositories
+                                    <br>
+                                    <input type="radio" name="redundancies_exist" value="no" onchange="document.dsedit.redundancys_field.value='no'+document.dsedit.redundancys_field.value.replace(/^yes/,''); changed_redundancys_field=true" {% if redundancies_exist == "no" %}checked{% endif %} />&nbsp;<strong>No</strong>, the RDA holds the only known copy of this dataset
+                                    <br>
+                                </div>
+                            </div>
+                            If <strong>yes</strong>, then you <strong>must</strong> make at least one entry in the box below:
+                            <br>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div>
+                                    <textarea class="fixedWidth14 w-100" id="redundancys_field" style="height: 5em; resize: none" disabled>{{ redundancies }}</textarea>
+                                </div>
+                                <div>
+                                    <div class="d-inline float-start">
+                                        <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Redundancy')">Add</button>
+                                    </div>
+                                    <div class="d-inline float-end">
+                                        <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('redundancy')">Edit</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('redundancy')">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+
+    <div class="mb-1">
+        {% with a=errors.title|length %}
+        <i class="fas fa-angle-{% if a > 0 %}down{% else %}right{% endif %} pe-1" id="ds_cite_trimg"></i><a href="javascript:void(0)" onclick="toggleSection('ds_cite')"><strong>Data Citation</strong></a>
+        <div class="text-muted ms-2">
+            (title, dataset authors, data contributors, update frequency)
+        </div>
+        <div class="metaman-field-container"{% if a > 0 %} style="display: block"{% endif %} id="ds_cite">
+            <p class="ms-3 mt-1 mb-1">
+                <a href="javascript:void(0)" onclick="popDataCitation('{{ dsid }}')">View the Dataset Citation</a> <span class="text-muted">from the current Data Citation metadata</span>
+            </p>
+            <div class="component two-column container-lg overflow-hidden mb-1">
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="title_status_div">
+                            <img class="commit-status" id="title_status" src="/images/{% if a > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if a > 0 %} onclick="showErrors(this, '{{ errors.title|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="title_trimg"></i><a href="javascript:void(0)" onclick="toggleField('title')">Title</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="title">
+                            <input id="title_field" type="text" class="fixedWidth14" size="90" value="{{ title }}" {% if not has_doi or is_manager %}oninput="changed_title_field=true"{% else %}readonly{% endif %}>
+                            {% if has_doi and not is_manager %}
+                            <br>
+                            <small>&nbsp;(this field is locked because the dataset has a DOI)</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto"></div>
+                    <div class="col-12 col-md-10 ms-1 mb-1" style="border: thin solid black">
+                        <div class="text-muted mb-2 p-1">
+                            Data Authors (optional) are <em>persons</em> who should be credited for producing the data.  Data Contributors (mandatory) are <em>institutions</em> from where the data were obtained.
+                        </div>
+                        <div class="text-muted mb-2">
+                            When both are present, the Data Authors take precedence and all entries are used in the data citation.  Otherwise, the Data Contributors are used as the "authors" in the data citation.  In the latter case, you should list all institutions that contributed data to the dataset, but if you don't think all of them should be cited in the dataset citation, use the tool provided to indicate which institutions should be cited, and in what order.
+                        </div>
+                        <div class="component two-column container-lg overflow-hidden mb-1">
+                            <div class="row gx-0 gx-md-1">
+                                <div class="col-12 col-md-auto">
+                                    <div class="float-end" id="authors_status_div">
+                                        <img class="commit-status" id="authors_status" src="/images/circle-dash.jpeg">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-11 ms-1 mb-1">
+                                    <i class="fas fa-angle-right pe-1" id="authors_trimg"></i><a href="javascript:void(0)" onclick="toggleField('authors')">Data Authors</a>
+                                    <br>
+                                    <div class="metaman-field" id="authors">
+                                        <textarea class="fixedWidth14 w-100" id="authors_field" style="height: 5em; resize: none" disabled>{{ authors }}</textarea>
+                                        <div class="w-100 overflow-auto mb-2">
+                                        {% if has_doi and not is_manager %}
+                                            <div class="d-inline float-start; width: 75%">
+                                              <small>&nbsp;(because the dataset has a DOI, this field is locked other than to add an ORCID ID for an author)</small>
+                                            </div>
+                                            <div class="d-inline float-end">
+                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('author')">Add Author ORCID ID</button>
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                            <div class="d-inline float-start">
+                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Author')">Add</button>
+                                            </div>
+                                            <div class="d-inline float-end ms-1">
+                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('authors_field').value = ''; changed_authors_field = true">Clear All</button>
+                                            </div>
+                                            <div class="d-inline float-end ms-1">
+                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('author')">Remove</button>
+                                            </div>
+                                            <div class="d-inline float-end">
+                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('author')">Edit</button>
+                                            </div>
+                                        </div>
+                                        <div class="mb-1">
+                                            <span class="text-muted">Use <a href="javascript:void(0)" onclick="popAuthorReorderTool()">this tool</a> to re-order the authors</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row gx-0 gx-md-1">
+                                <div class="col-12 col-md-auto">
+                                    <div class="float-end" id="contributors_status_div">
+                                        <img class="commit-status" id="contributors_status" src="/images/circle-dash.jpeg">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-11 ms-1 mb-1">
+                                    <i class="fas fa-angle-right pe-1" id="contributors_trimg"></i><a href="javascript:void(0)" onclick="toggleField('contributors')">Data Contributors</a><font color="red">*</font>
+                                    <br>
+                                    <div class="metaman-field" id="contributors">
+                                        <textarea class="fixedWidth14 w-100" id="contributors_field" style="height: 5em; resize: none" disabled>{{ contributors }}</textarea>
+                                        <div class="w-100 overflow-auto mb-2">
+                                        {% if has_doi and not is_manager %}
+                                            <small>&nbsp;(this field is locked because the dataset has a DOI)</small>
+                                        </div>
+                                        {% else %}
+                                            <div class="d-inline float-start">
+                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Contributor')">Add</button>
+                                            </div>
+
+                                            <div class="d-inline float-end">
+                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('contributor')">Edit</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('contributor')">Remove</button>
+                                            </div>
+                                        </div>
+                                        <div class="mb-1">
+                                            <span class="text-muted">Use <a href="javascript:void(0)" onclick="popContributorCitationTool()">this tool</a> to indicate which contributors should be cited and in what order</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="update_frequency_status_div">
+                            <img class="commit-status" id="update_frequency_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="update_frequency_trimg"></i><a href="javascript:void(0)" onclick="toggleField('update_frequency')">Dataset Updates</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="update_frequency">
+                            <select id="update_frequency_field" {% if has_doi and not is_manager %}disabled{% else %}onchange="changed_update_frequency_field=true"{% endif %}>
+                                <option value="no<!>">no</option>
+                                {% for option in update_frequency_options %}
+                                <option value="{{ option.value }}"{% if option.value == update_frequency %} selected{% endif %}>{{ option.description }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if has_doi and not is_manager %}
+                            <small>&nbsp;(this field is locked because the dataset has a DOI)</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+
+    <div style="mb-1">
+        {% with a=errors.summary|length %}
+        <i class="fas fa-angle-{% if a > 0 %}down{% else %}right{% endif %} pe-1" id="ds_info_trimg"></i><a href="javascript:void(0)" onclick="toggleSection('ds_info')"><strong>Description Information</strong></a>
+        <div class="text-muted ms-2">
+            (logo, summary, variables, platforms, instruments, projects, ISO topic)
+        </div>
+        <div class="metaman-field-container"{% if a > 0 %} style="display: block"{% endif %} id="ds_info">
+            <div class="component two-column container-lg overflow-hidden mb-1">
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="logo_status_div">
+                            <img class="commit-status" id="logo_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-auto ms-1">
+                        <i class="fas fa-angle-right pe-1" id="logo_trimg"></i><a href="javascript:void(0)" onclick="toggleField('logo')">Logo Image</a>
+                        <br>
+                        <div class="metaman-field" id="logo">
+                            <img id="logo_image" style="border: thin solid black; width: {{ logo.width }}px; height: 70px" src="/images/ds_logos/{{ logo.src }}" valign="top" />&nbsp;&nbsp;
+                            <div class="d-inline float-end small">
+                                &nbsp;Actions:
+                                <br>
+                                <a href="javascript:void(0)" onclick="popModalWindowWithGetUrl(800, 480, 'upload-logo/')">Add a logo</a> to the library (must be at least 70x70)
+                                <br>
+                                <a href="javascript:void(0)" onclick="popLogoLibrary()">Change the current logo</a> by selecting a different logo from the library
+                            </div>
+                        </div>
+                        <input id="logo_field" type="hidden" />
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="summary_status_div">
+                            <img class="commit-status" id="summary_status" src="/images/{% if a > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if a > 0 %} onclick="showErrors(this, '{{ errors.summary|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="summary_trimg"></i><a href="javascript:void(0)" onclick="toggleField('summary')">Summary/Abstract</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="summary">
+                            <textarea class="fixedWidth14" id="summary_field" style="height: 10em; width: 100%; resize: both" onkeyup="changed_summary_field=true;">{{ summary }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="small text-muted">
+                                    Move cursor to position: <input class="fixedWidth14" type="text" id="char_num" size="4" />&nbsp;<button class="btn btn-primary px-1 py-0 border-2" onclick="moveCursor('summary_field', parseInt(document.getElementById('char_num').value))">Go</button>
+                                </div>
+                                <div>
+                                    <a href="javascript:void(0)" onclick="popModalWindowWithHTML(800, 480, '<h3>Abstract:</h3><p>'+document.getElementById('summary_field').value.replace(/^&lt;p&gt;/i,'&lt;p style=&quot;margin-top: 0px; padding: 0px&quot;&gt;')+'</p>')">View the Summary/Abstract</a> <span class="text-muted">from the current HTML that you have entered</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="sciencekeywords_status_div">
+                            <img class="commit-status" id="sciencekeywords_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="sciencekeywords_trimg"></i><a href="javascript:void(0)" onclick="toggleField('sciencekeywords')">Variables</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="sciencekeywords">
+                            <textarea class="fixedWidth14" id="sciencekeywords_field" style="height: 5em; width: 100%; resize: none" disabled>{{ variables }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div style="display: inline; float: left">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Sciencekeyword')">Add</button>
+                                </div>
+                                <div style="display: inline; float: right; margin-left: 5px">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('sciencekeyword')">Remove</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('sciencekeywords_field').value = ''; changed_sciencekeywords_field=true">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="platforms_status_div">
+                            <img class="commit-status" id="platforms_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="platforms_trimg"></i><a href="javascript:void(0)" onclick="toggleField('platforms')">Platforms</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="platforms">
+                            <textarea class="fixedWidth14" id="platforms_field" style="height: 5em; width: 100%; resize: none" disabled>{{ platforms }}</textarea>
+
+                            <div class="w-100 overflow-auto mb-2">
+
+                                <div style="display: inline; float: left">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Platform')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('platforms_field').value='';changed_platforms_field=true">Clear All</button>
+                                </div>
+                                <div class="d-inline float-end">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('platform')">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="instruments_status_div">
+                            <img class="commit-status" id="instruments_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="instruments_trimg"></i><a href="javascript:void(0)" onclick="toggleField('instruments')">Instruments</a>
+                        <br>
+                        <div class="metaman-field" id="instruments">
+                            <textarea class="fixedWidth14" id="instruments_field" style="height: 5em; width: 100%; resize: none" disabled>{{ instruments }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Instrument')">Add</button>
+                                </div>
+                                <div style="display: inline; float: right">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('instrument')">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="projects_status_div">
+                            <img class="commit-status" id="projects_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="projects_trimg"></i><a href="javascript:void(0)" onclick="toggleField('projects')">"Collected From" Projects</a> <span style="color: #5f5f5f">(projects/experiments that <i>produced</i> the data)</span>
+                        <br>
+                        <div class="metaman-field" id="projects">
+                            <textarea class="fixedWidth14" id="projects_field" style="height: 5em; width: 100%; resize: none" disabled>{{ projects }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Project')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-2">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('projects_field').value='';changed_projects_field=true">Clear All</button>
+                                </div>
+                                <div class="d-inline float-end">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('project')">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="supports_projects_status_div">
+                            <img class="commit-status" id="supports_projects_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="supports_projects_trimg"></i><a href="javascript:void(0)" onclick="toggleField('supports_projects')">"Supports" Projects</a> <span style="color: #5f5f5f">(projects/experiments that were/are <i>supported</i> by the data)</span>
+                        <br>
+                        <div class="metaman-field" id="supports_projects">
+                            <textarea class="fixedWidth14" id="supports_projects_field" style="height: 5em; width: 100%; resize: none" disabled>{{ supports_projects }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('SupportsProject')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-2">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('supports_projects_field').value='';changed_supports_projects_field=true">Clear All</button>
+                                </div>
+                                <div class="d-inline float-end">
+                                    <button class="btn btn-primary px-2 py-1 border1" onclick="popRemove('supports_project')">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div class="float-end" id="iso_topic_status_div">
+                            <img class="commit-status" id="iso_topic_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="iso_topic_trimg"></i><a href="javascript:void(0)" onclick="toggleField('iso_topic')">ISO Topic</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="iso_topic">
+                            <select id="iso_topic_field" onchange="changed_iso_topic_field=true;affectPeriodsField()">
+                                <option value="">choose one</option>
+                                {% for topic in iso_topics %}
+                                <option value="{{ topic }}"{% if iso_topic == topic %} selected{% endif %}>{{ topic }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+
+    <div class="mb-1">
+        {% with a=errors.access_restrictions|length b=errors.usage_restrictions|length %}
+        <i class="fas fa-angle-{% if a > 0 or b > 0 %}down{% else %}right{% endif %} pe-1" id="ds_access_trimg"></i><a href="javascript:void(0)" onclick="toggleSection('ds_access')"><b>Access</b></a>
+        <div style="margin-left: 15px; color: #5f5f5f">
+            (access restrictions, usage restrictions, who can access the data)
+        </div>
+        <div class="metaman-field-container"{% if a > 0 or b > 0 %} style="display: block"{% endif %} id="ds_access">
+            <div class="component two-column container-lg overflow-hidden mb-1">
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="access_restrictions_status_div">
+                            <img class="commit-status" id="access_restrictions_status" src="/images/{% if a > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if a > 0 %} onclick="showErrors(this, '{{ errors.access_restrictions|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="access_restrictions_trimg"></i><a href="javascript:void(0)" onclick="toggleField('access_restrictions')">Restrictions on Access to the Data</a>
+                        <br>
+                        <div class="metaman-field" id="access_restrictions">
+                            <textarea class="fixedWidth14" id="access_restrictions_field" style="height: 7em; width: 100%" onkeyup="changed_access_restrictions_field=true;">{{ access_restrictions }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="d-inline float-start">
+                                    <a href="javascript:void(0)" onclick="popModalWindowWithHTML(800, 480, '<h3>Access Restrictions:</h3><p>'+document.getElementById('access_restrictions_field').value.replace(/^&lt;p&gt;/i,'&lt;p style=&quot;margin-top: 0px; padding: 0px&quot;&gt;')+'</p>')">View the Access Restrictions</a> <span class="text-muted">from the current HTML that you have entered</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="usage_restrictions_status_div">
+                            <img class="commit-status" id="usage_restrictions_status" src="/images/{% if b > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if a > 0 %} onclick="showErrors(this, '{{ errors.usage_restrictions|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="usage_restrictions_trimg" src="/images/bluetriangle.gif"></i><a href="javascript:void(0)" onclick="toggleField('usage_restrictions')">Restrictions on Usage of the Data</a>
+                        <br>
+                        <div class="metaman-field" id="usage_restrictions">
+                            <textarea class="fixedWidth14" id="usage_restrictions_field" style="height: 7em; width: 100%" onkeyup="changed_usage_restrictions_field=true;">{{ usage_restrictions }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="d-inline float-start">
+                                    <a href="javascript:void(0)" onclick="popModalWindowWithHTML(800, 480, '<h3>Usage Restrictions:</h3><p>'+document.getElementById('usage_restrictions_field').value.replace(/^&lt;p&gt;/i,'&lt;p style=&quot;margin-top: 0px; padding: 0px&quot;&gt;')+'</p>')">View the Usage Restrictions</a> <span style="color: #5f5f5f">from the current HTML that you have entered</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="access_code_status_div">
+                            <img class="commit-status" id="access_code_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="access_code_trimg"></i><a href="javascript:void(0)" onclick="toggleField('access_code')">Data Access</a> <span style="color: #5f5f5f">(who can view the Data Access options)</span>
+                        <br>
+                        <div class="metaman-field" id="access_code">
+                            <select id="access_code_field" onchange="changed_access_code_field=true">
+                                <option value="">All users</option>
+                                {% for option in access_options %}
+                                <option value="{{ option.value }}"{% if option.value == access_code %} selected{% endif %}>{{ option.description }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+
+    <div class="mb-1">
+        {% with a=errors.references|length b=errors.acknowledgement|length c=errors.related_resources|length d=errors.related_datasets|length e=errors.related_dois|length %}
+        <i class="fas fa-angle-{% if a > 0 or b > 0 or c > 0 or d > 0 or e > 0 %}down{% else %}right{% endif %} pe-1" id="ds_support_trimg"></i><a href="javascript:void(0)" onclick="toggleSection('ds_support')"><strong>Supporting Information/Materials</strong></a>
+        <div class="text-muted ms-2">
+            (publications, custom acknowledgement, related websites, related datasets, related DOIs)
+        </div>
+        <div class="metaman-field-container"{% if a > 0 or b > 0 or c > 0 or d > 0 or e > 0 %} style="display: block"{% endif %} id="ds_support">
+            <div class="component two-column container-lg overflow-hidden mb-1">
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="references_status_div">
+                            <img class="commit-status" id="references_status" src="/images/{% if a > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if a > 0 %} onclick="showErrors(this, '{{ errors.references|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="references_trimg"></i><a href="javascript:void(0)" onclick="toggleField('references')">Publication References</a> <span class="text-muted">(enter individual publications here)</span>
+                        <br>
+                        <div class="metaman-field" id="references">
+                            <small>(Order does not matter.  They will be sorted by publication date later.)</small>
+                            <br>
+                            <textarea class="fixedWidth14 w-100" id="references_field" style="height: 5em; resize: none" disabled>{{ references }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Reference')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('reference')">Edit</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('reference')">Remove</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('references_field').value='';changed_references_field=true">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="reflists_status_div">
+                            <img class="commit-status" id="reflists_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="reflists_trimg"></i><a href="javascript:void(0)" onclick="toggleField('reflists')">Bibliographic Lists</a> <span class="text-muted">(enter web-accessible lists of publications here)</span>
+                        <br>
+                        <div class="metaman-field" id="reflists">
+                            <textarea class="fixedWidth14 w-100" id="reflists_field" style="height: 5em; resize: none" disabled>{{ reflists }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('RefList')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('reflist')">Edit</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('reflist')">Remove</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('reflists_field').value='';changed_reflists_field=true">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="acknowledgement_status_div">
+                            <img class="commit-status" id="acknowledgement_status" src="/images/{% if b > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if b > 0 %} onclick="showErrors(this, '{{ errors.acknowledgement|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="acknowledgement_trimg"></i><a href="javascript:void(0)" onclick="toggleField('acknowledgement')">Customized Dataset Acknowledgement</a>
+                        <br>
+                        <div class="metaman-field" id="acknowledgement">
+                            <span class="small">(Information added here will appear below the dataset citation.)</span>
+                            <br>
+                            <textarea class="fixedWidth14 w-100" id="acknowledgement_field" style="height: 7em" onkeyup="changed_acknowledgement_field=true;">{{ acknowledgement }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="related_sites_status_div">
+                            <img class="commit-status" id="related_sites_status" src="/images/{% if c > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if c > 0 %} onclick="showErrors(this, '{{ errors.related_resources|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="related_sites_trimg"></i><a href="javascript:void(0)" onclick="toggleField('related_sites')">Related Websites</a>
+                        <br>
+                        <div class="metaman-field" id="related_sites">
+                            <textarea class="fixedWidth14 w-100" id="related_sites_field" style="height: 7em" disabled>{{ related_resources }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Site')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('related_site')">Edit</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('related_site')">Remove</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('related_sites_field').value='';changed_related_sites_field=true">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="related_datasets_status_div">
+                            <img class="commit-status" id="related_datasets_status" src="/images/{% if d > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if d > 0 %} onclick="showErrors(this, '{{ errors.related_datasets|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="related_datasets_trimg"></i><a href="javascript:void(0)" onclick="toggleField('related_datasets')">Related RDA Datasets</a>
+                        <br>
+                        <div class="metaman-field" id="related_datasets">
+                            <textarea class="fixedWidth14 w-100" id="related_datasets_field" style="height: 7em" disabled>{{ related_datasets }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('RelatedDataset')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('related_dataset')">Remove</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('related_datasets_field').value='';changed_related_datasets_field=true">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="related_dois_status_div">
+                            <img class="commit-status" id="related_dois_status" src="/images/{% if e > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if e > 0 %} onclick="showErrors(this, '{{ errors.related_dois|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="related_dois_trimg"></i><a href="javascript:void(0)" onclick="toggleField('related_dois')">Related Digital Object Identifiers (DOIs)</a>
+                        <br>
+                        <div class="metaman-field" id="related_dois">
+                            {% if has_doi %}
+                            <textarea class="fixedWidth14 w-100" id="related_dois_field" style="height: 7em" disabled>{{ related_dois }}</textarea>
+                            <div class="w-100 overflow-auto mb-2">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('RelatedDOI')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('related_doi')">Remove</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('related_dois_field').value='';changed_related_dois_field=true">Clear All</button>
+                                </div>
+                            </div>
+                            {% else %}
+                            This dataset must have a DOI assigned to it before you can relate other DOIs to it.
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+
+    <div class="mb-1">
+        <i class="fas fa-angle-right pe-1" id="ds_license_trimg"></i><a href="javascript:void(0)" onclick="toggleSection('ds_license')"><b>Data License</b></a>
+        <div class="text-muted ms-2">
+            (the license that applies to the usage of this dataset)
+        </div>
+        <div class="metaman-field-container" id="ds_license">
+            <div class="component two-column container-lg overflow-hidden mb-1">
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="license_status_div">
+                            <img class="commit-status" id="license_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="license_trimg"></i><a href="javascript:void(0)" onclick="toggleField('license')">License</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="license">
+                            <select id="license_field" onchange="changed_license_field=true">
+                                {% for option in license_options %}
+                                <option value="{{ option.value }}"{% if license == option.value %} selected{% endif %}>{{ option.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-1">
+        {% with a=errors.varlist|length %}
+        <i class="fas fa-angle-{% if a > 0 %}down{% else %}right{% endif %} pe-1" id="content_metadata_trimg"></i>{% if show_manual_cmd %}<a href="javascript:void(0)" onclick="toggleSection('content_metadata')">{% endif %}<b>Content Metadata</b>{% if show_manual_cmd %}</a>{% endif %}
+        <div class="text-muted ms-2">
+            (temporal range, temporal frequency, data type, data format, detailed variables, vertical levels/layers, geospatial coverage)
+        </div>
+        <div class="metaman-field-container{% if not show_manual_cmd or a > 0 %} d-block{% endif %}" id="content_metadata">
+            {% if show_manual_cmd %}
+            <div class="component two-column container-lg overflow-hidden mb-1">
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="data_types_status_div">
+                            <img class="commit-status" id="data_types_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="data_types_trimg"></i><a href="javascript:void(0)" onclick="toggleField('data_types')">Data Type</a><font color="red">*</font> <span style="color: #5f5f5f">(grid, platform observation, etc.)</span>
+                        <br>
+                        <div class="metaman-field" id="data_types">
+                            <textarea class="fixedWidth14 w-100" id="data_types_field" style="height: 5em" disabled>{{ manual_cmd.data_types }}</textarea>
+                            <div class="w-100 overflow-auto mb-1">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('DataType')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('data_type')">Edit</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('data_type')">Remove</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('data_types_field').value='';changed_data_types_field=true;affectPeriodsField()">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="periods_status_div">
+                            <img class="commit-status" id="periods_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="periods_trimg"></i><a href="javascript:void(0)" onclick="toggleField('periods')">Temporal Period</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="periods">
+                            <textarea class="fixedWidth14 w-100" id="periods_field" style="height: 5em" disabled>{{ manual_cmd.temporal_periods }}</textarea>
+                            <div class="w-100 overflow-auto mb-1">
+                                <div class="d-inline float-start">
+                                    <button id="temporal_period_add" class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Period')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button id="temporal_period_edit" class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('period')">Edit</button>&nbsp;&nbsp;<button id="temporal_period_remove" class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('period')">Remove</button>&nbsp;&nbsp;<button id="temporal_period_clear" class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('periods_field').value='';changed_periods_field=true">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="temporal_frequencys_status_div">
+                            <img class="commit-status" id="temporal_frequencys_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="temporal_frequencys_trimg"></i><a href="javascript:void(0)" onclick="toggleField('temporal_frequencys')">Temporal Frequency</a>
+                        <br>
+                        <div class="metaman-field" id="temporal_frequencys">
+                            <textarea class="fixedWidth14 w-100" id="temporal_frequencys_field" style="height: 5em" disabled>{{ manual_cmd.temporal_frequencies }}</textarea>
+                            <div class="w-100 overflow-auto mb-1">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('TemporalFrequency')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('temporal_frequency')">Edit</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('temporal_frequency')">Remove</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('temporal_frequencys_field').value='';changed_temporal_frequencys_field=true">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="formats_status_div">
+                            <img class="commit-status" id="formats_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="formats_trimg"></i><a href="javascript:void(0)" onclick="toggleField('formats')">Data Format</a><font color="red">*</font>
+                        <br>
+                        <div class="metaman-field" id="formats">
+                            <div class="component two-column container-lg overflow-hidden mb-1">
+                                <div class="row gx-0 gx-md-1">
+                                    <div class="col-12 col-md-auto">
+                                        <small>(choose all that apply)</small>
+                                        <br>
+                                        <select id="formats_field" name="formats_field" multiple="multiple" size="5" onchange="changed_formats_field=true;formatURLEnable()" onfocus="changed_formats_field=true;formatURLEnable()">
+                                            {% for option in data_format_options %}
+                                            <option value="{{ option.value }}"{% if option.value in manual_cmd.data_formats %} selected{% endif %}>{{ option.value }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-auto ms-1">
+                                        <br>
+                                        <div class="component two-column container-lg overflow-hidden mb-1">
+                                            <div class="row gx-0 gx-md-1">
+                                                <div class="col-12 col-md-5 text-end">
+                                                    <small>Optional URL for ASCII format:</small>
+                                                </div>
+                                                <div class="col-12 col-md-6 ms-1">
+                                                    <input type="text" class="fixedWidth14 mt-2" name="ascii_url" size="38" value="{{ manual_cmd.ascii_url }}"{% if not manual_cmd.ascii_url %} disabled{% endif %}>
+                                                </div>
+                                            </div>
+                                            <div class="row gx-0 gx-md-1 mt-1">
+                                                <div class="col-12 col-md-5 text-end">
+                                                    <small>Optional URL for Binary format:</small>
+                                                </div>
+                                                <div class="col-12 col-md-6 ms-1">
+                                                    <input type="text" class="fixedWidth14 mt-2" name="binary_url" size="38" value="{{ manual_cmd.binary_url }}"{% if not manual_cmd.binary_url %} disabled{% endif %}>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="varlist_status_div">
+                            <img class="commit-status" id="varlist_status" src="/images/{% if a > 0 %}alert.gif{% else %}circle-dash.jpeg{% endif %}"{% if a > 0 %} onclick="showErrors(this, '{{ errors.varlist|escapejs }}')"{% endif %}>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="varlist_trimg"></i><a href="javascript:void(0)" onclick="toggleField('varlist')">Detailed Variables</a>
+                        <br>
+                        <div class="metaman-field" id="varlist">
+                            <small>(include ALL that apply)&nbsp;&nbsp;<a href="javascript:void(0)" onclick="popModalWindowWithGetUrl(800, 480, 'help/varlist/')">Get help with this field</a></small><br /><textarea class="fixedWidth14 w-100" id="varlist_field" style="height: 5em" onchange="changed_varlist_field=true">{{ manual_cmd.variables }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="levels_status_div">
+                            <img class="commit-status" id="levels_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="levels_trimg"></i><a href="javascript:void(0)" onclick="toggleField('levels')">Vertical Levels/Layers</a>
+                        <br>
+                        <div class="metaman-field" id="levels">
+                            <small>(include ALL that apply)</small>
+                            <br>
+                            <textarea class="fixedWidth14 w-100" id="levels_field" style="height: 5em" disabled>{{ manual_cmd.levels }}</textarea>
+                            <div class="w-100 overflow-auto mb-1">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" value="Add Level(s)" onclick="popAdd('Level')">Add Level(s)</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Layer')">Add Layer</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('level')">Remove</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('levels_field').value='';changed_levels_field=true">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1">
+                    <div class="col-12 col-md-auto">
+                        <div id="coverages_status_div">
+                            <img class="commit-status" id="coverages_status" src="/images/circle-dash.jpeg">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-10 ms-1">
+                        <i class="fas fa-angle-right pe-1" id="coverages_trimg"></i><a href="javascript:void(0)" onclick="toggleField('coverages')">Geospatial Coverage</a>
+                        <br>
+                        <div class="metaman-field" id="coverages">
+                            <small>(include ALL that apply)</small>
+                            <br>
+                            <textarea class="fixedWidth14 w-100" id="coverages_field" style="height: 5em" disabled>{{ manual_cmd.coverages }}</textarea>
+                            <div class="w-100 overflow-auto mb-1">
+                                <div class="d-inline float-start">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Coverage')">Add</button>
+                                </div>
+                                <div class="d-inline float-end ms-1">
+                                    <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('coverage')">Edit</button><font color="red"><b>&dagger;</b></font>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('coverage')">Remove</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.getElementById('coverages_field').value='';changed_coverages_field=true">Clear All</button>
+                                </div>
+                            </div>
+                            <font color="red"><strong>&dagger;</strong></font><small>Not all coverage entries can be edited - e.g. GCMD location keywords</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="ms-1">
+                <img class="icon-style" src="/images/alert.jpeg" />&nbsp;Content metadata have been generated via <span class="font-monospace">gatherxml</span> for data files in this dataset, and you can't edit that information here.
+            </div>
+            {% endif %}
+        </div>
+        {% endwith %}
+    </div>
+    <div class="mt-2 mb-2">
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="startCommitChanges()">Commit Changes</button><button class="btn btn-primary px-2 py-1 border-1 ms-2" onclick="discardChanges()">Discard All Changes</button>
+    </div>
+</form>
+
+<hr class="mt-0 mb-0">
+<div class="fs-6 lh-sm">
+    Status Icon Legend:
+    <div class="ms-2">
+        <img class="icon-size" src="/images/circle-dash.jpeg"> = no changes recorded
+        <br>
+        <img class="icon-size" src="/images/check.gif"> = changes successfully recorded
+        <br>
+        <img class="icon-size" src="/images/x.gif"> = database error
+        <br>
+        <img class="icon-size" src="/images/alert.gif"> = error(s) that require specialist attention <small>(click error icons for more information; click info bubble to dismiss)</small>
+    </div>
+</div>
+<div id="errors" class="bubble-bottom-left-arrow" style="width: 60%" onclick="this.style.visibility='hidden'"></div>
+
+<script id="citation_script" language="javascript">
+function changeCitation() {
+  if (document.citation) {
+    var style = document.citation.style[document.citation.style.selectedIndex].value;
+  } else {
+    var style = 'esip';
+  }
+  document.getElementById("modal-window-content").innerHTML = "Loading the citation...<br><br>";
+  getContent('modal-window-content', '/cgi-bin/datasets/citation?dsnum={{ dsid }}&style=' + style + '&date=&temp=yes');
+}
+registerAjaxCallback('changeCitation');
+</script>
+{% endif %}

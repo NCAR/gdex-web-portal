@@ -1,0 +1,199 @@
+{% if error %}
+<p>
+    An error occurred: {{ error }}
+</p>
+{% elif no_cmd %}
+<h2>Metadata Summary for {{ dsid }}</h2>
+<p>
+    No file content metadata were found.
+</p>
+{% elif 'editItem' in request.POST %}
+{% if request.POST.editItem == "cmd_no_web" %}
+{% for file in cmd_no_files %}
+<li>{{ file }}</li>
+{% endfor %}
+{% elif request.POST.editItem == "web" %}
+{% for file in web_files %}
+{% if not file.has_cmd %}
+<li>{{ file.name }}&nbsp;<span class="text-muted">{{ file.data_format }}</span></li>
+{% endif %}
+{% endfor %}
+{% elif request.POST.editItem == "inv" %}
+To generate an inventory for an individual file, use the following command:<br>
+&nbsp;&nbsp;&nbsp;<span class="font-monospace">gatherxml -f &lt;FORMAT&gt; -d {{ dsid }} -I https://rda.ucar.edu/&lt;PATH_TO_FILE&gt;</span>
+<br>
+<br>
+To generate inventories for all files of the same data format, use the following command:*
+<br>
+&nbsp;&nbsp;&nbsp;<span class="font-monospace">gatherxml -f &lt;FORMAT&gt; -d {{ dsid }} -I invall</span>
+<div style="font-size: 13px">
+    *if you have a lot of files that need inventories, you will want to run this command in the background because inventories are created sequentially one-at-a-time
+</div>
+<br>
+<br>
+List of files:
+<ul>
+    {% for file in missing_inv_list %}
+    <li>{{ file }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% else %}
+<script id="show_list_script" language="javascript">
+function showList(l) {
+  document.getElementById(l + '_list_link').classList.replace("d-block", "d-none");
+  document.getElementById(l + '_list_container').classList.replace("d-none", "d-block");
+  getAjaxContent('POST', 'editItem=' + l + '&csrfmiddlewaretoken={{ csrf_token }}', 'metadata-summary/{{ dsid }}/', l + '_list');
+}
+
+function refreshPage() {
+  b = document.getElementById("refresh_button");
+  b.disabled = true;
+  b.innerHTML = "Refreshing ...";
+  getContent('metaman_content', 'metadata-summary/{{ dsid }}/');
+}
+</script>
+<h2>Metadata Summary for {{ dsid }}</h2>
+<div class="mb-2">
+    <button id="refresh_button" class="btn btn-primary px-2 py-1 border-1" onclick="refreshPage()">Refresh</button>
+</div>
+<b>Web Files:</b>
+<div class="ms-2">
+    <div class="mb-1">
+        &bull;&nbsp;&nbsp;According to the database, there are <b>{{ web_files|length }}</b><sup>&dagger;</sup> Web files associated with {{ dsid }}.
+    </div>
+    {% if web_files|length > 0 and num_cmd == web_files|length %}
+    <div class="mb-1">
+        <img src="/images/check.gif" width="16" height="16">&nbsp;&nbsp;Content metadata has been generated for all of the files.
+    </div>
+    {% elif num_cmd > 0 %}
+    <div class="mb-1">
+        <img src="/images/alert.gif" width="16" height="16">&nbsp;&nbsp;Content metadata has been generated for only <font color="red"><b>{{ num_cmd }}</b></font> of these files.
+    </div>
+    <div id="web_list_link" class="d-block">
+        <i class="fas fa-angle-right pe-1"></i><a class="fs13px" href="javascript:void(0)" onclick="showList('web')">Show Web files needing metadata</a>
+    </div>
+    <div id="web_list_container" class="d-none overflow-auto" style="max-height: 150px; border: thin solid #2a70ae">
+        <i class="fas fa-angle-down pe-1"></i>Web files needing metadata:
+        <div id="web_list" class="ms-2">
+            <table>
+                <tr valign="middle">
+                    <td>
+                        <img src="/images/loader.gif">
+                    </td>
+                    <td>
+                        <span style="color: #a0a0a0">Creating list...</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    {% if cmd_no_files|length > 0 %}
+    <br>
+    <div class="mb-1">
+        <img src="/images/alert.gif" width="16" height="16">&nbsp;&nbsp;There are <font color="red"><b>{{ cmd_no_files|length }}</b></font> non-primary data files with content metadata.  You should run <span class="font-monospace">dcm</span> if you deleted these Web files, or you should run <span class="font-monospace">rcm</span> if you renamed these files.
+    </div>
+    <div id="cmd_no_web_list_link" class="d-block">
+        <i class="fas fa-angle-right pe-1"></i><a class="fs13px" href="javascript:void(0)" onclick="showList('cmd_no_web')">Show files not identified as Web files, but that have content metadata</a>
+    </div>
+    <div id="cmd_no_web_list_container" class="d-none overflow-auto" style="max-height: 150px; border: thin solid #2a70ae">
+        <i class="fas fa-angle-down pe-1"></i>Files not identified as Web files, but that have content metadata:
+        <div id="cmd_no_web_list" class="ms-2">
+            <table>
+                <tr valign="middle">
+                    <td>
+                        <img src="/images/loader.gif">
+                    </td>
+                    <td>
+                        <span style="color: #a0a0a0">Creating list...</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% if has_inventories %}
+<br>
+<b>Detailed Inventories:</b>
+<div style="ms-2">
+    <div class="mb-1">
+        &bull;&nbsp;&nbsp;According to the database, there are <b>{{ inv_cnt }}</b> Web files that have detailed inventories.
+    </div>
+    {% if num_no_inv == 0 %}
+    {% if num_cmd == web_files|length %}
+    <div class="mb-1">
+        <img src="/images/check.gif" width="16" height="16">&nbsp;&nbsp;Inventories for this dataset are complete.
+    </div>
+    {% else %}
+    <div class="mb-1">
+        <img src="/images/alert.gif" width="16" height="16">&nbsp;&nbsp;By generating content metadata for the Web files that still need it, you will also create detailed inventories for those files.  Then the detailed inventories for this dataset will be complete.
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="mb-1">
+        <img src="/images/alert.gif" width="16" height="16">&nbsp;&nbsp;Of these files, there are <font color="red"><b>{{ num_no_inv }}</b></font> that need inventories.
+    </div>
+    <div id="inv_list_link" class="d-block">
+        <i class="fas fa-angle-right pe-1"></i><a class="fs13px" href="javascript:void(0)" onclick="showList('inv')">Show files needing inventories</a>
+    </div>
+    <div id="inv_list_container" class="d-none overflow-auto" style="max-height: 150px; border: thin solid #2a70ae">
+        <i class="fas fa-angle-down pe-1"></i>Files needing inventories:
+        <div id="inv_list" class="ms-2">
+            <table>
+                <tr valign="middle">
+                    <td>
+                        <img src="/images/loader.gif">
+                    </td>
+                    <td>
+                        <span style="color: #a0a0a0">Creating list...</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% if web_files|length > 0 %}
+<br>
+<b>Dataset Summary:</b> (from Web files only)
+<div class="ms-2">
+    &bull;&nbsp;&nbsp;<span class="underline">Data type(s)</span>: {{ data_types }}
+    <br>
+    &bull;&nbsp;&nbsp;<span class="underline">Data format(s)</span>: {{ data_formats }}
+    <br>
+    &bull;&nbsp;&nbsp;<span class="underline">Data Temporal Period</span>:
+    <br>
+    <div class="ms-3">
+        {% if has_cmd_date_range %}
+        {{ start_date }} to {{ end_date }}
+        {% else %}
+        Temporal range not defined because content metadata do not exist
+        {% endif %}
+    </div>
+    {% if grid_products %}
+    <br>
+    &bull;&nbsp;&nbsp;<span class="underline">Summary for Gridded Data</span>:
+    <div class="ms-3">
+        &#9702;&nbsp;&nbsp;{{ grid_products|length }} grid product{% if grid_products|length > 1 %}s{% endif %}:
+        <div class="ms-3">
+            {% for product in grid_products %}
+            &#9642;&nbsp;&nbsp;{{ product }}
+            <br>
+            {% endfor %}
+        </div>
+    </div>
+    If the above information does not appear to be correct, you may need to update some or all of the individual content metadata files for this dataset.
+    {% endif %}
+</div>
+{% endif %}
+<br>
+<sup>&dagger;</sup>If this number does not seem correct, you may have:
+<ul>
+    <li>added files with <span class="font-monospace">dsarch</span> but not run <span class="font-monospace">gatherxml</span> on them</li>
+    <li>run <span class="font-monospace">gatherxml</span> on files with the <span class="font-monospace">-R</span> option</li>
+</ul>
+If either is true, run the command <span class="font-monospace">scm</span> with the <span class="font-monospace">-rw</span> (for Web files) flag to refresh the cache, and then reload this page.
+{% endif %}

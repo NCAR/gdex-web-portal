@@ -1,0 +1,346 @@
+{% if error %}
+<p>
+    An error occurred: {{ error }}
+</p>
+{% else %}
+<script id="get_author_script" language="javascript">
+function doESIPSubmit() {
+  if (document.esip_style_form.authors.value.length == 0) {
+    alert("Error: empty author list");
+    return;
+  }
+  for (n = 0; n < document.esip_style_form.authors.value.length; ++n) {
+    var ch = document.esip_style_form.authors.value.charAt(n);
+    if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z') && ch != '\'' && ch != '-' && ch != ' ' && ch != ',') {
+      if (ch == '.' && n > 0) {
+        var ch2 = document.esip_style_form.authors.value.charAt(n - 1);
+        if (ch2 < 'A' || ch2 > 'Z') {
+          if (n > 1) {
+            if (document.esip_style_form.authors.value.substring(n - 2, n) != 'Jr') {
+              alert("The period is only allowed after an initial or 'Jr'");
+              return;
+            }
+          } else { alert("The period is only allowed after an initial or 'Jr'");
+            return;
+          }
+        }
+      } else {
+        alert("Only capital and lower letters, the apostrophe, and the hyphen are allowed in author names");
+        return;
+      }
+    }
+  }
+  document.esip_style_form.authors.value = document.esip_style_form.authors.value.replace(/\s+/g, ' ');
+  var c = document.esip_style_form.authors.value.split(",");
+  var f, m, l;
+  if (c.length == 1) {
+    alert("Error: author name is not properly formatted");
+    return;
+  } else {
+    l = c[0];
+    c[1] = c[1].replace(/(^\s+|\s+$)/g, '');
+    n = c[1].split(" ");
+    f = n[0];
+    if (f.length == 0) {
+      alert("The first name or initial cannot be blank. Did you format the author's name properly?");
+      return;
+    }
+    if ( (idx = f.indexOf(".")) > 0 && f.length > (idx + 1)) {
+      alert("Error: author name '" + c[0] + ", " + c[1] + "' does not appear to be in the proper format");
+      return;
+    }
+    if (n.length > 1) {
+      m = n[1];
+    } else {
+      m = '';
+    }
+  }
+  {% if 'replace_item' in data %}
+  replaceItem('authors', '{{ data.replace_item }}', f + '[!]' + m + '[!]' + l);
+  {% else %}
+  addAuthor(f, m, l);
+  {% endif %}
+  for (x = 2; x < c.length; ++x) {
+    c[x] = c[x].replace(/and /, '');
+    c[x] = c[x].replace(/(^\s+|\s+$)/g, '');
+    n = c[x].split(" ");
+    if (n.length < 2) {
+      hideModalWindow();
+      return;
+    }
+    f = n[0];
+    if ( (idx = f.indexOf(".")) > 0 && f.length > (idx + 1)) {
+      hideModalWindow();
+      return;
+    }
+    if (n.length < 4) {
+      if (n.length == 3) {
+        m = n[1];
+      } else {
+        m = '';
+      }
+      l = n[n.length - 1];
+    } else {
+      if (n[1].indexOf(".") > 0) {
+        m = n[1];
+        var j = 2;
+        while (n[j].indexOf(".") > 0) {
+          m += ' ' + n[j];
+          ++j;
+        }
+      } else {
+        m = '';
+        var j = 1;
+      }
+      l = '';
+      for (k = j; k < n.length; ++k) {
+        if (k > j) l += ' ';
+        l += n[k];
+      }
+    }
+    addAuthor(f, m, l);
+  }
+  hideModalWindow();
+}
+
+function doFMLSubmit() {
+  var f = document.fml_form.first_name.value;
+  if (f.length == 0) {
+    alert("Error: missing author first name");
+    return false;
+  }
+  var m = document.fml_form.middle_name.value;
+  var l = document.fml_form.last_name.value;
+  if (l.length < 2) {
+    alert("Error: missing or invalid author last name");
+    return false;
+  }
+  var o = document.fml_form.orcid_id.value;
+  for (n = 0; n < f.length; ++n) {
+    var ch = f.charAt(n);
+    if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z') && ch != '-' && ch != '\'' && (ch != '.' || n != (f.length - 1) )) {
+      alert("Malformed first name - only capital and lower letters, the apostrophe, and the hyphen are allowed in author names");
+      return false;
+    }
+  }
+  for (n = 0; n < l.length; ++n) {
+    var ch = l.charAt(n);
+    if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z') && ch != '-' && ch != '\'' && (ch != '.' || n != (l.length - 1) )) {
+      alert("Malformed last name - only capital and lower letters, the apostrophe, and the hyphen are allowed in author names");
+      return false;
+    }
+  }
+  if (o.length > 0 && (o.length != 19 || o.charAt(4) != '-' || o.charAt(9) != '-' || o.charAt(14) != '-')) {
+    alert("Malformed ORCID iD - must have the format 'AAAA-BBBB-CCCC-DDDD'");
+    return false;
+  }
+  if (o.length > 0) {
+    if (o.length != 19) {
+      alert("Invalid ORCID iD");
+      return false;
+    }
+    var is_good = true;
+    for (n = 0; n < 18; ++n) {
+      if (n % 5 == 4) {
+        if (o.charAt(n) != '-') {
+          is_good = false;
+        }
+      } else {
+        if (o.charAt(n) < '0' || o.charAt(n) > '9') {
+          is_good = false;
+        }
+      }
+      if (!is_good) {
+        alert("Malformed ORCID iD - must have the format 'AAAA-BBBB-CCCC-DDDD'");
+        return false;
+      }
+    }
+    if (o.charAt(18) < '0' || o.charAt(18) > '9' && o.charAt(18) != 'X') {
+      alert("Invalid ORCID iD check digit (last digit) - must be 0-9 or 'X'");
+      return false;
+    }
+  }
+  if (f.length == 1) {
+    f += '.';
+  }
+  if (m.length == 1) {
+    m += '.';
+  }
+  {% if 'replace_item' in data %}
+  replaceItem('authors_field', '{{ data.replace_item }}', f + '[!]' + m + '[!]' + l + '[!]' + o);
+  {% else %}
+  addAuthor(f, m, l, o);
+  {% endif %}
+  hideModalWindow();
+  return true;
+}
+
+function doCorpSubmit() {
+  var n = document.corp_form.name.value;
+  if (n.length < 2) {
+    alert("Error: missing or invalid corporate name");
+    return false;
+  }
+  {% if 'replace_item' in data %}
+  replaceItem('authors_field', '{{ data.replace_item }}', n);
+  {% else %}
+  addAuthor(n);
+  {% endif %}
+  hideModalWindow();
+  return true;
+}
+
+function addAuthor(f, m, l, o) {
+  var auth_list = document.getElementById("authors_field");
+  if (typeof(m) != "undefined") {
+    f += '[!]' + m;
+  }
+  if (typeof(l) != "undefined") {
+    f += '[!]' + l;
+  }
+  if (typeof(o) != "undefined") {
+    f += '[!]' + o;
+  }
+  if (auth_list.value.indexOf(f) < 0) {
+    if (auth_list.value.length > 0 && auth_list.value.charAt(auth_list.value.length-1) != "\n") {
+      auth_list.value += "\n";
+    }
+    auth_list.value += f;
+  }
+  auth_list.scrollTop = auth_list.scrollHeight;
+  changed_authors_field = true;
+}
+
+function submitRIS() {
+  if (document.ris_form.ris_file.value.length == 0) {
+    return false;
+  }
+  var f = new FormData(document.ris_form);
+  getContentFromFormData('modal-window-content', 'get_author/', f);
+  return true;
+}
+
+</script>
+<center>
+    <h2>{% if 'replace_item' in data %}Edit Author{% else %}Add Author(s){% endif %}</h2>
+    <div class="text-start ms-2">
+        {% if 'replace_item' in data %}
+        {% if data.has_doi and not data.is_manager %}
+        <div class="mb-1">
+            <font color="red">Because this dataset has been assigned a DOI, the only modifiable field is the ORCID ID.</font>
+        </div>
+        {% endif %}
+        {% else %}
+        <form name="esip_style_form" onsubmit="return false">
+            <p>
+                You can manually add multiple Person authors using ESIP<font color="red">*</font> style:
+                <br>
+                &nbsp;&nbsp;&nbsp;<strong>e.g. - Last, First Middle, First Middle Last, First Middle Last, etc.</strong>
+                <br>
+                (make sure that initials are separated by a space - e.g. J. Q. Public and <strong>NOT</strong> J.Q. Public)
+                <br>
+                <font color="red">*</font><small>Note that this may be different than other specific reference styles so be aware if you copy/paste</small>
+           </p>
+           Author Information:
+           <br>
+           <input type="text" class="fixedWidth14" name="authors" value="{{ data.authors }}" size="90"{% if 'ris_file' in request.FILES %} readonly{% endif %}>
+           <div class="mt-1">
+               <button class="btn btn-primary px-2 py-1 border-1" onclick="doESIPSubmit()">Add Authors</button>
+           </div>
+        </form>
+        {% endif %}
+        {% if not data.from_ris %}
+        {% if data.lname|length > 0 or 'replace_item' not in data %}
+        <form name="fml_form" action="javascript:void(0)" onsubmit="return doFMLSubmit()">
+            {% if 'replace_item' not in data %}
+            <br>
+            <br>
+            <b>OR</b>
+            <br>
+            You can manually enter Person author names one-at-a-time:
+            <br>
+            {% endif %}
+            <span style="color: red; font-weight: bold">*</span>&nbsp; = required
+            <div class="component two-column container-lg overflow-hidden mb-3">
+                <div class="row gx-0 gx-md-1 mt-1">
+                    <div class="col-12 col-md-2"></div>
+                    <div class="col-12 col-md-2 text-end">
+                        <span style="color: red; font-weight: bold">*</span>&nbsp;First Name or Initial:
+                    </div>
+                    <div class="col-12 col-md-8 text-start">
+                        <input type="text" class="fixedWidth14" name="first_name" size="25" value="{{ data.fname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1 mt-1">
+                    <div class="col-12 col-md-2"></div>
+                    <div class="col-12 col-md-2 text-end">
+                        Middle Name or Initial:
+                    </div>
+                    <div class="col-12 col-md-8 text-start">
+                        <input type="text" class="fixedWidth14" name="middle_name" size="25" value="{{ data.mname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}>
+                    </div>
+                </div>
+                <div class="row gx-0 gx-md-1 mt-1">
+                    <div class="col-12 col-md-2"></div>
+                    <div class="col-12 col-md-2 text-end">
+                        <span style="color: red; font-weight: bold">*</span>&nbsp;Last Name:
+                    </div>
+                    <div class="col-12 col-md-8 text-start">
+                        <input type="text" class="fixedWidth14" name="last_name" size="25" value="{{ data.lname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}>
+                    </div>
+                </div>
+                {% if 'ris_file' not in request.FILES %}
+                <div class="row gx-0 gx-md-1 mt-1">
+                    <div class="col-12 col-md-2"></div>
+                    <div class="col-12 col-md-2 text-end">
+                        ORCID iD:
+                    </div>
+                    <div class="col-12 col-md-8 text-start">
+                        <input type="text" class="fixedWidth14" name="orcid_id" size="25" value="{{ data.orcid_id }}">
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <center>
+                <button class="btn btn-primary px-2 py-1 border-1" onclick="document.fml_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Person Author</button>
+            </center>
+        </form>
+        {% endif %}
+        {% endif %}
+        {% if not data.from_ris %}
+        {% if data.corp_name|length > 0 or 'replace_item' not in data %}
+        <form name="corp_form" action="javascript:void(0)" onsubmit="return doCorpSubmit()">
+            {% if 'replace_item' in data %}
+            Updated Corporate author name:
+            {% else %}
+            <br>
+            <br>
+            <b>OR</b>
+            <br>
+            You can enter a Corporate author name:
+            {% endif %}
+            <input type="text" class="fixedWidth14" name="name" size="90" value="{{ data.corp_name }}">
+            <div class="mt-1">
+                <button class="btn btn-primary px-2 py-1 border-1" onclick="document.corp_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Corporate Author</button>
+            </div>
+        </form>
+        {% endif %}
+        {% endif %}
+        {% if not data.from_ris %}
+        {% if 'ris_file' not in request.FILES and 'replace_item' not in data %}
+        <form name="ris_form" action="javascript:void(0)" method="post" enctype="multipart/form-data" onsubmit="return submitRIS()">
+            <br>
+            <br>
+            <b>OR</b>
+            <br>
+            You can upload an RIS file:
+            <br>
+            <input type="file" id="ris_file" name="ris_file">&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.ris_form.submit()">Upload RIS</button></td></tr>
+            <input type="hidden" name="edit_dsid" value="{{ request.POST.edit_dsid }}">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        </form>
+        {% endif %}
+        {% endif %}
+    </div>
+</center>
+{% endif %}

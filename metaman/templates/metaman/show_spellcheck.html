@@ -1,0 +1,61 @@
+<h2>Spellchecker Database</h2>
+{% if 'pattern' not in request.POST %}
+<form name="spell_db" action="javascript:void(0)" onsubmit="getContentFromPost('modal-window-content', 'show-words/', 'pattern=' + encodeURIComponent(this.pattern.value) + '&csrfmiddlewaretoken={{ csrf_token }}'); return true">
+    Show words like <i>pattern</i>: <input type="text" name="pattern" value="" size="40">
+    <div class="mt-2">
+        <i>pattern</i> is an SQL 'like' pattern
+        <ul>
+            <li>'%' represents zero or more characters (<b>%cat%</b> matches <b>cat</b> and s<b>cat</b>ter)</li>
+            <li>'_' (underscore) represents exactly one character (<b>_cat%</b> matches s<b>cat</b>ter but not cat)</li>
+        </ul>
+    </div>
+</form>
+{% else %}
+{% if no_results %}
+<p>
+    No entries in the database match your query.
+</p>
+{% else %}
+<a class="mb-2" href="javascript:void(0)" onclick="getContent('modal-window-content', 'show-words/')">New Query</a>
+{% if regular_words|length > 0 %}
+<h5 class="mt-2">Regular words:</h5>
+<ul>
+    {% for word in regular_words %}
+    <li>{{ word }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if acronyms|length > 0 %}
+<h5 class="mt-2">Acronyms:</h5>
+<ul>
+    {% for acronym in acronyms %}
+    <li>{{ acronym.word }}: <span class="text-muted">{{ acronym.description }}</span></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if places|length > 0 %}
+<h5 class="mt-2">Places:</h5>
+<ul>
+    {% for place in places %}
+    <li>{{ place }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if names|length > 0 %}
+<h5 class="mt-2">Names:</h5>
+<ul>
+    {% for name in names %}
+    <li>{{ name }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if others|length > 0 %}
+<h5 class="mt-2">Other:</h5>
+<ul>
+    {% for other in others %}
+    <li>{{ other }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endif %}
+{% endif %}

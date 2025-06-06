@@ -1,0 +1,56 @@
+<script id="doi_script" language="javascript">
+function checkDOIForm() {
+  if (document.doi_form.doi.value.length == 0) {
+    alert("You must enter a DOI to continue");
+    return false;
+  }
+  if (document.doi_form.relationType.selectedIndex == 0) {
+    alert("You must choose the type of relationship between this RDA dataset and the resource referenced by the related DOI");
+    return false;
+  }
+  var i = document.doi_form.doi.value + '[!]' + document.doi_form.relationType[document.doi_form.relationType.selectedIndex].value;
+  {% if edit_item %}
+  replaceItem('related_dois_field', '{{ edit_item }}', i);
+  {% else %}
+  addItem('related_dois_field', i);
+  {% endif %}
+  return true;
+}
+</script>
+<center>
+    <h2>Add a Related DOI</h2>
+</center>
+<p>
+    Required fields are denoted by a <font color="red"><span class="var18">*</span></font>. All other fields are optional.
+</p>
+<form name="doi_form" action="javascript:void(0)" onsubmit="return checkDOIForm()">
+    <div class="component two-column container-lg overflow-hidden mb-3">
+        <div class="row gx-0 gx-md-1">
+            <div class="col-12 col-md-3"></div>
+            <div class="col-12 col-md-9">
+                <font color="red"><span class="var18">*</span></font><b>Digital Object Identifier:</b> (prefix/suffix only, e.g. - 10.1002/joc.1166)
+                <br>
+                <input class="ms-3" type="text" class="fixedWidth14" name="doi" size="80">
+            </div>
+        </div>
+        <div class="row gx-0 gx-md-1">
+            <div class="col-12 col-md-3"></div>
+            <div class="col-12 col-md-9">
+                <font color="red"><span class="var18">*</span></font><b>Type of Relationship:</b>
+                <div class="ms-3">
+                    This RDA dataset&nbsp;
+                    <select name="relationType">
+                        <option value="">choose one</option>
+                        {% for opt in relation_values %}
+                        <option value="{{ opt }}">{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                    &nbsp;the related DOI.
+                </div>
+            </div>
+        </div>
+    </div>
+    <center>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.doi_form.submit()">{% if edit_item %}Save Changes{% else %}Add Related DOI{% endif %}</button>
+    </center>
+</form>

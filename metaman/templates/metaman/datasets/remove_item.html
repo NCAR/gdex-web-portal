@@ -1,0 +1,11 @@
+<center>
+    <h2>{{ title }}</h2>
+    <form>
+        <select onchange="removeItem('{{ request.POST.field }}s_field', this.value)">
+            <option>Choose from list</option>
+            {% for item in items %}
+            <option value="{{ item.value }}">{{ item.description }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</center>

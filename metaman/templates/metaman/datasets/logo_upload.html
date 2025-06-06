@@ -1,0 +1,27 @@
+{% if error %}
+<p>
+    <h4>An error occurred:</h4>
+    <ul>
+        '{{ error }}'
+    </ul>
+</p>
+{% else %}
+{% if 'logo_file' in request.FILES %}
+<h2>Image Upload Succeeded</h2>
+<p>
+    Your image was successfully uploaded!
+</p>
+{% else %}
+<center>
+    <div class="mt-2">
+        <h2>Upload an Image Logo</h2>
+        <form class="mt-2" name="logo_form" onsubmit="return false">
+            <input type="file" name="logo_file">
+            <input type="hidden" name="directory" value="images/ds_logos">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <button class="btn btn-primary px-2 py-1 border-1" onclick="getContentFromFormData('modal-window-content', 'upload-logo/', new FormData(document.logo_form))">Upload Image</button>
+        </form>
+    </div>
+</center>
+{% endif %}
+{% endif %}

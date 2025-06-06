@@ -66,6 +66,8 @@ RUN \
 --mount=type=secret,id=GLOBUS_TRANSFER_REFRESH_TOKEN,env=GLOBUS_TRANSFER_REFRESH_TOKEN \
 --mount=type=secret,id=GLOBUS_AUTH_REFRESH_TOKEN,env=GLOBUS_AUTH_REFRESH_TOKEN \
 --mount=type=secret,id=GMAP_API_KEY,env=GMAP_API_KEY \
+--mount=type=secret,id=IUSER_COOKIE_ID,env=IUSER_COOKIE_ID \
+--mount=type=secret,id=IUSER_COOKIE_CONTENT,env=IUSER_COOKIE_CONTENT \
 <<EOF
 cat <<EOFCAT > /usr/local/gdexweb/gdexwebserver/settings/local_settings.py
 dssdb_config_pg = {
@@ -95,9 +97,6 @@ IGrML_config_pg = metadata_config_pg
 WGrML_config_pg = metadata_config_pg
 
 search_config_pg = metadata_config_pg
-
-pg_schemas = {
-}
 
 DJANGO_SUPERUSER = {
     'username': "$DJANGO_SUPERUSER_USERNAME",
@@ -129,6 +128,11 @@ globus_transfer_refresh_token = "$GLOBUS_TRANSFER_REFRESH_TOKEN",
 globus_auth_refresh_token = "$GLOBUS_AUTH_REFRESH_TOKEN",
 
 gmap_api_key = "$GMAP_API_KEY"
+
+ICOOKIE = {
+    'id': "$IUSER_COOKIE_ID",
+    'content': "$IUSER_COOKIE_CONTENT",
+}
 
 EOFCAT
 EOF

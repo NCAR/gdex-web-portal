@@ -1,0 +1,77 @@
+<script id="dataType_script" language="javascript">
+function toggleProcesses() {
+  var d = document.getElementById("procd");
+  if (document.dataType_form.dtype[document.dataType_form.dtype.selectedIndex].value == "grid") {
+    d.style.display = "inline";
+  } else {
+    d.style.display = "none";
+    document.dataType_form.proc.selectedIndex = 0;
+    toggleNHour();
+  }
+}
+
+function toggleNHour() {
+  var d = document.getElementById("hour");
+  if (document.dataType_form.proc.selectedIndex == 2) {
+    d.style.display = "inline";
+  } else {
+    d.style.display = "none";
+    document.dataType_form.nhour.value = '';
+  }
+}
+
+function doDataTypeFormSubmit() {
+  if (document.dataType_form.dtype.selectedIndex == 0) {
+    alert("Choose a data type");
+    return false;
+  }
+  if (document.dataType_form.proc[document.dataType_form.proc.selectedIndex].value == "forecast" && document.dataType_form.nhour.value.length == 0) {
+    alert("Enter the forecast hour");
+    return false
+  }
+  var d = document.dataType_form.dtype[document.dataType_form.dtype.selectedIndex].value;
+  if (document.getElementById("procd").style.display == "inline") {
+    d += '[!]';
+    if (document.dataType_form.nhour.value.length > 0) {
+      d += document.dataType_form.nhour.value + '-hour ';
+    }
+    d += document.dataType_form.proc[document.dataType_form.proc.selectedIndex].value;
+    document.getElementById("procd").style.display = "none";
+  }
+  {% if 'replace_item' in data %}
+  replaceItem('data_types_field', '{{ data.replace_item }}', d);
+  {% else %}
+  addItem('data_types_field', d);
+  {% endif %}
+  affectPeriodsField();
+  return true;
+}
+</script>
+<center>
+    <h2>{% if 'replace_item' in data %}Edit{% else %}Add{% endif %} a Data Type</h2>
+    <form name="dataType_form" action="javascript:void(0)" onsubmit="return doDataTypeFormSubmit()">
+        <div>
+            <font color="red">*</font>Type:&nbsp;
+            <select name="dtype" onChange="toggleProcesses()">
+                <option value="">choose one</option>
+                {% for option in data.data_type_options %}
+                <option value="{{ option.value }}"{% if data.type == option.value %} selected{% endif %}>{{ option.value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="procd" style="display: {% if data.proc == "" or data.type != "grid" %}none{% else %}inline{% endif %}">
+            <br>
+            Process:&nbsp;
+            <div id="hour" style="display: {% if data.nhour != "" %}inline{% else %}none{% endif %}">
+                <input class="fixedWidth14" style="text-align: right" type="text" name="nhour" size="5" value="{% if data.nhour != "" %}{{ data.nhour }}{% endif %}">-hour
+            </div>
+            <select onChange="toggleNHour()" name="proc">
+                <option value="n/a">not applicable</option>
+                <option value="analysis"{% if data.proc == "analysis" %} selected{% endif %}>analysis</option>
+                <option value="forecast"{% if data.proc == "forecast" %} selected{% endif %}>forecast</option>
+            </select>
+        </div>
+        <br><br>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.dataType_form.submit()">{% if 'replace_item' in data %}Save Changes{% else %}Add Data Type{% endif %}</button>
+    </form>
+</center>

@@ -1,0 +1,62 @@
+<h2>Add a New Dataset</h2>
+{% if database_error %}
+<p>
+    <b>Database Error:</b> {{ database_error }}
+</p>
+{% elif not already_reserved and 'id' not in request.POST %}
+<script id="select_script" language="javascript">
+function checkForm() {
+  if (document.select.id_opt[0].checked) {
+    loadSlug(null, 'add/', 'id=pool&csrfmiddlewaretoken={{ csrf_token }}');
+  } else if (document.select.id_opt[1].checked) {
+    loadSlug(null, 'add/', 'id=' + document.select.id.value + '&csrfmiddlewaretoken={{ csrf_token }}');
+  } else {
+    return false;
+  }
+}
+</script>
+<p>
+    To get an ID for the new dataset, choose one of the following:
+</p>
+<form name="select" action="javascript:void(0)" onsubmit="return checkForm()">
+    <div class="component two-column container-lg overflow-hidden mb-3">
+        <div class="row gx-0">
+            <div class="col-12 col-md-4"></div>
+            <div class="col-12 col-md-4 form-check mt-2">
+                <input class="form-check-input" type="radio" name="id_opt" id="sel0" checked>
+                <label class="form-check-label" for="sel0">Select the next available ID from the pool</label>
+            </div>
+        </div>
+        <div class="row gx-0">
+            <div class="col-12 col-md-4"></div>
+            <div class="col-12 col-md-4 form-check mt-2 text-center">
+                - OR -
+            </div>
+        </div>
+        <div class="row gx-0">
+            <div class="col-12 col-md-4"></div>
+            <div class="col-12 col-md-4 form-check mt-2">
+                <input class="form-check-input" type="radio" name="id_opt" id="sel1">
+                <label class="form-check-label" for="sel1">Enter a specific ID: <input class="font-monospace" type="text" name="id" size="7" maxlength="7" onfocus="document.select.id_opt[1].checked=true"> (dNNNNNN)</label>
+            </div>
+        </div>
+        <div class="row gx-0">
+            <div class="col-12 col-md-4"></div>
+            <div class="col-12 col-md-4 form-check mt-3 text-center">
+                <button class="btn btn-primary px-2 py-1 border-1" onclick="document.select.submit()">Continue</button>
+            </div>
+        </div>
+    </div>
+</form>
+{% elif bad_id %}
+<p>
+    <font color="red">The dataset ID, <b>{{ bad_id }}</b>, that you entered is not in the proper format.</font> Enter a dataset ID as <i>dNNNNNN</i>.
+</p>
+{% elif next_id %}
+<p>
+    {% if requested_id %}The ID, <i>{{ requested_id }}</i>, that you requested is already in use.{% endif %} {% if already_reserved %}The ID, <b>{{ next_id }}</b>, has already been{% else %}The {% if not got_requested %}next available{% endif %} dataset ID, <b>{{ next_id }}</b>, has been{% endif %} reserved for you until <span class="text-decoration-underline">{{ expires }}</span>. If you don't create the dataset by then, the ID will be returned to the pool.
+</p>
+<center>
+    <button class="btn btn-primary px-2 py-1 border-1" onclick="loadSlug(null, 'create/{{ next_id }}/', 'csrfmiddlewaretoken={{ csrf_token }}')">Create Dataset</button><button class="btn btn-primary px-2 py-1 border-1 ms-2" onclick="loadSlug(null, 'cancel/{{ next_id }}/', 'csrfmiddlewaretoken={{ csrf_token }}')">Cancel ID</button>
+</center>
+{% endif %}

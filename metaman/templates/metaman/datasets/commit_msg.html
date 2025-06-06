@@ -1,0 +1,35 @@
+{% if fieldname %}
+<img class="commit-status" id="{{ fieldname }}_status" src="/images/{% if error_type %}{% if error_type == "commit" %}alert.gif{% elif error_type == "database" %}x.gif{% endif %}{% else %}check.gif{% endif %}" style="width: 16px; height: 16px"{% if error %} onclick="showErrors(this, '{{ error }}')"{% endif %}>
+{% else %}
+<h2>Editing the Metadata for Dataset {{ dsid }}</h2>
+{% if overview_validated %}
+<div class="ms-3 mb-1">
+    <img src="/images/check.gif" width="16" height="16">&nbsp;Your changes passed the XML validator.
+</div>
+{% endif %}
+{% if overview_committed %}
+<div class="ms-3 mb-1">
+    <img src="/images/check.gif" width="16" height="16">&nbsp;Your changes were successfully saved.
+</div>
+{% endif %}
+{% if metadata_updated %}
+<div class="ms-3 mb-1">
+    <img src="/images/check.gif" width="16" height="16">&nbsp;The search/discovery metadata for this dataset were successfully updated.
+</div>
+{% endif %}
+{% if dsgen_success %}
+<div class="ms-3 mb-1">
+    <img src="/images/check.gif" width="16" height="16">&nbsp;The <a href="/datasets/{{ dsid }}/" target="_dshome">dataset web page</a><sup><img src="/images/newwin.gif" /></sup> was successfully refreshed.
+</div>
+{% endif %}
+{% if datacite_updated %}
+<div class="ms-3 mb-1">
+    <img src="/images/check.gif" width="16" height="16">&nbsp;The DataCite metadata were successfully updated.
+</div>
+{% endif %}
+{% if error %}
+<div class="ms-3 mb-1">
+    <img src="/images/x.gif" width="16" height="16">&nbsp;{% autoescape off %}{{ error }}{% endautoescape %} - the commit process did not fully complete.
+</div>
+{% endif %}
+{% endif %}

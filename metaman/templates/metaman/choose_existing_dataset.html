@@ -1,0 +1,64 @@
+<script id="choose_dataset_script" language="javascript">
+    function getDataset() {
+      if (document.ds_choose.id[document.ds_choose.id.selectedIndex].value == "") {
+        return;
+      }
+      {% if slug == "delete" %}
+      if (!confirm("Are you sure you want to delete this dataset?")) {
+        return;
+      }
+      {% endif %}
+      loadSlug(null, '{{ slug }}/' + document.ds_choose.id[document.ds_choose.id.selectedIndex].value + '/', 'csrfmiddlewaretoken={{ csrf_token }}');
+      window.scrollTo(0, 0);
+    }
+</script>
+<h2>Choose a Dataset</h2>
+<h4>{{ description }}</h4>
+{% if slug == "assign" %}
+<p>
+    Assigning a DOI to a dataset is a committment to long-term (essentially 'forever') stewardship of a dataset and being able to accurately reproduce the data when presented with a citation that references the dataset's DOI. To this end, please make sure that:
+    <ul>
+        <li>
+            you have <strong>reviewed</strong> the dataset's metadata, and it is as complete as possible
+        </li>
+        <li>
+            you have <strong>checked</strong> things like <em>spelling and punctuation</em> in the dataset title, abstract, and other fields
+        </li>
+        <li>
+            you have <strong>verified</strong> the ordering of the data authors (if specified) and the data contributors <em>(ordering is essential for creating an accurate data citation)</em>
+        </li>
+        <li>
+            data file archival is <strong>complete</strong><sup style="color: red">&dagger;</sup> (including file content metadata where applicable)
+        </li>
+    </ul>
+    <span style="color: red">
+        <strong>NOTE!</strong>  Once a DOI has been assigned, you will not be able to change the <strong>Title</strong>, <strong>Data Authors</strong>, <strong>Data Contributors</strong>, and <strong>Dataset Updates</strong> fields for the dataset, as changes in these fields would change the dataset citation.
+    </span>
+    <ul>
+        <li>
+            <strong>Important information about the dataset Title:</strong>
+            <br>
+            In general, the date range should <strong>NOT</strong> be included in the dataset title, particularly if there is any chance that it could change, because the title is not changeable once the DOI is assigned.  If the date range is particularly relevant metadata for the dataset (e.g. ICOADS covers over three centuries), then it should be included in the first sentence of the Abstract/Summary, which can be changed after a DOI has been assigned.
+        </li>
+    </ul>
+    <br>
+    By proceeding with DOI assignment, you agree that you have done all of the above.
+</p>
+<sup style="color: red">&dagger;</sup>
+<span class="small">
+    For datasets that are continually updated, 'complete' means up to the time that the DOI is assigned.
+</span>
+{% endif %}
+<center>
+    <form name="ds_choose">
+        <div class="mt-2">
+            Choose an RDA dataset:
+            <select name="id" onchange="getDataset()">
+                <option value="">choose</option>
+                {% for dsid in dsids %}
+                <option value="{{ dsid }}">{{ dsid }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</center>

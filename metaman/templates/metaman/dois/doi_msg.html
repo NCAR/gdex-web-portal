@@ -1,0 +1,16 @@
+{% autoescape off %}
+<h2>{% if action == "assign" %}Assign a DOI to{% elif action == "supersede" %}Supersede the DOI for{% endif %} Dataset {{ dsid }}</h2>
+{% if error %}
+<p>
+    An error occurred: {{ error }}
+</p>
+{% elif action == "supersede" and abort %}
+<p>
+    This action was canceled and the existing DOI was <b>NOT</b> superseded.
+</p>
+{% else %}
+<p>
+    <img src="/images/check.gif" width="16" height="16">&nbsp;A {% if action == "supersede" %}new{% endif %} DOI was successfully assigned to the dataset. The {% if action == "supersede" %}new{% endif %} DOI is: <a href="{{ datacite_url }}" target="_doi">{{ doi }}</a>. Click the DOI to see it at our DOI registration and management service.
+</p>
+{% endif %}
+{% endautoescape %}

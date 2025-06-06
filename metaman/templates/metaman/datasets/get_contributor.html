@@ -1,0 +1,191 @@
+{% autoescape off %}
+<center>
+    {% if 'org_name' in data %}
+    <h2>Contributor Details</h2>
+    {% else %}
+    <h2>Add a Contributor</h2>
+    {% endif %}
+    {% if 'org_name' in data %}
+    <script id="contributor_detail_script" language="javascript">
+    function doSubmit() {
+      var contactString = '';
+      var s;
+      for (n = 0; n < 5; ++n) {
+        eval("s = document.contributor_details.contact" + n);
+        if (s.value.length > 0) {
+          if (s.value.indexOf(";") >= 0) {
+            alert("The semicolon (;) is a special character that you cannot use in the contact information");
+            return false;
+          }
+          if (contactString.length > 0) {
+            contactString += ";";
+          }
+          contactString += s.value;
+        }
+      }
+      var v = document.contributor_details.org.value + '[!]' + document.contributor_details.formerName.value + '[!]';
+      if (document.contributor_details.contact0.value.length > 0) {
+        v += document.contributor_details.contact0.value;
+        if (document.contributor_details.contact1.value.length > 0) {
+          v += ';' + document.contributor_details.contact1.value;
+          if (document.contributor_details.contact2.value.length > 0) {
+            v += ';' + document.contributor_details.contact2.value;
+            if (document.contributor_details.contact3.value.length > 0) {
+              v += ';' + document.contributor_details.contact3.value;
+              if (document.contributor_details.contact4.value.length > 0)
+                v += ';' + document.contributor_details.contact4.value;
+            }
+          }
+        }
+      }
+      if (document.contributor_details.citable.checked) {
+        v += '[!]Y'
+      } else {
+        v += '[!]N'
+      }
+      {% if 'replace_item' in data %}
+      replaceItem('contributors_field', '{{ data.replace_item }}', v);
+      {% else %}
+      addItem('contributors_field', v, 'keyword');
+      {% endif %}
+      return true;
+    }
+    </script>
+    <form name="contributor_details" action="javascript:void(0)" onsubmit="return doSubmit()">
+        <div class="component two-column container-lg overflow-hidden mb-3">
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2 text-end">
+                    <font color="red">*</font>Data Center:
+                </div>
+                <div class="col-12 col-md-10 text-start">
+                    <input type="text" class="fixedWidth14" name="org" size="80" value="{{ data.org_name }}" readonly>
+                    <br>
+                    <small><font color="#a0a0a0">(This field is a keyword and cannot be changed.)</font></small>
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2 text-end">
+                    Former Name:
+                </div>
+                <div class="col-12 col-md-10 text-start">
+                    <input type="text" class="fixedWidth14" name="formerName" size="80" value="{{ data.former_name }}">
+                    <br>
+                    <small><font color="#a0a0a0">(If this Data Center was known by a former name that you want to include, enter it above.)</font></small>
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2 text-end"></div>
+                <div class="col-12 col-md-10 text-start">
+                    You can enter contact information for up to five people. All related information should go on the same line, separated by commas (e.g. <i>John Doe, (888)-555-1212, john.doe@ncdc.gov</i>). <b>No HTML tags are allowed.</b>
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2 text-end">
+                    Contact #1:
+                </div>
+                <div class="col-12 col-md-10 text-start">
+                    <input type="text" class="fixedWidth14" name="contact0" size="80" value="{% if 'contact0' in data %}{{ data.contact0 }}{% endif %}">
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2 text-end">
+                    Contact #2:
+                </div>
+                <div class="col-12 col-md-10 text-start">
+                    <input type="text" class="fixedWidth14" name="contact1" size="80" value="{% if 'contact1' in data %}{{ data.contact1 }}{% endif %}">
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2 text-end">
+                    Contact #3:
+                </div>
+                <div class="col-12 col-md-10 text-start">
+                    <input type="text" class="fixedWidth14" name="contact2" size="80" value="{% if 'contact2' in data %}{{ data.contact2 }}{% endif %}">
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2 text-end">
+                    Contact #4:
+                </div>
+                <div class="col-12 col-md-10 text-start">
+                    <input type="text" class="fixedWidth14" name="contact3" size="80" value="{% if 'contact3' in data %}{{ data.contact3 }}{% endif %}">
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2 text-end">
+                    Contact #5:
+                </div>
+                <div class="col-12 col-md-10 text-start">
+                    <input type="text" class="fixedWidth14" name="contact4" size="80" value="{% if 'contact4' in data %}{{ data.contact4 }}{% endif %}">
+                </div>
+            </div>
+        </div>
+        <input type="checkbox" name="citable"{% if data.is_citable %} checked{% endif %}>&nbsp;Include this contributor in the data citation?
+        <br>
+        <br>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.contributor_details.submit()">{% if 'replace_item' in data %}Save Changes{% else %}Add Contributor{% endif %}</button>
+    </form>
+    {% elif 'matched_keywords' in data %}
+    {% if data.matched_keywords|length %}
+    <form name="selection_form" action="javascript:void(0)">
+        <select name="menu" onchange="getContentFromPost('modal-window-content', 'get_contributor/', 'org=' + this.value.replace(/&/g, '%26') + '&csrfmiddlewaretoken={{ csrf_token }}')">
+            <option value="">Choose from the list</option>
+            {% for keyword in data.matched_keywords %}
+            <option value="{{ keyword.path }}[!]{{ keyword.uuid }}">{{ keyword.path }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <br>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Contributor')">New Search</button>
+    </form>
+    {% else %}
+    <p>
+        No keywords match your search criteria.
+    </p>
+    {% endif %}
+    {% else %}
+    <script id="contributor_form_script" language="javascript">
+    function checkButtons() {
+      if (!document.get_contributor_form.toggle[1].checked) {
+        document.get_contributor_form.toggle[1].checked = true;
+        document.get_contributor_form.toggle[0].checked = false;
+      }
+    }
+    function checkForm() {
+      if (!document.get_contributor_form.toggle[0].checked && !document.get_contributor_form.toggle[1].checked) {
+        alert("Choose one of the options");
+        return false;
+      }
+      var b = document.getElementById("submit_button");
+      b.innertHTML = "Working...";
+      b.disabled = true;
+      getContentFromPost('modal-window-content', 'get_contributor/', 'centerSearchFor=' + document.get_contributor_form.centerSearchFor.value + '&csrfmiddlewaretoken={{ csrf_token }}');
+      return true;
+    }
+    </script>
+    <form name="get_contributor_form" action="javascript:void(0)" onsubmit="return checkForm()">
+        <div class="component two-column container-lg overflow-hidden mb-3">
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2"></div>
+                <div class="col-12 col-md-auto">
+                    <input type="radio" name="toggle" onclick="document.get_contributor_form.centerSearchFor.value='SHOW_ALL'">
+                </div>
+                <div class="col-12 col-md-8 text-start">
+                    show all Data Center keywords
+                </div>
+            </div>
+            <div class="row gx-0 gx-md-1 mt-1">
+                <div class="col-12 col-md-2"></div>
+                <div class="col-12 col-md-auto">
+                    <input type="radio" name="toggle">
+                </div>
+                <div class="col-12 col-md-8 text-start">
+                    search for Data Center keywords containing the word(s):&nbsp;<input type="text" class="fixedWidth14" name="centerSearchFor" size="20" onfocus="checkButtons()">
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary px-2 py-1 border-1" id="submit_button" onclick="document.get_contributor_form.submit()">Go</button>
+    </form>
+    {% endif %}
+</center>
+{% endautoescape %}

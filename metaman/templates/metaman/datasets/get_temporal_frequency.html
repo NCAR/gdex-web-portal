@@ -1,0 +1,127 @@
+<script id="tf_script" language="javascript">
+function doTFFormSubmit() {
+  var checked = -1;
+  for (n = 0; n < document.tf_form.type.length; ++n) {
+    if (document.tf_form.type[n].checked) {
+      checked = n;
+    }
+  }
+  if (checked < 0) {
+    alert("Choose the frequency type ('irregularly', 'regularly', or 'climatology')");
+    return false;
+  }
+  if (checked == 0) {
+
+    // irregular frequency
+    if (document.tf_form.unit0.selectedIndex == 0) {
+      alert("Choose a unit of time");
+      return false;
+    }
+    var f = document.tf_form.type[checked].value + '[!]' + document.tf_form.unit0[document.tf_form.unit0.selectedIndex].value + '[!]';
+  } else if (checked == 1) {
+
+    // regular frequency
+    if (document.tf_form.ival.value.length == 0) {
+      alert("Enter a ival for how often data occurs");
+      return false;
+    }
+    if (document.tf_form.unit1.selectedIndex == 0) {
+      alert("Choose a unit of time");
+      return false;
+    }
+    var f = document.tf_form.type[checked].value + '[!]' + document.tf_form.ival.value + '[!]' + document.tf_form.unit1[document.tf_form.unit1.selectedIndex].value + '[!]' + document.tf_form.stats[document.tf_form.stats.selectedIndex].value;
+  } else if (checked == 2) {
+
+    // climatology frequency
+    if (document.tf_form.unit2.selectedIndex == 0) {
+      alert("Choose the type of climatology");
+      return false;
+    }
+    var f = document.tf_form.type[checked].value + '[!]' + document.tf_form.unit2[document.tf_form.unit2.selectedIndex].value + '[!]';
+  }
+  {% if 'replace_item' in data %}
+  replaceItem('temporal_frequencys_field', '{{ data.replace_item }}', f);
+  {% else %}
+  addItem('temporal_frequencys_field', f);
+  {% endif %}
+  return true;
+}
+</script>
+<center>
+    <h2>{% if 'replace_item' in data %}Edit{% else %}Add{% endif %} a Temporal Frequency</h2>
+    <form name="tf_form" action="javascript:void(0)" onsubmit="return doTFFormSubmit()">
+        <div class="component two-column container-lg overflow-hidden mb-1">
+            <div class="row gx-0 gx-md-1">
+                <div class="col-12 col-md-3"></div>
+                <div class="col-12 col-md-8 text-start">
+                    <h5><font color="red">*</font>Data occurs:</h5>
+                </div>
+                <div class="col-12 col-md-1"></div>
+            </div>
+            <div class="row gx-0 gx-md-1">
+                <div class="col-12 col-md-3"></div>
+                <div class="col-12 col-md-8 text-start">
+                    <input type="radio" name="type" value="irregular"{% if data.type == "irregular" %} checked{% endif %}>&nbsp;Irregularly multiple times per&nbsp;
+                    <select name="unit0" onchange="document.tf_form.type[0].checked=true">
+                        <option value=""></option>
+                        {% for option in data.frequency_options %}
+                        <option value="{{ option.value }}"{% if data.type == "irregular" and data.unit == option.value %} selected{% endif %}>{{ option.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-1"></div>
+            </div>
+            <div class="row gx-0 gx-md-1">
+                <div class="col-12 col-md-4"></div>
+                <div class="col-12 col-md-7 text-start">
+                    <h5>OR</h5>
+                </div>
+                <div class="col-12 col-md-1"></div>
+            </div>
+            <div class="row gx-0 gx-md-1">
+                <div class="col-12 col-md-3"></div>
+                <div class="col-12 col-md-8 text-start">
+                    <input type="radio" name="type" value="regular"{% if data.type == "regular" %} checked{% endif %}>&nbsp;Regularly&nbsp;every&nbsp;<input type="text" name="ival" size="5" class="fixedWidth14" value="{% if data.type == "regular" %}{{ data.ival }}{% endif %}">&nbsp;
+                    <select name="unit1" onchange="document.tf_form.type[1].checked = true">
+                        <option value=""></option>
+                        {% for option in data.frequency_options %}
+                        <option value="{{ option.value }}"{% if data.type == "regular" and data.unit == option.value %} selected{% endif %}>{{ option.value }}s</option>
+                        {% endfor %}
+                    </select>
+                    &nbsp;&nbsp;Statistics:&nbsp;
+                    <select name="stats">
+                        <option value="">none</option>
+                        {% for option in data.stats_options %}
+                        <option value="{{ option.value }}"{% if data.stats == option.value %} selected{% endif %}>{{ option.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-1"></div>
+            </div>
+            <div class="row gx-0 gx-md-1">
+                <div class="col-12 col-md-4"></div>
+                <div class="col-12 col-md-7 text-start">
+                    <h5>OR</h5>
+                </div>
+                <div class="col-12 col-md-1"></div>
+            </div>
+            <div class="row gx-0 gx-md-1">
+                <div class="col-12 col-md-3"></div>
+                <div class="col-12 col-md-8 text-start">
+                   <input type="radio" name="type" value="climatology"{% if data.type == "climatology" %} checked{% endif %}>&nbsp;As a(n)&nbsp;
+                        <select name="unit2" onChange="document.tf_form.type[2].checked=true">
+                            <option value=""></option>
+                            {% for option in data.frequency_options %}
+                            {% if option.value != "second" and option.value != "minute" %}
+                            <option value="{{ option.value }}"{% if data.type == "climatology" and data.unit == option.value %} selected{% endif %}>{{ option.value|capfirst }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        &nbsp;Climatology
+                </div>
+                <div class="col-12 col-md-1"></div>
+            </div>
+        </div>
+        <button class="btn btn-primary px-2 py-1 border-1 mt-2" onclick="document.tf_form.submit()">{% if 'replace_item' in data %}Save Changes{% else %}Add Frequency{% endif %}</button>
+    </form>
+</center>

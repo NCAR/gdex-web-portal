@@ -1,0 +1,38 @@
+<script id="logo_script" type="text/javascript">
+    function updateLogo() {
+      if (document.logo_select.selected_logo.value.length == 0) {
+        alert("You must choose a logo from the library");
+        return;
+      }
+      var i = document.getElementById("logo_image");
+      i.src = document.logo_select.selected_logo_src.value;
+      i.width = document.logo_select.selected_width.value;
+      i.height = document.logo_select.selected_height.value;
+      document.getElementById("logo_field").value = document.logo_select.selected_logo.value;
+      changed_logo_field = true;
+      hideModalWindow();
+    }
+</script>
+<h2>Dataset Logo Library</h2>
+<form name="logo_select">
+    <div class="component two-column container-lg overflow-hidden mb-1">
+        {% for logo in logos %}
+        <div class=row gx-0 gx-md-1">
+            <div class="col-12 col-md-auto">
+                <input type="radio" name="logo" onclick="document.logo_select.selected_logo.value='{{ logo.name }}';document.logo_select.selected_logo_src.value='{{ logo.src }}';document.logo_select.selected_width.value='{{ logo.width }}';document.logo_select.selected_height.value='70'">
+            </div>
+            <div class="col-12 col-md-auto mb-2">
+                <img style="border: thin solid black; width: {{ logo.width }}px; height: 70px" src="{{ logo.src }}">
+                <span class="small">({{ logo.name }})</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <center>
+        <a class="btn btn-pill btn-primary px-2 py-1 border-1" onclick="updateLogo()">Choose Selected Logo</a>
+    </center>
+    <input type="hidden" name="selected_logo" value="">
+    <input type="hidden" name="selected_logo_src" value="">
+    <input type="hidden" name="selected_width" value="">
+    <input type="hidden" name="selected_height" value="">
+</form>

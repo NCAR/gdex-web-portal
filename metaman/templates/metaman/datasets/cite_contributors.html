@@ -1,0 +1,52 @@
+{% if request.POST.action == "cite" and citable %}
+<p>
+    Begin by checking the boxes next to the institution names that should be included as authors in the citation for the dataset. Only institutions that you select will be included in the data citation.
+</p>
+<form name="cite_form" onsubmit="return false">
+    <div class="component two-column container-lg overflow-hidden mb-1">
+        {% for contributor in contributors %}
+        <div class="row gx-0 gx-md-1">
+            <div class="col-12 col-md-2 p-1 text-end">
+                <input type="checkbox" value="{{ contributor.item }}"{% if citable and contributor.cited == "Y" %} checked{% endif %}>
+            </div>
+            <div class="col-12 col-md-10 p-1 text-start">
+                {{ contributor.description }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <center>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="submitContributorsForOrdering()">Continue</button>
+    </center>
+</form>
+{% elif request.POST.action == "order" or not citable %}
+{% if not citable %}
+<p>
+    Since you have specified one or more Data Authors, they take precedence and will be used in the data citation instead of Data Contributors. However, you can still use this tool to reorder the Data Contributors.
+</p>
+{% endif %}
+<p>
+    Order the institutions by adjusting the numbers in the boxes to the left of the institution names.  The ordering that you specify will be the ordering that is used in the data citation.
+</p>
+<form name="order_form" onsubmit="return false">
+    <div class="component two-column container-lg overflow-hidden mb-1">
+        {% for contributor in contributors.cited %}
+        <div class="row gx-0 gx-md-1">
+            <div class="col-12 col-md-2 p-1 text-end">
+                <input class="fixedWidth16" class="text-end" type="text" value="{{ forloop.counter }}" size="2">
+            </div>
+            <div class="col-12 col-md-10 p-1 text-start">
+                {{ contributor.description }}
+                <input type="hidden" value="{{ contributor.item }}">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% for contributor in contributors.uncited %}
+        <input type="hidden" value="{{ contributor.item }}">
+    {% endfor %}
+    <center>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="orderAndUpdateContributors({{ contributors.cited|length }})">Order the Contributors</button>
+    </center>
+</form>
+{% endif %}
