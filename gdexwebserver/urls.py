@@ -25,7 +25,7 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('metrics/', include('home.urls')),
     path('datasets/', include('datasets.urls')),
-    path('login/', include('login.urls')),
+    #path('login/', include('login.urls')),
     path('globus/', include('globus.urls')),
     path('gsearch/', include('gsearch.urls')),
     path('oai/', include("oai.urls")),
