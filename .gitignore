@@ -6,7 +6,7 @@ rdawebserver/settings/.secret_key.txt
 rdawebserver/settings/base.py.2022*
 rdawebserver/settings/base.py.20230131
 #media/*
-static/*
+#static/*
 cache/*
 
 *.swp
