@@ -1,0 +1,89 @@
+{% load static wagtailcore_tags wagtailuserbar custom_tags home_tags %}
+
+    {# Global stylesheets #}
+    <!-- Load Font Awesome v6 core styles and the Solid and Brands styles -->
+    <link rel="preload" href="{% static 'unity/lib/fontawesome/css/fontawesome.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="{% static 'unity/lib/fontawesome/css/fontawesome.css' %}">
+    <link rel="preload" href="{% static 'unity/lib/fontawesome/css/brands.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="{% static 'unity/lib/fontawesome/css/brands.css' %}">
+    <link rel="preload" href="{% static 'unity/lib/fontawesome/css/solid.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="{% static 'unity/lib/fontawesome/css/solid.css' %}">
+
+    <!-- Font Awesome v5 backward compatability -->
+    <link rel="preload" href="{% static 'unity/lib/fontawesome/css/v5-font-face.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link href="{% static 'unity/lib/fontawesome/css/v5-font-face.css" rel="stylesheet" />
+
+    <noscript>
+    <link rel="stylesheet" href="{% static 'unity/lib/fontawesome/css/fontawesome.css' %}">
+    <link rel="stylesheet" href="{% static 'unity/lib/fontawesome/css/brands.css' %}">
+    <link rel="stylesheet" href="{% static 'unity/lib/fontawesome/css/solid.css' %}">
+    </noscript>
+
+    <link rel="preload" href="{% static 'unity/lib/icomoon/style.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="{% static 'unity/lib/icomoon/style.css' %}" as="style">
+    <noscript><link rel="stylesheet" href="{% static 'unity/lib/icomoon/style.css' %}"></noscript>
+    <link rel="preload" href="{% static 'unity/css/main.min.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="{% static 'unity/css/main.min.css' %}">
+    <noscript><link rel="stylesheet" href="{% static 'unity/css/main.min.css' %}"></noscript>
+    <link rel="preload" href="{% static 'unity/css/print.min.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'" media="print">
+    <link rel="stylesheet" href="{% static 'unity/css/print.min.css' %}" media="print">
+    <noscript><link rel="stylesheet" href="{% static 'unity/css/print.min.css' %}" media="print"></noscript>
+    <link rel="stylesheet" href="{% static 'css/gdexwebserver.css' %}" media="print" onload="this.media='all'">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"></noscript>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"></noscript>
+
+    <script type="text/javascript" src="/js/jquery.js"></script>
+    <script language="javascript">
+        var gmap3_loaded = false;
+    </script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1Q6C0RXMYP"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-1Q6C0RXMYP'); 
+    </script>
+
+    {% if request.META.HTTP_HOST|slice:"0:3" != "api" %}
+    <script language="javascript">
+        const mapped_urls = new Map();
+        mapped_urls.set('about', "/support/about-the-rda/");
+        mapped_urls.set('apps_api_desc', "/resources/web-services/rda-external-application-api/");
+        mapped_urls.set('daas', "/resources/daas/");
+        mapped_urls.set('data-citation', "/resources/citations/");
+        mapped_urls.set('metrics', "/resources/metrics/");
+        mapped_urls.set('services', "/resources/ancillary-services/");
+        mapped_urls.set('rda_web_services', "/resources/web-services/");
+
+        window.onload=respondToHashChange;
+        function respondToHashChange() {
+          var hash = document.location.hash.substr(1);
+          if (hash.charAt(0) == '!') {
+            hash = hash.substr(1);
+          }
+          if (hash.length > 0 && document.location.pathname.indexOf("ajax") < 0) {
+            var hash0 = hash;
+            var hash1 = "";
+            var idx = hash0.indexOf("/");
+            if (idx > 0) {
+              hash0 = hash0.substr(0, idx);
+              hash1 = hash0.substr(idx);
+            }
+            var m_url = mapped_urls.get(hash0);
+            if (m_url != undefined) {
+              alert("NOTICE: You are using a legacy URL that will not be supported in the future. If this was a bookmark, you should replace it with the new URL, to which you will now be redirected.");
+              document.location = m_url + hash1;
+            } else {
+              document.location = document.location.pathname + "ajax/#" + hash;
+            }
+          }
+        }
+    </script>
+    {% endif %}
