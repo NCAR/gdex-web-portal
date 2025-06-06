@@ -8,7 +8,7 @@ webapp:
     fqdn: gdex-web-test.k8s.ucar.edu
     secretName: incommon-cert-gdex-web-test
   container: 
-    image: docker.io/dattore/gdex-web-portal:v153
+    image: docker.io/dattore/gdex-web-portal:v154
     port: 443
     memory: 1G
     cpu: 2
