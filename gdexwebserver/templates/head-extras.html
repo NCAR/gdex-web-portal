@@ -1,0 +1,56 @@
+{% comment %}
+Specify any additional elements to include in the html <head></head>
+section here (e.g. extra javascript)
+{% endcomment %}
+
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script language="javascript">
+    var gmap3_loaded = false;
+</script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1Q6C0RXMYP"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-1Q6C0RXMYP'); 
+</script>
+
+{% if request.META.HTTP_HOST|slice:"0:3" != "api" %}
+<script language="javascript">
+    const mapped_urls = new Map();
+    mapped_urls.set('about', "/support/about-the-rda/");
+    mapped_urls.set('apps_api_desc', "/resources/web-services/rda-external-application-api/");
+    mapped_urls.set('daas', "/resources/daas/");
+    mapped_urls.set('data-citation', "/resources/citations/");
+    mapped_urls.set('metrics', "/resources/metrics/");
+    mapped_urls.set('services', "/resources/ancillary-services/");
+    mapped_urls.set('rda_web_services', "/resources/web-services/");
+
+    window.onload=respondToHashChange;
+    function respondToHashChange() {
+      var hash = document.location.hash.substr(1);
+      if (hash.charAt(0) == '!') {
+        hash = hash.substr(1);
+      }
+      if (hash.length > 0 && document.location.pathname.indexOf("ajax") < 0) {
+        var hash0 = hash;
+        var hash1 = "";
+        var idx = hash0.indexOf("/");
+        if (idx > 0) {
+          hash0 = hash0.substr(0, idx);
+          hash1 = hash0.substr(idx);
+        }
+        var m_url = mapped_urls.get(hash0);
+        if (m_url != undefined) {
+          alert("NOTICE: You are using a legacy URL that will not be supported in the future. If this was a bookmark, you should replace it with the new URL, to which you will now be redirected.");
+          document.location = m_url + hash1;
+        } else {
+          document.location = document.location.pathname + "ajax/#" + hash;
+        }
+      }
+    }
+</script>
+{% endif %}
