@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags %}
+{% load lookfordata_tags %}
+
+{% block content %}
+
+    <script src="/js/xhr_content2.js"></script>
+    <script src="/js/popInfo.js"></script>
+    <script src="/js/animation.js"></script>
+    <script src="/js/jquery.js"></script>
+    <script src="{% static 'js/hashchange.js' %}"></script>
+    <script type="text/javascript">
+      var ajax_container = "content_container";
+
+      function popConfirm(m, a, w, h) {
+        popModalWindowWithHTML(w, h, `
+<center>
+    <p></p>
+    ${m}
+    <p></p>
+    <table cellspacing="0" cellpadding="0" border="0">
+        <tr valign="middle">
+            <td style="width: 40px; height: 28px; border: 1px solid #2a70ae; background-color: #d6e4ff; border-radius: 8px 8px 8px 8px; text-align: center; color: #2a70ae; cursor: pointer" onmouseover="this.style.backgroundColor = &apos;#fffff5&apos;" onmouseout="this.style.backgroundColor = &apos;#d6e4ff&apos;" onclick="${a}; this.onclick = null">
+                Yes
+            </td>
+            <td>&nbsp;&nbsp;</td><td style="width: 40px; height: 28px; border: 1px solid #2a70ae; background-color: #d6e4ff; border-radius: 8px 8px 8px 8px; text-align: center; color: #2a70ae; cursor: pointer" onmouseover="this.style.backgroundColor = &apos;#fffff5&apos;" onmouseout="this.style.backgroundColor = &apos;#d6e4ff&apos;" onclick="hideModalWindow()">
+                No
+            </td>
+        </tr>
+    </table>
+</center>`);
+      }
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="/css/bubble.css">
+
+    <div id="content_container"></div>
+
+{% endblock %}
