@@ -62,6 +62,7 @@ jobs:
           echo "GLOBUS_TRANSFER_REFRESH_TOKEN=${{ secrets.GLOBUS_TRANSFER_REFRESH_TOKEN }}" >> $GITHUB_ENV
           echo "GLOBUS_AUTH_REFRESH_TOKEN=${{ secrets.GLOBUS_AUTH_REFRESH_TOKEN }}" >> $GITHUB_ENV
           echo "GMAP_API_KEY=${{ secrets.GMAP_API_KEY }}" >> $GITHUB_ENV
+          echo "IUSER_COOKIE_NAME=${{ secrets.IUSER_COOKIE_NAME }}" >> $GITHUB_ENV
       - name: Build a new version of container
         run: >
           docker build --platform linux/amd64
@@ -81,6 +82,7 @@ jobs:
           --secret id=GLOBUS_APP_PRIVATE_KEY
           --secret id=GLOBUS_TRANSFER_REFRESH_TOKEN --secret id=GLOBUS_AUTH_REFRESH_TOKEN
           --secret id=GMAP_API_KEY
+          --secret id=IUSER_COOKIE_NAME
           -t dattore/gdex-web-portal:v$VERSION_NUMBER
           --no-cache .
       - name: Push the new image to Docker Hub
