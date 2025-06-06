@@ -1,0 +1,17 @@
+<h2>Not Authorized</h2>
+<p>
+    You must be a registered user and be signed in to access data on this server.
+</p>
+<div class="d-md-flex">
+    <div>
+        {% with a=request.path|slice:"18:28" %}
+            {% if a == 'dataaccess' %}
+            {% with b=request.path|slice:"0:17" %}
+                <a href="/accounts/login/?return={{ b }}/dataaccess/" class="btn btn-pill btn-primary px-2 py-1 border-1" aria-label="Sign In">Sign In</a>
+            {% endwith %}
+            {% else %}
+            <a href="/accounts/login/?return={{ request.path }}{% if request.QUERY_STRING %}?{{ request.QUERY_STRING }}{% endif %}" class="btn btn-pill btn-primary px-2 py-1 border-1" aria-label="Sign In">Sign In</a>
+            {% endif %}
+        {% endwith %}
+    </div>
+</div>

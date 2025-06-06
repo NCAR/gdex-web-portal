@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags %}
+{% load lookfordata_tags %}
+
+{% block content %}
+
+    <script src="/js/xhr_content2.js"></script>
+    <script src="/js/popInfo.js"></script>
+    <script src="/js/swapDivs.js"></script>
+    <script src="/js/animation.js"></script>
+    <script src="/js/jquery.js"></script>
+    <!--<script src="{% static 'js/hashchange.js' %}"></script>-->
+
+    <script id="scroll_script" language="javascript">
+    var nb = "y";
+    var lastoutid = null;
+    function toggleRefine(r) {
+      let e = document.getElementById(r + "_refine");
+      let i = document.getElementById(r + "_icon");
+      if (e.style.display == "none") {
+        if (lastoutid != null) {
+          document.getElementById(lastoutid + "_refine").style.display = "none";
+          document.getElementById(lastoutid + "_icon").classList.replace("fa-angle-up", "fa-angle-down");
+        }
+        e.innerHTML = "<div class=\"ms-1\" id=\"loading\">Loading ... &nbsp;&nbsp;<div class=\"spinner-border text-primary\" role=\"status\"></div></div>";
+        e.style.display = "block";
+        i.classList.replace("fa-angle-down", "fa-angle-up");
+        $.get('/lookfordata/refine/?r=' + r + '&nb=' + nb,
+              replace_refine_content);
+        if ( (idx=r.indexOf('-')) > 0) {
+          r = r.substr(0, idx);
+        }
+        lastoutid = r;
+      } else {
+        e.style.display = "none";
+        i.classList.replace("fa-angle-up", "fa-angle-down");
+        lastoutid = null;
+      }
+    }
+
+    function replace_refine_content(response) {
+      $("#" + lastoutid + "_refine").html(response);
+    }
+
+    function replace_lookfordata_content(u) {
+      getAjaxContent('GET', null, u + '&nb=' + nb, 'lookfordata-content');
+      nb = "n";
+    }
+    </script>
+
+    <script id="lookfordata_script" language="javascript">
+    ajax_container = 'lookfordata-content';
+    if (document.location.search.length > 0) {
+      nb = "n";
+      setTimeout("getContent('lookfordata-content', document.location)", 100);
+    } else {
+      nb = "y";
+      setTimeout("getContent('lookfordata-content', '/lookfordata/start')", 100);
+    }
+    </script>
+    
+    <style>
+    .browseWait {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      width: 167px;
+      border: thin solid #a0a0a0;
+      padding: 1px 0px 1px 0px;
+      background-color: white;
+      display: none;
+      font-size: 13px;
+      text-align: center;
+    }
+    .browseSummary {
+      position: relative;
+      overflow: hidden;
+    }
+    .lookfordata .bubble {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      visibility: hidden;
+      width: 300px;
+      border-radius: 7px;
+      padding: 7px;
+      z-index: 998;
+      background-color: #fff;
+      color: #000;
+      box-shadow: 3px 3px 3px #bababa;
+      border: thin solid #999;
+    }
+    .lookfordata .bubble:before {
+      content: '';
+      display: block;
+      position: absolute;
+      width: 0px;
+      height: 0px;
+      border-style: solid;
+      border-width: 11px 11px 11px 0px;
+      top: 9px;
+      left: -11px;
+      border-color: transparent #999 transparent transparent;
+    }
+    .lookfordata .bubble:after {
+      content: '';
+      display: block;
+      position: absolute;
+      width: 0px;
+      height: 0px;
+      border-style: solid;
+      border-width: 10px 10px 10px 0px;
+      top: 10px;
+      left: -10px;
+      border-color: transparent #fff transparent transparent;
+    }
+    .lookfordata .desc-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      flex-flow: column wrap;
+    }
+    .lookfordata .dsentry {
+      padding: 5px;
+    }
+    .lookfordata .dsentry:hover {
+      background-color: #faf9fa;
+    }
+    .lookfordata .hr {
+      height: 1px;
+      background-color: #27aae0;
+    }
+    .lookfordata .load-color {
+      color: #a0a0a0;
+    }
+    .lookfordata .mb-15px {
+      margin-bottom: 15px;
+    }
+    .lookfordata .ms-10px {
+      margin-left: 10px;
+    }
+    .lookfordata .mt-1px {
+      margin-top: 1px;
+    }
+    .lookfordata .mt-50px {
+      margin-top: 50px;
+    }
+    .lookfordata .p-4px {
+      padding: 4px;
+    }
+    .lookfordata .p-5px {
+      padding: 5px;
+    }
+    .lookfordata .ps-40px {
+      padding-left: 40px;
+    }
+    .lookfordata .pe-30px {
+      padding-right: 30px;
+    }
+    .lookfordata div.ref-col {
+/*
+      background-color: #eafaff;
+*/
+      background-color: white;
+      padding-top: 3px;
+      padding-bottom: 3px;
+      border-top: 0px;
+    }
+    .lookfordata div.ref-col1 {
+      grid-column: 1;
+      padding-left: 5px;
+    }
+    .lookfordata div.ref-col2 {
+      grid-column: 2;
+      color: black;
+      text-align: right;
+      padding-right: 5px;
+    }
+    .lookfordata .ref-container {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      visibility: hidden;
+    }
+    .lookfordata .ref-content {
+      position: relative;
+      width: auto;
+      max-height: 250px;
+/*
+      background-color: #eafaff;
+*/
+      background-color: white;
+      overflow-y: auto;
+      overflow-x: hidden;
+      color: black;
+    }
+    .lookfordata .ref-grid {
+       display: grid;
+       grid-template-columns: 9fr 1fr;
+       gap: 10px;
+       row-gap: 0px;
+       font-size: 0.7em;
+       line-height: normal;
+    }
+    .lookfordata .ref-count {
+      display: inline-block;
+      min-width: 18px;
+      padding: 0px 6px;
+      background-color: #1a658f;
+      color: white;
+      text-align: center;
+      border-radius: 9px;
+    }
+    .lookfordata .ref-title {
+      font-size: 1em;
+      font-weight: bold;
+      padding: 2px;
+      text-align: center;
+      width: auto;
+      height: 20px;
+      line-height: 20px;
+    }
+    .lookfordata #breadcrumbs {
+      padding: 5px;
+      margin-top: 3px;
+      margin-bottom: 10px;
+      font-size: 0.75em;
+    }
+    .lookfordata .bc-link {
+      font-weight: bold;
+      padding-left: 5px;
+    }
+    .lookfordata #compare {
+      overflow: hidden;
+      padding: 5px;
+      margin-bottom: 10px;
+      font-size: 0.8em;
+    }
+    .lookfordata #compare-left {
+      display: inline;
+      float: left;
+    }
+    .lookfordata #compare-right {
+      display: inline;
+      float: right;
+      margin-right: 10px;
+    }
+    .lookfordata #refine-break {
+      height: 5px;
+      background-color: #1a658f;
+    }
+    #compare-wrapper {
+      padding-left: 50px;
+      padding-right: 50px;
+    }
+    #lookfordata-wrapper {
+      display: grid;
+      grid-template-columns: 2fr 7fr;
+      gap: 20px;
+      padding: 10px;
+    }
+    form {
+      font-size: 1em;
+    }
+    </style>
+
+    <div class="lookfordata" id="lookfordata-wrapper">
+        {% if 'cmp' in request.GET %}
+        <div id="lookfordata-content" style="grid-column: 1 / 3">
+        {% else %}
+        <div id="sidebar2" class="p-5px">
+            {% with nb=request.GET|new_browse_value %}
+            <div id="sidebar2_content" class="sidebar-nav" style="margin-top: 0px">
+                <ul class="nav flex-column">
+                    <li class="nav-item ms-n2">
+                        <span class="nav-link d-inline-block float-start">Full Dataset List</span><a class="nav-link d-inline-block float-end ps-0 pe-2" href="/datasets/"><i class="fas fa-angle-right"></i></a>
+                    </li>
+                </ul>
+                <div id="refine-break"></div>
+                <ul class="nav flex-column">
+                    {% for block in page.refine_filters %}
+                    <li id="{{ block.value.id }}" class="nav-item ms-n2">
+                        <span class="nav-link d-inline-block float-start">{{ block.value.title }}</span><a class="nav-link d-inline-block float-end ps-0 pe-2" href="javascript:void(0)" onclick="toggleRefine('{{ block.value.id }}')" onmouseover="popInfo(document.getElementById('{{ block.value.id }}'), 'i{{ block.value.id }}', null, 'right+12', 'top')" onmouseout="hideInfo('i{{ block.value.id }}')"><i id="{{ block.value.id }}_icon" class="fas fa-angle-down"></i></a>
+                    </li>
+                    <div id="{{ block.value.id }}_refine" class="ref-content" style="display: none">
+                    </div>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endwith %}
+        </div>
+        <div style="grid-column: 2">
+            <h1>{{ page.results_title }}</h1>
+            <div id="lookfordata-content" class="bg-white p-3">
+                <center><img src="/images/loader.gif"><br /><span class="load-color">Loading...</span></center>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="lookfordata">
+        {% for block in page.refine_filters %}
+        <div id="i{{ block.value.id }}" class="bubble small lh-1">{{ block.value.description }}</div>
+        {% endfor %}
+    </div>
+
+{% endblock %}

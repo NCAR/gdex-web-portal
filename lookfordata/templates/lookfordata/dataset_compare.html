@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>Browse the RDA&nbsp;&nbsp;<i class="fas fa-angle-right"></i>&nbsp;&nbsp;Comparing Datasets</h3>
+<table class="table">
+    <tr>
+        <th width="1" align="left"><nobr>Dataset ID</nobr></th>
+        <td width="50%" align="left"><a href="/datasets/{{ cmp1.dsid }}/" target="_ds1">{{ cmp1.dsid }} <i class="fa fa-arrow-alt-circle-right"></i></a></td>
+        <td width="50%" align="left"><a href="/datasets/{{ cmp2.dsid }}/" target="_ds2">{{ cmp2.dsid }} <i class="fas fa-arrow-alt-circle-right"></i></a></td>
+    </tr>
+    <tr>
+        <th align="left">Title</th>
+        <td align="left">{{ cmp1.title }}</td>
+        <td align="left">{{ cmp2.title }}</th>
+    </tr>
+    <tr>
+        <th align="left"><nobr>Data Types</nobr></th>
+        <td align="left">
+            {% for type in cmp1.data_types %}
+            &bull;&nbsp;{{ type }}<br>
+            {% endfor %}
+        </td>
+        <td align="left">
+            {% for type in cmp2.data_types %}
+            &bull;&nbsp;{{ type }}<br>
+            {% endfor %}
+        </td>
+    </tr>
+    <tr>
+        <th align="left"><nobr>Data Formats</nobr></th>
+        <td align="left">
+            {% for fmt in cmp1.data_formats %}
+            &bull;&nbsp;{{ fmt }}<br>
+            {% endfor %}
+        </td>
+        <td align="left">
+            {% for fmt in cmp2.data_formats %}
+            &bull;&nbsp;{{ fmt }}<br>
+            {% endfor %}
+        </td>
+    </tr>
+    {% if cmp1.platforms or cmp2.platforms %}
+    <tr>
+        <th align="left"><nobr>Platforms</nobr></th>
+        <td align="left">
+            {% for plat in cmp1.platforms %}
+            &bull;&nbsp;{{ plat }}<br>
+            {% endfor %}
+        </td>
+        <td align="left">
+            {% for plat in cmp2.platforms %}
+            &bull;&nbsp;{{ plat }}<br>
+            {% endfor %}
+        </td>
+    </tr>
+    {% endif %}
+    {% if cmp1.temporal_start or cmp2.temporal_start %}
+    <tr>
+        <th align="left">Temporal Range</th>
+        <td align="left">
+            {% if cmp1.temporal_start %}
+            <nobr>{{ cmp1.temporal_start }}</nobr> to <nobr>{{ cmp1.temporal_end }}</nobr>
+            {% endif %}
+        </td>
+        <td align="left">
+            {% if cmp2.temporal_start %}
+            <nobr>{{ cmp2.temporal_start }}</nobr> to <nobr>{{ cmp2.temporal_end }}</nobr>
+            {% endif %}
+        </td>
+    </tr>
+    {% endif %}
+    {% if cmp1.gridded_products or cmp2.gridded_products %}
+    <tr>
+        <th align="left">Gridded Products</th>
+        <td align="left">
+            {% for prod in cmp1.gridded_products %}
+            &bull;&nbsp;{{ prod }}<br>
+            {% endfor %}
+        </td>
+        <td align="left">
+            {% for prod in cmp2.gridded_products %}
+            &bull;&nbsp;{{ prod }}<br>
+            {% endfor %}
+        </td>
+    </tr>
+    {% endif %}
+    {% if cmp1.grid_definitions or cmp2.grid_definitions %}
+    <tr>
+        <th align="left">Gridded Resolution and Coverage</th>
+        <td align="left">
+            {% for def in cmp1.grid_definitions %}
+            &bull;&nbsp;{{ def }}<br>
+            {% endfor %}
+        </td>
+        <td align="left">
+            {% for def in cmp2.grid_definitions %}
+            &bull;&nbsp;{{ def }}<br>
+            {% endfor %}
+        </td>
+    </tr>
+    {% endif %}
+    <tr valign="top">
+        <th align="left">GCMD Parameters</th>
+        <td align="left">
+          <div style="height: 150px; overflow: auto">
+              {% for param in cmp1.parameters %}
+              &bull;&nbsp;{{ param }}<br>
+              {% endfor %}
+          </div>
+        </td>
+        <td align="left">
+          <div style="height: 150px; overflow: auto">
+              {% for param in cmp2.parameters %}
+              &bull;&nbsp;{{ param }}<br>
+              {% endfor %}
+          </div>
+        </td>
+    </tr>
+</table>
+{% endblock %}

@@ -1,0 +1,10 @@
+<div class="ref-grid">
+    {% for keyword in keywords %}
+    <div class="ref-col ref-col1 lh-sm ps-1">
+        <a href="javascript:void(0)" onclick="toggleRefine('{{ refine_by }}'); replace_lookfordata_content('/lookfordata/datasets/?b={{ refine_by }}&v={{ keyword.name }}')">{{ keyword.display }}</a>
+    </div>
+    <div class="ref-col ref-col2">
+        <span class="ref-count small text-center">{{ keyword.count }}</span>
+    </div>
+    {% endfor %}
+</div>

@@ -1,0 +1,244 @@
+{% load wagtailcore_tags %}
+
+{% if 'error' in matrix %}
+<h3>{{ matrix.error.header }}</h3>
+<p>{{ matrix.error.message|richtext }}</p>
+{% if 'module' in matrix.error %}
+<p>module: {{ matrix.error.module }}</p>
+{% endif %}
+{% else %}
+<link rel="stylesheet" type="text/css" href="/css/matrix.css">
+<style type="text/css">
+    .mtrx {
+        display: grid;
+        grid-gap: 1px;
+        grid-template-columns: {{ matrix.grid_template_columns }};
+    }
+</style>
+<script id="globus_script" src="/js/rda_globus.js" type="text/javascript"></script>
+<script type="text/javascript">
+    // show loading spinner during ajax content load
+    $(document).on("ajaxSend", function() {
+      $("#ds_content").html('<div class="text-center mt-3" id="loading"><strong>Loading ... &nbsp;&nbsp;</strong><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>');
+    });
+</script>
+
+<center>
+    <span class="body-font-small">Mouse over the underlined table headings for detailed descriptions</span>
+</center>
+<div class="mtrx mx-1">
+    {% comment %} Begin Header {% endcomment %}
+
+    {% if matrix.group_data %}
+    <div class="d-des o-blk tx-c fw-bold text-uppercase" style="grid-column: 1 / 3; grid-row: 1 / 3">Data Description</div>
+    {% endif %}
+    {% if matrix.header.dfil_span %}
+    <div class="d-fil o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.dfil_span }}">Data File Downloads</div>
+    {% endif %}
+    {% if matrix.columns.subset %}
+    <div class="c-req o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.creq_col }}">Customizable Data Requests</div>
+    {% endif %}
+    {% if matrix.columns.other %}
+    <div class="othr o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.othr_col }}">Other Access Methods</div>
+    {% endif %}
+    {% if matrix.columns.glade %}
+    <div style="grid-column: {{ matrix.header.spc_col }}"></div>
+    <div class="c-fil o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.ncar_col }}">NCAR-Only Access</div>
+    {% endif %}
+    {% if matrix.columns.web_files %}
+    <div class="d-fil o-blk tx-c fw-bold" style="grid-row: 2">
+        <h6 class="info-hdr" onmouseover="popInfo(this, 'iweb', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('iweb')">Web Server Access (HTTPS) &mdash; <a href="https://osg-htc.org/services/osdf" target="_osdf">Powered by OSDF</a></h6>
+    </div>
+    {% endif %}
+    {% if matrix.columns.globus %}
+    <div class="d-fil o-blk tx-c fw-bold" style="grid-row: 2">
+        <h6 class="info-hdr" onmouseover="popInfo(this, 'iglob', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('iglob')">Globus Transfer Service<br>(GridFTP)</h6>
+    </div>
+    {% endif %}
+    {% if matrix.columns.data_format_conversion %}
+    <div class="d-fil o-blk tx-c fw-bold" style="grid-row: 2">
+        <h6 class="info-hdr" onmouseover="popInfo(this, 'ifmt', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('ifmt')">Data Format<br>Conversion</h6>
+    </div>
+    {% endif %}
+    {% if matrix.columns.subset %}
+    <div class="c-req o-blk tx-c fw-bold" style="grid-row: 2">
+        <h6 class="info-hdr" onmouseover="popInfo(this, 'isubs', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('isubs')">Subsetting</h6>
+    </div>
+    {% endif %}
+    {% if matrix.columns.other %}
+    <div class="othr o-blk tx-c fw-bold" style="grid-row: 2">
+        <h6 class="info-hdr" onmouseover="popInfo(this, 'idap', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('idap')">{% if 'thredds' in matrix.union_urls.dap %}THREDDS Data<br>Server{% else %}OPeNDAP<br>Access{% endif %}</h6>
+    </div>
+    {% endif %}
+    {% if matrix.columns.glade %}
+    <div style="grid-row: 2"></div>
+    <div class="c-fil o-blk tx-c fw-bold" style="grid-row: 2">
+        <h6 class="info-hdr" onmouseover="popInfo(this, 'incar', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('incar')">Central File System<br>(GLADE) Holdings</h6>
+    </div>
+    {% endif %}
+
+    {% comment %} End Header {% endcomment %}
+
+    {% comment %} Begin "Union" Row {% endcomment %}
+
+    {% if matrix.group_data %}
+    <div class="d-des o-blk tx-c fw-bold text-uppercase" style="grid-column: 1 / 3; grid-row: 3">Union of Available Products</div>
+    {% endif %}
+    {% if matrix.columns.web_files %}
+    <div class="d-fil o-blk tx-c" style="grid-row: 3">
+        <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Web File<br>Listing</a>
+    </div>
+    {% endif %}
+    {% if matrix.columns.globus %}
+    <div class="d-fil o-blk tx-c" style="grid-row: 3">
+        {% if matrix.union_urls.globus %}
+        <a href="{{ matrix.union_urls.globus }}">Globus Transfer</a>
+        {% else %}
+        <span class="text-gray-base">Globus Transfer</span>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% if matrix.columns.data_format_conversion %}
+    <div class="d-fil o-blk tx-c" style="grid-row: 3">
+        {% if matrix.columns.data_format_conversion == 'global' %}
+        <a href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ matrix.union_urls.data_format_conversion }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">Get Converted<br>Files</a>{% if not matrix.duser %}<em>(login required)</em>{% endif %}
+        {% else %}
+        &nbsp;
+        {% endif %}
+    </div>
+    {% endif %}
+    {% if matrix.columns.subset %}
+    <div class="c-req o-blk tx-c" style="grid-row: 3">
+        {% if matrix.union_urls.subset %}
+        <a href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">Get a<br>Subset</a>{% if not matrix.duser %}<em>(login required)</em>{% endif %}
+        {% else %}
+        &nbsp;
+        {% endif %}
+    </div>
+    {% endif %}
+    {% if matrix.columns.other %}
+    <div class="othr o-blk tx-c" style="grid-row: 3">
+        {% if matrix.union_urls.dap %}
+        {% if 'thredds' in matrix.union_urls.dap %}
+        <a href="{{ matrix.union_urls.dap }}">TDS Access</a>
+        {% else %}
+        <a href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ matrix.union_urls.dap }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">Get OPeNDAP<br>Access</a>{% if not matrix.duser %}<em>(login required)</em>{% endif %}
+        {% endif %}
+        {% else %}
+        &nbsp;
+        {% endif %}
+    </div>
+    {% endif %}
+    {% if matrix.columns.glade %}
+    <div style="grid-row: 3"></div>
+    <div class="c-fil o-blk tx-c" style="grid-row: 3">
+        <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}', replace_ds_content)">GLADE File<br>Listing</a>
+    </div>
+    {% endif %}
+
+    {% comment %} End "Union" Row {% endcomment %}
+
+    {% comment %} Begin "Group" Rows {% endcomment %}
+
+    {% if matrix.group_data %}
+    <div class="prod tx-c" style="grid-row: 4 / span {{ matrix.group_data|length }}">P<br>R<br>O<br>D<br>U<br>C<br>T<br>S</div>
+        {% for group in matrix.group_data %}
+            {% with row=forloop.counter|add:3 %}
+	    {% if group.index > 0 %}
+            <div class="d-des o-blk tx-l" style="grid-row: {{ row }}">
+                {{ group.title|richtext }}
+            </div>
+            {% if matrix.columns.web_files %}
+            <div class="d-fil o-blk tx-c" style="grid-row: {{ row }}">
+                {% if group.dwebcnt > 0 %}
+                <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}{{ group.index }}/', replace_ds_content)">Web File<br>Listing</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% if matrix.columns.globus %}
+            <div class="d-fil o-blk tx-c" style="grid-row: {{ row }}">&nbsp;</div>
+            {% endif %}
+            {% if matrix.columns.data_format_conversion %}
+            <div class="d-fil o-blk tx-c" style="grid-row: {{ row }}">
+                {% if matrix.columns.data_format_conversion == 'global' %}
+                <a href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ matrix.union_urls.data_format_conversion }}{{ group.index }}/?converted=True', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">Get Converted<br>Files</a>{% if not matrix.duser %}<em>(login required)</em>{% endif %}
+                {% elif group.urls.data_format_conversion %}
+                <a href="javascript:void(0)" onclick="$.get('{{ group.urls.data_format_conversion }}?converted=True', replace_ds_content)">Get Converted<br>Files</a>
+                {% else %}
+                &nbsp;
+                {% endif %}
+            </div>
+            {% endif %}
+            {% if matrix.columns.subset %}
+            <div class="c-req o-blk tx-c" style="grid-row: {{ row }}">
+                {% if group.urls.subset %}
+                <a href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ group.urls.subset }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">Get a<br>Subset</a>{% if not matrix.duser %}<em>(login required)</em>{% endif %}
+                {% else %}
+                &nbsp;
+                {% endif %}
+            </div>
+            {% endif %}
+            {% if matrix.columns.other %}
+            <div class="othr o-blk tx-c" style="grid-row: {{ row }}">
+                {% if group.urls.dap %}
+                {% if 'thredds' in group.urls.dap %}
+                <a href="{{ group.urls.dap }}">TDS Access</a>
+                {% else %}
+                <a href="{% if matrix.duser %}{{ group.urls.dap }}{% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">Get OPeNDAP<br>Access</a>{% if not matrix.duser %}<em>(login required)</em>{% endif %}
+                {% endif %}
+                {% else %}
+                &nbsp;
+                {% endif %}
+            </div>
+            {% endif %}
+            {% if matrix.columns.glade %}
+            <div style="grid-row: {{ row }}"></div>
+            <div class="c-fil o-blk tx-c" style="grid-row: {{ row }}">
+                <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}/{% if group.index %}{{ group.index }}/{% endif %}?fl=glade', replace_ds_content)">GLADE File<br>Listing</a>
+            </div>
+            {% endif %}
+	    {% else %} {% comment %} If ARCO groups: {% endcomment %}
+            <div class="d-des o-blk tx-l" style="margin-top:7px;background:#7e7ecf;grid-row: {{ row }}">
+                {{ group.title|richtext }}
+		<br>
+		<div style="background:#f9dada;color:black;display:inline-block;
+			font-size:small;border-radius:15px;padding-left:3px;padding-right:4px">Analysis Ready</div>
+            </div>
+            {% if matrix.columns.web_files %}
+            <div class="d-fil o-blk tx-c" style="margin-top:7px;grid-row: {{ row }}; background:#dadaff">
+		    <a href="javascript:void(0)" onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)">Web File<br>Listing</a>
+            </div>
+            {% endif %}
+
+	    {% endif %}
+            {% endwith %}
+        {% endfor %}
+    {% endif %}
+
+    {% comment %} End "Group" Rows {% endcomment %}
+</div>
+
+{% comment %} Bubble Divs {% endcomment %}
+<div id="iweb" class="bubble-top-left-arrow" style="width: 200px">
+    Download RDA data files via HTTPS, hosted on the Open Science Data Federation.
+</div>
+<div id="iglob" class="bubble-top-left-arrow" style="width: 200px">
+    Transfer RDA data files to your computer via the Globus transfer service (GridFTP). See http://www.globus.org for more information.
+</div>
+<div id="ifmt" class="bubble-top-left-arrow" style="width: 200px">
+    Request that RDA data files be converted from their native format to a new format (e.g. from GRIB to netCDF).
+</div>
+<div id="isubs" class="bubble-top-left-arrow" style="width: 300px">
+    Make selections (e.g. temporal range, spatial area, parameters, etc.) to be extracted from the files in this dataset. The option to receive the output in a different data format may also be available.
+</div>
+<div id="idap" class="bubble-top-left-arrow" style="width: 210px">
+    {% if 'thredds' in matrix.union_urls.dap %}
+    Access the data through additional protocols, including OPeNDAP.
+    {% else %}
+    Create a customized subset that you can then access via OPeNDAP.
+    {% endif %}
+</div>
+<div id="incar" class="bubble-top-left-arrow" style="width: 180px">
+    Find the locations of RDA holdings residing on GLADE disk.
+</div>
+{% endif %}
