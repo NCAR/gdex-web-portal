@@ -4,7 +4,7 @@ from . import local_settings # noqa
 DEBUG = False
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = local_settings.production_secret 
+SECRET_KEY = local_settings.DJANGO_SECRET_KEYS['production_secret']
 
 ALLOWED_HOSTS = [".ucar.edu", "localhost", "127.0.0.1"]
 
