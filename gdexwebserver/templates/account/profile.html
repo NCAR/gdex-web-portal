@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load socialaccount decs_tags static %}
+{% block content %}
+
+<script src="{% static 'js/jquery.js' %}"></script>
+
+<article class="main-content-wrapper">
+  <h3>Hello {{ request.user.first_name }} {{ request.user.last_name }}. You are now logged in.</h3>
+
+  <div class='component single-column container-lg mb-2'>
+    <div id='emailinfo' class='row gx-0 bg-white p-2'>
+      <h4>Email</h4>
+      <div class="px-2 py-1>">
+        {{ request.user.email }}
+      </div>
+      <div class="px-2 py-1">
+        <a href='/accounts/email/'>Manage Emails</a>
+      </div>
+    </div>
+  </div>
+
+  <div class='component single-column container-lg mb-2'>
+    <div id='orcidinfo' class='row gx-0 bg-white p-2'>
+      <h4>ORCID</h4>
+      <div class='d-inline-block p-2'>
+        {% get_social_accounts user as accounts %}
+        <picture>
+          <source type="image/jpeg+png" srcset="/media/images/logos/ORCID-iD_icon-32x32.png">
+          <img class="img-fluid" style="max-width: 32px; max-height: 32px" src="/media/images/logos/ORCID-iD_icon-32x32.png" alt="ORCID logo">
+        </picture>
+        <a class="ps-1" href='{% getORCID accounts %}'>{% getORCID accounts %} </a>
+      </div>
+    </div>
+  </div>
+
+  <div class='component single-column container-lg mb-2'>
+    <div id='tokeninfo' class='row gx-0 bg-white p-2'>
+      <h4>API Token</h4>
+      <div class='d-flex p-1'>
+        <div id='token' class='border bg-light p-2'>{{ request.user.usertoken.value }}</div> 
+      </div>
+      <div class="px-2 py-1">
+        Your API token can be used to authenticate when using the RDA API clients.  
+        <a href="https://github.com/NCAR/rda-apps-clients/tree/main#rda-apps-clients">
+          See the documentation to learn more about the RDA API clients.
+        </a>
+      </div>
+      <div id="validdate" class="p-1">
+        <em>Expires {{ request.user.usertoken.valid_until }}</em>
+      </div>
+      <div class='p-2'>
+        <button onclick='generate()' id='generate' class='btn btn-primary'>Generate New Token</button>
+      </div>
+    </div>  
+  </div>
+    
+<script type="text/javascript">
+function generate()
+{
+$.get('/accounts/newtoken', function(data) {
+$('#token').text(data.token);
+$('#validdate').text(data.valid_date);
+});
+}
+window.onload = function() {$('#generate').onclick(function() {$('#token').text('434093uehf098fh0e9f8h')});}
+</script>
+
+</article>
+{% endblock %}

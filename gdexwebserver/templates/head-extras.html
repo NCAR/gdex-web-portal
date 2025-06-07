@@ -1,9 +1,11 @@
+{% load static %}
+
 {% comment %}
 Specify any additional elements to include in the html <head></head>
 section here (e.g. extra javascript)
 {% endcomment %}
 
-<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
 <script language="javascript">
     var gmap3_loaded = false;
 </script>

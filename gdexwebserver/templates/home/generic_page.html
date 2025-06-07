@@ -10,7 +10,7 @@
     Add a target attribute to each outline link so that the outline data opens
         in a new window.
     {% endcomment %}
-    <script src="/js/jquery.js"></script>
+    <script src="{% static 'js/jquery.js' %}"></script>
     <script type="text/javascript">
     $(document).ready(function() {
         $('a[href^="/cgi-bin/getOutline"]').attr('target', '_outline');

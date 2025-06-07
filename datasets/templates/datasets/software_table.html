@@ -2,7 +2,7 @@
 {% load wagtailcore_tags decs_tags custom_tags home_tags static %}
 <script type="text/javascript" src="{% static 'js/cache_filelist.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/FileSaver.min.js' %}"></script>
-<script src="/js/jquery.js"></script>
+<script src="{% static 'js/jquery.js' %}"></script>
 
 {% has_alt_index data.files as has_alt_index_flag %}
 {% if has_alt_index_flag %}
