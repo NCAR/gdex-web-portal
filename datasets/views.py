@@ -409,19 +409,19 @@ def metadata_view(request, dsid):
         parts = request.GET['format'].split("-")
         md, warn = datacite_4.export(
                 dsid, settings.RDADB['metadata_config_pg'],
-                settings.RDADB['wagtail_config_pg'], fmt=parts[-1])
+                settings.RDADB['wagtail2_config_pg'], fmt=parts[-1])
     elif request.GET['format'] == "dif":
         md = gcmd_dif.export(dsid, settings.RDADB['metadata_config_pg'],
-                             settings.RDADB['wagtail_config_pg'])
+                             settings.RDADB['wagtail2_config_pg'])
     elif request.GET['format'] == "fgdc":
         md = fgdc.export(dsid, settings.RDADB['metadata_config_pg'],
-                         settings.RDADB['wagtail_config_pg'])
+                         settings.RDADB['wagtail2_config_pg'])
     elif request.GET['format'] == "oai_dc":
         md = dublin_core.export(dsid, settings.RDADB['metadata_config_pg'],
-                                settings.RDADB['wagtail_config_pg'])
+                                settings.RDADB['wagtail2_config_pg'])
     elif request.GET['format'] == "iso19139":
         md = iso_19139.export(dsid, settings.RDADB['metadata_config_pg'],
-                              settings.RDADB['wagtail_config_pg'])
+                              settings.RDADB['wagtail2_config_pg'])
     elif request.GET['format'] == "json-ld":
         md = json_ld.export(dsid, settings.RDADB['metadata_config_pg'],
                             indent=2)
