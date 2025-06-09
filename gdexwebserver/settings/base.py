@@ -160,11 +160,11 @@ DATABASES = {
 #        'ENGINE': 'django.db.backends.sqlite3',
 #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': local_settings.wagtail_config_pg['dbname'],
-        'HOST': local_settings.wagtail_config_pg['host'],
-        'PORT': local_settings.wagtail_config_pg['port'],
-        'USER': local_settings.wagtail_config_pg['user'],
-        'PASSWORD': local_settings.wagtail_config_pg['password'],
+        'NAME': local_settings.wagtail2_config_pg['dbname'],
+        'HOST': local_settings.wagtail2_config_pg['host'],
+        'PORT': local_settings.wagtail2_config_pg['port'],
+        'USER': local_settings.wagtail2_config_pg['user'],
+        'PASSWORD': local_settings.wagtail2_config_pg['password'],
         'TEST': {
             'NAME': "djangotest",
         },
@@ -175,7 +175,7 @@ DATABASES = {
 
 RDADB = {
     'dssdb_config_pg': local_settings.dssdb_config_pg,
-    'wagtail_config_pg': local_settings.wagtail_config_pg,
+    'wagtail2_config_pg': local_settings.wagtail2_config_pg,
     'metadata_config_pg': local_settings.metadata_config_pg,
     'IGrML_config_pg': local_settings.IGrML_config_pg,
     'WGrML_config_pg': local_settings.WGrML_config_pg,
