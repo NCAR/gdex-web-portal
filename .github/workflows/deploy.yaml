@@ -8,6 +8,7 @@ on:
       - ".github/**"
       - ".gitignore"
       - "app-chart/**"
+      - "apache2/**"
 
 jobs:
   container-rebuild:
