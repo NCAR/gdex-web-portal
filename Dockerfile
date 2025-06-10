@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM dattore/gdex-web-portal:wagtail AS intermediate
+FROM dattore/gdex-web-portal:web AS intermediate
 
 # set the version number
 ARG VERSION_NUMBER=
@@ -29,7 +29,7 @@ git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
 EOF
 
 
-FROM dattore/gdex-web-portal:wagtail
+FROM dattore/gdex-web-portal:web
 
 # copy from the intermediate
 COPY --from=intermediate /tmp/version_number /usr/local/gdexweb/
