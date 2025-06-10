@@ -72,42 +72,17 @@ def get_all_caches(result):
         'healthy_caches': healthy_caches
     }
 
-# Updated Index view with cache data
-class Index(TemplateView):
-    template_name = 'datavisualizer/index.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # Fetch cache data
-        url = "https://osdf-director.osg-htc.org/api/v1.0/director_ui/servers"
-        result = fetch_json_from_url(url)
-
-        down_caches = []
-        healthy_caches = []
-        if result:
-            try:
-                cache_data = get_all_caches(result)
-                down_caches = cache_data['down_caches']
-                healthy_caches = cache_data['healthy_caches']
-            except ValueError as e:
-                print(f"Error getting down caches: {e}")
-        else:
-            print("No data received from API")
-
-        context['down_caches'] = down_caches
-        context['healthy_caches'] = healthy_caches
-        return context
-
-def get_cache_data_api(request):
+def get_cache_data():
     """
-    API endpoint to get cache data as JSON 
+    Helper function to get cache data 
+    Returns:
+        dict: Dictionary with 'down_caches' and 'healthy_caches' lists
     """
     url = "https://osdf-director.osg-htc.org/api/v1.0/director_ui/servers"
     result = fetch_json_from_url(url)
-
     down_caches = []
     healthy_caches = []
+    
     if result:
         try:
             cache_data = get_all_caches(result)
@@ -115,4 +90,27 @@ def get_cache_data_api(request):
             healthy_caches = cache_data['healthy_caches']
         except ValueError as e:
             print(f"Error getting cache data: {e}")
-    return JsonResponse({'down_caches': down_caches, 'healthy_caches': healthy_caches})
+    else:
+        print("No data received from API")
+    
+    return {'down_caches': down_caches, 'healthy_caches': healthy_caches}
+
+# Updated Index view with cache data
+class Index(TemplateView):
+    template_name = 'datavisualizer/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        cache_data = get_cache_data()
+        context['down_caches'] = cache_data['down_caches']
+        context['healthy_caches'] = cache_data['healthy_caches']
+        
+        return context
+
+def get_cache_data_api(request):
+    """
+    API endpoint to get cache data as JSON 
+    """
+    cache_data = get_cache_data()
+    return JsonResponse(cache_data)
