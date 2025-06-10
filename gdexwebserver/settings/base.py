@@ -251,7 +251,7 @@ MEDIA_URL = '/media/'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': '/usr/local/rdaweb/cache',
+        'LOCATION': '/usr/local/gdexweb/cache',
     }
 }
 
