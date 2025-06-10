@@ -140,13 +140,17 @@ EOF
 RUN pip install -r /usr/local/gdexweb/requirements.txt
 RUN python /usr/local/gdexweb/manage.py collectstatic --noinput
 
-# create the final setup and run script
+# add aliases for content that apache should serve
 RUN <<EOF
 cat <<EOFCAT > /etc/apache2/conf-enabled/aliases.conf
 Alias /static /usr/local/gdexweb/static
 Alias /media /usr/local/gdexweb/media
 EOFCAT
 EOF
+
+# set permissions
+RUN chown -R www-data:www-data /usr/local/gdexweb
+RUN chown www-data:www-data /var/log/django.log
 
 # start the web server
 ENV PYTHONPATH=/usr/local/gdexweb
