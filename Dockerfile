@@ -77,7 +77,7 @@ dssdb_config_pg = {
     'dbname': "$DSSDB_DBNAME",
 }
 
-wagtail_config_pg = {
+wagtail2_config_pg = {
     'user': "$WAGTAIL_USERNAME",
     'password': "$WAGTAIL_PASSWORD",
     'host': "$WAGTAIL_HOST",
@@ -138,20 +138,16 @@ EOFCAT
 EOF
 
 RUN pip install -r /usr/local/gdexweb/requirements.txt
+RUN python /usr/local/gdexweb/manage.py collectstatic --noinput
 
 # create the final setup and run script
 RUN <<EOF
-cat <<EOFCAT > /usr/local/bin/start_web_server
-#! /bin/bash
-python /usr/local/gdexweb/manage.py makemigrations
-python /usr/local/gdexweb/manage.py migrate
-python /usr/local/gdexweb/manage.py collectstatic --noinput
-python /usr/local/gdexweb/manage.py ensuresuperuser
-gunicorn --bind 0.0.0.0:443 --workers 4 gdexwebserver.wsgi
+cat <<EOFCAT > /etc/apache2/conf-enabled/aliases.conf
+Alias /static /usr/local/gdexweb/static
+Alias /media /usr/local/gdexweb/media
 EOFCAT
 EOF
-RUN chmod 755 /usr/local/bin/start_web_server
 
-# start gunicorn
+# start the web server
 ENV PYTHONPATH=/usr/local/gdexweb
-CMD ["/usr/local/bin/start_web_server"]
+CMD ["apache2ctl", "-D", "FOREGROUND"]
