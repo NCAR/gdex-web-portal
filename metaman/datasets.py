@@ -15,6 +15,7 @@ from lxml import etree as ElementTree
 from pathlib import Path
 
 from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
@@ -1648,10 +1649,9 @@ def edit(request, dsid):
 def show_web_access(request, dsid):
     path = os.path.join(settings.RDA_CANONICAL_DATA_PATH, dsid)
     if not os.path.exists(path):
-        return render(
-                request, "500.html",
-                {'custom_message': ("Data directory does not exist on the RDA "
-                                    "web server")})
+        return HttpResponse(
+                "Data directory does not exist on the RDA web server",
+                status=500)
 
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
@@ -1662,16 +1662,14 @@ def show_web_access(request, dsid):
 
     except psycopg2.Error as err:
         log_error(err, source="show_web_access")
-        return render(
-                request, "500.html",
-                {'custom_message': "Database error: '{}'".format(err)})
+        return HttpResponse("Database error: '{}'".format(err),
+                            status=500)
 
     if res[0] == "0":
-        return render(
-                request, "500.html",
-                {'custom_message': ("According to RDADB, there are no web "
-                                    "data files associated with this "
-                                    "dataset")})
+        return HttpResponse((
+                "According to RDADB, there are no web data files "
+                "associated with this dataset"),
+                status=500)
 
     try:
         cursor.execute(("select inet_access from search.datasets where dsid = "
@@ -1680,9 +1678,8 @@ def show_web_access(request, dsid):
 
     except psycopg2.Error as err:
         log_error(err, source="show_web_access")
-        return render(
-                request, "500.html",
-                {'custom_message': "Database error: '{}'".format(err)})
+        return HttpResponse("Database error: '{}'".format(err),
+                            status=500)
 
     cursor.close()
     conn.close()
