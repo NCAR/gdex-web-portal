@@ -9,7 +9,7 @@ app:
     secretName: incommon-cert-gdex-webserver
   container: 
     image: docker.io/dattore/gdex-web-portal:v162
-    port: 443
+    port: 8080
     memory: 1G
     cpu: 2
 
