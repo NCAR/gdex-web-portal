@@ -156,6 +156,7 @@ cat <<EOFCAT > /usr/local/bin/start_container
 #! /bin/bash
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2
+cp /usr/local/gdexweb/gdexwebserver/settings/local_settings.py /data/xyz
 apache2ctl -D FOREGROUND
 EOFCAT
 EOF
