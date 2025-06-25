@@ -25,6 +25,11 @@ spec:
             cpu: {{ .Values.app.container.cpu }}
         ports:
         - containerPort: {{ .Values.app.container.port }}
+        volumeMounts:
+        - mountPath: {{ .Values.volume.fs.mountPath }}
+          name: {{ .Values.volume.fs.name }}
+        - mountPath: {{ .Values.volume.glade.mountPath }}
+          name: {{ .Values.volume.glade.name }}
       volumes:
       - name: {{ .Values.volume.fs.name }}
         persistentVolumeClaim:
