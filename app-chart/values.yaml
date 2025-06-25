@@ -6,7 +6,7 @@ app:
   path: /
   tls:
     fqdn: gdex.k8s.ucar.edu
-    secretName: incommon-cert-gdex-web-test
+    secretName: incommon-cert-gdex-webserver
   container: 
     image: docker.io/dattore/gdex-web-portal:v160
     port: 443
