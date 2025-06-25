@@ -1,11 +1,11 @@
 replicaCount: 1
 
 webapp:
-  name: gdex-webserver-test
-  group: gdex-web-test
+  name: gdex-webserver
+  group: gdex-web
   path: /
   tls:
-    fqdn: gdex-web-test.k8s.ucar.edu
+    fqdn: gdex.k8s.ucar.edu
     secretName: incommon-cert-gdex-web-test
   container: 
     image: docker.io/dattore/gdex-web-portal:v160
