@@ -21,12 +21,10 @@ EOFCAT
 EOF
 RUN chmod 755 /tmp/get_version_number
 
-RUN <<EOF
-apt-get update -y
-apt-get install -y git
-mkdir /tmp/gdexweb
-git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
-EOF
+RUN apt-get update -y
+RUN apt-get install -y git
+RUN mkdir /tmp/gdexweb
+RUN git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
 
 
 FROM dattore/gdex-web-portal:web
@@ -150,8 +148,19 @@ EOF
 
 # set permissions
 RUN chown -R www-data:www-data /usr/local/gdexweb
+RUN touch /var/log/django.log
 RUN chown www-data:www-data /var/log/django.log
+
+RUN <<EOF
+cat <<EOFCAT > /usr/local/bin/start_container
+#! /bin/bash
+chown -R www-data:www-data /data
+mkdir -p /data/logs/apache2
+apache2ctl -D FOREGROUND
+EOFCAT
+EOF
+RUN chmod 755 /usr/local/bin/start_container
 
 # start the web server
 ENV PYTHONPATH=/usr/local/gdexweb
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+CMD ["/usr/local/bin/start_container"]
