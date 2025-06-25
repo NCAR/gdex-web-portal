@@ -53,9 +53,17 @@ RUN chown www-data:www-data /var/log/django.log
 RUN <<EOF
 cat <<EOFCAT > /usr/local/bin/start_container
 #! /bin/bash
+#
+# move wsgi.py so that it can be "touched" to clear the django cache
+mv /usr/local/gdexweb/gdexwebserver/wsgi.py /data/local/gdexweb/gdexwebserver/
+ln -s /data/local/gdexweb/gdexwebserver/wsgi.py /usr/local/gdexweb/gdexwebserver/wsgi.py
+#
+ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/local_settings.py
+#
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2
-cp /usr/local/gdexweb/gdexwebserver/settings/local_settings.py /data/xyz
+#
+# start apache
 apache2ctl -D FOREGROUND
 EOFCAT
 EOF
