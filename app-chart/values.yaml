@@ -1,6 +1,6 @@
 replicaCount: 1
 
-webapp:
+app:
   name: gdex-webserver
   group: gdex-web
   path: /
@@ -12,3 +12,15 @@ webapp:
     port: 443
     memory: 1G
     cpu: 2
+
+volume:
+  fs:
+    name: gdexdata
+    size: 55Gi
+    mountPath: /data
+  glade:
+    name: glade-campaign
+    server: gladedm1.ucar.edu
+    path: /gpfs/csfs1
+    mountPath: /glade/campaign
+    readOnly: true
