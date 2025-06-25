@@ -35,7 +35,6 @@ COPY --from=intermediate /tmp/get_version_number /usr/local/bin/
 COPY --from=intermediate /tmp/gdexweb /usr/local/gdexweb
 
 RUN pip install -r /usr/local/gdexweb/requirements.txt
-RUN python /usr/local/gdexweb/manage.py collectstatic --noinput
 
 # add aliases for content that apache should serve
 RUN <<EOF
@@ -62,6 +61,8 @@ ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/l
 #
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2
+#
+python /usr/local/gdexweb/manage.py collectstatic --noinput
 #
 # start apache
 apache2ctl -D FOREGROUND
