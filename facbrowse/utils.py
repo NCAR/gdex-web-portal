@@ -156,8 +156,8 @@ def cache_file(dsid, gindex, mu_type, listtyp):
     ds_list = slug_list(dsid)
     if listtyp == "subset":
         for ds in ds_list:
-            path = ("/usr/local/www/server_root/web/datasets/" + ds +
-                    "/metadata/customize.I" + mu_type)
+            path = ("/data/web/datasets/" + ds + "/metadata/customize.I" +
+                    mu_type)
             if gindex:
                 path += "." + gindex
 
@@ -166,8 +166,8 @@ def cache_file(dsid, gindex, mu_type, listtyp):
 
     elif listtyp == "weblist" or listtyp == "gladelist":
         for ds in ds_list:
-            path = ("/usr/local/www/server_root/web/datasets/" + ds +
-                    "/metadata/customize.W" + mu_type)
+            path = ("/data/web/datasets/" + ds + "/metadata/customize.W" +
+                    mu_type)
             if gindex:
                 path += "." + gindex
 
