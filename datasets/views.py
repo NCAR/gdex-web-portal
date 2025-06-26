@@ -90,7 +90,8 @@ def build_matrix(request, dsid):
         qs = Page.objects.type(DatasetDescriptionPage).filter(
                                slug__in=slist).live().specific()
         if len(qs) > 0:
-            d.update({'dsdoi': qs[0].dsdoi, 'dstitle': qs[0].dstitle})
+            d.update({'dsdoi': qs[0].dsdoi, 'dstitle': qs[0].dstitle,
+                      'dslogo': qs[0].dslogo, 'dstype': qs[0].dstype})
 
         ctx.update({'page': d})
 
