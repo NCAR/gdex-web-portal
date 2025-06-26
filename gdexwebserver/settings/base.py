@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'gsearch',
     'home',
     'oai',
-    #'login',
+    'login',
     'lookfordata',
     'metaman',
     'search',
