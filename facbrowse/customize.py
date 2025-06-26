@@ -16,14 +16,14 @@ def customize_exists(service, dsid, listtyp):
     ds_list = utils.slug_list(dsid)
     if listtyp == "weblist" or listtyp == "gladelist":
         for ds in ds_list:
-            if Path(("/usr/local/www/server_root/web/datasets/" + ds +
-                     "/metadata/customize.W" + service)).is_file():
+            if Path(("/data/web/datasets/" + ds + "/metadata/customize.W" +
+                     service)).is_file():
                 customize_exists = True
 
     elif listtyp == "subset" or listtyp == "opendap":
         for ds in ds_list:
-            if Path(("/usr/local/www/server_root/web/datasets/" + ds +
-                     "/metadata/customize.I" + service)).is_file():
+            if Path(("/data/web/datasets/" + ds + "/metadata/customize.I" +
+                     service)).is_file():
                 customize_exists = True
 
     return customize_exists
