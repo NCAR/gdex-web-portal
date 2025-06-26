@@ -83,6 +83,8 @@ ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/l
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2
 #
+ln -s /data/gdexhome /usr/local/gdexweb
+#
 python /usr/local/gdexweb/manage.py collectstatic --noinput
 #
 # start apache
