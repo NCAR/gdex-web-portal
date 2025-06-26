@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags login_tags %}
+
+{% block content %}
+
+<h2>You are signed in.</h2>
+<p>
+You are signed in as <b>{{ request.COOKIES|duser }}</b>.
+</p>
+
+{% endblock %}

@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags decs_tags %}
+
+{% block content %}
+
+{% if request.GET.action and request.GET.action == "showerror" %}
+    {% if request.GET.error == "bademail" %}
+    <h2>Registration Error</h2>
+    <p>
+        The email address that you provided cannot be used to register. You will need to register with a different email address.
+    </p>
+    {% elif request.GET.error == "otheractive" %}
+    <h2>You Are Already Registered</h2>
+    <p>
+        Our records show that you are already registered with the email address <b>{{ request.COOKIES.tmp }}</b>. You may update your user profile, including your email address, by signing in with "{{ request.COOKIES.tmp }}" and then editing your user profile in the dashboard (see the top of any web page).
+    </p>
+    <p>
+        If you have forgotten your password, click the "Forgot Password?" link at the top of this page and follow the instructions to get a new password sent to "{{ request.COOKIES.tmp }}", unless that email account is no longer active. In that case, you will need to register with a new email address.
+    </p>
+    {% endif %}
+{% else %}
+<script src="/js/xhr_content2.js"></script>
+<script id="regfuncs" language="javascript">
+  function setOrg() {
+    document.profile.org.disabled = false;
+    if (document.profile.orgType[document.profile.orgType.selectedIndex].value == "OTHER") {
+      document.profile.org.value = "Unaffiliated/Not Specified";
+      document.profile.org.disabled = true;
+      document.getElementById('addlinfo').classList.replace('d-none', 'd-block');
+    } else {
+      document.profile.org.disabled = false;
+      if (document.profile.orgType[document.profile.orgType.selectedIndex].value == "UCAR") {
+        document.profile.org.value = "National Center for Atmospheric Research";
+        document.profile.org.disabled = true;
+      } else {
+        if (document.profile.org.value.indexOf("Unaffiliated") >= 0 || document.profile.org.value.indexOf("UCAR/") >= 0)
+          document.profile.org.value = "";
+      }
+      document.getElementById('addlinfo').classList.replace('d-block', 'd-none');
+    }
+  }
+  var spaces_checked = false;
+  function checkRegForm() {
+    var found_at = false;
+    var at_loc = 32768;
+    var found_dot = false;
+    for (n = 0; n < document.profile.email.value.length; ++n) {
+      if (document.profile.email.value.charAt(n) == " " || document.profile.email.value.charAt(n) == ",") {
+        alert("Enter a valid Email Address");
+        return;
+      }
+      if (document.profile.email.value.charAt(n) == "@") {
+        found_at = true;
+        at_loc = n;
+      }
+      if (document.profile.email.value.charAt(n) == "." && n > at_loc)
+        found_dot = true;
+    }
+    if (!found_at || !found_dot) {
+      alert("Enter a valid Email Address");
+      return;
+    }
+    if (document.profile.email.value != document.profile.cemail.value) {
+      alert("Email confirmation failed - try again");
+      return;
+    }
+    if (document.profile.passwd.value.length == 0) {
+      alert("You must choose a password that contains at least 2 characters");
+      return;
+    }
+    if (document.profile.passwd.value != document.profile.cpasswd.value) {
+      alert("Password confirmation failed - try again");
+      return;
+    }
+    if (document.profile.passwd.value.search("^123456") >= 0 || document.profile.passwd.value.search("^123321") >= 0 || document.profile.passwd.value.search("^111111") >= 0 || document.profile.passwd.value.search("^0000") >= 0 || document.profile.passwd.value.search("^qwerty") >= 0 || document.profile.passwd.value.search("^password") >= 0) {
+      alert("You must choose a different password");
+      return;
+    }
+    if (document.profile.fname.value.length < 2) {
+      alert("A valid First Name is required");
+      return;
+    }
+    for (n = 0; n < document.profile.fname.value.length; ++n) {
+      var c = document.profile.fname.value.charAt(n);
+      if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '-' && c != "'" && c != '.') {
+        alert("Your first name should only contain English characters");
+        return;
+      }
+    }
+    if (document.profile.lname.value.length < 2) {
+      alert("A valid Last Name is required");
+      return;
+    }
+    for (n = 0; n < document.profile.lname.value.length; ++n) {
+      var c = document.profile.lname.value.charAt(n);
+      if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '-' && c != "'" && c != ' ' && c != '.') {
+        alert("Your last name should only contain English characters (apostrophe and space are okay)");
+        return;
+      }
+    }
+    if (document.profile.fname.value == document.profile.lname.value) {
+      alert("Your first name and last name must be different");
+      return;
+    }
+    if (document.profile.fname.value == document.profile.mname.value) {
+      alert("Your first name and middle name must be different");
+      return;
+    }
+    for (n = 0; n < document.profile.mname.value.length; ++n) {
+      if ((document.profile.mname.value.charAt(n) < 'a' || document.profile.mname.value.charAt(n) > 'z') && (document.profile.mname.value.charAt(n) < 'A' || document.profile.mname.value.charAt(n) > 'Z') && document.profile.mname.value.charAt(n) != '.') {
+        alert("Your middle name should only contain English characters");
+        return;
+      }
+    }
+    if (document.profile.orgType.selectedIndex == 0) {
+      alert("You must specify an Organization Type");
+      return;
+    }
+    if (document.profile.org.value.length < 2) {
+      alert("A valid Organization Name is required");
+      return;
+    }
+    num_ltrs = 0;
+    num_spcs = 0;
+    for (n = 0; n < document.profile.org.value.length; ++n) {
+      if (document.profile.org.value.charAt(n) < ' ' || document.profile.org.value.charAt(n) > 'z') {
+        alert("Your Organization Name should only contain English characters");
+        return;
+      }
+      if ((document.profile.org.value.charAt(n) >= 'a' && document.profile.org.value.charAt(n) <= 'z') || (document.profile.org.value.charAt(n) >= 'A' && document.profile.org.value.charAt(n) <= 'Z')) {
+        ++num_ltrs;
+      }
+      if (document.profile.org.value.charAt(n) == ' ') {
+        ++num_spcs;
+      }
+    }
+    if (num_ltrs < 2) {
+      alert("A valid Organization Name is required");
+      return;
+    }
+    if (!spaces_checked && num_spcs == 0) {
+      alert("Organization Name is the full name of your organization or institution. It is not an acronym or a URL. Verify that you have filled in this field accurately. If not, your registration will be rejected.");
+      spaces_checked = true;
+      return true;
+    }
+    if (document.profile.country.selectedIndex == 0) {
+      alert("You must specify the Country of your organization");
+      return;
+    }
+    if (document.profile.org.value.indexOf("Unaffiliated") >= 0 && document.profile.comment.value.length == 0) {
+      alert("You must provide a brief description of the data you need and how you plan to use it");
+      return;
+    }
+    var index = document.profile.org.value.indexOf("&");
+    while (index >= 0) {
+      document.profile.org.value = document.profile.org.value.substring(0, index) + "%26" + document.profile.org.value.substr(index + 1, 32768);
+      index = document.profile.org.value.indexOf("&");
+    }
+    document.profile.org.disabled = false;
+    document.profile.comment.value = document.profile.comment.value.replace(/&/g, "%26");
+    document.getElementById("registerButton").disabled = true;
+    var parameters = 'action=addUser&email=' + encodeURIComponent(document.profile.email.value) + '&cemail=' + encodeURIComponent(document.profile.cemail.value) + '&passwd=' + encodeURIComponent(document.profile.passwd.value) + '&cpasswd=' + encodeURIComponent(document.profile.cpasswd.value) + '&fname=' + document.profile.fname.value + '&mname=' + document.profile.mname.value + '&lname=' + document.profile.lname.value + '&orgType=' + document.profile.orgType.value + '&org=' + document.profile.org.value + '&country=' + document.profile.country.value + '&comment=' + document.profile.comment.value;
+    getContentFromPost('login_container', '/cgi-bin/login', parameters);
+  }
+</script>
+<div id="login_container">
+
+    <div>
+        <h2>Data User Registration</h2>
+        {% if error == "emailused" %}
+        <p class="alert alert-warning mb-2">
+            The email address that you provided cannot be used to register because it is already in use. If you have forgotten the password, you can <a href="/login/password/">request a new one</a>.
+        </p>
+        {% endif %}
+        {{ page.reg_intro|richtext }}
+        <form name="profile" class="row gx-0 gy-3" action="javascript:void(0)">
+            <h3>Sign-in Credentials</h3>
+            <div class="col-10 offset-05">
+                <label for="remail" class="form-label">*Email Address:</label>
+                <div class="input-group">
+                    <span class="input-group-text" id="remail_prepend">@</span>
+                    <input name="email" id="remail" type="text" class="form-control" aria-describedby="remail_prepend" required>
+                </div>
+            </div>
+            <div class="col-10 offset-05">
+                <label for="cemail" class="form-label">*Confirm Email Address:</label>
+                <div class="input-group">
+                    <span class="input-group-text" id="cemail_prepend">@</span>
+                    <input name="cemail" id="cemail" type="text" class="form-control" aria-describedby="cemail_prepend" required>
+                </div>
+            </div>
+            <div class="col-10 offset-05">
+                <label for="rpasswd" class="form-label">*Password:</label>
+                <input name="passwd" id="rpasswd" type="password" class="form-control" required>
+            </div>
+            <div class="col-10 offset-05">
+                <label for="cpasswd" class="form-label">*Confirm Password:</label>
+                <input name="cpasswd" id="cpasswd" type="password" class="form-control" required>
+            </div>
+            <h3>User Profile</h3>
+{% comment %}
+            <div class="col-10 offset-05">
+                <label for="title" class="form-label">Title</label>
+                <select name="title" id="title" class="form-select">
+                    <option value="">No selection</option>
+                    <option value="DR">Dr.</option>
+                    <option value="MR">Mr.</option>
+                    <option value="MRS">Mrs.</option>
+                    <option value="MS">Ms.</option>
+                </select>
+            </div>
+{% endcomment %}
+            <div class="col-10 offset-05">
+                <label for="fname" class="form-label">*First Name:</label>
+                <input name="fname" id="fname" type="text" class="form-control" required>
+            </div>
+            <div class="col-10 offset-05">
+                <label for="mname" class="form-label">Middle Name / Initial:</label>
+                <input name="mname" id="mname" type="text" class="form-control">
+            </div>
+            <div class="col-10 offset-05">
+                <label for="lname" class="form-label">*Last Name:</label>
+                <input name="lname" id="lname" type="text" class="form-control" required>
+            </div>
+            <div class="col-10 offset-05">
+                <label for="orgType" class="form-label">*Organization Type</label>
+                <select name="orgType" id="orgType" class="form-select" required onchange="setOrg()">
+                    <option value="" selected disabled>Choose from list</option>
+                    <option value="COM">For-profit Company</option>
+                    <option value="EDU">Non-university School</option>
+                    <option value="GOV">Government (non-Military)</option>
+                    <option value="MIL">Government - Military</option>
+                    <option value="ORG">Not-for-profit Organization</option>
+                    <option value="OTHER">Unaffiliated / Prefer to not specify</option>
+                    <option value="UCAR">UCAR / NCAR / UOP</option>
+                    <option value="UNIV">University or College</option>
+                </select>
+            </div>
+            <div class="col-10 offset-05">
+                <label for="org" class="form-label">*Organization Name</label>
+                <input name="org" id="org" type="text" class="form-control" required>
+                (This is the FULL NAME of your organization, not an acronym, website, domain name, etc.)
+            </div>
+            <div id="addlinfo" class="col-10 offset-05 d-none">
+                <label for "comment" class="form-label">*Provide a brief description of the research data you need and how you plan to use it</label>
+                <textarea name="comment" rows="3" cols="60" maxlength="250"></textarea>
+                <br><small>(250 characters maximum)</small>
+            </div>
+            <div class="col-10 offset-05">
+                <label for="country" class="form-label">*Organization Country</label>
+                <select name="country" id="country" class="form-select" required>
+                    {% countries as countries %}
+                    <option value="" selected disabled>Choose from list</option>
+                    <option value="UNITED.STATES">United States of America</option>
+                    {% for country in countries %}
+                    <option value="{{ country.token }}">{{ country.description }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-10 offset-05">
+                <div class="form-check">
+                    <label for="tou_agree" class="form-check-label">I agree that I have provided accurate information for all of the required fields(*), that my sign-in is for my use only, that I am allowed exactly ONE active sign-in at any time, and that I have read and agreed to the <a href="{{ page.tou_url }}" target="_tou_data">Terms of Use for UCAR Data Repositories</a>.</label>
+                    <input id="tou_agree" type="checkbox" class="form-check-input" onclick="document.getElementById('regbutton_container').style.display = this.checked ? 'block' : 'none'">
+                </div>
+            </div>
+            <div id="regbutton_container" style="display: none">
+                <div class="col-10 offset-05">
+                    <button id="registerButton" class="btn btn-primary" onclick="checkRegForm()">Submit Registration</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags decs_tags %}
+
+{% block content %}
+<div id="content_container">
+
+    {% if 'duser' in request.COOKIES %}
+        <meta http-equiv="refresh" content="0;url=/login/signin">
+    {% else %}
+    <script src="/js/xhr_content2.js"></script>
+    <script language="javascript">
+      function doSignIn() {
+        var parameters = 'action=ajax_login&email=' + encodeURIComponent(document.signin.email.value) + '&passwd=' + encodeURIComponent(document.signin.passwd.value) + '&url={{ request.GET.return }}';
+        if (document.getElementById("remember").checked) {
+          parameters += '&remember=on';
+        }
+        getContentFromPost('content_container', '/cgi-bin/login', parameters);
+      }
+    </script>
+    <link rel="stylesheet" type="text/css" href="/css/login.css">
+
+    <div class="mb-5">
+        <h2>Data User Sign-In</h2>
+        {% if error %}
+        {% if error == "accessblocked" %}
+        <p class="alert alert-danger mb-2">
+            Your data access privileges have been suspended. You will need to <a href="/contact-us/">contact us</a> to get your privileges restored.
+        </p>
+        {% elif error == "badauth" %}
+        <p class="alert alert-warning mb-2">
+            Invalid username/password combination. Try again, or <a href="/login/password/">request a new password</a>.
+        </p>
+        {% elif error == "inactiveemail" %}
+        <p class="alert alert-warning mb-2">
+            The email address you entered is not active because you changed your email address to something else. You need to use your active email address to sign in. If you don't remember your active email address, <a href="/contact-us/">send us a message</a> for assistance and sign your message to us with the first and last names that you used to register on our web site.
+        {% endif %}
+        {% else %}
+        <p>
+            If you don't already have a sign-in, you can register <a href="/login/register/">here</a>.
+        </p>
+        {% endif %}
+        <form name="signin" class="row gx-0 gy-3" action="javascript:void(0)" onsubmit="doSignIn()">
+            <div class="col-10 offset-05">
+                <label for="semail" class="form-label">Email address or CIT username:</label>
+                <div class="input-group">
+                    <span class="input-group-text" id="semail_prepend">@</span>
+                    <input name="email" id="semail" type="text" class="form-control" aria-describedby="semail_prepend" value="{% if 'ruser' in request.COOKIES %}{{ request.COOKIES.ruser }}{% endif %}" required>
+                </div>
+            </div>
+            <div class="col-10 offset-05">
+                <label for="spasswd" class="form-label">Password:</label>
+                <input name="passwd" id="spasswd" type="password" class="form-control" required>
+            </div>
+            <div class="col-10 offset-05">
+                <div class="form-check">
+                    <input id="remember" type="checkbox" class="form-check-input" value="rememeber" checked>
+                    <label for="remember" class="form-check-label">Remember me on this computer (uncheck if this is a public computer)</label>
+                </div>
+            </div>
+            <div class="col-10 offset-05">
+                <div class="float-start">
+                    <button class="btn btn-primary" type="submit">Submit Credentials</button>
+                </div>
+                <div class="float-end mt-2 me-2">
+                    <a class="component-link i-angle-right--after" href="/login/password/">Forgot Password?</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

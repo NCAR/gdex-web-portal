@@ -489,3 +489,5 @@ GMAP_API_URL = "https://maps.googleapis.com/maps/api/js"
 GMAP_API_KEY = local_settings.gmap_api_key
 
 ICOOKIE = local_settings.ICOOKIE
+
+CSRF_TRUSTED_ORIGINS = ["https://gdex.k8s.ucar.edu"]

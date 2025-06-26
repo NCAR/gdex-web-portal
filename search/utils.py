@@ -1,3 +1,4 @@
+import html
 import psycopg2
 import re
 import sys
@@ -153,7 +154,8 @@ class SearchResults:
                     d = self.indexable_datasets.map[self.include_words[0]]
                     self.results[d['type']].append(
                             {'dsid': self.include_words[0], 'type': d['type'],
-                             'title': d['title'], 'summary': d['summary']})
+                             'title': d['title'],
+                             'summary': html.unescape(d['summary'])})
                     return
 
         try:
@@ -223,7 +225,7 @@ class SearchResults:
             d = self.indexable_datasets.map[t[0]]
             self.results[d['type']].append(
                     {'dsid': t[0], 'type': d['type'], 'title': d['title'],
-                     'summary': d['summary']})
+                     'summary': html.unescape(d['summary'])})
 
         if len(self.startd) == 0:
             self.startd = self.min_startd

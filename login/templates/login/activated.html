@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags login_tags %}
+
+{% block content %}
+
+{% if request.GET.action == "showactivationsuccess" %}
+    {% if request.GET.message and request.GET.message == "emailupdated" %}
+    <h2>Email Address Updated</h2>
+    <p>
+        Your email address has been successfully updated. To sign in, go to the <a href="/login/">sign-in</a> page or use the inputs at the top of any other page.
+    </p>
+    {% else %}
+    <h2>Your Registration Has Been Successfully Activated</h2>
+    <p>
+        Your registration has been successfully activated. To sign in, go to the <a href="/login/">sign-in</a> page or use the inputs at the top of any other page.
+    </p>
+    {% endif %}
+{% elif request.GET.action == "showerror" %}
+    {% if request.GET.error == "badactivationkey" %}
+        <h2>Activation Code Not Found</h2>
+        <p>
+            The activation code you used is not valid. If you got here by clicking a link that you received in an email message from rda.ucar.edu, then you have either already activated your registration or you waited too long and your unactivated registration expired.
+        </p>
+        <p>
+            If you have already activated, you will be able to sign in with the email address and password you specified in your registration. <span style="color: red">MAKE SURE YOU TRY TO SIGN IN BEFORE CONTACTING US ABOUT THIS ISSUE.</font>
+        </p>
+        <p>
+            If you are not able to sign in, you will need to <a href="/login/register/">re-register</a>.
+        </p>
+    {% elif request.GET.error == "disabledregistration" %}
+        <h2>Out of Service</h2>
+        <p>
+            Registrations have been temporarily disabled because we are conducting maintenance or experiencing problems with our server. Please try your request again later. We apologize for any inconvenience.
+        </p>
+    {% elif request.GET.error == "failedactivation" %}
+        <h2>Unable To Activate Your Registration</h2>
+        <p>
+            Due to a database error, your registration was not successfully activated. The database administrator has been notified and you should be contacted shortly about the status of your registration. We apologize for the inconvenience.
+        </p>
+    {% elif request.GET.error == "shortactivationkey" %}
+        <h2>Activation Key Error</h2>
+        <p>
+            The link you used does not apply to any pending registration.
+        </p>
+        <p>
+            The activation key, which is the string of characters after <i>?activate=</i> in the link, does not appear to be the proper length. If you have pasted the link into your browser, please make sure that you have pasted in <span class="underline">all</span> of the characters. If the problem persists, please contact <a href="mailto:rdahelp@ucar.edu">rdahelp@ucar.edu</a>.
+        </p>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

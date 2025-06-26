@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags decs_tags %}
+
+{% block content %}
+
+<h2>You are signed out.</h2>
+{% if request.GET.from and request.GET.from == "profile" %}
+<p>
+    You have been signed out from your old email address because you have changed your profile to a new email address. Look for a message in the inbox of your new address with a link to activate that address. After you successfully activate, you will be able to sign in with the new email address.
+</p>
+{% else %}
+<p>
+    You have successfully signed out. Click <a href="/login/">here</a> to return to the sign-in page.
+</p>
+{% endif %}
+
+{% endblock %}
