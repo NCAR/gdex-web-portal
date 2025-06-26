@@ -41,7 +41,9 @@ RUN <<EOF
 cat <<EOFCAT > /etc/apache2/conf-enabled/aliases.conf
 Alias /static /usr/local/gdexweb/static
 Alias /media /usr/local/gdexweb/media
+Alias /css /data/web/css
 Alias /images /data/web/images
+Alias /js /data/web/js
 EOFCAT
 EOF
 
