@@ -49,8 +49,8 @@ EOF
 
 RUN <<EOF
 cat <<EOFCAT > /etc/apache2/conf-enabled/serve-cgi-bin.conf
-ScriptAliasMatch "^/cgi-bin(.*)" "/data/web/cgi-bin$1"
-<Directory "/data/web/cgi-bin">
+ScriptAlias /apps /data/web/apps
+<Directory /data/web/apps>
     AllowOverride None
     Options +ExecCGI +FollowSymLinks
     Require all granted
