@@ -1,0 +1,2 @@
+LoadModule wsgi_module /usr/lib/apache2/modules/mod_wsgi_python3.11.so
+LoadModule cgi_module /usr/lib/apache2/modules/mod_cgi.so

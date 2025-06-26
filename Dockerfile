@@ -67,13 +67,16 @@ RUN <<EOF
 cat <<EOFCAT > /usr/local/bin/start_container
 #! /bin/bash
 #
+# replace apache2 configuration files from repository
+cp -r /usr/local/gdexweb/apache2/* /etc/apache2/
+#
 # move wsgi.py so that it can be "touched" to clear the django cache
 mv /usr/local/gdexweb/gdexwebserver/wsgi.py /data/local/gdexweb/gdexwebserver/
 ln -s /data/local/gdexweb/gdexwebserver/wsgi.py /usr/local/gdexweb/gdexwebserver/wsgi.py
+#
+# link django settings files
 mv /usr/local/gdexweb/gdexwebserver/settings/base.py /data/local/gdexweb/gdexwebserver/settings/
 ln -s /data/local/gdexweb/gdexwebserver/settings/base.py /usr/local/gdexweb/gdexwebserver/settings/base.py
-#
-# link local settings files
 ln -s /data/local/gdexweb/gdexwebserver/settings/local_settings.py /usr/local/gdexweb/gdexwebserver/settings/local_settings.py
 ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/local_settings.py
 #
