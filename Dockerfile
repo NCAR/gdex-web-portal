@@ -44,6 +44,12 @@ Alias /media /data/local/gdexweb/media
 Alias /css /data/web/css
 Alias /images /data/web/images
 Alias /js /data/web/js
+ScriptAliasMatch "^/cgi-bin(.*)" "/data/web/cgi-bin$1"
+<Directory "/data/web/cgi-bin/">
+    <RequireAll>
+        Require all granted
+    </RequireAll>
+</Directory>
 EOFCAT
 EOF
 
