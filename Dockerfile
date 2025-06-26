@@ -83,8 +83,8 @@ ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/l
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2
 #
-rm -f /data/gdexhome
-ln -s /usr/local/gdexweb /data/gdexhome
+mv /usr/local/gdexweb/facbrowse /data
+ln -s /data/facbrowse /usr/local/gdexweb/facbrowse
 #
 python /usr/local/gdexweb/manage.py collectstatic --noinput
 #
