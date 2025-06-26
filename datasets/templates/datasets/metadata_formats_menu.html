@@ -1,0 +1,17 @@
+Display in
+<form name="meta_view" style="display: inline">
+    <select name="meta_format" onchange="if (this.selectedIndex > 0) { popModalWindowWithGetUrl(800, 600, '/datasets/{{ dsid }}/metadata_view/?format='+this.value); this.selectedIndex=0; }">
+        <option value="">choose from the list</option>
+        {% if datacite %}
+        <option value="datacite4-json">DataCite version 4 (JSON)</option>
+        <option value="datacite4-xml">DataCite version 4 (XML)</option>
+        {% endif %}
+        <option value="dif">GCMD Directory Interchange Format (DIF)</option>
+        <option value="oai_dc">Dublin Core (DC)</option>
+        <option value="fgdc">Federal Geographic Data Committee (FGDC)</option>
+        <option value="iso19139">International Organization for Standardization (ISO) 19139</option>
+        <option value="iso19115-3">International Organization for Standardization (ISO) 19115-3</option>
+        <option value="json-ld">JSON-LD Structured Data</option>
+    </select>
+</form>
+&nbsp;format
