@@ -1,4 +1,5 @@
 import glob
+import json
 import os
 import psycopg2
 import re
@@ -139,63 +140,25 @@ def show_words(request):
 
     ctx = {'no_results': True}
     if 'pattern' in request.POST:
-        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
-        cursor = conn.cursor()
-        cursor.execute((
-                "select word from metautil.word_valids where word ilike %s "
-                "order by word"), (request.POST['pattern'], ))
-        res = cursor.fetchall()
-        words = []
-        if len(res) > 0:
-            ctx['no_results'] = False
-            for e in res:
-                words.append(e[0])
+        try:
+            o = subprocess.run(
+                    [os.path.join(
+                            settings.BASE_DIR, "bin", "dsspellchecker_manage"),
+                     "find_words", request.POST['pattern']],
+                    capture_output=True)
+        except Exception as err:
+            return render(request, "metaman/show_spellcheck.html",
+                          {'error': str(err)})
 
-        ctx.update({'regular_words': words})
-        cursor.execute((
-                "select word, description from metautil.acronym_valids where "
-                "word ilike %s order by word"), (request.POST['pattern'], ))
-        res = cursor.fetchall()
-        acronyms = []
-        if len(res) > 0:
-            ctx['no_results'] = False
-            for e in res:
-                acronyms.append({'word': e[0], 'description': e[1]})
+        err = o.stderr.decode("utf-8")
+        if len(err) > 0:
+            return render(request, "metaman/show_spellcheck.html",
+                          {'error': err})
 
-        ctx.update({'acronyms': acronyms})
-        cursor.execute((
-                "select word from metautil.place_valids where word ilike %s "
-                "order by word"), (request.POST['pattern'], ))
-        res = cursor.fetchall()
-        places = []
-        if len(res) > 0:
+        words = o.stdout.decode("utf-8")
+        if len(words) > 0:
             ctx['no_results'] = False
-            for e in res:
-                places.append(e[0])
-
-        ctx.update({'places': places})
-        cursor.execute((
-                "select word from metautil.name_valids where word ilike %s "
-                "order by word"), (request.POST['pattern'], ))
-        res = cursor.fetchall()
-        names = []
-        if len(res) > 0:
-            ctx['no_results'] = False
-            for e in res:
-                names.append(e[0])
-
-        ctx.update({'names': names})
-        cursor.execute((
-                "select word from metautil.other_exactmatch_valids where word "
-                "ilike %s order by word"), (request.POST['pattern'], ))
-        res = cursor.fetchall()
-        others = []
-        if len(res) > 0:
-            ctx['no_results'] = False
-            for e in res:
-                others.append(e[0])
-
-        ctx.update({'others': others})
+            ctx.update({'words': json.loads(words)})
 
     return render(request, "metaman/show_spellcheck.html", ctx)
 
