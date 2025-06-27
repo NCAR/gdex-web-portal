@@ -13,13 +13,6 @@ cat <<EOFCAT > /tmp/version_number
 $VERSION_NUMBER
 EOFCAT
 EOF
-RUN <<EOF
-cat <<EOFCAT > /tmp/get_version_number
-#! /bin/bash
-cat /usr/local/gdexweb/version_number
-EOFCAT
-EOF
-RUN chmod 755 /tmp/get_version_number
 
 RUN apt-get update -y
 RUN apt-get install -y git
@@ -30,8 +23,7 @@ RUN git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
 FROM dattore/gdex-web-portal:web
 
 # copy from the intermediate
-COPY --from=intermediate /tmp/version_number /usr/local/gdexweb/
-COPY --from=intermediate /tmp/get_version_number /usr/local/bin/
+COPY --from=intermediate /tmp/version_number /usr/local/gdexweb/static/version
 COPY --from=intermediate /tmp/gdexweb /usr/local/gdexweb
 
 RUN pip install -r /usr/local/gdexweb/requirements.txt
