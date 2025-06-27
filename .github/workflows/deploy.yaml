@@ -19,7 +19,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Try to get the current version number from the running webserver
-        run: echo "VERSION_NUMBER=$(curl -s --max-time 10 -o - 'https://gdex-web-test.k8s.ucar.edu/version/')" >> $GITHUB_ENV
+        run: echo "VERSION_NUMBER=$(curl -s --max-time 10 -o - 'https://gdex.k8s.ucar.edu/static/version')" >> $GITHUB_ENV
       - name: If the webserver is unavailable, pull the latest image
         if: ${{ env.VERSION_NUMBER == '' }}
         run: |
