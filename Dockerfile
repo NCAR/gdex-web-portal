@@ -36,28 +36,6 @@ COPY --from=intermediate /tmp/gdexweb /usr/local/gdexweb
 
 RUN pip install -r /usr/local/gdexweb/requirements.txt
 
-# add aliases for content that apache should serve
-RUN <<EOF
-cat <<EOFCAT > /etc/apache2/conf-enabled/aliases.conf
-Alias /static /usr/local/gdexweb/static
-Alias /media /data/local/gdexweb/media
-Alias /css /data/web/css
-Alias /images /data/web/images
-Alias /js /data/web/js
-EOFCAT
-EOF
-
-RUN <<EOF
-cat <<EOFCAT > /etc/apache2/conf-enabled/serve-cgi-bin.conf
-ScriptAlias /cgi-bin /data/web/cgi-bin
-<Directory /data/web/cgi-bin>
-    AllowOverride None
-    Options +ExecCGI +FollowSymLinks
-    Require all granted
-</Directory>
-EOFCAT
-EOF
-
 # set permissions
 RUN chown -R www-data:www-data /usr/local/gdexweb
 RUN touch /var/log/django.log
@@ -83,10 +61,8 @@ ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/l
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2
 #
-mv /usr/local/gdexweb/facbrowse /data
-ln -s /data/facbrowse /usr/local/gdexweb/facbrowse
-#
 python /usr/local/gdexweb/manage.py collectstatic --noinput
+dsspellchecker_manage build_db
 #
 # start apache
 apache2ctl -D FOREGROUND
