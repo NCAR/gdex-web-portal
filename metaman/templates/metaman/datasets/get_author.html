@@ -65,12 +65,12 @@ function doESIPSubmit() {
     c[x] = c[x].replace(/(^\s+|\s+$)/g, '');
     n = c[x].split(" ");
     if (n.length < 2) {
-      hideModalWindow();
+      alert("Error: author name '" + c[x] + "' does not appear to be in the proper format");
       return;
     }
     f = n[0];
     if ( (idx = f.indexOf(".")) > 0 && f.length > (idx + 1)) {
-      hideModalWindow();
+      alert("Error: author name '" + c[x] + "' does not appear to be in the proper format");
       return;
     }
     if (n.length < 4) {
@@ -125,9 +125,13 @@ function doFMLSubmit() {
   }
   for (n = 0; n < l.length; ++n) {
     var ch = l.charAt(n);
-    if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z') && ch != '-' && ch != '\'' && (ch != '.' || n != (l.length - 1) )) {
-      alert("Malformed last name - only capital and lower letters, the apostrophe, and the hyphen are allowed in author names");
-      return false;
+    if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z') && ch != '-' && ch != '\'' && ch != ' ' && (ch != '.' || n != (l.length - 1) )) {
+      if (l.substring(n, n + 6).search(/\\u[0-9a-zA-Z]{4}/) == 0) {
+        n += 5;
+      } else {
+        alert("Malformed last name - only capital and lower letters, the apostrophe, and the hyphen are allowed in author names");
+        return false;
+      }
     }
   }
   if (o.length > 0 && (o.length != 19 || o.charAt(4) != '-' || o.charAt(9) != '-' || o.charAt(14) != '-')) {
@@ -192,6 +196,9 @@ function doCorpSubmit() {
 
 function addAuthor(f, m, l, o) {
   var auth_list = document.getElementById("authors_field");
+  if (auth_list.value.length > 0 && auth_list.value.charAt(auth_list.value.length-1) != "\n") {
+    auth_list.value += "\n";
+  }
   if (typeof(m) != "undefined") {
     f += '[!]' + m;
   }
@@ -202,9 +209,6 @@ function addAuthor(f, m, l, o) {
     f += '[!]' + o;
   }
   if (auth_list.value.indexOf(f) < 0) {
-    if (auth_list.value.length > 0 && auth_list.value.charAt(auth_list.value.length-1) != "\n") {
-      auth_list.value += "\n";
-    }
     auth_list.value += f;
   }
   auth_list.scrollTop = auth_list.scrollHeight;
