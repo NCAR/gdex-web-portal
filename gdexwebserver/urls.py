@@ -12,6 +12,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.decorators import login_required
 
 from . import views
+from resources import views as resources_views
 from search import views as search_views
 from home import views as home_views
 
@@ -23,9 +24,11 @@ urlpatterns = [
     path('contact-us/', views.contact_us),
     path('dssearch/', search_views.dssearch),
     path('search/', search_views.search, name='search'),
+    path('resources/gcmd_viewer/', resources_views.gcmd_viewer),
     path('resources/', include('daas.urls')),
     path('api/', include('api.urls')),
     path('metrics/', include('home.urls')),
+    path('dashboard/', include('dashboard.urls')),
     path('datasets/', include('datasets.urls')),
     #path('login/', include('login.urls')),
     path('globus/', include('globus.urls')),
