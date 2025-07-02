@@ -254,28 +254,29 @@ def commit_changes(request, dsid):
         ctx.update({'usage_restrictions': convert_plain_ampersands(res[10])})
 
     vars = []
-    parts = res[11].split("\n")
+    parts = res[11].strip().split("\n")
     for p in parts:
         vparts = p.split("[!]")
         vars.append({'path': vparts[0], 'uuid': vparts[1]})
 
     ctx.update({
         'variables': vars,
-        'contacts': [x for x in res[12].split("\n") if len(x) > 0],
-        'platforms': ([x.split("[!]")[1] for x in res[13].split("\n") if
-                      len(res[13]) > 0]),
-        'instruments': ([x.split("[!]")[1] for x in res[14].split("\n") if
-                        len(res[14]) > 0]),
-        'projects': ([x.split("[!]")[1] for x in res[15].split("\n") if
+        'contacts': [x for x in res[12].strip().split("\n") if len(x) > 0],
+        'platforms': ([x.split("[!]")[1] for x in res[13].strip().split("\n")
+                      if len(res[13]) > 0]),
+        'instruments': ([x.split("[!]")[1] for x in
+                        res[14].strip().split("\n") if len(res[14]) > 0]),
+        'projects': ([x.split("[!]")[1] for x in res[15].strip().split("\n") if
                      len(res[15]) > 0]),
         'supports_projects': ([x.split("[!]")[1] for x in
-                              res[16].split("\n") if len(res[16]) > 0]),
+                              res[16].strip().split("\n") if len(res[16]) >
+                              0]),
         'iso_topic': res[17],
     })
     refs = utils.extract_references(res[18])
     ctx.update({'references': refs[0]})
     if len(res[19]) > 0:
-        parts = res[19].split("\n")
+        parts = res[19].strip().split("\n")
         ref_urls = []
         for p in parts:
             rparts = p.split("[!]")
@@ -287,7 +288,7 @@ def commit_changes(request, dsid):
         ctx.update({'acknowledgement': convert_plain_ampersands(res[20])})
 
     if len(res[21]) > 0:
-        parts = res[21].split("\n")
+        parts = res[21].strip().split("\n")
         rel_resources = []
         for p in parts:
             rparts = p.split("[!]")
@@ -297,7 +298,7 @@ def commit_changes(request, dsid):
         ctx.update({'related_resources': rel_resources})
 
     if len(res[22]) > 0:
-        parts = res[22].split("\n")
+        parts = res[22].strip().split("\n")
         rel_dois = []
         for p in parts:
             dparts = p.split("[!]")
@@ -306,7 +307,8 @@ def commit_changes(request, dsid):
         ctx.update({'related_dois': rel_dois})
 
     if len(res[23]) > 0:
-        ctx.update({'related_datasets': [x for x in res[23].split("\n")]})
+        ctx.update({'related_datasets': ([x for x in
+                                         res[23].strip().split("\n")])})
 
     pub_date = str(res[24])
     if ((pub_date.find("9999") == 0 or pub_date.find("0001") == 0) and
@@ -314,7 +316,7 @@ def commit_changes(request, dsid):
         pub_date = now[0:10]
 
     ctx.update({'pub_date': pub_date, 'redundancies': []})
-    parts = res[25].split("\n")
+    parts = res[25].strip().split("\n")
     if parts[0] == "yes":
         parts.pop(0)
         for p in parts:
@@ -397,10 +399,14 @@ def commit_changes(request, dsid):
                 if max_x > len(chars):
                     max_x = len(chars)
 
+                sub_s = (
+                        "".join(chars[min_x:max_x])
+                        .replace("<", "&lt;")
+                        .replace(">", "&gt;"))
                 ctx.update({'error': ("Unable to write XML file: non-ASCII "
                                       "characters (denoted by diamonds) in "
                                       "<i>{}</i>")
-                           .format("".join(chars[min_x:max_x]))})
+                           .format(sub_s)})
                 return render(request, "metaman/datasets/commit_msg.html",
                               ctx)
             else:
@@ -508,8 +514,9 @@ def commit_changes(request, dsid):
             res = cursor.fetchone()
             if res is not None:
                 o = subprocess.run((
-                        bin_utils['rdadatarun'] + " /usr/local/decs/bin/doi "
-                        "q46IE9AqHo update " + res[0]),
+                        config.doi_manager['invoke_command'] + " " +
+                        config.doi_manager['auth_key'] + " update " + res[0] +
+                        "==" + ctx['dsid']),
                         shell=True, env=env, stdout=subprocess.DEVNULL,
                         stderr=subprocess.PIPE)
                 o = o.stderr.decode("utf-8")
@@ -1074,7 +1081,7 @@ def commit_field(request, fieldname):
         elif (checker.__name__ == "check_related_datasets" and
               len(request.POST['fv']) > 0):
             errs = check_related_datasets(
-                    request.POST['fv'].split("\n"), cursor)
+                    request.POST['fv'].strip().split("\n"), cursor)
             if len(errs) > 0:
                 ctx.update({
                         'error_type': "commit",
@@ -1083,10 +1090,10 @@ def commit_field(request, fieldname):
                                   + "<br>").join(errs)})
 
         elif (checker.__name__ in {
-                "check_references", "check_related_dois",
+                "check_redundancies", "check_references", "check_related_dois",
                 "check_related_sites", "check_varlist"} and
               len(request.POST['fv']) > 0):
-            errs = checker(request.POST['fv'].split("\n"))
+            errs = checker(request.POST['fv'].strip().strip().split("\n"))
             if len(errs) > 0:
                 ctx.update({'error_type': "commit",
                             'error': "<br>".join(errs)})
@@ -1647,29 +1654,33 @@ def edit(request, dsid):
 
 
 def show_web_access(request, dsid):
-    path = os.path.join(settings.RDA_CANONICAL_DATA_PATH, dsid)
-    if not os.path.exists(path):
-        return HttpResponse(
-                "Data directory does not exist on the RDA web server",
-                status=500)
-
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
-        cursor.execute("select dwebcnt from dssdb.dataset where dsid = %s",
-                       (dsid, ))
+        cursor.execute(
+                "select dwebcnt, locflag from dssdb.dataset where dsid = %s",
+                (dsid, ))
         res = cursor.fetchone()
 
     except psycopg2.Error as err:
         log_error(err, source="show_web_access")
-        return HttpResponse("Database error: '{}'".format(err),
-                            status=500)
+        return render(
+                request, "500.html",
+                {'custom_message': "Database error: '{}'".format(err)})
+
+    if res[1] == "G":
+        path = os.path.join(settings.RDA_CANONICAL_DATA_PATH, dsid)
+        if not os.path.exists(path):
+            return HttpResponse((
+                    "Data directory does not exist on the RDA web server and "
+                    "the location flag is set to 'G'"), status=500)
 
     if res[0] == "0":
-        return HttpResponse((
-                "According to RDADB, there are no web data files "
-                "associated with this dataset"),
-                status=500)
+        return render(
+                request, "500.html",
+                {'custom_message': ("According to RDADB, there are no web "
+                                    "data files associated with this "
+                                    "dataset")})
 
     try:
         cursor.execute(("select inet_access from search.datasets where dsid = "
@@ -1678,8 +1689,9 @@ def show_web_access(request, dsid):
 
     except psycopg2.Error as err:
         log_error(err, source="show_web_access")
-        return HttpResponse("Database error: '{}'".format(err),
-                            status=500)
+        return render(
+                request, "500.html",
+                {'custom_message': "Database error: '{}'".format(err)})
 
     cursor.close()
     conn.close()
@@ -2115,7 +2127,8 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
 
     e = root.find("./publicationDate")
     pub_date = e.text if e is not None else ""
-    if len(pub_date) == 0:
+    if (len(pub_date) == 0 or page_vars['title'].lower()[0:26] ==
+            "icarus chamber experiment:"):
         try:
             cursor.execute(("select pub_date from search.datasets where dsid "
                             "= %s"), (dsid, ))
@@ -2261,7 +2274,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             'iso_topic': res[17], 'references': res[19], 'reflists': res[20],
             'acknowledgement': res[21], 'related_resources': res[22],
             'related_dois': res[23], 'related_datasets': res[24]})
-    parts = res[26].strip().split("\n")
+    parts = res[26].strip().strip().split("\n")
     page_vars.update({
             'redundancies_exist': parts[0],
             'redundancies': "\n".join(parts),
@@ -2305,7 +2318,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             errors.update({'usage_restrictions': "<br>".join(errs)})
 
     if len(res[19]) > 0:
-        ref_list = res[19].strip().split("\n")
+        ref_list = res[19].strip().strip().split("\n")
         errs = check_references(ref_list)
         if len(errs) > 0:
             errors.update({'references': "<br>".join(errs)})
@@ -2317,7 +2330,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             errors.update({'acknowledgement': "<br>".join(errs)})
 
     if len(res[22]) > 0:
-        rsrcs = res[22].strip().split("\n")
+        rsrcs = res[22].strip().strip().split("\n")
         errs = []
         for rsrc in rsrcs:
             parts = rsrc.split("[!]")
@@ -2336,7 +2349,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             errors.update({'related_resources': "<br>".join(errs)})
 
     if len(res[23]) > 0:
-        rel_dois = res[23].strip().split("\n")
+        rel_dois = res[23].strip().strip().split("\n")
         errs = []
         for rel_doi in rel_dois:
             parts = rel_doi.split("[!]")
@@ -2355,7 +2368,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
                 errors.update({'related_dois': "<br>".join(errs)})
 
     if len(res[24]) > 0:
-        rel_dsids = res[24].strip().split("\n")
+        rel_dsids = res[24].strip().strip().split("\n")
         errs = []
         for rel_dsid in rel_dsids:
             try:
@@ -2404,7 +2417,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             d.update({'binary_url': res[5]})
 
         if len(res[6]) > 0:
-            errs = check_varlist(res[6].strip().split("\n"))
+            errs = check_varlist(res[6].strip().strip().split("\n"))
             if len(errs) > 0:
                 errors.update({'varlist': "<br>".join(errs)})
 
@@ -2692,6 +2705,33 @@ def check_related_sites(site_list):
     return errs
 
 
+def check_redundancies(ref_list):
+    errs = []
+    if ref_list[0] not in ("yes", "no"):
+        errs.append("The first entry must be \"yes\" or \"no\"")
+
+    if ref_list[0] == "yes" and len(ref_list) < 2:
+        errs.append((
+                "You selected \"Yes\" but did not specify any dataset "
+                "redundancies"))
+
+    for x in range(1, len(ref_list)):
+        try:
+            parts = ref_list[x].split("[!]")
+            url = parts[0]
+            if url.find("doi.org"):
+                url += "?noredirect"
+
+            response = requests.get(
+                    url, headers=config.linkcheck_headers, timeout=10)
+            response.raise_for_status()
+        except Exception:
+            errs.append(("- Unresolvable URL <i>" + parts[0] + "</i> must "
+                         "be fixed or removed"))
+
+    return errs
+
+
 def check_references(ref_list):
     errs = []
     ref_num = 1
@@ -2888,6 +2928,7 @@ commit_fields = {
         'is_required': False,
     },
     'redundancys': {
+        'checker': check_redundancies,
         'db_table': "metaman",
         'db_column': "redundancys",
         'is_datacite': False,
