@@ -1,0 +1,3 @@
+function aggregationsDisplay() {
+  buttonDisplay("aggregations");
+}
