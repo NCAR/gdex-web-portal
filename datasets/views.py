@@ -63,6 +63,9 @@ def description(request, dsid):
 
     ctx = qs[0].get_context(request)
     ctx['page'].dsid = ng_gdex_id(dsid)
+    ctx['page'].acknowledgement = (
+            ctx['page'].acknowledgement.encode("latin-1")
+                                       .decode("unicode-escape"))
     return render(request, template, ctx)
 
 
@@ -90,8 +93,7 @@ def build_matrix(request, dsid):
         qs = Page.objects.type(DatasetDescriptionPage).filter(
                                slug__in=slist).live().specific()
         if len(qs) > 0:
-            d.update({'dsdoi': qs[0].dsdoi, 'dstitle': qs[0].dstitle,
-                      'dslogo': qs[0].dslogo, 'dstype': qs[0].dstype})
+            d.update({'dsdoi': qs[0].dsdoi, 'dstitle': qs[0].dstitle})
 
         ctx.update({'page': d})
 
@@ -263,10 +265,7 @@ def get_request(request, rqstid):
     try:
         rinfo = get_request_info(rindex)
         note = rinfo['subset_info']['note']
-        if note:
-            note = re.sub(r'^(\r\n|\n\r|\r|\n)', '', note)
-        else:
-            note = ' '
+        note = re.sub(r'^(\r\n|\n\r|\r|\n)', '', note)
         rinfo['subset_info']['note'] = note
     except ValueError:
         request_data = {"info": "Request not found", "rqstid": rqstid}
@@ -382,6 +381,26 @@ def get_detailed_metadata(request, dsid):
     return render(request,
                   template,
                   {'page': d})
+
+
+def custom_subset(request, dsid):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = get_custom_subset_form(dsid, request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+
+            # redirect to a new URL:
+            return render(request, 'datasets/custom_subset_confirm.html',
+                          {'form': form})
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = get_custom_subset_form(dsid)
+
+    return render(request, 'datasets/ispdv4_subset.html', {'form': form})
 
 
 def metadata_view(request, dsid):
