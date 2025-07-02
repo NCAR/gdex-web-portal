@@ -1,0 +1,22 @@
+{% if error %}
+<p>
+    An error occurred: {{ errror }}.
+</p>
+{% elif aggregations|length > 0 %}
+<div></div>
+<table width="99%" cellspacing="0" cellpadding="6" border="0">
+    <thead>
+        <tr>
+            <th class="text-center">OPeNDAP URL</td>
+            <th class="text-center">Dataset ID</td>
+            <th class="text-center">Date Range</td>
+            <th class="text-center">Expiration</td>
+            <th class="text-center">Manage</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for aggregation in aggregations %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}

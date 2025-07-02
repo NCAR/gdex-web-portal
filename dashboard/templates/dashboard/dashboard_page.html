@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<script src="/js/xhr_content2.js"></script>
+<script src="{% static "dashboard/dashboard.js" %}"></script>
+<script id="dashboard_script" language="javascript">
+var dashboard_version = "{{ page.version }}";
+
+function refreshForVersion() {
+  if (document.getElementById('poll_version') == dashboard_version) {
+    {% for section in page.dashboard_sections %}
+    {% with section.value.button_label|lower as sid %}
+    getAjaxContent("GET", null, "{{ sid }}/count/", "{{ sid }}_count", null, {{ sid }}Display);
+    {% endwith %}
+    {% endfor %}
+  } else {
+    location.reload(true);
+  }
+}
+</script>
+{% for section in page.dashboard_sections %}
+{% with "dashboard/"|add:section.value.button_label|lower|add:".js" as js %}
+<script src="{% static js %}"></script>
+{% endwith %}
+{% endfor %}
+<h1>User Dashboard</h1>
+<div class="component list yellow-orange-border">
+    <div class="list-item p-3">
+        <div class="mb-3">
+            User Profile
+            <h4 class="d-inline-block float-end">
+                <a href="https://rda.ucar.edu/accounts/profile/" target="_profile">View/Edit Profile</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup>
+            </h4>
+        </div>
+        <div id="user_profile_edit"></div>
+    </div>
+    {% for section in page.dashboard_sections %}
+    {% with sid=section.value.button_label|lower %}
+    <div class="list-item p-3">
+        <div class="mb-3">
+            {{ section.value.section_label }}
+            {% if section.value.button_position == "TR" %}
+            <a id="{{ sid }}_button" class="btn btn-primary float-end" href="javascript:toggle{{ section.value.button_label }}()">Manage {{ section.value.button_label }}</a>
+            {% endif %}
+        </div>
+        <div id="{{ sid }}_msg">
+            You have <span id="{{ sid }}_count">??</span> {{ section.value.section_label }}.
+            <img src="/images/transpace.gif" class="w-auto h-auto" onload="getAjaxContent('GET', null, '{{ sid }}/count/', '{{ sid }}_count', null, {{ sid }}Display)">
+        </div>
+        <div id="{{ sid }}" class="w-100 ms-1 mt-1 d-none">
+        </div>
+        {% if section.value.button_position == "BR" %}
+        <div class="mb-2">
+            &nbsp;<a id="{{ sid }}_button" class="btn btn-primary float-end" href="javascript:toggle{{ section.value.button_label }}()">Manage {{ section.value.button_label }}</a>
+        </div>
+        {% endif %}
+        <div id="{{ sid }}_refresh"></div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+    <div class="list-item p-3">
+        <div class="mb-3">
+            Data Citation
+            <a id="cite_button" class="btn btn-primary float-end" href="javascript:toggleCitation()">Show Citation Tool</a>
+        </div>
+        <div>
+            This interface will allow you to view your data download history from the RDA and generate an appropriate data citation for specific data that you have downloaded and wish to cite.
+        </div>
+        <div id="mycitation" class="w-100 ms-1 mt-1 d-none">
+            <center>
+                <img src="/images/browse_wait.gif" class="w-auto h-auto">
+            </center>
+        </div>
+    </div>
+</div>
+{% if has_internal_access %}
+<h1>DECS Staff Tools</h1>
+<div class="component list yellow-orange-border">
+    <div class="list-item p-3">
+        <div class="mb-3">
+            User Data Requests Controlled By You
+            <a id="spec_req_button" class="btn btn-primary float-end" href="javascript:toggleControlledRequests()">
+                Show Requests
+            </a>
+        </div>
+        <div id="myspecreqs" class="w100 mt-4 ml-1 d-none">
+            <div></div>
+            <div id="specreqs">
+                <center>
+                    <img src="/images/browse_wait.gif" class="w-auto h-auto">
+                </center>
+            </div>
+            <div id="specreqs-refresh" class="d-none">
+                <div></div>
+                <div id="specreqs-refresh-date" class="text-center small"></div>
+                <div class="text-center">
+                    <a href="javascript:void(0)" onclick="refreshControlledRequests()"><i class="fas fa-sync-alt"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="list-item p-3">
+        <div class="mb-3">
+            Dataset Stewardship Tools and Documentation
+        </div>
+        <div class="component grid-list container-lg">
+            <div class="row gx-0">
+                <div class="col-12">
+                    <div class="row row-cols-md-2 p-2">
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h3 class="card-title">
+                                        <a href="https://rda-web-prod01.ucar.edu/admin/" target="_wagtailadmin">Wagtail CMS</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup>
+                                    </h3>
+                                    <p class="card-text font-weight-normal">
+                                        Manage content for the RDA web server via the Wagtail Content Management System
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h3 class="card-title">Dataset Creation and Maintenance</h3>
+                                    <p class="card-text font-weight-normal">
+                                        <ul class="font-weight-normal body-font-small">
+                                            <li><a href="/resources/docs/dsmaint/" target="_dsmaint">Dataset Maintenance</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup> - guide to creating and maintaining a dataset</li>
+                                            <li><a href="/metaman/" target="_mm">Metadata Manager</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup> - add and update dataset metadata, view metadata change history, enable/disable web access to dataset files, view a file metadata summary for a dataset</li>
+                                        </ul>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h3 class="card-title">
+                                        <a href="/internal/rda_pg_config/" target="_rda-config">RDAMS Configuration</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup>
+                                    </h3>
+                                    <p class="card-text font-weight-normal">
+                                        GUI for managing RDADB information (dsupdt and dsrqst control records, dsarch, etc.)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h3 class="card-title">
+                                        <a href="/resources/docs/man-pages/" target="_man">Metadata Utilities man Pages</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup>
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h3 class="card-title">
+                                        Website Alerts (Bulletins)
+                                    </h3>
+                                    <p class="card-text font-weight-normal">
+                                        Click <a href="https://rda-web-prod01.ucar.edu/manage-website-alerts/" target="_alerts">here</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup> for instructions on how to add and remove alerts from the website.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h3 class="card-title">
+                                        <a href="/resources/docs/man-pages/subconv/" target="_subconv">DECS Grid Subsetter</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup>
+                                    </h3>
+                                    <p class="card-text font-weight-normal">
+                                        Man page for the DECS backend grid subsetter (subconv)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h3 class="card-title">RDADB Documentation</h3>
+                                    <p class="card-text font-weight-normal">
+                                        <ul class="font-weight-normal body-font-small">
+                                            <li><a href="/resources/docs/dsarch/" target="_dsarch">dsarch</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup> - archives data files and manages the associated metadata</li>
+                                            <li><a href="/resources/docs/dsupdt/" target="_dsupdt">dsupdt</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup> - manages automatic dataset updates</li>
+                                            <li><a href="/resources/docs/dsrqst/" target="_dsrqst">dsrqst</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup> - handles user-requested customized data requests</li>
+                                            <li><a href="/resources/docs/dscheck/" target="_dscheck">dscheck</a>&nbsp;<sup><i class="fas fa-external-link-alt"></i></sup> - manages delayed mode processes</li>
+                                        </ul>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h3 class="card-title">
+                                    </h3>
+                                    <p class="card-text font-weight-normal">
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+<center>
+    <small>Dashboard version <div id="poll_version" class="d-inline">{{ page.version }}</div></small>
+</center>
+{% endblock %}

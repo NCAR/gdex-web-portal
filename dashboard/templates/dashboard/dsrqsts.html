@@ -1,0 +1,40 @@
+{% if error %}
+<p>
+    An error occurred: {{ errror }}.
+</p>
+{% elif dsrqsts|length > 0 %}
+<link id="cal_style" rel="stylesheet" type="text/css" href="/css/calendar.css" />
+<script id="cal_script" type="text/javascript" src="/js/calendar.js"></script>
+<div></div>
+<table width="99%" cellspacing="0" cellpadding="6" border="0">
+    <thead>
+        <tr>
+            <th class="text-center">Request#</td>
+            <th class="text-center">Dataset</td>
+            <th class="text-center">Status</td>
+            <th class="text-center">Volume / #Files</td>
+            <th class="text-center">Available Until</td>
+            <th class="text-center">Manage</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dsrqst in dsrqsts %}
+        <tr>
+            <td class="text-center">{{ dsrqst.id }}</td>
+            <td class="text-center">{{ dsrqst.dsid }}</td>
+            <td class="text-center">{{ dsrqst.status }}</td>
+            <td class="text-center">{% if dsrqst.status|length > 0 %}{{ dsrqst.volume }} / {{ dsrqst.nfiles }} file{% if dsrqst.nfiles > 0 %}s{% endif %}{% else %}--{% endif %}</td>
+            <td class="text-center">{% if dsrqst.date_purge|length > 0 %}{{ dsrqst.date_purge }}{% else %}--{% endif %}</td>
+            <td class="text-center">{% if dsrqst.status == "Completed" %}{% if dsrqst.date_min is not None %}<a href="javascript:void(0)" onclick="extendRequest('{{ dsrqst.id }}', '{{ dsrqst.date_min }}', '{{ dsrqst.date_max }}', '{{ csrf_token }}')"><i class="fas fa-calendar fa-lg" title="Extend the &quot;Available Until&quot; date"></i></a>&nbsp;&nbsp;{% endif %}<a href="javascript:void(0)" onclick="purgeRequest('{{ dsrqst.id }}')"><i class="fas fa-trash fa-lg" title="Purge this data request"></i></a>&nbsp;&nbsp;{% endif %}<a href="mailto:{{ dsrqst.specialist }}@ucar.edu?subject=Help+with+data+request+{{ dsrqst.id }}" target="_mailto"><i class="fas fa-envelope fa-lg" title="Send a message about this request"></i></a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="text-center small">
+    Information valid as of {{ update_time }}
+    <br>
+    <div id="dsrqsts_updlink" class="d-inline-block">
+        <a href="javascript:void(0)" onclick="getAjaxContent('GET', null, 'requests/', 'requests')"><i class="fas fa-sync-alt"></i></a>
+    </div>
+</div>
+{% endif %}
