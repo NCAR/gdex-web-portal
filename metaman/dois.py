@@ -1,4 +1,5 @@
 import json
+import os
 import psycopg2
 import requests
 import smtplib
@@ -12,12 +13,25 @@ from libpkg.metautils import open_dataset_overview
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
+from lxml import etree
 
 from .config import (bin_utils,
                      doi_manager,
                      linkcheck_headers,
-                     metadata_managers)
-from .utils import check_html, get_iuser, log_error
+                     metadata_managers,
+                     root_dirs)
+from .utils import (check_html, get_iuser, log_error, make_tempdir,
+                    remove_tempdir)
+
+
+def dataset_has_data_files(dsid, cursor):
+    cursor.execute(
+            "select dwebcnt from dssdb.dataset where dsid = %s", (dsid, ))
+    res = cursor.fetchall()
+    if len(res) == 0 or len(res[0]) == 0 or res[0][0] == 0:
+        return False
+
+    return True
 
 
 def adopt(request, dsid):
@@ -25,61 +39,225 @@ def adopt(request, dsid):
         return render(request, "404.html")
 
     d = {'dsid': dsid}
-    if 'vdoi' in request.POST:
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        if not dataset_has_data_files(dsid, cursor):
+            d.update({'error': ("The dataset does not have any data files, "
+                                "so a DOI cannot be adopted.")})
+            return render(request, "metaman/dois/adopt.html", {'data': d})
+
+        if 'vdoi' not in request.POST:
+            return render(request, "metaman/dois/adopt.html", {'data': d})
+
+        if 'res_url' in request.POST:
+            if (request.POST['res_url'][0:26] != "https://icarus.ucdavis.edu"):
+                d.update({'error':
+                          ("The resolution URL provided is not an approved "
+                           "URL")})
+                return render(request, "metaman/dois/adopt.html", {'data': d})
+
+            try:
+                response = requests.get(request.POST['res_url'],
+                                        headers=linkcheck_headers)
+                response.raise_for_status()
+            except Exception:
+                d.update({'error':
+                          ("The resolution URL provided is invalid or cannot "
+                           "be reached")})
+                return render(request, "metaman/dois/adopt.html", {'data': d})
+
         r = requests.get((
                 "https://api.datacite.org/dois/" + request.POST['vdoi']))
         o = json.loads(r.text)
-        if 'data' in o and 'id' in o['data']:
-            d.update({'verified': True})
-            conn = psycopg2.connect(**settings.RDADB['dssdb_config_pg'])
-            cursor = conn.cursor()
-            cursor.execute((
-                    "select * from dssdb.dsvrsn where doi ilike '" +
-                    request.POST['vdoi'] + "'"))
-            res = cursor.fetchall()
-            cursor.close()
-            if len(res) > 0:
-                d.update({'usable': False})
-            else:
-                d.update({'usable': True})
-                try:
-                    dsarch_command = (
-                            bin_utils['rdadatarun'] + " /usr/local/decs/bin/"
-                            "dsarch -sv -ds " + dsid + " -nv -dn " +
-                            request.POST['vdoi'] + " -md")
-                    res = subprocess.run(dsarch_command, capture_output=True,
-                                         shell=True)
-                    if res.stderr:
-                        d.update({'error': str(res.stderr, encoding='utf-8')})
-
-                    try:
-                        doi_command = (
-                                doi_manager['invoke_command'] + " " +
-                                doi_manager['auth_key'] + " update " +
-                                request.POST['vdoi'])
-                        res = subprocess.run(doi_command, capture_output=True,
-                                             shell=True)
-                        if res.stderr:
-                            d.update({'error': str(res.stderr,
-                                                   encoding='utf-8')})
-                        else:
-                            d.update({'vdoi': request.POST['vdoi']})
-
-                    except Exception as err:
-                        d.update({'error': ("An error occurred and 'doi' was "
-                                            "not able to update the metadata "
-                                            "at DataCite.")})
-                        log_error(err, source="adopt")
-
-                except Exception as err:
-                    d.update({'error': ("An error occurred and 'dsarch' was "
-                                        "not able to insert the DOI into the "
-                                        "database.")})
-                    log_error(err, source="adopt")
-
-        else:
+        if 'data' not in o or 'id' not in o['data']:
             d.update({'verified': False})
+            return render(request, "metaman/dois/adopt.html", {'data': d})
 
+        d.update({'verified': True})
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        cursor.execute((
+                "select * from dssdb.dsvrsn where doi ilike '" +
+                request.POST['vdoi'] + "'"))
+        res = cursor.fetchall()
+        if len(res) > 0:
+            d.update({'usable': False})
+            return render(request, "metaman/dois/adopt.html", {'data': d})
+
+        d.update({'usable': True})
+        pub_year = None
+        if 'attributes' in o['data']:
+            if 'url' in o['data']['attributes']:
+                url = o['data']['attributes']['url']
+                if url.find("gdex.ucar.edu") > 0:
+                    url = url.replace(".html", ".xml?type=iso19139")
+                elif url.find("icarus.ucdavis.edu") > 0:
+                    idx = url.rfind("/")
+                    url = ("https://gdex.ucar.edu/dataset/icarus.experiment." +
+                           url[idx+1:] + ".xml?type=iso19139")
+                else:
+                    url = None
+
+            if 'publicationYear' in o['data']['attributes']:
+                pub_year = o['data']['attributes']['publicationYear']
+
+        pub_date = None
+        if url is not None:
+            try:
+                response = requests.get(url)
+                root = etree.fromstring(response.content)
+                dates = root.xpath((
+                        "//gmd:identificationInfo/gmd:MD_DataIdentification/"
+                        "gmd:citation/gmd:CI_Citation/gmd:date"),
+                        namespaces=root.nsmap)
+                for date in dates:
+                    date_type = date.xpath(
+                            "gmd:CI_Date/gmd:dateType/gmd:CI_DateTypeCode",
+                            namespaces=root.nsmap)[0].text
+                    if date_type == "publication":
+                        pub_date = date.xpath("gmd:CI_Date/gmd:date/gco:Date",
+                                              namespaces=root.nsmap)[0].text
+
+            except Exception:
+                url = None
+
+        if pub_date is None:
+            if pub_year is None:
+                d.update({'error':
+                          ("The original publication date for the DOI could "
+                           "not be determined")})
+                return render(request, "metaman/dois/adopt.html", {'data': d})
+            else:
+                pub_date = pub_year + "-01-01"
+
+        iuser = get_iuser(request)
+        try:
+            tdir_name = make_tempdir()
+            env = {'TMPDIR': "/data/ptmp"}
+            subprocess.run((
+                    bin_utils['cvs'] + " -Q -d " + root_dirs['cvs'] +
+                    " checkout -d " + tdir_name + " datasets/" + dsid +
+                    ".xml"), shell=True, env=env)
+            root = etree.parse(os.path.join(tdir_name, dsid + ".xml"))
+            root.find("./publicationDate").text = pub_date
+            with open(os.path.join(tdir_name, dsid + ".xml"), "w") as f:
+                f.write("<?xml version=\"1.0\" ?>\n")
+                f.write(etree.tostring(root).decode("utf-8"))
+
+            o = subprocess.run((
+                bin_utils['cvs'] + " -d " + root_dirs['cvs'] + " commit -m \""
+                + iuser + ": update pub_date to original\" " +
+                os.path.join(tdir_name, dsid + ".xml")),
+                shell=True, env=env, stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE)
+            if o.stderr:
+                d.update({
+                    'error': ("The publication date could not be saved by "
+                              "cvs: '{}'").format(
+                              o.stderr.decode("utf-8"))})
+                return render(request, "metaman/dois/adopt.html", {'data': d})
+
+            cursor.execute((
+                    "update search.datasets set pub_date = %s where dsid = "
+                    "%s"), (pub_date, dsid))
+            conn.commit()
+        except Exception as err:
+            err = "An error occurred: {}".format(err)
+            log_error(err, source="adopt")
+            d.update({'error': err})
+            return render(request, "metaman/dois/adopt.html", {'data': d})
+        finally:
+            remove_tempdir(tdir_name)
+
+        try:
+            dsarch_command = (
+                    bin_utils['rdadatarun'] + " /usr/local/decs/bin/dsarch "
+                    "-sv -ds " + dsid + " -nv -dn " + request.POST['vdoi'] +
+                    " -md")
+            o = subprocess.run(dsarch_command, capture_output=True, shell=True)
+            if o.stderr:
+                err = "dsarch failure: {}".format(o.stderr.decode("utf-8"))
+                log_error(err, source="adopt")
+                d.update({'error': err})
+                return render(request, "metaman/dois/adopt.html", {'data': d})
+
+        except Exception as err:
+            err = "dsarch failure: {}".format(err)
+            log_error(err, source="adopt")
+            d.update({'error': err})
+            return render(request, "metaman/dois/adopt.html", {'data': d})
+
+        try:
+            if 'res_url' in request.POST:
+                cursor.execute((
+                        "insert into metautil.doi_registration values "
+                        "(%s, %s)"),
+                        (request.POST['vdoi'], request.POST['res_url']))
+                conn.commit()
+
+            doi_command = (
+                    doi_manager['invoke_command'] + " " +
+                    doi_manager['auth_key'] + " update " +
+                    request.POST['vdoi'] + "==" + dsid)
+            o = subprocess.run(doi_command, capture_output=True, shell=True)
+            if o.stderr:
+                d.update({'error': (
+                        "An error occured and the DataCite metadata was not "
+                        "updated: {}").format(o.stderr.decode("utf-8"))})
+                return render(request, "metaman/dois/adopt.html", {'data': d})
+            else:
+                d.update({'vdoi': request.POST['vdoi']})
+
+        except Exception as err:
+            err = ("An error occured and the DataCite metadata was not "
+                   "updated: {}").format(err)
+            log_error(err, source="adopt")
+            d.update({'error': err})
+            return render(request, "metaman/dois/adopt.html", {'data': d})
+
+        try:
+            env['USER'] = "apache"
+            env['QUERY_STRING'] = "X"
+            o = subprocess.run((
+                    bin_utils['rdadatarun'] + " /usr/local/decs/bin/dsgen " +
+                    dsid),
+                    shell=True, env=env, stdout=subprocess.DEVNULL,
+                    stderr=subprocess.PIPE)
+            if o.stderr:
+                err = "dsgen failure: {}".format(o.stderr.decode("utf-8"))
+                log_error(err, source="adopt")
+                d.update({'error': err})
+                return render(request, "metaman/dois/adopt.html", {'data': d})
+
+        except Exception as err:
+            err = "dsgen failure: {}".format(err)
+            log_error(err, source="adopt")
+            d.update({'error': err})
+            return render(request, "metaman/dois/adopt.html", {'data': d})
+
+    except psycopg2.Error as err:
+        d.update({'error': "Database error: {}".format(err)})
+    except Exception as err:
+        d.update({'error': "An error occurred: {}".format(err)})
+    finally:
+        conn.close()
+
+    smtp = smtplib.SMTP('localhost')
+    msg = EmailMessage()
+    msg['From'] = "rdadata@ucar.edu"
+    msg['To'] = "decs-info@ucar.edu"
+    msg['Subject'] = "DOI for " + dsid
+    msg.set_content((
+            "A DOI ({doi}) has been adopted and assigned to dataset {dsid} by "
+            "{iuser}.\n\nYou can view the DOI registration at our DOI "
+            "registration and management service: "
+            "https://commons.datacite.org/doi.org/{doi}").format(
+                    doi=request.POST['vdoi'],
+                    dsid=dsid,
+                    iuser=iuser))
+    smtp.send_message(msg)
+    smtp.quit()
     return render(request, "metaman/dois/adopt.html", {'data': d})
 
 
@@ -90,6 +268,11 @@ def validate_dataset(dsid):
         mcursor = mconn.cursor()
         wconn = psycopg2.connect(**settings.RDADB['wagtail2_config_pg'])
         wcursor = wconn.cursor()
+        if not dataset_has_data_files(dsid, mcursor):
+            errors.append((
+                    "The dataset does not have any data files, so a DOI "
+                    "cannot be assigned."))
+
         # make sure named specialists are active
         mcursor.execute((
                 "select specialist from dssdb.dsowner where dsid = %s order "
