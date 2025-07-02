@@ -476,7 +476,7 @@ def cite_contributors(request):
     if 'citable' in request.POST:
         ctx.update({'citable': (request.POST['citable'] == "true")})
 
-    contributors = request.POST['contributorList'].split("\n")
+    contributors = request.POST['contributorList'].strip().split("\n")
     if len(contributors[-1]) == 0:
         contributors.pop()
 
@@ -761,7 +761,7 @@ def extract_contributors(list):
     if len(list) == 0:
         return contributors
 
-    clst = list.split("\n")
+    clst = list.strip().split("\n")
     for e in clst:
         parts = e.split("[!]")
         if len(parts) == 5:
@@ -796,7 +796,7 @@ def extract_authors(list):
     if len(list) == 0:
         return authors
 
-    alst = list.split("\n")
+    alst = list.strip().split("\n")
     for e in alst:
         parts = e.split("[!]")
         d = {}
@@ -818,7 +818,7 @@ def extract_references(list):
     if len(list) == 0:
         return (ref_list, ref_words)
 
-    rlst = list.replace("&", "&amp;").split("\n")
+    rlst = list.replace("&", "&amp;").strip().split("\n")
     for e in rlst:
         parts = e.split("[!]")
         d = {'type': parts[0], 'author_list': parts[1], 'pub_year': parts[2],
@@ -870,7 +870,7 @@ def extract_time_ranges(dsid, list):
     if len(list) == 0:
         return []
 
-    tlst = list.split("\n")
+    tlst = list.strip().split("\n")
     rlst = []
     used_grp_ids = []
     num_grps = 0
@@ -929,7 +929,7 @@ def extract_temporal_frequencies(list):
     if len(list) == 0:
         return (frequencies, klst)
 
-    tlst = list.split("\n")
+    tlst = list.strip().split("\n")
     for e in tlst:
         parts = e.split("[!]")
         d = {'type': parts[0]}
@@ -953,7 +953,7 @@ def extract_data_types(list):
     if len(list) == 0:
         return types
 
-    dlst = list.split("\n")
+    dlst = list.strip().split("\n")
     for e in dlst:
         parts = e.split("[!]")
         d = {'description': parts[0]}
@@ -970,7 +970,7 @@ def extract_data_formats(list, ascii_url, binary_url):
     if len(list) == 0:
         return formats
 
-    dlst = list.split("\n")
+    dlst = list.strip().split("\n")
     for e in dlst:
         d = {'description': e}
         if e == "proprietary_ASCII":
@@ -990,7 +990,7 @@ def extract_detailed_variables(list):
     if len(list) == 0:
         return vars
 
-    vlst = list.split("\n")
+    vlst = list.strip().split("\n")
     for e in vlst:
         parts = e.split("::")
         d = {'description': parts[0]}
@@ -1009,7 +1009,7 @@ def extract_levels(list):
     if len(list) == 0:
         return levels
 
-    llst = list.split("\n")
+    llst = list.strip().split("\n")
     for e in llst:
         parts = e.split("[!]")
         d = {'type': parts[0]}
@@ -1034,7 +1034,7 @@ def extract_coverages(list):
     if len(list) == 0:
         return {'grids': grids, 'locations': locations}
 
-    clst = list.split("\n")
+    clst = list.strip().split("\n")
     uuid = re.compile(r"^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$")
     for e in clst:
         parts = e.split("[!]")
