@@ -1,0 +1,32 @@
+{% if error %}
+<p>
+    An error occurred: {{ errror }}.
+</p>
+{% elif bookmarks|length > 0 %}
+<div></div>
+<table width="99%" cellspacing="0" cellpadding="6" border="0">
+    <thead>
+        <tr>
+            <th class="text-center">ID</td>
+            <th>Title</td>
+            <th class="text-center">Manage</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bookmark in bookmarks %}
+        <tr>
+            <td class="text-center">{{ bookmark.dsid }}</td>
+            <td><a href="/datasets/{{ bookmark.dsid }}/" target="_dsbookmark">{{ bookmark.dstitle }}</a></td>
+            <td class="text-center"><a href="javascript:void(0)" onclick="requestRemoveBookmark('{{ bookmark.dsid }}', '{{ csrf_token }}')"><i class="fas fa-trash fa-lg" title="Delete this bookmark"></i></a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="text-center small">
+    Information valid as of {{ update_time }}
+    <br>
+    <div id="bookmarks_updlink" class="d-inline-block">
+        <a href="javascript:void(0)" onclick="getAjaxContent('GET', null, 'bookmarks/', 'bookmarks')"><i class="fas fa-sync-alt"></i></a>
+    </div>
+</div>
+{% endif %}

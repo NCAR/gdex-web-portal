@@ -20,17 +20,20 @@ def validate_button_position(value):
         raise ValidationError("You must make a choice from the menu.")
 
 class DashboardSection(blocks.StructBlock):
-    section_label = blocks.CharBlock(required=True, max_length=30, default="", help_text="Title for the section in the dashboard")
+    section_label = blocks.CharBlock(required=True, max_length=50, default="", help_text="Title for the section in the dashboard")
     button_label = blocks.CharBlock(required=False, max_length=20, default="", help_text="Text of an optional button for the section")
     button_position = blocks.ChoiceBlock(required=True, choices=DashboardButtonPosition.choices, default=DashboardButtonPosition.choices[0], blank=False, validators=[validate_button_position], help_text="Position of the optional button for the section (Top/Right is the default)")
 
 class DashboardPage(Page):
+    version = models.CharField(max_length=10, blank=False, default="1.0",
+                               help_text="The dashboard version identifier")
     dashboard_sections = StreamField(
             [('dashboard_section', DashboardSection()),],
             block_counts={'dashboard_section': {'min_num': 1},},
             default="", use_json_field=True,
             verbose_name="List of Dashboard Sections")
     content_panels = Page.content_panels + [
+        FieldPanel('version'),
         FieldPanel('dashboard_sections', classname="collapsible collapsed"),
     ]
     is_creatable = False
