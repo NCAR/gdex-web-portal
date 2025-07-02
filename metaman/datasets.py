@@ -1093,7 +1093,7 @@ def commit_field(request, fieldname):
                 "check_redundancies", "check_references", "check_related_dois",
                 "check_related_sites", "check_varlist"} and
               len(request.POST['fv']) > 0):
-            errs = checker(request.POST['fv'].strip().strip().split("\n"))
+            errs = checker(request.POST['fv'].strip().split("\n"))
             if len(errs) > 0:
                 ctx.update({'error_type': "commit",
                             'error': "<br>".join(errs)})
@@ -2274,7 +2274,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             'iso_topic': res[17], 'references': res[19], 'reflists': res[20],
             'acknowledgement': res[21], 'related_resources': res[22],
             'related_dois': res[23], 'related_datasets': res[24]})
-    parts = res[26].strip().strip().split("\n")
+    parts = res[26].strip().split("\n")
     page_vars.update({
             'redundancies_exist': parts[0],
             'redundancies': "\n".join(parts),
@@ -2318,7 +2318,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             errors.update({'usage_restrictions': "<br>".join(errs)})
 
     if len(res[19]) > 0:
-        ref_list = res[19].strip().strip().split("\n")
+        ref_list = res[19].strip().split("\n")
         errs = check_references(ref_list)
         if len(errs) > 0:
             errors.update({'references': "<br>".join(errs)})
@@ -2330,7 +2330,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             errors.update({'acknowledgement': "<br>".join(errs)})
 
     if len(res[22]) > 0:
-        rsrcs = res[22].strip().strip().split("\n")
+        rsrcs = res[22].strip().split("\n")
         errs = []
         for rsrc in rsrcs:
             parts = rsrc.split("[!]")
@@ -2349,7 +2349,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             errors.update({'related_resources': "<br>".join(errs)})
 
     if len(res[23]) > 0:
-        rel_dois = res[23].strip().strip().split("\n")
+        rel_dois = res[23].strip().split("\n")
         errs = []
         for rel_doi in rel_dois:
             parts = rel_doi.split("[!]")
@@ -2368,7 +2368,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
                 errors.update({'related_dois': "<br>".join(errs)})
 
     if len(res[24]) > 0:
-        rel_dsids = res[24].strip().strip().split("\n")
+        rel_dsids = res[24].strip().split("\n")
         errs = []
         for rel_dsid in rel_dsids:
             try:
@@ -2417,7 +2417,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             d.update({'binary_url': res[5]})
 
         if len(res[6]) > 0:
-            errs = check_varlist(res[6].strip().strip().split("\n"))
+            errs = check_varlist(res[6].strip().split("\n"))
             if len(errs) > 0:
                 errors.update({'varlist': "<br>".join(errs)})
 
