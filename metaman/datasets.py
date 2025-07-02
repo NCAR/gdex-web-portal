@@ -254,29 +254,28 @@ def commit_changes(request, dsid):
         ctx.update({'usage_restrictions': convert_plain_ampersands(res[10])})
 
     vars = []
-    parts = res[11].strip().split("\n")
+    parts = res[11].split("\n")
     for p in parts:
         vparts = p.split("[!]")
         vars.append({'path': vparts[0], 'uuid': vparts[1]})
 
     ctx.update({
         'variables': vars,
-        'contacts': [x for x in res[12].strip().split("\n") if len(x) > 0],
-        'platforms': ([x.split("[!]")[1] for x in res[13].strip().split("\n")
-                      if len(res[13]) > 0]),
+        'contacts': [x for x in res[12].split("\n") if len(x) > 0],
+        'platforms': ([x.split("[!]")[1] for x in res[13].split("\n") if
+                      len(res[13]) > 0]),
         'instruments': ([x.split("[!]")[1] for x in
-                        res[14].strip().split("\n") if len(res[14]) > 0]),
-        'projects': ([x.split("[!]")[1] for x in res[15].strip().split("\n") if
+                        res[14].split("\n") if len(res[14]) > 0]),
+        'projects': ([x.split("[!]")[1] for x in res[15].split("\n") if
                      len(res[15]) > 0]),
         'supports_projects': ([x.split("[!]")[1] for x in
-                              res[16].strip().split("\n") if len(res[16]) >
-                              0]),
+                              res[16].split("\n") if len(res[16]) > 0]),
         'iso_topic': res[17],
     })
     refs = utils.extract_references(res[18])
     ctx.update({'references': refs[0]})
     if len(res[19]) > 0:
-        parts = res[19].strip().split("\n")
+        parts = res[19].split("\n")
         ref_urls = []
         for p in parts:
             rparts = p.split("[!]")
@@ -288,7 +287,7 @@ def commit_changes(request, dsid):
         ctx.update({'acknowledgement': convert_plain_ampersands(res[20])})
 
     if len(res[21]) > 0:
-        parts = res[21].strip().split("\n")
+        parts = res[21].split("\n")
         rel_resources = []
         for p in parts:
             rparts = p.split("[!]")
@@ -298,7 +297,7 @@ def commit_changes(request, dsid):
         ctx.update({'related_resources': rel_resources})
 
     if len(res[22]) > 0:
-        parts = res[22].strip().split("\n")
+        parts = res[22].split("\n")
         rel_dois = []
         for p in parts:
             dparts = p.split("[!]")
@@ -307,8 +306,7 @@ def commit_changes(request, dsid):
         ctx.update({'related_dois': rel_dois})
 
     if len(res[23]) > 0:
-        ctx.update({'related_datasets': ([x for x in
-                                         res[23].strip().split("\n")])})
+        ctx.update({'related_datasets': ([x for x in res[23].split("\n")])})
 
     pub_date = str(res[24])
     if ((pub_date.find("9999") == 0 or pub_date.find("0001") == 0) and
@@ -316,7 +314,7 @@ def commit_changes(request, dsid):
         pub_date = now[0:10]
 
     ctx.update({'pub_date': pub_date, 'redundancies': []})
-    parts = res[25].strip().split("\n")
+    parts = res[25].split("\n")
     if parts[0] == "yes":
         parts.pop(0)
         for p in parts:
@@ -1053,8 +1051,8 @@ def commit_field(request, fieldname):
         ctx.update({'error_type': "commit", 'error': "Missing field value"})
         return render(request, "metaman/datasets/commit_msg.html", ctx)
 
-    if (commit_fields[fieldname]['is_required'] and len(request.POST['fv'])
-            == 0):
+    fv = request.POST['fv'].strip()
+    if (commit_fields[fieldname]['is_required'] and len(fv) == 0):
         ctx.update({'error_type': "commit",
                     'error': "This is a required field and cannot be empty"})
         return render(request, "metaman/datasets/commit_msg.html", ctx)
@@ -1070,18 +1068,17 @@ def commit_field(request, fieldname):
     if ('checker' in commit_fields[fieldname] and
             callable(commit_fields[fieldname]['checker'])):
         checker = commit_fields[fieldname]['checker']
-        if checker.__name__ == "check_html" and len(request.POST['fv']) > 0:
+        if checker.__name__ == "check_html" and len(fv) > 0:
             errs = check_html((
-                    "<" + fieldname + ">" + request.POST['fv'] + "</" +
-                    fieldname + ">"), SpellChecker())
+                    "<" + fieldname + ">" + fv + "</" + fieldname + ">"),
+                    SpellChecker())
             if len(errs) > 0:
                 ctx.update({'error_type': "commit",
                             'error': "<br>".join(errs)})
 
         elif (checker.__name__ == "check_related_datasets" and
-              len(request.POST['fv']) > 0):
-            errs = check_related_datasets(
-                    request.POST['fv'].strip().split("\n"), cursor)
+              len(fv) > 0):
+            errs = check_related_datasets(fv.split("\n"), cursor)
             if len(errs) > 0:
                 ctx.update({
                         'error_type': "commit",
@@ -1092,14 +1089,14 @@ def commit_field(request, fieldname):
         elif (checker.__name__ in {
                 "check_redundancies", "check_references", "check_related_dois",
                 "check_related_sites", "check_varlist"} and
-              len(request.POST['fv']) > 0):
-            errs = checker(request.POST['fv'].strip().split("\n"))
+              len(fv) > 0):
+            errs = checker(fv.split("\n"))
             if len(errs) > 0:
                 ctx.update({'error_type': "commit",
                             'error': "<br>".join(errs)})
 
-        elif checker.__name__ == "check_title" and len(request.POST['fv']) > 0:
-            errs = checker(request.POST['fv'], SpellChecker())
+        elif checker.__name__ == "check_title" and len(fv) > 0:
+            errs = checker(fv, SpellChecker())
             if len(errs) > 0:
                 ctx.update({'error_type': "commit", 'error': errs})
 
@@ -1110,8 +1107,7 @@ def commit_field(request, fieldname):
         cursor.execute((
                 "update metautil." + commit_fields[fieldname]['db_table'] +
                 " set " + commit_fields[fieldname]['db_column'] + " = %s "
-                "where dsid = %s"), (request.POST['fv'],
-                                     request.POST['dsid']))
+                "where dsid = %s"), (fv, request.POST['dsid']))
         conn.commit()
         cursor.execute((
                 "update metautil.metaman set updated_any_field = 'Y', "
@@ -2274,7 +2270,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             'iso_topic': res[17], 'references': res[19], 'reflists': res[20],
             'acknowledgement': res[21], 'related_resources': res[22],
             'related_dois': res[23], 'related_datasets': res[24]})
-    parts = res[26].strip().split("\n")
+    parts = res[26].split("\n")
     page_vars.update({
             'redundancies_exist': parts[0],
             'redundancies': "\n".join(parts),
@@ -2318,7 +2314,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             errors.update({'usage_restrictions': "<br>".join(errs)})
 
     if len(res[19]) > 0:
-        ref_list = res[19].strip().split("\n")
+        ref_list = res[19].split("\n")
         errs = check_references(ref_list)
         if len(errs) > 0:
             errors.update({'references': "<br>".join(errs)})
@@ -2330,7 +2326,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             errors.update({'acknowledgement': "<br>".join(errs)})
 
     if len(res[22]) > 0:
-        rsrcs = res[22].strip().split("\n")
+        rsrcs = res[22].split("\n")
         errs = []
         for rsrc in rsrcs:
             parts = rsrc.split("[!]")
@@ -2349,7 +2345,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             errors.update({'related_resources': "<br>".join(errs)})
 
     if len(res[23]) > 0:
-        rel_dois = res[23].strip().split("\n")
+        rel_dois = res[23].split("\n")
         errs = []
         for rel_doi in rel_dois:
             parts = rel_doi.split("[!]")
@@ -2368,7 +2364,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
                 errors.update({'related_dois': "<br>".join(errs)})
 
     if len(res[24]) > 0:
-        rel_dsids = res[24].strip().split("\n")
+        rel_dsids = res[24].split("\n")
         errs = []
         for rel_dsid in rel_dsids:
             try:
@@ -2417,7 +2413,7 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             d.update({'binary_url': res[5]})
 
         if len(res[6]) > 0:
-            errs = check_varlist(res[6].strip().split("\n"))
+            errs = check_varlist(res[6].split("\n"))
             if len(errs) > 0:
                 errors.update({'varlist': "<br>".join(errs)})
 
