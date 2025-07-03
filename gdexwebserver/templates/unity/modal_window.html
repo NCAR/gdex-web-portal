@@ -48,6 +48,10 @@ function popModalWindowWithHTML(w, h, html) {
   document.getElementById('modal-window-content').innerHTML = html;
 }
 
+function popConfirm(m, a, w, h) {
+  popModalWindowWithHTML(w, h, '<center><p>' + m + '</p><div><a class="btn btn-primary px-1 py-1 border-1" style="pointer" href="javascript:void(0)" onclick="' + a + ';this.onclick=null">Yes</a>&nbsp;&nbsp;<a class="btn btn-primary px-1 py-1 border-1" style="cursor: pointer" href="javascript:void(0)" onclick="hideModalWindow()">No</a></div></center>');
+}
+
 </script>
 
 <link rel="stylesheet" type="text/css" href="{% static 'css/modal.css' %}">
