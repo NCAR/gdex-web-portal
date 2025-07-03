@@ -1,0 +1,295 @@
+{% if error %}
+    <p>
+        An error occurred: {{ error }}
+    </p>
+{% else %}
+{% if not spec %}
+<script id="import_script" type="text/javascript">
+function submit_import() {
+  if (document.import_form.import_spec.selectedIndex > 0) {
+    getContent("import_content", "import/" + document.import_form.import_spec[document.import_form.import_spec.selectedIndex].value);
+  }
+}
+
+function do_import() {
+  let params = "csrfmiddlewaretoken={{ csrf_token }}";
+  params += "&gdex_path_base=" + document.import_form.gdex_path_base.value;
+  getContentFromPost("import_content", "import/" + document.import_form.spec.value + "/", params)
+}
+</script>
+<center>
+    <h2 class="mb-3">Import Metadata</h2>
+</center>
+<form name="import_form" onsubmit="return false">
+    <div id="import_content">
+        <center>
+            Import from:
+            <select name="import_spec" onchange="submit_import()">
+                <option value="">choose</option>
+                <option value="gdex">GDEX Metadata</option>
+            </select>
+        </center>
+    </div>
+</form>
+{% elif spec == "gdex" %}
+{% if 'gdex_path_base' not in request.POST %}
+        <center>
+            GDEX path base: <input type="text" class="fixedWidth14" name="gdex_path_base" size="50">
+            <br>
+            <button class="btn btn-primary px-2 py-1 border-1 mt-3" onclick="do_import()">Import Metadata</button>
+            <input type="hidden" name="spec" value="{{ spec }}">
+        </center>
+{% else %}
+<script id="fill_script" type="text/javascript">
+function reset_status(s) {
+  s = document.getElementById(s);
+  s.src = "/images/circle-dash.jpeg";
+  s.onclick = null;
+}
+
+function accept_imports() {
+  {% if ds_curation %}
+  ds_curation = document.getElementById("ds_curation_field");
+  for (n = 0; n < ds_curation.options.length; ++n) {
+    if (ds_curation[n].value == document.import_form.ds_curation[0].value) {
+      ds_curation.selectedIndex = n;
+      changed_ds_curation_field = true;
+      reset_status("ds_curation_status");
+      openSection("ds_service");
+      openField("ds_curation");
+      break;
+    }
+  }
+  {% endif %}
+  {% if ds_type %}
+  ds_type = document.getElementById("ds_type_field");
+  for (n = 0; n < ds_type.options.length; ++n) {
+    if (ds_type[n].value == document.import_form.ds_type[0].value) {
+      ds_type.selectedIndex = n;
+      changed_ds_type_field = true;
+      reset_status("ds_type_status");
+      openSection("ds_service");
+      openField("ds_type");
+      break;
+    }
+  }
+  {% endif %}
+  {% if title %}
+  document.getElementById("title_field").value = document.import_form.title.value.replace(/"/g, "\"");
+  changed_title_field = true;
+  reset_status("title_status");
+  openSection("ds_cite");
+  openField("title");
+  {% endif %}
+  {% if authors %}
+  document.getElementById("authors_field").value = document.import_form.authors.value;
+  changed_authors_field = true;
+  reset_status("authors_status");
+  openSection("ds_cite");
+  openField("authors");
+  {% endif %}
+  {% if summary %}
+  document.getElementById("summary_field").value = document.import_form.summary.value.replace(/"/g, "\"");
+  changed_summary_field = true;
+  reset_status("summary_status");
+  openSection("ds_info");
+  openField("summary");
+  {% endif %}
+  {% if variables %}
+  document.getElementById("sciencekeywords_field").value = document.import_form.sciencekeywords.value;
+  changed_sciencekeywords_field = true;
+  reset_status("sciencekeywords_status");
+  openSection("ds_info");
+  openField("sciencekeywords");
+  {% endif %}
+  {% if platforms %}
+  document.getElementById("platforms_field").value = document.import_form.platforms.value;
+  changed_platforms_field = true;
+  reset_status("platforms_status");
+  openSection("ds_info");
+  openField("platforms");
+  {% endif %}
+  {% if projects %}
+  document.getElementById("projects_field").value = document.import_form.projects.value;
+  changed_projects_field = true;
+  reset_status("projects_status");
+  openSection("ds_info");
+  openField("projects");
+  {% endif %}
+  {% if iso_topic %}
+  iso_topic = document.getElementById("iso_topic_field");
+  for (n = 0; n < iso_topic.options.length; ++n) {
+    if (iso_topic[n].value == document.import_form.iso_topic[0].value) {
+      iso_topic.selectedIndex = n;
+      changed_iso_topic_field = true;
+      reset_status("iso_topic_status");
+      openSection("ds_info");
+      openField("iso_topic");
+      break;
+    }
+  }
+  {% endif %}
+  {% if icarus_doi %}
+  document.dsedit.redundancies_exist[0].checked = true;
+  document.getElementById("redundancys_field").value = document.import_form.redundancys.value;
+  changed_redundancys_field = true;
+  reset_status("redundancys_status");
+  openSection("ds_service");
+  openField("redundancys");
+  document.getElementById("related_sites_field").value = document.import_form.related_sites.value;
+  changed_related_sites_field = true;
+  reset_status("related_sites_status");
+  openSection("ds_support");
+  openField("related_sites");
+  {% endif %}
+  {% if data_type %}
+  document.getElementById("data_types_field").value = document.import_form.data_types.value;
+  changed_data_types_field = true;
+  reset_status("data_types_status");
+  openSection("content_metadata");
+  openField("data_types");
+  {% endif %}
+  {% if tstart and tend %}
+  document.getElementById("periods_field").value = document.import_form.periods.value;
+  changed_periods_field = true;
+  reset_status("periods_status");
+  openSection("content_metadata");
+  openField("periods");
+  {% endif %}
+  {% if format %}
+  formats = document.getElementById("formats_field");
+  for (n = 0; n < formats.options.length; ++n) {
+    if (formats[n].value == document.import_form.formats[0].value) {
+      formats.selectedIndex = n;
+      changed_formats_field = true;
+      reset_status("formats_status");
+      openSection("content_metadata");
+      openField("formats");
+      break;
+    }
+  }
+  {% endif %}
+  hideModalWindow();
+  document.getElementById("import").classList.add("d-none");
+}
+</script>
+<p>
+    The following fields were imported:
+</p>
+<form name="import_form" onsubmit="return false">
+    {% if ds_curation %}
+    <div class="mt-1">
+    <b>Dataset Curation:</b>
+    <br>
+    <select name="ds_curation">
+        <option value="{{ ds_curation }}">{{ ds_curation }}</value>
+    </select>
+    </div>
+    {% endif %}
+    {% if ds_type %}
+    <div class="mt-1">
+    <b>Dataset Type:</b>
+    <br>
+    <select name="ds_type">
+        <option value="{{ ds_type }}">{{ ds_type }}</value>
+    </select>
+    </div>
+    {% endif %}
+    {% if icarus_doi %}
+    <div class="mt-1">
+    <b>Redundancies:</b>
+    <br>
+    <textarea name="redundancys" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>yes
+https://doi.org/{{ icarus_doi }}[!][!]</textarea>
+    </div>
+    {% endif %}
+    {% if title %}
+    <div class="mt-1">
+    <b>Title:</b>
+    <br>
+    <input name="title" class="fixedWidth14" size="90" value="{{ title }}" readonly>
+    </div>
+    {% endif %}
+    {% if authors %}
+    <div class="mt-1">
+    <b>Author(s):</b>
+    <br>
+    <textarea name="authors" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ authors }}</textarea>
+    </div>
+    {% endif %}
+    {% if summary %}
+    <div class="mt-1">
+    <b>Summary:</b>
+    <br>
+    <textarea name="summary" class="fixedWidth14" style="height: 10em; width: 100%; resize: both" readonly>{{ summary }}</textarea>
+    </div>
+    {% endif %}
+    {% if variables %}
+    <div class="mt-1">
+    <b>Variables:</b>
+    <br>
+    <textarea name="sciencekeywords" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ variables }}</textarea>
+    </div>
+    {% endif %}
+    {% if platforms %}
+    <div class="mt-1">
+    <b>Platforms:</b>
+    <br>
+    <textarea name="platforms" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ platforms }}</textarea>
+    </div>
+    {% endif %}
+    {% if projects %}
+    <div class="mt-1">
+    <b>"Collected From" Projects:</b>
+    <br>
+    <textarea name="projects" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ projects }}</textarea>
+    </div>
+    {% endif %}
+    {% if iso_topic %}
+    <div class="mt-1">
+    <b>ISO Topic:</b>
+    <br>
+    <select name="iso_topic">
+        <option value="{{ iso_topic }}">{{ iso_topic }}</value>
+    </select>
+    </div>
+    {% endif %}
+    {% if icarus_doi %}
+    <div class="mt-1">
+    <b>Related Websites:</b>
+    <br>
+    <textarea name="related_sites" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>https://doi.org/{{ icarus_doi }}[!]Icarus Dataset at UC-Davis</textarea>
+    </div>
+    {% endif %}
+    {% if data_type %}
+    <div class="mt-1">
+    <b>Data Type:</b>
+    <br>
+    <textarea name="data_types" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ data_type }}</textarea>
+    </div>
+    {% endif %}
+    {% if tstart and tend %}
+    <div class="mt-1">
+    <b>Temporal Period:</b>
+    <br>
+    <textarea name="periods" class="fixedWidth14" style="height: 2em; width: 100%; resize: both" readonly>{{ tstart }}[!]{{ tend }}[!]Entire Dataset</textarea>
+    </div>
+    {% endif %}
+    {% if format %}
+    <div class="mt-1">
+    <b>Data Format:</b>
+    <br>
+    <select name="formats" multiple size="2">
+        <option value="{{ format }}">{{ format }}</value>
+    </select>
+    </div>
+    {% endif %}
+</form>
+<center class="mt-3">
+    <button class="btn btn-primary px-2 py-1 border-1" onclick="accept_imports()">Accept Imports</button><button class="btn btn-primary px-2 py-1 border-1 ms-2" onclick="hideModalWindow()">Cancel</button>
+</center>
+{% endif %}
+{% else %}
+{{ spec }}
+{% endif %}
+{% endif %}

@@ -8,6 +8,7 @@ from . import datasets
 from . import dois
 from .get_items import render_map as MAP
 from .models import MetamanPage
+from . import metadata_import
 from . import utils
 
 
@@ -123,6 +124,9 @@ def remove(request):
         items = utils.trim(request.POST['items']).split("\n")
         items = [{'value': item.replace("\"", "&amp;quot;"),
                   'description': item} for item in items]
+        if 'item-start' in MAP[request.POST['field']]:
+            for x in range(0, MAP[request.POST['field']]['item-start']):
+                del items[0]
 
         return render(request, "metaman/datasets/remove_item.html",
                       {'title': MAP[request.POST['field']]['remove-title'],
@@ -191,3 +195,9 @@ def usage_guide(request, slug):
     )
     return render(request, "metaman/usage_guide.html",
                   {'content': content})
+
+
+def do_import(request, spec):
+    return metadata_import.do_import(request, spec)
+    ctx = {'spec': spec}
+    return render(request, "metaman/datasets/import.html", ctx)
