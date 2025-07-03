@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'gsearch',
     'home',
     'oai',
-    'login',
+    #'login',
     'lookfordata',
     'metaman',
     'search',
@@ -465,7 +465,7 @@ SOCIALACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSignupForm',
     }
 ACCOUNT_LOGOUT_REDIRECT_URL = "/accounts/mylogout"
-LOGIN_REDIRECT_URL = '/ajax/#!cgi-bin/dashboard'
+LOGIN_REDIRECT_URL = '/dashboard/'
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 SOCIALACCOUNT_ADAPTER = "accounts.adapters.MySocialAccountAdapter"
 SOCIALACCOUNT_AUTO_SIGNUP = False
