@@ -33,7 +33,7 @@
                                 </div>
                                 {% if 'duser' in request.COOKIES %}
                                     <div class="px-2 border-start">
-                                        <a href="/ajax/#!cgi-bin/dashboard">User Dashboard</a>
+                                        <a href="/dashboard/">User Dashboard</a>
                                     </div>
                                     <div class="px-2 border-start">
                                       <form method="post" action="{% url 'account_logout' %}">
@@ -60,7 +60,7 @@
                 <div class="col-12 navbar-wrapper border-top">
                     <div class="container-lg collapse navbar-collapse" id="navbarSupportedContent1">
                         <div class="site-name mx-3 mx-md-0 my-2">
-                            <a href="/">Geoscience Data Exchange</a>
+                            <a href="/">Research Data Archive</a>
                         </div>
 
                         {% comment %}
@@ -71,7 +71,7 @@
                         <form class="utility-menu d-flex ms-2" action="/dssearch/">
                             <label class="sr-only" for="siteSearch">Search</label>
                             <input aria-label="Search" class="form-control" id="siteSearch" type="search" name="words" placeholder="Search">
-                            <button aria-label="Search" class="text-white bg-org-dark" type="submit" >Search GDEX</button>
+                            <button aria-label="Search" class="text-white bg-org-dark" type="submit" >Search RDA</button>
                         </form>
 
                     </div>
