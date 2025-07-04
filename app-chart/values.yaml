@@ -10,8 +10,8 @@ app:
   container: 
     image: docker.io/dattore/gdex-web-portal:v15
     port: 8080
-    memory: 1G
-    cpu: 2
+    memory: 56G
+    cpu: 6
 
 volume:
   fs:
