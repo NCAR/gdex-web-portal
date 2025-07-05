@@ -51,7 +51,7 @@ def include_strip(value):
     if len(lst) != 2:
         return ""
 
-    file = "/usr/local/rdaweb/" + lst[0] + "/templates/" + lst[0] + "/" + lst[1]
+    file = "/usr/local/gdexweb/" + lst[0] + "/templates/" + lst[0] + "/" + lst[1]
     path = Path(file)
     if not path.is_file():
         return ""
