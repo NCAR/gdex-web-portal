@@ -28,7 +28,7 @@ class Command(BaseCommand):
         section = options['section']
         config = configparser.ConfigParser(allow_no_value=True)
         config.optionxform = str
-        config_file = "/usr/local/rdaweb/login/config.ini"
+        config_file = "/usr/local/gdexweb/login/config.ini"
         config.read(config_file)
         setting = options['setting']
         if action == "set":
