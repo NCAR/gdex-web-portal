@@ -1,8 +1,13 @@
+from django.http import (
+        HttpResponseBadRequest,
+        HttpResponseForbidden,
+        HttpResponseNotFound,
+        HttpResponseServerError,
+)
 from django.shortcuts import render
 import smtplib
 from email.message import EmailMessage
 
-# Create your views here.
 
 def contact_us(request):
     ctx = {}
@@ -39,13 +44,22 @@ def contact_us(request):
 
 def error(request):
     if 'code' not in request.POST:
-        return render(request, "404.html")
+        return HttpResponseBadRequest("Bad request.")
 
     if request.POST['code'] == "403":
-        return render(request, "403.html")
+        return HttpResponseForbidden(
+                "You are not authorized to access this information.")
     elif request.POST['code'] == "404":
-        return render(request, "404.html")
-    elif request.POST['code'] == "500":
-        return render(request, "500.html")
+        if 'url' in request.POST:
+            return HttpResponseNotFound((
+                    "The URL that you requested - <span class="
+                    "\"bold underline\">{}</span> - does not exist.")
+                    .format(request.POST['url']))
+        else:
+            return HttpResponseBadRequest("Bad request.")
 
-    return render(request, "404.html")
+    elif request.POST['code'] == "500":
+        return HttpResponseServerError(
+                "A server error occurred. Please try again later.")
+
+    return HttpResponseBadRequest("Bad request.")
