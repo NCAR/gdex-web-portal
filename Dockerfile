@@ -42,7 +42,7 @@ RUN touch /var/log/django.log
 RUN chown www-data:www-data /var/log/django.log
 
 RUN <<EOF
-cat <<EOFCAT > /usr/local/bin/start_container
+cat <<'EOFCAT' > /usr/local/bin/start_container
 #! /bin/bash
 #
 # replace apache2 configuration files from repository
@@ -63,6 +63,7 @@ mkdir -p /data/logs/apache2
 #
 python /usr/local/gdexweb/manage.py collectstatic --noinput
 dsspellchecker_manage build_db
+auth_key=`grep doi_manager_auth_key /data/local/gdexweb/metaman/local_settings.py |awk -F\" '{print $2}'`
 doi_manage configure /data/local/doi_manager/settings.txt
 #
 # start apache
