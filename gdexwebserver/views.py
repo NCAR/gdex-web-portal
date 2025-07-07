@@ -1,9 +1,4 @@
-from django.http import (
-        HttpResponseBadRequest,
-        HttpResponseForbidden,
-        HttpResponseNotFound,
-        HttpResponseServerError,
-)
+from django.http import HttpResponse
 from django.shortcuts import render
 import smtplib
 from email.message import EmailMessage
@@ -44,22 +39,22 @@ def contact_us(request):
 
 def error(request):
     if 'code' not in request.POST:
-        return HttpResponseBadRequest("Bad request.")
+        return HttpResponse("Bad request.")
 
     if request.POST['code'] == "403":
-        return HttpResponseForbidden(
+        return HttpResponse(
                 "You are not authorized to access this information.")
     elif request.POST['code'] == "404":
         if 'url' in request.POST:
-            return HttpResponseNotFound((
+            return HttpResponse((
                     "The URL that you requested - <span class="
                     "\"bold underline\">{}</span> - does not exist.")
                     .format(request.POST['url']))
         else:
-            return HttpResponseBadRequest("Bad request.")
+            return HttpResponse("Bad request.")
 
     elif request.POST['code'] == "500":
-        return HttpResponseServerError(
+        return HttpResponse(
                 "A server error occurred. Please try again later.")
 
-    return HttpResponseBadRequest("Bad request.")
+    return HttpResponse("Bad request.")
