@@ -35,3 +35,17 @@ def contact_us(request):
         template = "unity/contact_us_page.html"
 
     return render(request, template, ctx)
+
+
+def error(request):
+    if 'code' not in request.POST:
+        return render(request, "404.html")
+
+    if request.POST['code'] == "403":
+        return render(request, "403.html")
+    elif request.POST['code'] == "404":
+        return render(request, "404.html")
+    elif request.POST['code'] == "500":
+        return render(request, "500.html")
+
+    return render(request, "404.html")

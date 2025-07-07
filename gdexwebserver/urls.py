@@ -23,6 +23,7 @@ urlpatterns = [
     re_path(r'^citations(\..*?){0,1}/', include("apis.citations.urls"), name='output_format'),
     path('contact-us/', views.contact_us),
     path('dssearch/', search_views.dssearch),
+    path('error/', views.error),
     path('search/', search_views.search, name='search'),
     #path('resources/gcmd_viewer/', resources_views.gcmd_viewer),
     path('resources/', include('daas.urls')),
