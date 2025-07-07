@@ -64,7 +64,7 @@ mkdir -p /data/logs/apache2
 python /usr/local/gdexweb/manage.py collectstatic --noinput
 dsspellchecker_manage build_db
 auth_key=`grep doi_manager_auth_key /data/local/gdexweb/metaman/local_settings.py |awk -F\" '{print $2}'`
-doi_manage configure /data/local/doi_manager/settings.txt
+doi_manage $auth_key configure /data/local/doi_manager/settings.txt
 #
 # start apache
 apache2ctl -D FOREGROUND
