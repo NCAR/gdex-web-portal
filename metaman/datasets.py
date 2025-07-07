@@ -1268,8 +1268,7 @@ def create(request, dsid):
                       {'database_error': "{}".format(err)})
 
     # add the dataset to wagtail
-    subprocess.run(("source /usr/local/gdexweb/bin/activate; python "
-                    "/usr/local/gdexweb/manage.py add_dataset " + dsid),
+    subprocess.run(("python /usr/local/gdexweb/manage.py add_dataset " + dsid),
                    shell=True)
 
     # create the web directories
@@ -1377,8 +1376,8 @@ def delete(request, dsid):
                           {'message_list': messages})
 
     # unpublish the dataset pages
-    unpub_cmd = ("source /usr/local/gdexweb/bin/activate; python "
-                 "/usr/local/gdexweb/manage.py unpublish_dataset " + dsid)
+    unpub_cmd = ("python /usr/local/gdexweb/manage.py unpublish_dataset " +
+                 dsid)
     o = subprocess.check_output(unpub_cmd, shell=True,
                                 stderr=subprocess.STDOUT).decode("utf-8")
     if o.find("Success: unpublished") >= 0:
