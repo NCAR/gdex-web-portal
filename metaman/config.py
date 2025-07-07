@@ -71,5 +71,5 @@ default_data_license = "CC-BY-4.0"
 
 doi_manager = {
     'auth_key': local_settings.doi_manager_auth_key,
-    'invoke_command': "source /usr/local/gdexweb/bin/activate; doi_manage",
+    'invoke_command': "doi_manage",
 }
