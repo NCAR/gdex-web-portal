@@ -3,12 +3,10 @@ function checkRedundancyForm() {
   if (document.redundancy_form.url.value.length == 0 && document.redundancy_form.name.value.length == 0) {
     alert("You must specify a URL or name/address for the redundant source");
     return false;
-  }
-  else if (document.redundancy_form.name.value.length > 0 && document.redundancy_form.address.value.length == 0) {
+  } else if (document.redundancy_form.name.value.length > 0 && document.redundancy_form.address.value.length == 0) {
     alert("You must specify an address for the named source");
     return false;
-  }
-  else if (document.redundancy_form.url.value.length > 0 && document.redundancy_form.url.value.match(/^(http(s){0,1}|ftp):\/\/(.){1,}$/) == null) {
+  } else if (document.redundancy_form.url.value.length > 0 && document.redundancy_form.url.value.match(/^(http(s){0,1}|ftp):\/\/(.){1,}$/) == null) {
     alert("You must specify a syntactically-correct URL");
     return false;
   }

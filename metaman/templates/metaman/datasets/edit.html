@@ -131,7 +131,7 @@ function toggleField(f, a) {
 }
 
 function popAdd(x) {
-  if (new Array("Contact", "Contributor", "DataType", "Instrument", "Layer", "Level", "Platform", "Project", "Redundancy", "Reference", "Sciencekeyword", "Site", "SupportsProject", "TemporalFrequency").includes(x)) {
+  if (new Array("Contact", "Contributor", "DataType", "Instrument", "Layer", "Level", "Platform", "Project", "Reference", "Sciencekeyword", "Site", "SupportsProject", "TemporalFrequency").includes(x)) {
     x = x.replace(/[A-Z]/g, (match) => ("_" + match).toLowerCase());
     popModalWindowWithGetUrl(800, 480, 'get' + x + '/');
   } else if (x == "Author") {
@@ -144,6 +144,16 @@ function popAdd(x) {
     popModalWindowWithPostUrl(800, 480, 'get_' + x.toLowerCase() + '/', 'edit_dsid={{ dsid }}&data_types=' + document.dsedit.data_types_field.value + '&csrfmiddlewaretoken={{ csrf_token }}');
   } else if (x == "RelatedDataset") {
     popModalWindowWithPostUrl(800, 480, 'get_datasets/', 'edit_dsid={{ dsid }}&type=related&csrfmiddlewaretoken={{ csrf_token }}');
+  } else if (x == "Redundancy") {
+    parts = document.getElementById("redundancys_field").value.split("\n");
+    if (parts.length == 0 || parts[0] == "") {
+      alert("You must first select the \"Yes\" radio button");
+      return;
+    } else if (parts[0] == "no") {
+      alert("You have selected the \"No\" radio button so you can't add a dataset redundancy");
+      return;
+    }
+    popModalWindowWithGetUrl(800, 480, 'get_redundancy/');
   } else if (x == "RefList") {
     popModalWindowWithGetUrl(800, 480, 'get_ref_list/');
   } else if (x == "RelatedDOI") {
@@ -650,7 +660,14 @@ img.icon-size {
     <p>
         Once you have made all of your changes, you will need to click the "Commit Changes" button below.  This will save your changes, update the metadata database, and refresh the dataset description.
     </p>
-    <font color="red">*</font> denotes a required field
+    <p>
+        <font color="red">*</font> denotes a required field
+    </p>
+    {% if dataset_type == "work-in-progress" %}
+    <div id="import" class="ps-2 py-2 text-bg-info">
+        This dataset is still marked as a work-in-progress dataset. You can try to <a href="javascript:void(0)" onclick="popModalWindowWithGetUrl(300, 200, 'import/null/')">import</a> some of the metadata.
+    </div>
+    {% endif %}
 </div>
 <form name="dsedit" action="javascript:void(0)">
     <div class="mb-1">
