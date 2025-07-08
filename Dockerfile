@@ -58,6 +58,10 @@ ln -s /data/local/gdexweb/gdexwebserver/settings/base.py /usr/local/gdexweb/gdex
 ln -s /data/local/gdexweb/gdexwebserver/settings/local_settings.py /usr/local/gdexweb/gdexwebserver/settings/local_settings.py
 ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/local_settings.py
 #
+# link django apps for testing here
+mv /usr/local/gdexweb/metaman /data/test/
+ln -s /data/test/metaman /usr/local/gdexweb/metaman
+#
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2
 #

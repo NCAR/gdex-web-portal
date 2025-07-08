@@ -1,0 +1,151 @@
+{% autoescape off %}
+<?xml version="1.0" ?>
+<dsOverview xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://rda.ucar.edu/schemas/dsOverview3.xsd"
+            ID="{{ dsid }}" type="{{ ds_type }}" curationLevel="{{ curation_level }}">
+  <timeStamp value="{{ timestamp }}" />
+  <continuingUpdate value="{{ continuing_update.value }}"{% if continuing_update.value == "yes" %} frequency="{{ continuing_update.frequency }}"{% endif %} />
+{% if logo %}
+  <logo>{{ logo }}</logo>
+{% endif %}
+  <title>{{ title }}</title>
+  <summary>{{ summary }}</summary>
+  <creator vocabulary="GCMD" name="UCAR/NCAR/CISL/DECS > Data Engineering and Curation Section, Computational and Information Systems Laboratory, National Center for Atmospheric Research, University Corporation for Atmospheric Research" />
+{% for contributor in contributors %}
+  <contributor vocabulary="GCMD"{% if contributor.former_name %} formerName="{{ contributor.former_name }}"{% endif %}{% if contributor.url %} url="{{ contributor.url }}"{% endif %}{% if contributor.contact %} contact="{{ contributor.contact }}"{% endif %} citable="{{ contributor.citable }}">{{ contributor.uuid }}</contributor>
+{% endfor %}
+{% for author in authors %}
+  <author xsi:type="author{% if author.corporation %}Corporation" name="{{ author.corporation }}"{% elif author.lname %}Person" fname="{{ author.fname }}" mname="{{ author.mname }}" lname="{{ author.lname }}"{% if author.orcid_id %} orcid_id="{{ author.orcid_id }}"{% endif %}{% endif %} />
+{% endfor %}
+{% if access_restrictions or usage_restrictions %}
+  <restrictions>
+{% if access_restrictions %}
+    <access>
+      {{ access_restrictions }}
+    </access>
+{% endif %}
+{% if usage_restrictions %}
+    <usage>
+      {{ usage_restrictions }}
+    </usage>
+{% endif %}
+  </restrictions>
+{% endif %}
+{% for variable in variables %}
+  <variable vocabulary="GCMD">{{ variable.uuid }}</variable>
+{% endfor %}
+{% for contact in contacts %}
+  <contact>{{ contact }}</contact>
+{% endfor %}
+{% for platform in platforms %}
+  <platform vocabulary="GCMD">{{ platform }}</platform>
+{% endfor %}
+{% for instrument in instruments %}
+  <instrument vocabulary="GCMD">{{ instrument }}</instrument>
+{% endfor %}
+{% for project in projects %}
+  <project vocabulary="GCMD">{{ project }}</project>
+{% endfor %}
+{% for supports_project in supports_projects %}
+  <supportsProject vocabulary="GCMD">{{ supports_project }}</supportsProject>
+{% endfor %}
+  <topic vocabulary="ISO">{{ iso_topic }}</topic>
+{% for reference in references %}
+  <reference type="{{ reference.type }}" ds_relation="{{ reference.ds_relation }}">
+    <authorList>{{ reference.author_list }}</authorList>
+    <year>{{ reference.pub_year }}</year>
+    <title>{{ reference.title }}</title>
+{% if reference.type == "book" %}
+    <publisher place="{{ reference.pub_place }}">{{ reference.publisher }}</publisher>
+{% elif reference.type == "book_chapter" %}
+    <book editor="{{ reference.editor }}" publisher="{{ reference.publisher }}" pages="{{ reference.pages }}">{{ reference.book }}</book>
+{% elif reference.type == "journal" %}
+    <periodical number="{{ reference.number }}" pages="{{ reference.pages }}">{{ reference.journal }}</periodical>
+{% elif reference.type == "preprint" %}
+    <conference host="{{ reference.host }}" location="{{ reference.location }}" pages="{{ reference.pages }}">{{ reference.conference }}</conference>
+{% elif reference.type == "technical_report" %}
+    <organization reportID="{{ reference.report_id }}" pages="{{ reference.pages }}">{{ reference.organization }}</organization>
+{% endif %}
+{% if reference.doi %}
+    <doi>{{ reference.doi }}</doi>
+{% endif %}
+{% if reference.url %}
+    <url>{{ reference.url }}</url>
+{% endif %}
+{% if reference.annotation %}
+    <annotation>{{ reference.annotation }}</annotation>
+{% endif %}
+  </reference>
+{% endfor %}
+{% for url in reference_urls %}
+  <referenceURL url="{{ url.url }}">{{ url.description }}</referenceURL>
+{% endfor %}
+{% if acknowledgement %}
+  <acknowledgement>{{ acknowledgement }}</acknowledgement>
+{% endif %}
+{% for resource in related_resources %}
+  <relatedResource url="{{ resource.url }}">{{ resource.description }}</relatedResource>
+{% endfor %}
+{% for doi in related_dois %}
+  <relatedDOI relationType="{{ doi.type }}">{{ doi.doi }}</relatedDOI>
+{% endfor %}
+{% for ds in related_datasets %}
+  <relatedDataset ID="{{ ds }}" />
+{% endfor %}
+  <publicationDate>{{ pub_date }}</publicationDate>
+{% if redundancies|length > 0 %}
+  <redundancies exist="yes">
+{% for redundancy in redundancies %}
+    <redundancy{% if redundancy.url %} url="{{ redundancy.url }}"{% endif %}{% if redundancy.name %} name="{{ redundancy.name }}"{% endif %}{% if redundancy.address %} address="{{ redundancy.address }}"{% endif %} />
+{% endfor %}
+  </redundancies>
+{% else %}
+  <redundancies exist="no" />
+{% endif %}
+  <dataLicense>{{ data_license }}</dataLicense>
+{% if content_metadata %}
+  <contentMetadata>
+{% for tr in content_metadata.time_ranges %}
+    <temporal{% if tr.type %} type="{{ tr.type }}"{% endif %} start="{{ tr.start }}" end="{{ tr.end }}" groupID="{{ tr.group_id }}" />
+{% endfor %}
+{% for tf in content_metadata.temporal_frequencies %}
+    <temporalFrequency type="{{ tf.type }}"{% if tf.number %} number="{{ tf.number }}"{% endif %} unit="{{ tf.unit }}"{% if tf.stats %} statistics="{{ tf.stats }}"{% endif %} />
+{% endfor %}
+{% for data_type in content_metadata.data_types %}
+    <dataType{% if data_type.process %} process="{{ data_type.process }}"{% endif %}>{{ data_type.description }}</dataType>
+{% endfor %}
+{% for format in content_metadata.data_formats %}
+    <format{% if format.href %} href="{{  format.href }}"{% endif %}>{{ format.description }}</format>
+{% endfor %}
+{% if content_metadata.detailed_variables|length > 0 %}
+    <detailedVariables>
+{% for var in content_metadata.detailed_variables %}
+      <detailedVariable{% if var.units %} units="{{ var.units }}"{% endif %}>{{ var.description }}</detailedVariable>
+{% endfor %}
+    </detailedVariables>
+{% endif %}
+{% if content_metadata.levels|length > 0 %}
+    <levels>
+{% for level in content_metadata.levels %}
+{% if level.value %}
+      <level type="{{ level.type }}" value="{{ level.value }}"{% if level.units %} units="{{ level.units }}"{% endif %} />
+{% else %}
+      <layer type="{{ level.type }}" top="{{ level.top }}" bottom="{{ level.bottom }}"{% if level.units %} units="{{ level.units }}"{% endif %} />
+{% endif %}
+{% endfor %}
+    </levels>
+{% endif %}
+{% if content_metadata.coverages.grids|length > 0 or content_metadata.coverages.locations|length > 0 %}
+    <geospatialCoverage>
+{% for grid in content_metadata.coverages.grids %}
+      <grid definition="{{ grid.definition }}" numX="{{ grid.numx }}" numY="{{ grid.numy }}" startLon="{{ grid.start_lon }}" startLat="{{ grid.start_lat }}"{% if grid.circles %} endLon="{{ grid.end_lon }}" endLat="{{ grid.end_lat }}" xRes="{{ grid.xres }}" circles="{{ grid.circles }}"{% elif grid.sp1 %} projLon="{{ grid.proj_lon }}" resLat="{{ grid.res_lat }}" xRes="{{ grid.xres }}" yRes="{{ grid.yres }}" pole="{{ grid.pole }}" stdParallel1="{{ grid.sp1 }}" stdParallel2="{{ grid.sp2 }}"{% elif grid.ll %} endLon="{{ grid.end_lon }}" endLat="{{ grid.end_lat }}" xRes="{{ grid.xres }}" yRes="{{ grid.yres }}"{% elif grid.polar %} projLon="{{ grid.proj_lon }}" xRes="{{ grid.xres }}" yRes="{{ grid.yres }}" pole="{{ grid.pole }}"{% endif %}{% if grid.is_cell %} isCell="true"{% endif %}{% if grid.extent %} extent="{{ grid.extent }}"{% endif %} />
+{% endfor %}
+{% for location in content_metadata.coverages.locations %}
+      <location>{{ location }}</location>
+{% endfor %}
+    </geospatialCoverage>
+{% endif %}
+  </contentMetadata>
+{% endif %}
+</dsOverview>
+{% endautoescape %}
