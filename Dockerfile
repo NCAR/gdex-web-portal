@@ -59,6 +59,7 @@ ln -s /data/local/gdexweb/gdexwebserver/settings/local_settings.py /usr/local/gd
 ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/local_settings.py
 #
 # link django apps for testing here
+rm -rf /data/test/metaman
 mv /usr/local/gdexweb/metaman /data/test/
 ln -s /data/test/metaman /usr/local/gdexweb/metaman
 #
