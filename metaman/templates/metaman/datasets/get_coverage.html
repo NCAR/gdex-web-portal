@@ -1,6 +1,6 @@
 <script id="coverage_script" language="javascript">
 function doCov1FormSubmit() {
-  var params = "coverage_type=" + document.cov1_form.coverage_types[document.cov1_form.coverage_types.selectedIndex].value + "&csrfmiddlewaretoken=" + get_csrf_token();
+  var params = "coverage_type=" + document.cov1_form.coverage_types[document.cov1_form.coverage_types.selectedIndex].value + "&csrfmiddlewaretoken={{ csrf_token }}";
   getContentFromPost('modal-window-content', 'get_coverage/', params);
 }
 
