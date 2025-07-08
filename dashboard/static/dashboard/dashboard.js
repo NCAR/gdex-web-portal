@@ -79,16 +79,6 @@ function refreshControlledRequests() {
   }
 }
 
-function refreshForVersion() {
-  if (document.getElementById('poll_version').innerHTML == dashboard_version) {
-    getAjaxContent('GET', null, 'bookmarks/count/', 'bookmarks_count', null, bookmarksDisplay)
-    getAjaxContent('GET', null, 'requests/count/', 'requests_count', null, requestsDisplay)
-    getAjaxContent('GET', null, 'aggregations/count/', 'aggregations_count', null, aggregationsDisplay)
-  } else {
-    location.reload(true);
-  }
-}
-
 function updateInfo() {
   getAjaxContent("GET", null, "version/", "poll_version", null, refreshForVersion);
 }
