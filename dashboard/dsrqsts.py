@@ -105,6 +105,9 @@ def get_dsrqsts(request):
                                    'nfiles': 0, 'date_purge': date_purge,
                                    'specialist': e[9], 'date_min': date_min,
                                    'date_max': date_max})
+            if ctx['dsrqsts'][-1]['status'] == "Completed":
+                ctx['dsrqsts'][-1].update({'rqstid': e[1]})
+
             cursor.execute((
                     "select count(rindex) from dssdb.wfrqst where rindex = %s "
                     "and type = 'D'"), (e[0], ))

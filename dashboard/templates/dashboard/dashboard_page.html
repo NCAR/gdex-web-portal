@@ -8,7 +8,7 @@
 var dashboard_version = "{{ page.version }}";
 
 function refreshForVersion() {
-  if (document.getElementById('poll_version') == dashboard_version) {
+  if (document.getElementById('poll_version').innerHTML == dashboard_version) {
     {% for section in page.dashboard_sections %}
     {% with section.value.button_label|lower as sid %}
     getAjaxContent("GET", null, "{{ sid }}/count/", "{{ sid }}_count", null, {{ sid }}Display);
