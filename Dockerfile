@@ -66,6 +66,8 @@ dsspellchecker_manage build_db
 auth_key=`grep doi_manager_auth_key /data/local/gdexweb/metaman/local_settings.py |awk -F\" '{print $2}'`
 doi_manage $auth_key configure /data/local/doi_manager/settings.txt
 #
+/etc/init.d/sendmail start
+#
 # start apache
 apache2ctl -D FOREGROUND
 EOFCAT
