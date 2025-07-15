@@ -1,3 +1,4 @@
+import json
 import os
 import psycopg2
 import pytz
@@ -466,7 +467,10 @@ def commit_changes(request, dsid):
     env['QUERY_STRING'] = "X"
     if ctx['ds_type'] in ("primary", "historical"):
         o = subprocess.run((
-                bin_utils['rdadatarun'] + " /usr/local/decs/bin/dsgen " +
+                "dsgen --mdb='" +
+                json.dumps(settings.RDADB['metadata_config_pg']) + "' " +
+                "--wdb='" +
+                json.dumps(settings.RDADB['wagtail2_config_pg']) + "' " +
                 ctx['dsid']),
                 shell=True, env=env, stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE)
