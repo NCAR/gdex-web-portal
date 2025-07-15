@@ -30,7 +30,7 @@ from dataaccess.matrix import Matrix
 from dataset_description.models import DatasetDescriptionPage
 from home.utils import slug_list
 from globus.views import get_guest_collection_url
-from rdawebserver.utils import make_tempdir, remove_tempdir
+from gdexwebserver.utils import make_tempdir, remove_tempdir
 
 import logging
 logger = logging.getLogger(__name__)
