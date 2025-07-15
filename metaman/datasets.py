@@ -2001,12 +2001,13 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
 
     e = root.find("./restrictions/usage")
     if e is not None:
-        if e.text is None:
-            s = ElementTree.tostring(e).decode().replace("&amp;", "&")
-            errs = check_html(s, spellchecker)
-            if len(errs) > 0:
-                errors.update({'usage_restrictions': "<br>".join(errs)})
-            page_vars['usage_restrictions'] = s[s.find(">")+1:s.rfind("</")]
+        s = ElementTree.tostring(e).decode().replace("&amp;", "&")
+        errs = check_html(s, spellchecker)
+        if len(errs) > 0:
+            errors.update({'usage_restrictions': "<br>".join(errs)})
+
+        page_vars['usage_restrictions'] = (
+                utils.trim(s[s.find(">")+1:s.rfind("</")]))
 
     elist = root.findall("./reference")
     references = []
