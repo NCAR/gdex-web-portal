@@ -448,33 +448,6 @@ def commit_changes(request, dsid):
     cursor.execute(("delete from metautil.cmd where dsid = %s"),
                    (ctx['dsid'], ))
     conn.commit()
-    if ctx['ds_type'] in ("primary", "historical"):
-        if (not os.path.exists(os.path.join(
-                root_dirs['web'], "datasets", dsid))):
-            subprocess.run((
-                    "mkdir -p " + os.path.join(
-                            tdir_name, "datasets", dsid, "metadata")),
-                           shell=True)
-            err = utils.rdadata_rsync(
-                    tdir_name, os.path.join("datasets", dsid, "metadata"),
-                    root_dirs['web'])
-            if len(err) > 0:
-                ctx.update({'error': ("Unable to create web directory: '{}'")
-                           .format(err)})
-                utils.remove_tempdir(tdir_name)
-                return render(request, "metaman/datasets/commit_msg.html",
-                              ctx)
-
-        os.chmod(os.path.join(tdir_name, dsid + ".xml"), 0o644)
-        err = utils.rdadata_rsync(
-                tdir_name, dsid + ".xml", os.path.join(
-                        root_dirs['web'], "datasets", dsid, "metadata",
-                        "dsOverview.xml"))
-        if len(err) > 0:
-            ctx.update({'error': "XML copy failed: '{}'".format(err)})
-            utils.remove_tempdir(tdir_name)
-            return render(request, "metaman/datasets/commit_msg.html", ctx)
-
     utils.remove_tempdir(tdir_name)
     if 'content_metadata' in ctx:
         err = update_metadata_database(ctx, conn, ref_words=refs[1],
