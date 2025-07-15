@@ -619,9 +619,11 @@ def do_grml_query(request, dsid, listtyp):
 
     if 'mparams' in ctx:
         ctx['parameters'] = []
-        for p in ctx['mparams']:
-            for x in request.POST.getlist('parameter'):
-                if x.find(p) >= 0 and x not in ctx['parameters']:
+        for x in request.POST.getlist('parameter'):
+            parts = x.split("[!]")
+            plist = parts[0].split(",")
+            for p in ctx['mparams']:
+                if p in plist:
                     ctx['parameters'].append(x)
                     break
 
@@ -744,9 +746,9 @@ def do_grml_query(request, dsid, listtyp):
         res = cursor.fetchone()
         if res is not None and res[0] == "Y":
             if res[1] == "O":
-                ctx['data_domain'] = settings.GLOBUS_STRATUS_DOMAIN
+                ctx['data_base_domain'] = settings.RDA_STRATUS_BASE_URL
             else:
-                ctx['data_domain'] = settings.GLOBUS_DATA_DOMAIN
+                ctx['data_base_url'] = settings.RDA_DATA_BASE_URL
 
     conn.close()
     log_ctx = ctx.copy()
