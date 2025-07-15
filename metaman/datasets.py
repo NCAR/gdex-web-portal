@@ -26,6 +26,7 @@ from . import utils
 from .config import bin_utils, root_dirs
 from .utils import check_html, log_error
 from .xmlutils import convert_plain_ampersands
+from gdexwebserver.utils import make_tempdir, remove_tempdir
 
 
 def add(request):
@@ -430,7 +431,7 @@ def commit_changes(request, dsid):
         return render(request, "metaman/datasets/commit_msg.html", ctx)
 
     # create a temporary directory
-    tdir_name = utils.make_tempdir()
+    tdir_name = make_tempdir()
     if len(tdir_name) == 0:
         ctx.update({'error': ("Unable to make a temporary directory for the "
                               "CVS commit")})
@@ -440,7 +441,7 @@ def commit_changes(request, dsid):
             tdir_name, dsid, iuser, request.POST['cvscomment'])
     if len(err) > 0:
         ctx.update({'error': err})
-        utils.remove_tempdir(tdir_name)
+        remove_tempdir(tdir_name)
         return render(request, "metaman/datasets/commit_msg.html", ctx)
 
     ctx.update({'overview_committed': True})
@@ -449,7 +450,7 @@ def commit_changes(request, dsid):
     cursor.execute(("delete from metautil.cmd where dsid = %s"),
                    (ctx['dsid'], ))
     conn.commit()
-    utils.remove_tempdir(tdir_name)
+    remove_tempdir(tdir_name)
     if 'content_metadata' in ctx:
         err = update_metadata_database(ctx, conn, ref_words=refs[1],
                                        tres_keywords=tf[1])
@@ -1161,7 +1162,7 @@ def create(request, dsid):
                       {'database_error': "{}".format(err)})
 
     # create a temporary directory
-    tdir_name = utils.make_tempdir()
+    tdir_name = make_tempdir()
     if len(tdir_name) == 0:
         return render(request, "metaman/datasets/create.html",
                       {'temp_dir_failed': True})
@@ -1172,7 +1173,7 @@ def create(request, dsid):
                         "where dsid = %s and type = 'R'"), (dsid, ))
         conn.commit()
     except psycopg2.Error as err:
-        utils.remove_tempdir(tdir_name)
+        remove_tempdir(tdir_name)
         log_error(err, source="create")
         return render(request, "metaman/datasets/create.html",
                       {'database_error': "{}".format(err)})
@@ -1222,7 +1223,7 @@ def create(request, dsid):
                           {'cvs_commit_error': o})
 
     except Exception as err:
-        utils.remove_tempdir(tdir_name)
+        remove_tempdir(tdir_name)
         log_error(err, source="create")
         return render(request, "metaman/datasets/create.html",
                       {'cvs_open_failed': True})
@@ -1239,7 +1240,7 @@ def create(request, dsid):
                  settings.RDA_DATA_PATH + dsid))
         conn.commit()
     except psycopg2.Error as err:
-        utils.remove_tempdir(tdir_name)
+        remove_tempdir(tdir_name)
         log_error(err, source="create")
         return render(request, "metaman/datasets/create.html",
                       {'database_error': "{}".format(err)})
@@ -1261,7 +1262,7 @@ def create(request, dsid):
     # clean up
     cursor.close()
     conn.close()
-    utils.remove_tempdir(tdir_name)
+    remove_tempdir(tdir_name)
     return render(request, "metaman/datasets/create.html", {'dsid': dsid})
 
 
@@ -1543,7 +1544,7 @@ def edit(request, dsid):
     version = "latest_version"
     if len(clear_changes) == 0:
         # fill edit fields from most recent commit (CVS file)
-        tdir_name = utils.make_tempdir()
+        tdir_name = make_tempdir()
         if len(tdir_name) == 0:
             return render(
                     request,
@@ -1561,7 +1562,7 @@ def edit(request, dsid):
                            stderr=subprocess.PIPE)
         o = o.stderr.decode("utf-8")
         if len(o) > 0:
-            utils.remove_tempdir(tdir_name)
+            remove_tempdir(tdir_name)
             return render(
                     request,
                     "metaman/datasets/edit.html",
@@ -1571,14 +1572,14 @@ def edit(request, dsid):
         res = fill_from_most_recent_commit(
                 conn, iuser, tdir_name, dsid, show_manual_cmd, spellchecker)
         if 'error' in res[0]:
-            utils.remove_tempdir(tdir_name)
+            remove_tempdir(tdir_name)
             return render(
                     request,
                     "metaman/datasets/edit.html", {'error': res[0]['error']})
 
         ctx.update(res[0])
         ctx.update({'errors': res[1]})
-        utils.remove_tempdir(tdir_name)
+        remove_tempdir(tdir_name)
     else:
         # fill edit fields from uncommitted changes (DB)
         res = fill_from_uncommitted_changes(cursor, dsid, spellchecker)

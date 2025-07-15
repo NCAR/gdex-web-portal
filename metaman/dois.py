@@ -20,8 +20,8 @@ from .config import (bin_utils,
                      linkcheck_headers,
                      metadata_managers,
                      root_dirs)
-from .utils import (check_html, get_iuser, log_error, make_tempdir,
-                    remove_tempdir)
+from .utils import check_html, get_iuser, log_error
+from gdexwebserver.utils import make_tempdir, remove_tempdir
 
 
 def dataset_has_data_files(dsid, cursor):
