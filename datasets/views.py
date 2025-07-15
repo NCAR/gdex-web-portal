@@ -3,6 +3,7 @@ import requests
 import psycopg2
 import os
 import re
+import subprocess
 
 from django.conf import settings
 from django.shortcuts import render
@@ -29,6 +30,7 @@ from dataaccess.matrix import Matrix
 from dataset_description.models import DatasetDescriptionPage
 from home.utils import slug_list
 from globus.views import get_guest_collection_url
+from rdawebserver.utils import make_tempdir, remove_tempdir
 
 import logging
 logger = logging.getLogger(__name__)
@@ -452,3 +454,21 @@ def metadata_view(request, dsid):
 
     md = md.replace("<", "&lt;").replace(">", "&gt;")
     return HttpResponse("<pre>" + md + "</pre>")
+
+
+def get_native(request, dsid):
+    tdir_name = make_tempdir()
+    try:
+        o = subprocess.run((
+                "/usr/bin/cvs -d /data/cvs checkout -d " + tdir_name + " " +
+                "datasets/" + dsid + ".xml"), shell=True,
+                env={'TMPDIR': "/data/ptmp"}, capture_output=True)
+        if o.stderr:
+            return HttpResponse("Error: " + o.stderr.decode("utf-8"))
+
+        with open(os.path.join(tdir_name, dsid + ".xml"), "r") as f:
+            xml = f.read()
+
+        return HttpResponse(xml, content_type="application/xml")
+    finally:
+        remove_tempdir(tdir_name)

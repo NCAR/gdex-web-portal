@@ -21,6 +21,7 @@ urlpatterns = [
     re_path(r"^(d[0-9]{6})/metrics/$", views.get_metrics),
     re_path(r"^(d[0-9]{6})/facbrowse/", include("facbrowse.urls")),
     re_path(r"^(d[0-9]{6})/provenance/", include("dataset_provenance.urls")),
+    re_path(r"^(d[0-9]{6})/native/", views.get_native),
     re_path(r"^request/(?P<rqstid>\w+[0-9]+)/$", views.get_request),
     re_path(r"^ds([0-9]{3})[\-\.]([0-9])/(.{0,})$",
         lambda request, id1, id2, rest:
