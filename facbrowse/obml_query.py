@@ -137,7 +137,8 @@ def do_obml_query(request, dsid, listtyp):
     ctx.update(parse_obml_query(cursor, dsid, listtyp, request))
     conn.close()
     ctx.update({'gmap_api_url': settings.GMAP_API_URL,
-                'gmap_api_key': settings.GMAP_API_KEY})
+                'gmap_api_key': settings.GMAP_API_KEY,
+                'data_base_url': settings.RDA_DATA_BASE_URL})
     log_ctx = ctx.copy()
     log_ctx['fcodes'] = str(len(ctx['fcodes']))
     add_to_log("do_obml_query: context = " + str(log_ctx))
