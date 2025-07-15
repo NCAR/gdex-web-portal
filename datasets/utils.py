@@ -45,7 +45,4 @@ def bookmark(request, dsid):
 
 
 def get_hostname():
-    hostname = socket.gethostname()
-    if 'prod' in hostname:
-        return 'https://rda.ucar.edu'
-    return 'https://'+hostname
+    return 'https://gdex.k8s.ucar.edu'
