@@ -1,0 +1,16 @@
+<script type="text/javascript" src="/js/xhr_content2.js"></script>
+<script type="text/javascript">
+function doSubmit() {
+  getAjaxContent("POST", "entry=" + document.doc_form.entry.value + "&csrfmiddlewaretoken={{ csrf_token }}", "/metaman/", "doc_div", null, doReturn);
+}
+
+function doReturn() {
+  if (document.getElementById('doc_div').innerHTML == "yes") {
+    document.location = "/metaman/";
+  }
+}
+</script>
+<form name="doc_form" action="javascript:void(0)" onsubmit="return doSubmit()">
+    <input type="text" name="entry" size="30">
+</form>
+<div id="doc_div" style="visibility: hidden"></div>
