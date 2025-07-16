@@ -665,6 +665,10 @@ def get_author(request):
     if 'edit_dsid' not in request.POST:
         return render(request, "404.html")
 
+    iuser = utils.get_iuser(request)
+    if len(iuser) == 0:
+        return render(request, "500.html")
+
     has_doi = utils.has_doi(request.POST['edit_dsid'])
     if type(has_doi) is str:
         return render(request, "metaman/datasets/get_author.html",
@@ -674,7 +678,6 @@ def get_author(request):
     d = {'has_doi': utils.has_doi(request.POST['edit_dsid']),
          'fname': "", 'mname': "", 'lname': "", 'orcid_id': "",
          'corp_name': "", 'from_ris': False}
-    iuser = utils.get_iuser(request)
     d.update({'is_manager': (iuser in config.metadata_managers)})
     if 'editItem' in request.POST:
         d.update({'replace_item': request.POST['editItem']})

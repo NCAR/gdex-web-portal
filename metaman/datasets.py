@@ -194,6 +194,10 @@ def commit_changes(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
 
+    iuser = utils.get_iuser(request)
+    if len(iuser) == 0:
+        return render(request, "500.html")
+
     ctx = {'dsid': dsid}
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
@@ -213,7 +217,6 @@ def commit_changes(request, dsid):
             ctx.update({'error': "Missing entry for this dataset"})
             return render(request, "metaman/datasets/commit_msg.html", ctx)
 
-        iuser = utils.get_iuser(request)
         if res[0] != iuser:
             ctx.update({'error': ("This dataset is locked by '{}'")
                        .format(res[0])})
@@ -1460,6 +1463,10 @@ def edit(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
 
+    iuser = utils.get_iuser(request)
+    if len(iuser) == 0:
+        return render(request, "500.html")
+
     spellchecker = SpellChecker()
     if not spellchecker.ready:
         return render(
@@ -1468,7 +1475,6 @@ def edit(request, dsid):
                            spellchecker.error + "'")})
 
     ctx = {'dsid': dsid}
-    iuser = utils.get_iuser(request)
     ctx.update({'is_manager': (iuser in config.metadata_managers)})
     if 'clear_changes' in request.POST:
         clear_changes = request.POST['clear_changes']

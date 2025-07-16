@@ -38,6 +38,10 @@ def adopt(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
 
+    iuser = utils.get_iuser(request)
+    if len(iuser) == 0:
+        return render(request, "500.html")
+
     d = {'dsid': dsid}
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
@@ -131,7 +135,6 @@ def adopt(request, dsid):
             else:
                 pub_date = pub_year + "-01-01"
 
-        iuser = get_iuser(request)
         try:
             tdir_name = make_tempdir()
             env = {'TMPDIR': "/data/ptmp"}
@@ -394,6 +397,10 @@ def assign(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
 
+    iuser = utils.get_iuser(request)
+    if len(iuser) == 0:
+        return render(request, "500.html")
+
     ctx = {'dsid': dsid, 'action': "assign"}
     if 'passedTest' in request.POST and request.POST['passedTest'] == "true":
         if len(request.POST['adoi']) == 0:
@@ -405,7 +412,7 @@ def assign(request, dsid):
                 ctx.update({'error': str(o.stderr, encoding="utf-8")})
                 return render(request, "metaman/dois/doi_msg.html", ctx)
 
-        ctx = create_a_real_doi(request, dsid, get_iuser(request), ctx)
+        ctx = create_a_real_doi(request, dsid, iuser, ctx)
         return render(request, "metaman/dois/doi_msg.html", ctx)
 
     ctx.update(create_a_test_doi(dsid, "assign"))
@@ -415,6 +422,10 @@ def assign(request, dsid):
 def supersede(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
+
+    iuser = utils.get_iuser(request)
+    if len(iuser) == 0:
+        return render(request, "500.html")
 
     ctx = {'dsid': dsid, 'action': "supersede"}
     if 'saveMessage' in request.POST and request.POST['saveMessage'] == "true":
@@ -476,7 +487,7 @@ def supersede(request, dsid):
             return render(request, "metaman/dois/doi_msg.html", ctx)
 
         ctx.update({'adoi': request.POST['adoi']})
-        ctx = create_a_real_doi(request, dsid, get_iuser(request), ctx)
+        ctx = create_a_real_doi(request, dsid, iuser, ctx)
         return render(request, "metaman/dois/doi_msg.html", ctx)
 
     ctx.update(create_a_test_doi(dsid, "supersede"))
