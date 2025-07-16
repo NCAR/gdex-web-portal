@@ -11,7 +11,7 @@ from wagtail.documents import urls as wagtaildocs_urls
 from django.views.generic import TemplateView
 from django.contrib.auth.decorators import login_required
 
-from . import views
+from . import redeploys, views
 #from resources import views as resources_views
 from search import views as search_views
 from home import views as home_views
