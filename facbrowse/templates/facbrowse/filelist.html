@@ -281,7 +281,7 @@ function doScriptSubmit() {
         <input type="hidden" name="sd">
         <input type="hidden" name="ed">
         {% if data_base_url %}
-        <input type="hidden" name="server" value="{{ data_base_url }}">
+        <input type="hidden" name="server" value="{{ data_base_url }}/{{ dsid }}">
         {% endif %}
         {% if rda_data_path %}
         <input type="hidden" name="directory" value="{{ rda_data_path }}">
