@@ -38,7 +38,7 @@ def adopt(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
 
-    iuser = utils.get_iuser(request)
+    iuser = get_iuser(request)
     if len(iuser) == 0:
         return render(request, "500.html")
 
@@ -397,7 +397,7 @@ def assign(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
 
-    iuser = utils.get_iuser(request)
+    iuser = get_iuser(request)
     if len(iuser) == 0:
         return render(request, "500.html")
 
@@ -423,7 +423,7 @@ def supersede(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
 
-    iuser = utils.get_iuser(request)
+    iuser = get_iuser(request)
     if len(iuser) == 0:
         return render(request, "500.html")
 
