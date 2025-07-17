@@ -6,6 +6,7 @@ import smtplib
 import subprocess
 
 from datetime import datetime
+from dateutil import tz
 from dsspellchecker import SpellChecker
 from email.message import EmailMessage
 from libpkg.metautils import open_dataset_overview
@@ -79,8 +80,6 @@ def adopt(request, dsid):
             return render(request, "metaman/dois/adopt.html", {'data': d})
 
         d.update({'verified': True})
-        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
-        cursor = conn.cursor()
         cursor.execute((
                 "select * from dssdb.dsvrsn where doi ilike '" +
                 request.POST['vdoi'] + "'"))
@@ -219,22 +218,15 @@ def adopt(request, dsid):
             d.update({'error': err})
             return render(request, "metaman/dois/adopt.html", {'data': d})
 
-        try:
-            env['USER'] = "apache"
-            env['QUERY_STRING'] = "X"
-            o = subprocess.run((
-                    bin_utils['rdadatarun'] + " /usr/local/decs/bin/dsgen " +
-                    dsid),
-                    shell=True, env=env, stdout=subprocess.DEVNULL,
-                    stderr=subprocess.PIPE)
-            if o.stderr:
-                err = "dsgen failure: {}".format(o.stderr.decode("utf-8"))
-                log_error(err, source="adopt")
-                d.update({'error': err})
-                return render(request, "metaman/dois/adopt.html", {'data': d})
-
-        except Exception as err:
-            err = "dsgen failure: {}".format(err)
+        o = subprocess.run((
+                "dsgen --mdb='" +
+                json.dumps(settings.RDADB['metadata_config_pg']) + "' " +
+                "--wdb='" +
+                json.dumps(settings.RDADB['wagtail2_config_pg']) + "' " +
+                ctx['dsid']),
+                shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        if o.stderr:
+            err = "dsgen failure: {}".format(o.stderr.decode("utf-8"))
             log_error(err, source="adopt")
             d.update({'error': err})
             return render(request, "metaman/dois/adopt.html", {'data': d})
@@ -404,13 +396,31 @@ def assign(request, dsid):
     ctx = {'dsid': dsid, 'action': "assign"}
     if 'passedTest' in request.POST and request.POST['passedTest'] == "true":
         if len(request.POST['adoi']) == 0:
-            dsarch_command = (
-                    bin_utils['rdadatarun'] + " /usr/local/decs/bin/dsarch "
-                    "-sv -ds " + dsid + " -nv -dn X -md")
-            o = subprocess.run(dsarch_command, capture_output=True, shell=True)
-            if o.stderr:
-                ctx.update({'error': str(o.stderr, encoding="utf-8")})
+            # 'adoi' could already be 'X' if the assignment process failed
+            #   partway through on a previous attempt
+            try:
+                conn = psycopg2.connect(**settings.RDADB['dssdb_config_pg'])
+                cursor = conn.cursor()
+                now = datetime.now().astimezone(tz.gettz("US/Mountain"))
+                cursor.execute((
+                        "insert into dssdb.dsvrsn (status, dsid, doi, "
+                        "start_date, start_time) values ('A', %s, 'X', %s, "
+                        "%s)"), (dsid, now.date(), now.strftime("%H:%M:%S")))
+                cursor.execute((
+                        "select vindex from dssdb.dsvrsn where dsid = %s and "
+                        "status = 'A'"), (dsid, ))
+                res = cursor.fetchone()
+                if res is not None:
+                    cursor.execute((
+                            "update dssdb.wfile_" + dsid + " set vindex = %s "
+                            "where type = 'D'"), (res[0], ))
+                    conn.commit()
+
+            except psycopg2.Error as err:
+                ctx.update({'error': "Database error '{}'".format(err)})
                 return render(request, "metaman/dois/doi_msg.html", ctx)
+            finally:
+                conn.close()
 
         ctx = create_a_real_doi(request, dsid, iuser, ctx)
         return render(request, "metaman/dois/doi_msg.html", ctx)
@@ -569,6 +579,9 @@ def create_a_real_doi(request, dsid, iuser, ctx):
         lines = out.split("\n")
         parts = lines[0].split()
         ctx.update({'doi': parts[1]})
+        with open("/data/logs/doi_log", "w") as f:
+            f.write("DOI created: {} - dsid: {}".format(ctx['doi'], dsid))
+
         smtp = smtplib.SMTP('localhost')
         msg = EmailMessage()
         msg['From'] = "rdadata@ucar.edu"
@@ -595,10 +608,12 @@ def create_a_real_doi(request, dsid, iuser, ctx):
                              + "," if ctx['action'] == "supersede" else ""),
                             iuser,
                             ctx['datacite_url'],))
-            subprocess.run((
-                    bin_utils['rdadatarun'] + " /usr/local/decs/bin/dsgen " +
-                    dsid),
-                    shell=True, env={'USER': "apache"})
+            o = subprocess.run((
+                    "dsgen --mdb='" +
+                    json.dumps(settings.RDADB['metadata_config_pg']) + "' " +
+                    "--wdb='" +
+                    json.dumps(settings.RDADB['wagtail2_config_pg']) + "' " +
+                    ctx['dsid']), shell=True)
         except psycopg2.Error as err:
             ctx.update({'error': ("A database error occurred: '{}'")
                        .format(err)})
