@@ -479,6 +479,7 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = '[rda.ucar.edu] '
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 SOCIALACCOUNT_STORE_TOKENS = True
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 #ACCOUNT_PREVENT_ENUMERATION = False
 
 ########################################################################
