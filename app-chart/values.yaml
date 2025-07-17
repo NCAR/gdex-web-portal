@@ -1,18 +1,30 @@
 replicaCount: 1
 
 webapp:
-  name: gdex-webserver-test
-  group: gdex-web-test
+  name: gdex-webserver
+  group: gdex-web
   path: /
   tls:
-    fqdn: gdex-web-test.k8s.ucar.edu
-    secretName: incommon-cert-gdex-web-test
+    fqdn: gdex.k8s.ucar.edu
+    secretName: incommon-cert-gdex-webserver
   container: 
-    image: docker.io/dattore/gdex-web-portal:v50
-    port: 443
+    image: docker.io/dattore/gdex-web-portal:v45
+    port: 8080
     requests:
       memory: 64G
       cpu: 4
     limits:
       memory: 128G
       cpu: 8
+
+volume:
+  fs:
+    name: gdexdata
+    size: 55Gi
+    mountPath: /data
+  glade:
+    name: glade-campaign
+    server: gladedm1.ucar.edu
+    path: /gpfs/csfs1
+    mountPath: /glade/campaign
+    readOnly: true
