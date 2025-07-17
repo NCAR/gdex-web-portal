@@ -1,41 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.app.name }}
+  name: {{ .Values.webapp.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Values.app.name }}
-    group: {{ .Values.app.group }}
+    app: {{ .Values.webapp.name }}
+    group: {{ .Values.webapp.group }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Values.app.name }}
+      app: {{ .Values.webapp.name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.app.name }}
+        app: {{ .Values.webapp.name }}
     spec:
       containers:
-      - name: {{ .Values.app.name }}
-        image: {{ .Values.app.container.image }}
+      - name: {{ .Values.webapp.name }}
+        image: {{ .Values.webapp.container.image }}
         resources:
           limits:
-            memory: {{ .Values.app.container.memory }}
-            cpu: {{ .Values.app.container.cpu }}
+            memory: {{ .Values.webapp.container.memory }}
+            cpu: {{ .Values.webapp.container.cpu }}
         ports:
-        - containerPort: {{ .Values.app.container.port }}
-        volumeMounts:
-        - mountPath: {{ .Values.volume.fs.mountPath }}
-          name: {{ .Values.volume.fs.name }}
-        - mountPath: {{ .Values.volume.glade.mountPath }}
-          name: {{ .Values.volume.glade.name }}
-      volumes:
-      - name: {{ .Values.volume.fs.name }}
-        persistentVolumeClaim:
-          claimName: {{ .Values.volume.fs.name }}
-      - name: {{ .Values.volume.glade.name }}
-        nfs:
-          server: {{ .Values.volume.glade.server }}
-          path: {{ .Values.volume.glade.path }}
-          readOnly: {{ .Values.volume.glade.readOnly }}
+        - containerPort: {{ .Values.webapp.container.port }}
