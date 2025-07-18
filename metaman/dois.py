@@ -228,7 +228,7 @@ def adopt(request, dsid):
                 json.dumps(settings.RDADB['metadata_config_pg']) + "' " +
                 "--wdb='" +
                 json.dumps(settings.RDADB['wagtail2_config_pg']) + "' " +
-                ctx['dsid']),
+                dsid),
                 shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         if o.stderr:
             err = "dsgen failure: {}".format(o.stderr.decode("utf-8"))
