@@ -227,9 +227,9 @@ def adopt(request, dsid):
     finally:
         conn.close()
 
-    with open("/data/logs/doi_log", "w") as f:
+    with open("/data/logs/doi_log", "a") as f:
         f.write((
-                "DOI adopted: {} - dsid: {}")
+                "DOI adopted: {} - dsid: {}\n")
                 .format(request.POST['vdoi'], dsid))
 
     smtp = smtplib.SMTP('localhost')
