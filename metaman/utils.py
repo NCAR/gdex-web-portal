@@ -10,6 +10,8 @@ import subprocess
 import sys
 import tempfile
 
+from datetime import datetime
+from dateutil import tz
 from email.message import EmailMessage
 from lxml import etree as ElementTree
 
@@ -1340,3 +1342,21 @@ def horizontal_resolution_keyword(res_type, max_res):
         return "H : >= 1000 km or >= 10 degrees"
 
     return ""
+
+
+def set_wfile_version(dsid, doi, conn):
+    cursor = conn.cursor()
+    now = datetime.now().astimezone(tz.gettz("US/Mountain"))
+    cursor.execute((
+            "insert into dssdb.dsvrsn (status, dsid, doi, start_date, "
+            "start_time) values ('A', %s, %s, %s, %s)"),
+            (dsid, doi, now.date(), now.strftime("%H:%M:%S")))
+    cursor.execute((
+            "select vindex from dssdb.dsvrsn where dsid = %s and status = "
+            "'A'"), (dsid, ))
+    res = cursor.fetchone()
+    if res is not None:
+        cursor.execute((
+                "update dssdb.wfile_" + dsid + " set vindex = %s where type = "
+                "'D'"), (res[0], ))
+        conn.commit()
