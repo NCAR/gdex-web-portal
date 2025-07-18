@@ -6,7 +6,6 @@ import smtplib
 import subprocess
 
 from datetime import datetime
-from dateutil import tz
 from dsspellchecker import SpellChecker
 from email.message import EmailMessage
 from libpkg.metautils import open_dataset_overview
@@ -21,7 +20,7 @@ from .config import (bin_utils,
                      linkcheck_headers,
                      metadata_managers,
                      root_dirs)
-from .utils import check_html, get_iuser, log_error
+from .utils import check_html, get_iuser, log_error, set_wfile_version
 from gdexwebserver.utils import make_tempdir, remove_tempdir
 
 
@@ -173,22 +172,7 @@ def adopt(request, dsid):
             remove_tempdir(tdir_name)
 
         try:
-            now = datetime.now().astimezone(tz.gettz("US/Mountain"))
-            cursor.execute((
-                    "insert into dssdb.dsvrsn (status, dsid, doi, start_date, "
-                    "start_time) values ('A', %s, %s, %s, %s)"),
-                    (dsid, request.POST['vdoi'], now.date(),
-                     now.strftime("%H:%M:%S")))
-            cursor.execute((
-                    "select vindex from dssdb.dsvrsn where dsid = %s and "
-                    "status = 'A'"), (dsid, ))
-            res = cursor.fetchone()
-            if res is not None:
-                cursor.execute((
-                        "update dssdb.wfile_" + dsid + " set vindex = %s "
-                        "where type = 'D'"), (res[0], ))
-                conn.commit()
-
+            set_wfile_version(dsid, request.POST['vdoi'], conn)
         except psycopg2.Error as err:
             err = "Database error: '{}'".format(err)
             log_error(err, source="adopt")
@@ -242,6 +226,11 @@ def adopt(request, dsid):
         d.update({'error': "An error occurred: {}".format(err)})
     finally:
         conn.close()
+
+    with open("/data/logs/doi_log", "w") as f:
+        f.write((
+                "DOI adopted: {} - dsid: {}")
+                .format(request.POST['vdoi'], dsid))
 
     smtp = smtplib.SMTP('localhost')
     msg = EmailMessage()
@@ -405,22 +394,7 @@ def assign(request, dsid):
             #   partway through on a previous attempt
             try:
                 conn = psycopg2.connect(**settings.RDADB['dssdb_config_pg'])
-                cursor = conn.cursor()
-                now = datetime.now().astimezone(tz.gettz("US/Mountain"))
-                cursor.execute((
-                        "insert into dssdb.dsvrsn (status, dsid, doi, "
-                        "start_date, start_time) values ('A', %s, 'X', %s, "
-                        "%s)"), (dsid, now.date(), now.strftime("%H:%M:%S")))
-                cursor.execute((
-                        "select vindex from dssdb.dsvrsn where dsid = %s and "
-                        "status = 'A'"), (dsid, ))
-                res = cursor.fetchone()
-                if res is not None:
-                    cursor.execute((
-                            "update dssdb.wfile_" + dsid + " set vindex = %s "
-                            "where type = 'D'"), (res[0], ))
-                    conn.commit()
-
+                set_wfile_version(dsid, "X", conn)
             except psycopg2.Error as err:
                 ctx.update({'error': "Database error '{}'".format(err)})
                 return render(request, "metaman/dois/doi_msg.html", ctx)
