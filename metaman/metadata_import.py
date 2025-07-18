@@ -114,7 +114,8 @@ def do_gdex_import(request):
                     "gmx:Anchor[@xlink:title='DOI']"),
                     namespaces=root.nsmap)[0].text
             if len(icarus_doi) > 0:
-                ctx['icarus_doi'] = icarus_doi.strip()
+                ctx['icarus_doi'] = (icarus_doi.strip()
+                                     .replace("https://doi.org/", ""))
 
             cursor.execute((
                     "select path, uuid from search.gcmd_platforms where path "
