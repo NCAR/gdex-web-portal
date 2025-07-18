@@ -214,15 +214,15 @@ def get_comparison_dataset(dsid):
 
 def open_cache_for_writing(lkey, nb=True):
     if nb:
-        return open("/usr/local/www/server_root/tmp/browse." + lkey, "w")
+        return open("/data/ptmp/lfd/browse." + lkey, "w")
     else:
-        return open("/usr/local/www/server_root/tmp/browse." + lkey, "a")
+        return open("/data/ptmp/lfd/browse." + lkey, "a")
 
 
 def read_cache(lkey):
     refines = {}
     dsids = []
-    with open("/usr/local/www/server_root/tmp/browse." + lkey, "r") as f:
+    with open("/data/ptmp/lfd/browse." + lkey, "r") as f:
         line = f.readline()
         while line:
             if line[0] == '@':
