@@ -14,70 +14,89 @@ def do_gdex_import(request):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
-        response = requests.get("https://gdex.ucar.edu/dataset/" + request.POST['gdex_path_base'] + ".xml?type=iso19139")
+        response = requests.get((
+               "https://gdex.ucar.edu/dataset/" +
+               request.POST['gdex_path_base'] + ".xml?type=iso19139"))
         root = etree.fromstring(response.content)
-        title = root.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString", namespaces=root.nsmap)[0].text
+        title = root.xpath((
+                "//gmd:identificationInfo/gmd:MD_DataIdentification/"
+                "gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString"),
+                namespaces=root.nsmap)[0].text
         if len(title) > 0:
             ctx['title'] = title
 
-        summary = root.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:abstract/gco:CharacterString", namespaces=root.nsmap)[0].text
+        summary = root.xpath((
+                "//gmd:identificationInfo/gmd:MD_DataIdentification/"
+                "gmd:abstract/gco:CharacterString"),
+                namespaces=root.nsmap)[0].text
         if len(summary) > 0:
-            ctx['summary'] = "<p>" + summary.replace("\n\n", "</p><nl><p>").replace("\n", "<br/>\n").replace("<nl>", "\n").replace("&amp;", "&") + "</p>"
+            ctx['summary'] = (
+                    "<p>" + summary.replace("\n\n", "</p><nl><p>")
+                    .replace("\n", "<br/>\n").replace("<nl>", "\n")
+                    .replace("&amp;", "&") + "</p>")
 
-        authors = root.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:individualName", namespaces=root.nsmap);
+        authors = root.xpath((
+                "//gmd:identificationInfo/gmd:MD_DataIdentification/"
+                "gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/"
+                "gmd:CI_ResponsibleParty/gmd:individualName"),
+                namespaces=root.nsmap)
         auth_list = []
         orcid_id = None
         for author in authors:
-             names = []
-             a = author.xpath("gmx:Anchor", namespaces=root.nsmap)
-             if len(a) > 0:
-                 names = a[0].text.split()
-                 orcid_id = a[0].get("{" + root.nsmap['xlink'] + "}href")
-                 idx = orcid_id.rfind("/")
-                 if idx > 0:
-                     orcid_id = orcid_id[idx+1:]
+            names = []
+            a = author.xpath("gmx:Anchor", namespaces=root.nsmap)
+            if len(a) > 0:
+                names = a[0].text.split()
+                orcid_id = a[0].get("{" + root.nsmap['xlink'] + "}href")
+                idx = orcid_id.rfind("/")
+                if idx > 0:
+                    orcid_id = orcid_id[idx+1:]
 
-             else:
-                 a = author.xpath("gco:CharacterString", namespaces=root.nsmap)
-                 if len(a) > 0:
-                     names = a[0].text.split()
+            else:
+                a = author.xpath("gco:CharacterString", namespaces=root.nsmap)
+                if len(a) > 0:
+                    names = a[0].text.split()
 
-             if len(names) > 0:
-                 lidx = -1
-                 for x in range(0, len(names)):
-                     if names[x][-1] == ',':
-                         lidx = x
-                         break
+            if len(names) > 0:
+                lidx = -1
+                for x in range(0, len(names)):
+                    if names[x][-1] == ',':
+                        lidx = x
+                        break
 
-                 if lidx >= 0:
-                     for x in range(0, lidx+1):
-                         names.append(names[0])
-                         if names[-1][-1] == ',':
-                             names[-1] = names[-1][0:-1]
+                if lidx >= 0:
+                    for x in range(0, lidx+1):
+                        names.append(names[0])
+                        if names[-1][-1] == ',':
+                            names[-1] = names[-1][0:-1]
 
-                         del names[0]
+                        del names[0]
 
-                 print("HERE-A " + str(names) + " " + str(lidx))
-                 author = names[0] + "[!]"
-                 if names[1][-1] == '.':
-                     author += names[1] + "[!]" + " ".join(names[2:])
-                 else:
-                     author += "[!]" + " ".join(names[1:])
+                author = names[0] + "[!]"
+                if names[1][-1] == '.':
+                    author += names[1] + "[!]" + " ".join(names[2:])
+                else:
+                    author += "[!]" + " ".join(names[1:])
 
-                 author += "[!]"
-                 if orcid_id is not None:
-                     author += orcid_id
+                author += "[!]"
+                if orcid_id is not None:
+                    author += orcid_id
 
-                 auth_list.append(author)
+                auth_list.append(author)
 
         if len(auth_list) > 0:
             ctx['authors'] = "\n".join(auth_list)
 
-        keywords = root.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString", namespaces=root.nsmap);
+        keywords = root.xpath((
+                "//gmd:identificationInfo/gmd:MD_DataIdentification/"
+                "gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/"
+                "gco:CharacterString"), namespaces=root.nsmap)
         var_list = []
         for keyword in keywords:
             if keyword.text.find("EARTH SCIENCE >") == 0:
-                cursor.execute("select uuid from search.gcmd_sciencekeywords where path = %s", (keyword.text, ))
+                cursor.execute((
+                        "select uuid from search.gcmd_sciencekeywords where "
+                        "path = %s"), (keyword.text, ))
                 res = cursor.fetchone()
                 if res is not None:
                     var_list.append(keyword.text + "[!]" + res[0])
@@ -88,26 +107,43 @@ def do_gdex_import(request):
         if request.POST['gdex_path_base'].lower()[0:17] == "icarus.experiment":
             ctx['ds_curation'] = "basic"
             ctx['ds_type'] = "primary"
-            icarus_doi = root.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gmx:Anchor[@xlink:title='DOI']", namespaces=root.nsmap)[0].text
+            icarus_doi = root.xpath((
+                    "//gmd:identificationInfo/gmd:MD_DataIdentification/"
+                    "gmd:citation/gmd:CI_Citation/gmd:identifier/"
+                    "gmd:MD_Identifier/gmd:code/"
+                    "gmx:Anchor[@xlink:title='DOI']"),
+                    namespaces=root.nsmap)[0].text
             if len(icarus_doi) > 0:
                 ctx['icarus_doi'] = icarus_doi.strip()
 
-            cursor.execute("select path, uuid from search.gcmd_platforms where path like 'LABORATORY > %'")
+            cursor.execute((
+                    "select path, uuid from search.gcmd_platforms where path "
+                    "like 'LABORATORY > %'"))
             res = cursor.fetchall()
             if len(res) > 0:
                 ctx['platforms'] = "[!]".join(res[0][0:2])
 
-            cursor.execute("select path, uuid from search.gcmd_projects where path like 'ICARUS > %'")
+            cursor.execute((
+                    "select path, uuid from search.gcmd_projects where path "
+                    "like 'ICARUS > %'"))
             res = cursor.fetchall()
             if len(res) > 0:
                 ctx['projects'] = "[!]".join(res[0][0:2])
 
             ctx['iso_topic'] = "environment"
-            ctx['data_type'] = "platform_observation";
-            ctx['format'] = "proprietary_ASCII";
+            ctx['data_type'] = "platform_observation"
+            ctx['format'] = "proprietary_ASCII"
 
-        temporal_starts = root.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:beginPosition", namespaces=root.nsmap)
-        temporal_ends = root.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:endPosition", namespaces=root.nsmap)
+        temporal_starts = root.xpath((
+                "//gmd:identificationInfo/gmd:MD_DataIdentification/"
+                "gmd:extent/gmd:EX_Extent/gmd:temporalElement/"
+                "gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/"
+                "gml:beginPosition"), namespaces=root.nsmap)
+        temporal_ends = root.xpath((
+                "//gmd:identificationInfo/gmd:MD_DataIdentification/"
+                "gmd:extent/gmd:EX_Extent/gmd:temporalElement/"
+                "gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/"
+                "gml:endPosition"), namespaces=root.nsmap)
         if len(temporal_starts) == len(temporal_ends):
             min_tstart = "9999-99-99T99:99:99"
             min_sflag = 6
