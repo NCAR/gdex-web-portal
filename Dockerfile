@@ -62,6 +62,9 @@ ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/l
 rm -rf /data/test/metaman
 mv /usr/local/gdexweb/metaman /data/test/
 ln -s /data/test/metaman /usr/local/gdexweb/metaman
+rm -rf /data/test/redeploys.py
+mv /usr/local/gdexweb/gdexwebserver/redeploys.py /data/test/
+ln -s /data/test/redeploys.py /usr/local/gdexweb/gdexwebserver/redeploys.py
 #
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2
