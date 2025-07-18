@@ -173,19 +173,24 @@ def adopt(request, dsid):
             remove_tempdir(tdir_name)
 
         try:
-            dsarch_command = (
-                    bin_utils['rdadatarun'] + " /usr/local/decs/bin/dsarch "
-                    "-sv -ds " + dsid + " -nv -dn " + request.POST['vdoi'] +
-                    " -md")
-            o = subprocess.run(dsarch_command, capture_output=True, shell=True)
-            if o.stderr:
-                err = "dsarch failure: {}".format(o.stderr.decode("utf-8"))
-                log_error(err, source="adopt")
-                d.update({'error': err})
-                return render(request, "metaman/dois/adopt.html", {'data': d})
+            now = datetime.now().astimezone(tz.gettz("US/Mountain"))
+            cursor.execute((
+                    "insert into dssdb.dsvrsn (status, dsid, doi, start_date, "
+                    "start_time) values ('A', %s, %s, %s, %s)"),
+                    (dsid, request.POST['vdoi'], now.date(),
+                     now.strftime("%H:%M:%S")))
+            cursor.execute((
+                    "select vindex from dssdb.dsvrsn where dsid = %s and "
+                    "status = 'A'"), (dsid, ))
+            res = cursor.fetchone()
+            if res is not None:
+                cursor.execute((
+                        "update dssdb.wfile_" + dsid + " set vindex = %s "
+                        "where type = 'D'"), (res[0], ))
+                conn.commit()
 
-        except Exception as err:
-            err = "dsarch failure: {}".format(err)
+        except psycopg2.Error as err:
+            err = "Database error: '{}'".format(err)
             log_error(err, source="adopt")
             d.update({'error': err})
             return render(request, "metaman/dois/adopt.html", {'data': d})
