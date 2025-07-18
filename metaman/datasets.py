@@ -1335,24 +1335,6 @@ def delete(request, dsid):
             return render(request, "metaman/datasets/delete.html",
                           {'message_list': messages})
 
-        #o = subprocess.check_output((
-        #        bin_utils['rdadatarun'] + " ssh -i " +
-        #        root_dirs['rdadata_home'] + "/.ssh/" + host +
-        #        "-sync_rdadata_rsa -l rdadata rdadata@" + host + ".ucar.edu "
-        #        "\"rm -rf " + root_dirs['web'] + "/internal/datasets/" + dsid +
-        #        "\""),
-        #        shell=True, stderr=subprocess.STDOUT).decode("utf-8")
-        #if o[0:7] == "Success" or o.find("No such file or directory") >= 0:
-        #    messages.append({'success': True,
-        #                     'value': "Internal web directory was deleted"})
-        #else:
-        #    messages.append({
-        #            'success': False,
-        #            'value': ("Deletion of internal web directory failed "
-        #                      "with error '{}'").format(o)})
-        #    return render(request, "metaman/datasets/delete.html",
-        #                  {'message_list': messages})
-
     # unpublish the dataset pages
     unpub_cmd = ("python /usr/local/gdexweb/manage.py unpublish_dataset " +
                  dsid)
@@ -1403,18 +1385,17 @@ def delete(request, dsid):
 
     # remove the cvs document
     cvs_rm = "rm -f " + root_dirs['cvs'] + "/datasets/" + dsid + ".xml,v"
-    o = subprocess.check_output(cvs_rm, shell=True,
-                                stderr=subprocess.STDOUT).decode("utf-8")
-    if o.find("Success") >= 0:
-        messages.append({'success': True,
-                         'value': "The CVS document was removed."})
-    else:
+    o = subprocess.run(cvs_rm, shell=True, capture_output=True)
+    if o.stderr:
         messages.append({
                 'success': False,
                 'value': ("Removal of the CVS document failed with error "
-                          "'{}'").format(o[o.find("Error:"):])})
+                          "'{}'").format(o.stderr.decode("utf-8"))})
         return render(request, "metaman/datasets/delete.html",
                       {'message_list': messages})
+    else:
+        messages.append({'success': True,
+                         'value': "The CVS document was removed."})
 
     # delete the dataset entry in 'search.datasets'
     try:
