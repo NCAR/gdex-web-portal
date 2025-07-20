@@ -229,8 +229,8 @@ def adopt(request, dsid):
 
     with open("/data/logs/doi_log", "a") as f:
         f.write((
-                "DOI adopted: {} - dsid: {}\n")
-                .format(request.POST['vdoi'], dsid))
+                "DOI adopted: {} - dsid: {}, specialist: {}\n")
+                .format(request.POST['vdoi'], dsid, iuser))
 
     smtp = smtplib.SMTP('localhost')
     msg = EmailMessage()
@@ -559,7 +559,9 @@ def create_a_real_doi(request, dsid, iuser, ctx):
         parts = lines[0].split()
         ctx.update({'doi': parts[1]})
         with open("/data/logs/doi_log", "w") as f:
-            f.write("DOI created: {} - dsid: {}".format(ctx['doi'], dsid))
+            f.write((
+                    "DOI created: {} - dsid: {}, specialist: {}")
+                    .format(ctx['doi'], dsid, iuser))
 
         smtp = smtplib.SMTP('localhost')
         msg = EmailMessage()
@@ -587,7 +589,7 @@ def create_a_real_doi(request, dsid, iuser, ctx):
                              + "," if ctx['action'] == "supersede" else ""),
                             iuser,
                             ctx['datacite_url'],))
-            o = subprocess.run((
+            subprocess.run((
                     "dsgen --mdb='" +
                     json.dumps(settings.RDADB['metadata_config_pg']) + "' " +
                     "--wdb='" +
