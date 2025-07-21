@@ -17,3 +17,7 @@ def remove_tempdir(tdir_name):
         shutil.rmtree(tdir_name)
     except Exception:
         pass
+
+
+def utils(request):
+    pass

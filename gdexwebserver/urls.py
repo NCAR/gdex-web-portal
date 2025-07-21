@@ -40,6 +40,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
     path('redeploy/<pkg>/', redeploys.redeploy),
+    path('upload/', views.upload),
     re_path(r'^accounts/profile/$', login_required(TemplateView.as_view(template_name='account/profile.html')), name='user_profile'),
 ]
 

@@ -58,3 +58,7 @@ def error(request):
                 "A server error occurred. Please try again later.")
 
     return HttpResponse("Bad request.")
+
+
+def upload(request):
+    return utils.upload(request)
