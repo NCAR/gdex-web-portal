@@ -10,13 +10,12 @@ webapp:
   container: 
     image: docker.io/dattore/gdex-web-portal:v61
     port: 8080
-    resources:
-      requests:
-        memory: 64Gi
-        cpu: 4
-      limits:
-        memory: 128Gi
-        cpu: 8
+    requests:
+      memory: 64Gi
+      cpu: 4
+    limits:
+      memory: 128Gi
+      cpu: 8
 
 volume:
   fs:
