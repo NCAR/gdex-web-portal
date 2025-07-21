@@ -57,7 +57,7 @@ mv /usr/local/gdexweb/gdexwebserver/settings/base.py /data/local/gdexweb/gdexweb
 ln -s /data/local/gdexweb/gdexwebserver/settings/base.py /usr/local/gdexweb/gdexwebserver/settings/base.py
 ln -s /data/local/gdexweb/gdexwebserver/settings/local_settings.py /usr/local/gdexweb/gdexwebserver/settings/local_settings.py
 ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/local_settings.py
-ln -s /glade/campaign/collections/rda/work/rpconroy/metrics/ /usr/local/gdexweb/media/metrics
+ln -s /glade/campaign/collections/rda/work/rpconroy/metrics/ /data/local/gdexweb/media/metrics/
 #
 # link django apps for testing here
 rm -rf /data/test/metaman
@@ -66,7 +66,6 @@ ln -s /data/test/metaman /usr/local/gdexweb/metaman
 rm -rf /data/test/redeploys.py
 mv /usr/local/gdexweb/gdexwebserver/redeploys.py /data/test/
 ln -s /data/test/redeploys.py /usr/local/gdexweb/gdexwebserver/redeploys.py
-ln -s /data/test/media /usr/local/gdexweb/media/
 #
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2
