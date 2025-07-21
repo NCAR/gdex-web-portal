@@ -20,9 +20,12 @@ spec:
       - name: {{ .Values.webapp.name }}
         image: {{ .Values.webapp.container.image }}
         resources:
+          requests:
+            memory: {{ .Values.webapp.container.requests.memory }}
+            cpu: {{ .Values.webapp.container.requests.cpu }}
           limits:
-            memory: {{ .Values.webapp.container.memory }}
-            cpu: {{ .Values.webapp.container.cpu }}
+            memory: {{ .Values.webapp.container.limits.memory }}
+            cpu: {{ .Values.webapp.container.limits.cpu }}
         ports:
         - containerPort: {{ .Values.webapp.container.port }}
         volumeMounts:
