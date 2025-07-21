@@ -8,7 +8,7 @@ webapp:
     fqdn: gdex.k8s.ucar.edu
     secretName: incommon-cert-gdex-webserver
   container: 
-    image: docker.io/dattore/gdex-web-portal:v67
+    image: docker.io/dattore/gdex-web-portal:v68
     port: 8080
     requests:
       memory: 64Gi
