@@ -6,28 +6,28 @@
 {% else %}
 <script id="submit_adoptdoi_script" language="javascript">
 function verifyDOI() {
-  if (document.adopt.doi.value.length == 0) {
+  if (document.adopt_form.doi.value.length == 0) {
     alert("You must enter a DOI to adopt");
     return false;
   }
-  if (document.adopt.doi.value.substr(0, 3) != "10.") {
+  if (document.adopt_form.doi.value.substr(0, 3) != "10.") {
     alert("You must enter a valid DOI");
     return false;
   }
-  if (document.adopt.res_url.value.length > 0) {
-    if (document.adopt.res_url.value.substr(0, 8) != "https://" && document.adopt.res_url.value.substr(0, 7) != "http://") {
+  if (document.adopt_form.res_url.value.length > 0) {
+    if (document.adopt_form.res_url.value.substr(0, 8) != "https://" && document.adopt_form.res_url.value.substr(0, 7) != "http://") {
       alert("Enter a properly-formed resolution URL");
       return false;
     }
-    parts = document.adopt.res_url.value.split(".");
+    parts = document.adopt_form.res_url.value.split(".");
     if (parts.length < 2) {
       alert("Enter a properly-formed resolution URL");
       return false;
     }
   }
-  let nv_pairs = "vdoi=" + document.adopt.doi.value + "&csrfmiddlewaretoken={{ csrf_token }}";
-  if (document.adopt.res_url.value.length > 0) {
-    nv_pairs += "&res_url=" + document.adopt.res_url.value;
+  let nv_pairs = "vdoi=" + document.adopt_form.doi.value + "&csrfmiddlewaretoken={{ csrf_token }}";
+  if (document.adopt_form.res_url.value.length > 0) {
+    nv_pairs += "&res_url=" + document.adopt_form.res_url.value;
   }
   loadSlug(null, 'adopt/{{ data.dsid }}/', nv_pairs);
   return true;
@@ -54,7 +54,7 @@ function verifyDOI() {
     {% endif %}
 {% else %}
 <h2>Adopt an External DOI for RDA Dataset {{ data.dsid }}</h2>
-<form name="adopt" action="javascript:void(0)" onsubmit="return verifyDOI()">
+<form name="adopt_form" action="javascript:void(0)" onsubmit="return verifyDOI()">
     <div class="row gx-0 mb-2 mb-md-1">
         <div class="col-12 col-md-2 text-end">
              <h5 class="d-inline">External DOI:</h5>&nbsp;
@@ -74,7 +74,7 @@ function verifyDOI() {
         </div>
     </div>
     <center>
-        <button class="btn btn-primary px-2 py-1 border-1 mt-2">Continue</button>
+        <button class="btn btn-primary px-2 py-1 border-1 mt-2" onclick="document.adopt_form.submit()">Continue</button>
     </center>
 </form>
 {% endif %}
