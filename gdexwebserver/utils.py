@@ -19,5 +19,5 @@ def remove_tempdir(tdir_name):
         pass
 
 
-def utils(request):
+def upload(request):
     pass

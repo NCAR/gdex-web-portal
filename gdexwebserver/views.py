@@ -1,7 +1,10 @@
+import smtplib
+
 from django.http import HttpResponse
 from django.shortcuts import render
-import smtplib
 from email.message import EmailMessage
+
+from . import utils
 
 
 def contact_us(request):
