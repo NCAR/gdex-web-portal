@@ -558,7 +558,7 @@ def create_a_real_doi(request, dsid, iuser, ctx):
         lines = out.split("\n")
         parts = lines[0].split()
         ctx.update({'doi': parts[1]})
-        with open("/data/logs/doi_log", "w") as f:
+        with open("/data/logs/doi_log", "a") as f:
             f.write((
                     "DOI created: {} - dsid: {}, specialist: {}")
                     .format(ctx['doi'], dsid, iuser))
