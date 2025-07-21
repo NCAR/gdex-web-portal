@@ -57,6 +57,7 @@ mv /usr/local/gdexweb/gdexwebserver/settings/base.py /data/local/gdexweb/gdexweb
 ln -s /data/local/gdexweb/gdexwebserver/settings/base.py /usr/local/gdexweb/gdexwebserver/settings/base.py
 ln -s /data/local/gdexweb/gdexwebserver/settings/local_settings.py /usr/local/gdexweb/gdexwebserver/settings/local_settings.py
 ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/local_settings.py
+ln -s /glade/campaign/collections/rda/work/rpconroy/metrics/ /usr/local/gdexweb/media/metrics
 #
 # link django apps for testing here
 rm -rf /data/test/metaman
