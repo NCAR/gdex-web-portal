@@ -18,25 +18,7 @@ def metaman_page(request):
     if (settings.ICOOKIE['id'] not in request.COOKIES or
             settings.ICOOKIE['content'] not in
             request.COOKIES[settings.ICOOKIE['id']]):
-        if 'entry' in request.POST:
-            try:
-                conn = psycopg2.connect(**settings.RDADB['dssdb_config_pg'])
-                cursor = conn.cursor()
-                cursor.execute("select logname from dssdb.dssgrp where logname = %s and stat_flag = 'C'", (request.POST['entry'], ))
-                res = cursor.fetchone()
-                if res is not None and res[0] == request.POST['entry']:
-                    response = HttpResponse("yes")
-                    response.set_cookie('duser', res[0] + "@ucar.edu")
-                    response.set_cookie('iuser', res[0] + "@ucar.edu<:>iNt<:>IntSc>")
-                    return response
-            except Exception as err:
-                print(str(err))
-            finally:
-                conn.close()
-            return HttpResponse("no")
-        else:
-            return render(request, "metaman/templogin.html")
-        #return render(request, "403.html")
+        return render(request, "403.html")
 
     qs = Page.objects.type(MetamanPage)
     return render(request, "metaman/metaman_page.html",
