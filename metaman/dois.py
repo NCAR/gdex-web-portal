@@ -131,7 +131,7 @@ def adopt(request, dsid):
                            "not be determined")})
                 return render(request, "metaman/dois/adopt.html", {'data': d})
             else:
-                pub_date = pub_year + "-01-01"
+                pub_date = str(pub_year) + "-01-01"
 
         try:
             tdir_name = make_tempdir()
@@ -220,6 +220,27 @@ def adopt(request, dsid):
             d.update({'error': err})
             return render(request, "metaman/dois/adopt.html", {'data': d})
 
+        with open("/data/logs/doi_log", "a") as f:
+            f.write((
+                    "DOI adopted: {} - dsid: {}, specialist: {}\n")
+                    .format(request.POST['vdoi'], dsid, iuser))
+
+        smtp = smtplib.SMTP('localhost')
+        msg = EmailMessage()
+        msg['From'] = "rdadata@ucar.edu"
+        msg['To'] = "decs-info@ucar.edu"
+        msg['Subject'] = "DOI for " + dsid
+        msg.set_content((
+                "A DOI ({doi}) has been adopted and assigned to dataset "
+                "{dsid} by {iuser}.\n\nYou can view the DOI registration at "
+                "our DOI registration and management service: "
+                "https://commons.datacite.org/doi.org/{doi}").format(
+                        doi=request.POST['vdoi'],
+                        dsid=dsid,
+                        iuser=iuser))
+        smtp.send_message(msg)
+        smtp.quit()
+
     except psycopg2.Error as err:
         d.update({'error': "Database error: {}".format(err)})
     except Exception as err:
@@ -227,26 +248,6 @@ def adopt(request, dsid):
     finally:
         conn.close()
 
-    with open("/data/logs/doi_log", "a") as f:
-        f.write((
-                "DOI adopted: {} - dsid: {}, specialist: {}\n")
-                .format(request.POST['vdoi'], dsid, iuser))
-
-    smtp = smtplib.SMTP('localhost')
-    msg = EmailMessage()
-    msg['From'] = "rdadata@ucar.edu"
-    msg['To'] = "decs-info@ucar.edu"
-    msg['Subject'] = "DOI for " + dsid
-    msg.set_content((
-            "A DOI ({doi}) has been adopted and assigned to dataset {dsid} by "
-            "{iuser}.\n\nYou can view the DOI registration at our DOI "
-            "registration and management service: "
-            "https://commons.datacite.org/doi.org/{doi}").format(
-                    doi=request.POST['vdoi'],
-                    dsid=dsid,
-                    iuser=iuser))
-    smtp.send_message(msg)
-    smtp.quit()
     return render(request, "metaman/dois/adopt.html", {'data': d})
 
 
