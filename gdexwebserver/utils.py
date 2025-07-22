@@ -20,4 +20,29 @@ def remove_tempdir(tdir_name):
 
 
 def upload(request):
-    pass
+    if 'file' in request.FILES and 'path' in request.POST:
+        idx = request.POST['path'].rfind("/")
+        if idx < 0:
+            return HttpResponse("Invalid path.")
+
+        try:
+            pathlib.Path(request.POST['path'][0:idx]).mkdir(parents=True,
+                                                     exist_ok=True)
+            out_len = 0
+            MAX_OUT = 30000000
+            with open(request.POST['path'], "wb") as f:
+                for chunk in request.FILES['file']:
+                    out_len += len(chunk)
+                    if (out_len <= MAX_OUT):
+                        f.write(chunk)
+
+            if out_len > MAX_OUT:
+                os.remove(request.POST['path'])
+                return HttpResponse("File is too large.")
+
+        except Exception as err:
+            return HttpResponse("An error occurred: *{}*.".format(err))
+
+        return HttpResponse("Success.")
+
+    return HttpResponse("Bad request.")
