@@ -7,6 +7,7 @@ metadata:
     group: {{ .Values.webapp.group }}
   annotations:
     cert-manager.io/cluster-issuer: "incommon"
+    nginx.org/proxy-read-timeout: "{{ .Values.webapp.container.responseTimeout }}"
 spec:
   ingressClassName: nginx-external
   tls:

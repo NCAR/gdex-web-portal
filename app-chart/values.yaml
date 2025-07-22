@@ -16,6 +16,7 @@ webapp:
     limits:
       memory: 128Gi
       cpu: 8
+    responseTimeout: 120s
 
 volume:
   fs:
