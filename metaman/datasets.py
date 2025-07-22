@@ -249,7 +249,8 @@ def commit_changes(request, dsid):
                        .format(x[0])})
             return render(request, "metaman/datasets/commit_msg.html", ctx)
 
-    ctx.update({'title': res[5], 'summary': convert_plain_ampersands(res[6]),
+    ctx.update({'title': convert_plain_ampersands(res[5]),
+                'summary': convert_plain_ampersands(res[6]),
                 'contributors': utils.extract_contributors(res[7]),
                 'authors': utils.extract_authors(res[8])})
     if len(res[9]) > 0:
@@ -1813,7 +1814,7 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
 
     e = root.find("./title")
     if e is not None:
-        page_vars['title'] = e.text
+        page_vars['title'] = e.text.replace("&amp;", "&")
         errs = check_title(page_vars['title'], spellchecker)
         if len(errs) > 0:
             errors.update({'title': errs})
