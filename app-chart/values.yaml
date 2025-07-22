@@ -16,7 +16,7 @@ webapp:
     limits:
       memory: 128Gi
       cpu: 8
-    responseTimeout: 120
+    responseTimeout: 180
     maxUploadSize: 30m
 
 volume:
