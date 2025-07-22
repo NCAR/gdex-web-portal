@@ -2,6 +2,8 @@ import os
 import shutil
 import tempfile
 
+from django.http import HttpResponse
+
 
 def make_tempdir():
     try:
