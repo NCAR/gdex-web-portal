@@ -56,7 +56,7 @@ function toggleControlledRequests() {
     spec_reqs_already_open = true;
     spec_req_button.innerHTML = "Hide Requests";
     e.classList.replace('d-none', 'd-block');
-    getContent("specreqs", "/php/ajax/ckrqst.php", null, function() {
+    getContent("specreqs", "/php/ckrqst.php", null, function() {
     document.getElementById('specreqs-refresh').classList.replace('d-none', 'd-block');
     date = new Date();
     document.getElementById('specreqs-refresh-date').innerHTML = "Information valid as of " + ("0" + date.getDate()).slice(-2) + " " + months[date.getMonth()] + " " + date.getFullYear() + " " + ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2) + ":" + ("0" + date.getSeconds()).slice(-2) + " " + timezones[date.getTimezoneOffset() / 60];
@@ -72,7 +72,7 @@ function toggleControlledRequests() {
 function refreshControlledRequests() {
   let e = document.getElementById('myspecreqs');
   if (e.classList.contains('d-block')) {
-    getContent("specreqs", "/php/ajax/ckrqst.php", null, function () {
+    getContent("specreqs", "/php/ckrqst.php", null, function () {
       date = new Date();
       document.getElementById('specreqs-refresh-date').innerHTML = "Information valid as of " + ("0" + date.getDate()).slice(-2) + " " + months[date.getMonth()] + " " + date.getFullYear() + " " + ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2) + ":" + ("0" + date.getSeconds()).slice(-2) + " " + timezones[date.getTimezoneOffset() / 60];
     });
