@@ -1,5 +1,7 @@
+import json
 import subprocess
 
+from django.conf import settings
 from django.http import HttpResponse
 
 
@@ -12,10 +14,19 @@ def respond(o):
     return HttpResponse(o)
 
 
-def redeploy_dsgen():
-    o = subprocess.run((
-            "pip install git+https://github.com/rda-dattore/testpkg#"
-            "subdirectory=dsgen"), shell=True, capture_output=True)
+def redeploy_dsgen(ident):
+    if len(ident) == 5:
+        o = subprocess.run((
+                "pip install git+https://github.com/rda-dattore/testpkg#"
+                "subdirectory=dsgen"), shell=True, capture_output=True)
+    else:
+        o = subprocess.run((
+                "/usr/local/gdexweb/bin/dsgen --mdb='" +
+                json.dumps(settings.RDADB['metadata_config_pg']) + "' --wdb='"
+                + json.dumps(settings.RDADB['wagtail2_config_pg']) + "' " +
+                ident[5:]),
+                shell=True, capture_output=True)
+
     return respond(o)
 
 
@@ -35,8 +46,8 @@ def redeploy_spellchecker():
 
 
 def redeploy(request, pkg):
-    if pkg == "dsgen":
-        return redeploy_dsgen()
+    if pkg[0:5] == "dsgen":
+        return redeploy_dsgen(pkg)
     elif pkg == "libpkg":
         return redeploy_libpkg()
     elif pkg == "spellchecker":
