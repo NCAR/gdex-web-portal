@@ -38,6 +38,8 @@ def upload(request):
                     out_len += len(chunk)
                     if (out_len <= MAX_OUT):
                         f.write(chunk)
+                    else:
+                        break
 
             if out_len > MAX_OUT:
                 os.remove(request.POST['path'])
