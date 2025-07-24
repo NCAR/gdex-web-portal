@@ -112,9 +112,9 @@ def do_gdex_import(request):
                     "gmd:citation/gmd:CI_Citation/gmd:identifier/"
                     "gmd:MD_Identifier/gmd:code/"
                     "gmx:Anchor[@xlink:title='DOI']"),
-                    namespaces=root.nsmap)[0].text
+                    namespaces=root.nsmap)
             if len(icarus_doi) > 0:
-                ctx['icarus_doi'] = (icarus_doi.strip()
+                ctx['icarus_doi'] = (icarus_doi[0].text.strip()
                                      .replace("https://doi.org/", ""))
 
             cursor.execute((
