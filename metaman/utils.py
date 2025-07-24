@@ -390,7 +390,7 @@ def check_html(html, spellchecker):
     check_text = "".join(
             [ElementTree.tostring(e).decode("ascii") for e in root])
     spellchecker.check(
-            convert_html_to_text(html).encode("latin-1")
+            convert_html_to_text(html).encode("utf-8")
                                       .decode("unicode-escape"))
     if len(spellchecker.misspelled_words) > 0:
         errs.append((
