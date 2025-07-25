@@ -561,7 +561,7 @@ def create_a_real_doi(request, dsid, iuser, ctx):
         ctx.update({'doi': parts[1]})
         with open("/data/logs/doi_log", "a") as f:
             f.write((
-                    "DOI created: {} - dsid: {}, specialist: {}")
+                    "DOI created: {} - dsid: {}, specialist: {}\n")
                     .format(ctx['doi'], dsid, iuser))
 
         smtp = smtplib.SMTP('localhost')
