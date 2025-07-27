@@ -1,7 +1,8 @@
+import psycopg2
 import smtplib
 
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from email.message import EmailMessage
 
 from . import utils
@@ -65,3 +66,19 @@ def error(request):
 
 def upload(request):
     return utils.upload(request)
+
+
+def do_redirect(request, old_gdex_path):
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        cursor.execute((
+                "select dsid from search.gdex_crossref where old_gdex_path = "
+                "%s"), (old_gdex_path, ))
+        dsid = cursor.fetchone()
+        if dsid is None:
+            return render(request, "404.html")
+
+        return redirect("/datasets/" + dsid[0] + "/")
+    except Exception:
+        return render(request, "500.html")
