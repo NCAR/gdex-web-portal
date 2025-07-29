@@ -87,6 +87,11 @@
                 {{ table.format }} parameter table: <a href="javascript:void(0)" onclick="$.get('/datasets/{{ page.dsid }}/{{ table.html }}', replace_ds_content)">HTML</a>{% if table.xml %} | <a href="/datasets/{{ page.dsid }}/{{ table.xml }}">XML</a>{% endif %}
             </div>
             {% endfor %}
+            {% if page.variables.list %}
+            <div>
+                <a href="{{ page.variables.listlist }}" target="_detailed_variables">Detailed List of Variables</a>&nbsp;<sup><img src="/images/newwin.gif" class="w-auto h-auto" title="opens in a new tab"></sup>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
