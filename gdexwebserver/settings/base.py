@@ -492,3 +492,17 @@ GMAP_API_KEY = local_settings.gmap_api_key
 ICOOKIE = local_settings.ICOOKIE
 
 CSRF_TRUSTED_ORIGINS = ["https://gdex.k8s.ucar.edu"]
+
+REST_FRAMEWORK = {
+   # YOUR SETTINGS
+   'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+
+SPECTACULAR_SETTINGS = {
+   'TITLE': 'RDA Datasets API',
+   'DESCRIPTION': 'Research Data Archive API for accessing and discovering scientific datasets.',
+   'VERSION': '1.0.0',
+   'SERVE_INCLUDE_SCHEMA': False,
+   # OTHER SETTINGS
+}
