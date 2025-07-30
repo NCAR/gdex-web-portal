@@ -1,0 +1,333 @@
+{% load wagtailcore_tags %}
+
+
+{% if 'error' in matrix %}
+   <h3>{{ matrix.error.header }}</h3>
+   <p>{{ matrix.error.message|richtext }}</p>
+   {% if 'module' in matrix.error %}
+       <p>module: {{ matrix.error.module }}</p>
+   {% endif %}
+{% else %}
+   <script id="globus_script" src="/js/rda_globus.js" type="text/javascript"></script>
+   <script type="text/javascript">
+       $(document).on("ajaxSend", function() {
+           $('[data-bs-toggle="tooltip"]').tooltip('hide');
+           $("#ds_content").html('<div class="text-center mt-3" id="loading"><strong>Loading ... &nbsp;&nbsp;</strong><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>');
+       });
+
+
+       $(document).ready(function() {
+           var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+           var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+               return new bootstrap.Tooltip(tooltipTriggerEl);
+           });
+       });
+   </script>
+   <style>
+     .dropdown-divider {
+           border-top: 1px solid #6c757d !important;
+           opacity: 0.8 !important;
+           margin: 0.5rem 0 !important;
+     }
+     .btn-group .btn:first-child {
+           border-top-right-radius: 0;
+           border-bottom-right-radius: 0;
+     }
+     .btn-group .btn:last-child {
+           border-top-left-radius: 0;
+           border-bottom-left-radius: 0;
+           border-left: 0;
+     }
+     .btn-group .dropdown-toggle-split {
+           padding-left: 0.5rem;
+           padding-right: 0.5rem;
+           min-width: 2.5rem;
+           flex: 0 0 15% !important;
+           border-left: 2px solid rgba(255, 255, 255, 0.3) !important;
+     }
+     .btn-group .btn:first-child {
+           flex: 0 0 85% !important;
+     }
+   </style>
+
+
+   <!-- Main Data Access Actions -->
+   <div class="container my-5">
+       <div class="text-center mb-4">
+           <h2 class="text-black fs-3 fw-bold">Data Access</h2>
+           <p class="lead text-muted">Choose your preferred method to access the dataset</p>
+       </div>
+       <div class="row justify-content-center g-4">
+           {% if matrix.columns.web_files %}
+               <div class="col-12 col-lg-6 d-flex">
+                   {% comment %} Filter out analysis ready groups for main button {% endcomment %}
+                   {% if matrix.group_data and matrix.union_urls.web_files %}
+                       <div class="btn-group w-100 h-100" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Download complete dataset files directly to your computer">
+                           <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center">
+                               <h3 class="mb-0 fs-4 fw-bold">Download Full Files</h3>
+                           </a>
+                           <button type="button" class="btn btn-primary btn-lg dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                               <span class="visually-hidden">Toggle Dropdown</span>
+                           </button>
+                           <ul class="dropdown-menu">
+                               {% if matrix.columns.glade %}
+                                   <li><a class="dropdown-item" href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}', replace_ds_content)">NCAR GLADE</a></li>
+                                   <li><hr class="dropdown-divider"></li>
+                               {% endif %}
+                               {% for group in matrix.group_data %}
+                                   {% if group.dwebcnt > 0 and group.index >= 0 %}
+                                       <li><a class="dropdown-item" href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}{{ group.index }}/', replace_ds_content)">
+                                           {{ group.title|striptags }}
+                                       </a></li>
+                                   {% endif %}
+                               {% endfor %}
+                           </ul>
+                       </div>
+                   {% elif matrix.group_data %}
+                       <div class="dropdown w-100 h-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Download complete dataset files directly to your computer">
+                           <button class="btn btn-primary btn-lg w-100 h-100 d-flex align-items-center justify-content-center dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                               <h3 class="mb-0 fs-4 fw-bold">Download Full Files</h3>
+                           </button>
+                           <ul class="dropdown-menu w-100">
+                               {% if matrix.columns.glade %}
+                                   <li><a class="dropdown-item" href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}', replace_ds_content)">NCAR GLADE</a></li>
+                                   <li><hr class="dropdown-divider"></li>
+                               {% endif %}
+                               {% for group in matrix.group_data %}
+                                   {% if group.dwebcnt > 0 and group.index >= 0 %}
+                                       <li><a class="dropdown-item" href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}{{ group.index }}/', replace_ds_content)">
+                                           {{ group.title|striptags }}
+                                       </a></li>
+                                   {% endif %}
+                               {% endfor %}
+                           </ul>
+                       </div>
+                   {% else %}
+                       <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)" class="btn btn-primary btn-lg w-100 h-100 d-flex align-items-center justify-content-center text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Download complete dataset files directly to your computer">
+                           <h3 class="mb-0 fs-4 fw-bold">Download Full Files</h3>
+                       </a>
+                   {% endif %}
+               </div>
+           {% endif %}
+          
+           {% if matrix.columns.subset %}
+               <div class="col-12 col-lg-6 d-flex">
+                   {% if matrix.group_data and matrix.union_urls.subset %}
+                       <div class="btn-group w-100 h-100" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Create custom subsets by selecting specific variables, time ranges, or geographic regions">
+                           <a href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}" class="btn btn-success btn-lg d-flex align-items-center justify-content-center text-white">
+                               <h3 class="mb-0 fs-4 fw-bold">Request a Subset</h3>
+                           </a>
+                           <button type="button" class="btn btn-success btn-lg dropdown-toggle dropdown-toggle-split text-white" data-bs-toggle="dropdown" aria-expanded="false">
+                               <span class="visually-hidden">Toggle Dropdown</span>
+                           </button>
+                           <ul class="dropdown-menu">
+                               {% for group in matrix.group_data %}
+                                   {% if group.urls.subset and group.index >= 0 %}
+                                       <li><a class="dropdown-item" href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ group.urls.subset }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">
+                                           {{ group.title|striptags }}
+                                       </a></li>
+                                   {% endif %}
+                               {% endfor %}
+                           </ul>
+                       </div>
+                   {% elif matrix.group_data %}
+                       <div class="dropdown w-100 h-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Create custom subsets by selecting specific variables, time ranges, or geographic regions">
+                           <button class="btn btn-success btn-lg w-100 h-100 d-flex align-items-center justify-content-center dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #198754 !important; border-color: #198754 !important; color: white !important;">
+                               <h3 class="mb-0 fs-4 fw-bold" style="color: white !important;">Request a Subset</h3>
+                           </button>
+                           <ul class="dropdown-menu w-100">
+                               {% for group in matrix.group_data %}
+                                   {% if group.urls.subset and group.index >= 0 %}
+                                       <li><a class="dropdown-item" href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ group.urls.subset }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">
+                                           {{ group.title|striptags }}
+                                       </a></li>
+                                   {% endif %}
+                               {% endfor %}
+                           </ul>
+                       </div>
+                   {% else %}
+                       {% if matrix.union_urls.subset %}
+                           <a href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}" class="btn btn-success btn-lg w-100 h-100 d-flex align-items-center justify-content-center text-center text-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Create custom subsets by selecting specific variables, time ranges, or geographic regions">
+                               <h3 class="mb-0 fs-4 fw-bold">Request a Subset</h3>
+                           </a>
+                       {% else %}
+                           <div class="btn btn-outline-secondary btn-lg w-100 h-100 d-flex align-items-center justify-content-center text-center disabled opacity-50" data-bs-toggle="tooltip" data-bs-placement="top" title="Subset functionality is not available for this dataset">
+                               <h3 class="mb-0 fs-4 fw-bold">Subset Not Available</h3>
+                           </div>
+                       {% endif %}
+                   {% endif %}
+               </div>
+           {% endif %}
+       </div>
+   </div>
+
+
+   <!-- Additional Services -->
+   {% if matrix.columns.other or matrix.columns.globus or matrix.columns.data_format_conversion or matrix.group_data %}
+       <div class="container my-5">
+           <div class="text-center mb-4">
+               <h4 class="text-secondary fs-5">Additional Services</h4>
+               <p class="text-muted small">Alternative access methods and specialized tools</p>
+           </div>
+           <div class="row justify-content-center g-3">
+              
+               <!-- THREDDS/OPeNDAP -->
+               {% if matrix.columns.other %}
+                   <div class="col-6 col-md-4 col-lg-3 d-flex">
+                       {% if matrix.union_urls.dap %}
+                           {% if matrix.group_data %}
+                               <div class="btn-group w-100" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="{% if 'thredds' in matrix.union_urls.dap %}Access data through THREDDS Data Server for web-based data services{% else %}Access data remotely using OPeNDAP protocol for programmatic data retrieval{% endif %}">
+                                   {% if 'thredds' in matrix.union_urls.dap %}
+                                       <a href="{{ matrix.union_urls.dap }}" class="btn btn-outline-info btn-sm d-flex align-items-center justify-content-center" style="flex: 0 0 80%;">
+                                   {% else %}
+                                       <a href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ matrix.union_urls.dap }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}" class="btn btn-outline-info btn-sm d-flex align-items-center justify-content-center" style="flex: 0 0 80%;">
+                                   {% endif %}
+                                       <h5 class="mb-0 fs-6 fw-medium">{% if 'thredds' in matrix.union_urls.dap %}THREDDS{% else %}OPeNDAP{% endif %}</h5>
+                                   </a>
+                                   <button type="button" class="btn btn-outline-info btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" style="flex: 0 0 20%; border-left: 1px solid rgba(13, 202, 240, 0.3);">
+                                       <span class="visually-hidden">Toggle Dropdown</span>
+                                   </button>
+                                   <ul class="dropdown-menu">
+                                       {% for group in matrix.group_data %}
+                                           {% if group.urls.dap and group.index >= 0 %}
+                                               {% if 'thredds' in group.urls.dap %}
+                                                   <li><a class="dropdown-item" href="{{ group.urls.dap }}">
+                                               {% else %}
+                                                   <li><a class="dropdown-item" href="{% if matrix.duser %}{{ group.urls.dap }}{% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">
+                                               {% endif %}
+                                               {{ group.title|striptags }}
+                                               </a></li>
+                                           {% endif %}
+                                       {% endfor %}
+                                   </ul>
+                               </div>
+                           {% else %}
+                               <a href="{% if 'thredds' in matrix.union_urls.dap %}{{ matrix.union_urls.dap }}{% else %}{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ matrix.union_urls.dap }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}{% endif %}" class="btn btn-outline-info btn-sm w-100 d-flex align-items-center justify-content-center text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="{% if 'thredds' in matrix.union_urls.dap %}Access data through THREDDS Data Server for web-based data services{% else %}Access data remotely using OPeNDAP protocol for programmatic data retrieval{% endif %}">
+                                   <h5 class="mb-0 fs-6 fw-medium">{% if 'thredds' in matrix.union_urls.dap %}THREDDS{% else %}OPeNDAP{% endif %}</h5>
+                               </a>
+                           {% endif %}
+                       {% else %}
+                           <div class="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center justify-content-center text-center disabled opacity-50" data-bs-toggle="tooltip" data-bs-placement="top" title="THREDDS/OPeNDAP access is not available for this dataset">
+                               <h5 class="mb-0 fs-6 fw-medium">THREDDS</h5>
+                           </div>
+                       {% endif %}
+                   </div>
+               {% endif %}
+              
+               <!-- Globus -->
+               {% if matrix.columns.globus %}
+                   <div class="col-6 col-md-4 col-lg-3 d-flex">
+                       {% if matrix.union_urls.globus %}
+                           <a href="{{ matrix.union_urls.globus }}" class="btn btn-outline-info btn-sm w-100 d-flex align-items-center justify-content-center text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="High-speed, reliable data transfer using Globus for large datasets">
+                               <h5 class="mb-0 fs-6 fw-medium">Globus</h5>
+                           </a>
+                       {% else %}
+                           <div class="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center justify-content-center text-center disabled opacity-50" data-bs-toggle="tooltip" data-bs-placement="top" title="Globus transfer is not available for this dataset">
+                               <h5 class="mb-0 fs-6 fw-medium">Globus</h5>
+                           </div>
+                       {% endif %}
+                   </div>
+               {% endif %}
+              
+               <!-- Format Conversion -->
+               {% if matrix.columns.data_format_conversion %}
+                   <div class="col-6 col-md-4 col-lg-3 d-flex">      
+                           {% if matrix.columns.data_format_conversion == 'global' and matrix.union_urls.data_format_conversion and group.urls.data_format_conversion %}
+                               {% comment %} Split button: union URL + group dropdown {% endcomment %}
+                               <div class="btn-group w-100" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Convert data to different file formats (NetCDF, CSV, etc.) for compatibility with various analysis tools">
+                                   <a href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ matrix.union_urls.data_format_conversion }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}" class="btn btn-outline-info btn-sm d-flex align-items-center justify-content-center" style="flex: 0 0 80%;">
+                                       <h5 class="mb-0 fs-6 fw-medium">Format Conversion</h5>
+                                   </a>
+                                   <button type="button" class="btn btn-outline-info btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" style="flex: 0 0 20%; border-left: 1px solid rgba(13, 202, 240, 0.3);">
+                                       <span class="visually-hidden">Toggle Dropdown</span>
+                                   </button>
+                                   <ul class="dropdown-menu">
+                                       {% for group in matrix.group_data %}
+                                           {% if group.urls.data_format_conversion and group.index >= 0 %}
+                                               <li><a class="dropdown-item" href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ group.urls.data_format_conversion }}?converted=True', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">
+                                                   {{ group.title|striptags }}
+                                               </a></li>
+                                           {% endif %}
+                                       {% endfor %}
+                                   </ul>
+                               </div>
+                           {% elif matrix.group_data %}
+                               {% comment %} Dropdown only: no union URL but has groups {% endcomment %}
+                               <div class="dropdown w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Convert data to different file formats (NetCDF, CSV, etc.) for compatibility with various analysis tools">
+                                   <button class="btn btn-outline-info btn-sm w-100 d-flex align-items-center justify-content-center dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                       <h5 class="mb-0 fs-6 fw-medium">Format Conversion</h5>
+                                   </button>
+                                   <ul class="dropdown-menu w-100">
+                                       {% for group in matrix.group_data %}
+                                           {% if group.urls.data_format_conversion and group.index >= 0 %}
+                                               <li><a class="dropdown-item" href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ group.urls.data_format_conversion }}?converted=True', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">
+                                                   {{ group.title|striptags }}
+                                               </a></li>
+                                           {% endif %}
+                                       {% endfor %}
+                                   </ul>
+                               </div>
+                           {% else %}
+                               {% if matrix.columns.data_format_conversion == 'global' and matrix.union_urls.data_format_conversion %}
+                                   <a href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ matrix.union_urls.data_format_conversion }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}" class="btn btn-outline-info btn-sm w-100 d-flex align-items-center justify-content-center text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Convert data to different file formats (NetCDF, CSV, etc.) for compatibility with various analysis tools">
+                                       <h5 class="mb-0 fs-6 fw-medium">Format Conversion</h5>
+                                   </a>
+                               {% else %}
+                                   <div class="btn btn-outline-info btn-sm w-100 d-flex align-items-center justify-content-center text-center disabled opacity-50" data-bs-toggle="tooltip" data-bs-placement="top" title="Format conversion is not available for this dataset">
+                                       <h5 class="mb-0 fs-6 fw-medium">Format Conversion</h5>
+                                   </div>
+                               {% endif %}
+                           {% endif %}
+                   </div>
+               {% endif %}
+
+
+               <!-- Analysis Ready Data Groups -->
+               {% for group in matrix.group_data %}
+                   {% if group.index < 0 and group.dwebcnt > 0 %}
+                       <div class="col-6 col-md-4 col-lg-3 d-flex">
+                           {% comment %} Check if group has additional services for dropdown {% endcomment %}
+                           {% with has_additional_services=False %}
+                               {% if group.urls.subset or group.urls.dap or group.urls.data_format_conversion %}
+                                   {% with has_additional_services=True %}{% endwith %}
+                               {% endif %}
+                              
+                               {% if has_additional_services %}
+                                   <div class="btn-group w-100" role="group">
+                                       <a href="javascript:void(0)" onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)" class="btn btn-secondary btn-sm d-flex align-items-center justify-content-center flex-grow-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {{ group.title|striptags }} - Analysis Ready Data">
+                                           <div class="text-center">
+                                               <div class="fw-medium small">{{ group.title|striptags|truncatechars:15 }}</div>
+                                               <small class="text-white fw-bold">Analysis Ready</small>
+                                           </div>
+                                       </a>
+                                       <button type="button" class="btn btn-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" style="flex: 0 0 20%;">
+                                           <span class="visually-hidden">Toggle Dropdown</span>
+                                       </button>
+                                       <ul class="dropdown-menu">
+                                           {% if group.urls.subset %}
+                                               <li><a class="dropdown-item" href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ group.urls.subset }}', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">Request Subset</a></li>
+                                           {% endif %}
+                                           {% if group.urls.dap %}
+                                               <li><a class="dropdown-item" href="{% if 'thredds' in group.urls.dap %}{{ group.urls.dap }}{% else %}{% if matrix.duser %}{{ group.urls.dap }}{% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}{% endif %}">{% if 'thredds' in group.urls.dap %}THREDDS{% else %}OPeNDAP{% endif %}</a></li>
+                                           {% endif %}
+                                           {% if group.urls.data_format_conversion %}
+                                               <li><a class="dropdown-item" href="{% if matrix.duser %}javascript:void(0)" onclick="$.get('{{ group.urls.data_format_conversion }}?converted=True', replace_ds_content){% else %}/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/{% endif %}">Format Conversion</a></li>
+                                           {% endif %}
+                                       </ul>
+                                   </div>
+                               {% else %}
+                                   <a href="javascript:void(0)" onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)" class="btn btn-secondary btn-sm w-100 d-flex align-items-center justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {{ group.title|striptags }} - Analysis Ready Data">
+                                       <div class="text-center">
+                                           <div class="fw-medium small">{{ group.title|striptags|truncatechars:15 }}</div>
+                                           <small class="text-white fw-bold">Analysis Ready</small>
+                                       </div>
+                                   </a>
+                               {% endif %}
+                           {% endwith %}
+                       </div>
+                   {% endif %}
+               {% endfor %}
+           </div>
+       </div>
+   {% endif %}
+{% endif %}

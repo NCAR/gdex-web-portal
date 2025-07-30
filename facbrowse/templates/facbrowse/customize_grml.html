@@ -2,305 +2,818 @@
 {% if curl_subset %}
 <style id="curl_style" type="text/css">
 .curl {
-  color: brown;
-  font-size: 16px;
+ color: brown;
+ font-size: 16px;
 }
 </style>
 {% endif %}
+
+
+<style>
+ .timeline-container {
+   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+   border-radius: 8px;
+   padding: 20px;
+   margin: 20px 0;
+   border: 1px solid #dee2e6;
+ }
+
+
+ .timeline-wrapper {
+   position: relative;
+   height: 60px;
+   margin: 15px 0;
+ }
+
+
+ .timeline-track {
+   position: absolute;
+   top: 50%;
+   left: 0;
+   right: 0;
+   height: 6px;
+   background: #e9ecef;
+   border-radius: 3px;
+   transform: translateY(-50%);
+ }
+
+
+ .timeline-selection {
+   position: absolute;
+   top: 50%;
+   height: 10px;
+   background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+   border-radius: 5px;
+   transform: translateY(-50%);
+   transition: all 0.3s ease;
+   width: 0%;
+   left: 0%;
+ }
+
+
+ .timeline-dates {
+   display: flex;
+   justify-content: space-between;
+   font-size: 12px;
+   color: #6c757d;
+ }
+
+
+ .timeline-stats {
+   display: flex;
+   justify-content: space-around;
+   margin-top: 10px;
+   font-size: 14px;
+ }
+
+
+ .stat-item {
+   text-align: center;
+ }
+
+
+ .stat-value {
+   font-weight: bold;
+   color: #28a745;
+ }
+ /* Parameter Search Styles */
+ .parameter-search-container {
+   margin: 20px 0;
+ }
+
+
+ .search-box {
+   width: 100%;
+   padding: 10px;
+   border: 2px solid #ddd;
+   border-radius: 25px;
+   font-size: 16px;
+   outline: none;
+   transition: border-color 0.3s;
+ }
+
+
+ .search-box:focus {
+   border-color: #007bff;
+ }
+
+
+ .parameter-list {
+   max-height: 300px;
+   overflow-y: auto;
+   border: 1px solid #ddd;
+   border-radius: 8px;
+   margin-top: 10px;
+   background: white;
+ }
+
+
+ .parameter-item {
+   padding: 10px;
+   border-bottom: 1px solid #eee;
+   display: flex;
+   align-items: center;
+   transition: background-color 0.2s;
+ }
+
+
+ .parameter-item:hover {
+   background-color: #f5f5f5;
+ }
+
+
+ .parameter-item:last-child {
+   border-bottom: none;
+ }
+
+
+ .parameter-item input[type="checkbox"] {
+   margin-right: 10px;
+   transform: scale(1.2);
+ }
+
+
+ .parameter-item.hidden {
+   display: none;
+ }
+
+
+ .search-stats {
+   padding: 10px;
+   background: #f8f9fa;
+   border-bottom: 1px solid #ddd;
+   font-size: 14px;
+   color: #666;
+ }
+
+
+ .selection-summary-bar {
+   background: #f8f9fa;
+   border: 1px solid #dee2e6;
+   border-radius: 0.375rem;
+   padding: 0.75rem;
+   margin-bottom: 1rem;
+   min-height: 60px;
+   position: sticky;
+   top: 0;
+   z-index: 1000;
+   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+ }
+
+
+ .view-section {
+   display: none;
+ }
+
+
+ .view-section.active {
+   display: block;
+ }
+
+
+ .info {
+   display: none;
+   position: absolute;
+   background: #f0f0ff;
+   border: 1px solid #ccc;
+   padding: 10px;
+   border-radius: 5px;
+   z-index: 1001;
+ }
+
+
+ @media (max-width: 768px) {
+   .main-container {
+     flex-direction: column;
+   }
+  
+   .sidebar {
+     margin-bottom: 1rem;
+   }
+ }
+</style>
+
+
 {% if presets %}
 <script id="presets_script" language="javascript">
-    function setPreset() {
-
-      // the preset menu was changed, so reset all of the parameter checkboxes
-      for (n = 0; n < document.customize.elements.length; ++n) {
-        if (document.customize.elements[n].type == "checkbox" && document.customize.elements[n].checked) {
-          document.customize.elements[n].checked = false;
-        }
-      }
-      if (document.customize.preset.selectedIndex > 0) {
-
-        // a preset was selected
-        p = document.customize.preset[document.customize.preset.selectedIndex].value;
-        for (n = 0; n < document.customize.elements.length; ++n) {
-          {% for preset in presets %}
-          if (document.customize.elements[n].type == "checkbox" && p == '{{ preset.description }}') {
-            arr = document.customize.elements[n].value.split("[!]");
-            arr = arr[0].split(",");
-            for (m = 0; m < arr.length; ++m) {
-              {% for code in preset.codes %}
-              {% if forloop.counter > 1 %}} else {% endif %}if (arr[m] == "{{ code }}") {
-                document.customize.elements[n].checked = true;
-              {% endfor %}
-              }
-            }
-          }
-          {% endfor %}
-        }
-      }
-    }
+   function setPreset() {
+     // the preset menu was changed, so reset all of the parameter checkboxes
+     for (n = 0; n < document.customize.elements.length; ++n) {
+       if (document.customize.elements[n].type == "checkbox" && document.customize.elements[n].checked) {
+         document.customize.elements[n].checked = false;
+       }
+     }
+     if (document.customize.preset.selectedIndex > 0) {
+       // a preset was selected
+       p = document.customize.preset[document.customize.preset.selectedIndex].value;
+       for (n = 0; n < document.customize.elements.length; ++n) {
+         {% for preset in presets %}
+         if (document.customize.elements[n].type == "checkbox" && p == '{{ preset.description }}') {
+           arr = document.customize.elements[n].value.split("[!]");
+           arr = arr[0].split(",");
+           for (m = 0; m < arr.length; ++m) {
+             {% for code in preset.codes %}
+             {% if forloop.counter > 1 %}} else {% endif %}if (arr[m] == "{{ code }}") {
+               document.customize.elements[n].checked = true;
+             {% endfor %}
+             }
+           }
+         }
+         {% endfor %}
+       }
+     }
+     updateSelectionSummary();
+     updateSearchStats();
+   }
 </script>
 {% endif %}
+
+
 <script id="calendar_script" language="javascript" type="text/javascript" src="/js/calendar.js"></script>
 <link rel="stylesheet" type="text/css" href="/css/calendar.css" />
+
+
 <script id="customize_script" language="javascript">
 sdate = '{{ start_date }} {{ start_time }}';
 edate = '{{ end_date }} {{ end_time }}';
 
-function doCustomize() {
-  parameters = '';
-  if (document.customize.startDate.value.length != 10 || document.customize.endDate.value.length != 10) {
-    popModalWindowWithHTML(600, 200,
-        "<h3>Error</h3>" +
-        "Dates must be entered as 'YYYY-MM-DD'.");
-    return false;
-  }
-  isGoodDate = true;
-  for (n = 0; n < 10; ++n) {
-    if (n <= 3 || n == 5 || n == 6 || n == 8 || n == 9) {
-      if (document.customize.startDate.value.charAt(n) < '0' || document.customize.startDate.value.charAt(n) > '9' || document.customize.endDate.value.charAt(n) < '0' || document.customize.endDate.value.charAt(n) > '9') {
-        isGoodDate = false;
-      }
-    } else if (n == 4 || n == 7) {
-      if (document.customize.startDate.value.charAt(n) != '-' || document.customize.endDate.value.charAt(n) != '-') {
-        isGoodDate = false;
-      }
-    }
-  }
-  if (!isGoodDate) {
-    popModalWindowWithHTML(600, 200,
-        "<h3>Error</h3>" +
-        "Dates must be entered as 'YYYY-MM-DD'.");
-    return false;
-  }
-  if ((document.customize.startDate.value + ' ' + document.customize.startTime.value) > (document.customize.endDate.value + ' ' + document.customize.endTime.value)) {
-    popModalWindowWithHTML(600, 200,
-        "<h3>Error</h3>" +
-        "The start date must precede the end date.");
-    return false;
-  }
-  if ((document.customize.startDate.value + ' ' + document.customize.startTime.value) < sdate) {
-    popModalWindowWithHTML(600, 250,
-        "<h3>Warning</h3>" +
-        "You have requested data prior to " + sdate + ", which is the earliest available date/time.  The start date/time will be reset.");
-    document.customize.startDate.value = sdate.substr(0, 10);
-    document.customize.startTime.value = sdate.substr(11, 5);
-  }
-  if ((document.customize.endDate.value + ' ' + document.customize.endTime.value) > edate) {
-    popModalWindowWithHTML(600, 250,
-        "<h3>Warning</h3>" +
-        "You have requested data beyond " + edate + ", which is the latest available date/time.  The end date/time will be reset.");
-    document.customize.endDate.value = edate.substr(0, 10);
-    document.customize.endTime.value = edate.substr(11, 5);
-  }
-  num_checkboxes = 0;
-  num_checked = 0;
-  for (n = 0; n < document.customize.elements.length; ++n) {
-    if (document.customize.elements[n].name == "parameter") {
-        ++num_checkboxes;
-        if (document.customize.elements[n].checked) {
-          ++num_checked;
-        }
-    }
-  }
-  if (num_checked == 0) {
-    popModalWindowWithHTML(600, 200,
-        "<h3>Error</h3>" +
-        "You must choose at least one parameter from the list.");
-    return false;
-  }
-  for (n = 0; n < document.customize.elements.length; ++n) {
-    if (document.customize.elements[n].name == "parameter" && document.customize.elements[n].checked) {
-      if (parameters.length > 0) {
-        parameters += '&';
-      }
-      parameters += 'parameter=' + document.customize.elements[n].value;
-    }
-  }
-  parameters += '&startDate=' + document.customize.startDate.value + '&startTime=' + document.customize.startTime.value + '&endDate=' + document.customize.endDate.value + '&endTime=' + document.customize.endTime.value;
-  {% if listtyp != "subset" %}
-  if (document.customize.ptfile && document.customize.ptfile.value.length > 0) {
-    parameters += '&ptfile=' + document.customize.ptfile.value;
-  }
-  {% endif %}
-  if (document.customize.gindex) {
-    if (document.customize.gindex.nodeName == "SELECT") {
-      idx = document.customize.gindex.selectedIndex;
-      if (idx > 0) {
-        parameters += '&gindex=' + document.customize.gindex[idx].value +
-            '&gtitle=' + document.customize.gindex[idx].text;
-      }
-    } else {
-      parameters += '&gindex=' + document.customize.gindex.value + '&gtitle=' +
-          document.customize.gtitle.value;
-    }
-  }
-  if (document.customize.preset && document.customize.preset.selectedIndex > 0) {
-    parameters += '&preset=' + document.customize.preset[document.customize.preset.selectedIndex].value;
-  }
-  if (document.customize.date_type) {
-    for (n = 0; n < document.customize.date_type.length; ++n) {
-        if (document.customize.date_type[n].checked && document.customize.date_type[n].value == "init") {
-          parameters += '&init=yes';
-        }
-    }
-  }
-  parameters += "&csrfmiddlewaretoken={{ csrf_token }}";
-  getContentFromPost('ds_content', '/datasets/{{ dsid }}/facbrowse/{{ listtyp }}/query/grml/', parameters, 'Checking your selections ...');
-  window.scrollTo(0, 0);
+
+function updateTimeline() {
+ const startInput = document.querySelector('input[name="startDate"]');
+ const endInput = document.querySelector('input[name="endDate"]');
+  if (!startInput || !endInput || !startInput.value || !endInput.value) {
+   return;
+ }
+  const selectedStart = new Date(startInput.value + 'T00:00:00Z');
+ const selectedEnd = new Date(endInput.value + 'T23:59:59Z');
+ const datasetStart = new Date('{{ start_date }}T00:00:00Z');
+ const datasetEnd = new Date('{{ end_date }}T23:59:59Z');
+  if (isNaN(selectedStart.getTime()) || isNaN(selectedEnd.getTime()) ||
+     isNaN(datasetStart.getTime()) || isNaN(datasetEnd.getTime())) {
+   console.error("One of the dates is invalid.");
+   return;
+ }
+  let totalDuration = datasetEnd.getTime() - datasetStart.getTime();
+ if (totalDuration <= 0) {
+   totalDuration = 1;
+ }
+
+
+ const startOffset = selectedStart.getTime() - datasetStart.getTime();
+ const endOffset = selectedEnd.getTime() - datasetStart.getTime();
+  const startPercent = Math.max(0, Math.min(100, (startOffset / totalDuration) * 100));
+ const endPercent = Math.max(0, Math.min(100, (endOffset / totalDuration) * 100));
+  const width = Math.max(1, endPercent - startPercent);
+  const selectionBar = document.getElementById('timelineSelection');
+ if (selectionBar) {
+   selectionBar.style.left = startPercent + '%';
+   selectionBar.style.width = width + '%';
+ }
+  const MS_PER_DAY = 1000 * 60 * 60 * 24;
+ const totalDays = Math.floor(totalDuration / MS_PER_DAY);
+ let selectedDays = Math.ceil((selectedEnd.getTime() - selectedStart.getTime()) / MS_PER_DAY);
+ if (selectedDays === 0 && selectedStart.toDateString() === selectedEnd.toDateString()) {
+     selectedDays = 1;
+ } else if (selectedDays < 0) {
+     selectedDays = 0;
+ }
+
+
+ const coverage = totalDays > 0 ? Math.round((selectedDays / totalDays) * 100) : 0;
+  const totalDaysEl = document.getElementById('totalDays');
+ const selectedDaysEl = document.getElementById('selectedDays');
+ const coverageEl = document.getElementById('coveragePercent');
+ const rangeTextEl = document.getElementById('selectedRangeText');
+  if (totalDaysEl) totalDaysEl.textContent = totalDays;
+ if (selectedDaysEl) selectedDaysEl.textContent = selectedDays;
+ if (coverageEl) coverageEl.textContent = coverage + '%';
+  if (rangeTextEl) {
+   const startFormatted = selectedStart.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}); // Added year
+   const endFormatted = selectedEnd.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}); // Added year
+   rangeTextEl.textContent = `${startFormatted} - ${endFormatted}`;
+ }
 }
 
+
+// parameter search bar functions
+function initializeParameterSearch() {
+ const searchBox = document.getElementById('parameterSearch');
+ if (searchBox) {
+   searchBox.addEventListener('input', filterParameters);
+   updateSearchStats();
+ }
+}
+
+
+function filterParameters() {
+ const searchTerm = document.getElementById('parameterSearch').value.toLowerCase();
+ const parameters = document.querySelectorAll('.parameter-item');
+ let visibleCount = 0;
+  parameters.forEach(item => {
+   const label = item.querySelector('label');
+   if (label && label.textContent.toLowerCase().includes(searchTerm)) {
+     item.classList.remove('hidden');
+     visibleCount++;
+   } else {
+     item.classList.add('hidden');
+   }
+ });
+  updateSearchStats();
+}
+
+
+function updateSearchStats() {
+ const total = document.querySelectorAll('.parameter-item').length;
+ const visible = document.querySelectorAll('.parameter-item:not(.hidden)').length;
+ const selected = document.querySelectorAll('.parameter-item:not(.hidden) input[type="checkbox"]:checked').length;
+  const statsElement = document.getElementById('searchStats');
+ if (statsElement) {
+   statsElement.textContent = `Showing ${visible} of ${total} parameters${selected > 0 ? ` (${selected} selected)` : ''}`;
+ }
+}
+
+
+
+
+// View switching functionality
+function showView(viewName) {
+ const views = document.querySelectorAll('.view-section');
+ views.forEach(view => {
+   view.classList.remove('active');
+ });
+  const buttons = document.querySelectorAll('.view-toggle-btn');
+ buttons.forEach(btn => {
+   btn.classList.remove('active');
+ });
+  document.getElementById(viewName + '-view').classList.add('active');
+ document.querySelector(`[onclick="showView('${viewName}')"]`).classList.add('active');
+  updateSelectionSummary();
+}
+
+
+function updateSelectionSummary() {
+ const summaryBar = document.getElementById('selection-summary-bar');
+ const summaryItems = [];
+  // Temporal selection
+ const startDateInput = document.querySelector('input[name="startDate"]');
+ const startTimeInput = document.querySelector('select[name="startTime"]');
+ const endDateInput = document.querySelector('input[name="endDate"]');
+ const endTimeInput = document.querySelector('select[name="endTime"]');
+  if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+   const startDate = startDateInput.value;
+   const startTime = startTimeInput ? startTimeInput.value : '';
+   const endDate = endDateInput.value;
+   const endTime = endTimeInput ? endTimeInput.value : '';
+  
+   const dateTypeRadio = document.querySelector('input[name="date_type"]:checked');
+   const dateTypeText = dateTypeRadio ? (dateTypeRadio.value === 'init' ? 'Initialization Time' : 'Valid Time') : 'Unknown';
+  
+   summaryItems.push(`
+     <span class="badge bg-primary me-2">Temporal</span>
+     <span class="me-3">${startDate} ${startTime} to ${endDate} ${endTime} (${dateTypeText})</span>
+   `);
+ }
+  // Parameter selection
+ const checkedParams = [];
+ const paramCheckboxes = document.querySelectorAll('input[name="parameter"]:checked');
+ paramCheckboxes.forEach(checkbox => {
+   const paramName = checkbox.value.split("[!]")[1];
+   if (paramName) {
+     checkedParams.push(paramName);
+   }
+ });
+  if (checkedParams.length > 0) {
+   const paramText = checkedParams.join(', ');
+   summaryItems.push(`
+     <span class="badge bg-success me-2">Parameters</span>
+     <span class="me-3">${paramText}</span>
+   `);
+ }
+  // Preset selection
+ const presetSelect = document.querySelector('select[name="preset"]');
+ if (presetSelect && presetSelect.selectedIndex > 0) {
+   summaryItems.push(`
+     <span class="badge bg-info me-2">Preset</span>
+     <span class="me-3">${presetSelect.options[presetSelect.selectedIndex].text}</span>
+   `);
+ }
+  {% if part_file %}
+ // Partial filename
+ const ptfileInput = document.querySelector('input[name="ptfile"]');
+ if (ptfileInput && ptfileInput.value) {
+   summaryItems.push(`
+     <span class="badge bg-secondary me-2">Filename</span>
+     <span class="me-3">${ptfileInput.value}</span>
+   `);
+ }
+ {% endif %}
+  // Dataset product info
+ {% if gindex %}
+ summaryItems.push(`
+   <span class="badge bg-warning me-2">Dataset</span>
+   <span class="me-3">{{ gtitle }}</span>
+ `);
+ {% endif %}
+  if (summaryItems.length === 0) {
+   summaryBar.innerHTML = '<span class="text-muted"><i class="fas fa-info-circle me-2"></i>Make your selections below</span>';
+ } else {
+   summaryBar.innerHTML = summaryItems.join('');
+ }
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+ initializeParameterSearch();
+ showView('temporal');
+  const startDateInput = document.querySelector('input[name="startDate"]');
+ const endDateInput = document.querySelector('input[name="endDate"]');
+  if (startDateInput && endDateInput) {
+   startDateInput.addEventListener('change', updateTimeline);
+   startDateInput.addEventListener('input', updateTimeline);
+   endDateInput.addEventListener('change', updateTimeline);
+   endDateInput.addEventListener('input', updateTimeline);
+  
+   setTimeout(updateTimeline, 100);
+ }
+  const form = document.querySelector('form[name="customize"]');
+ if (form) {
+   form.addEventListener('change', updateSelectionSummary);
+   form.addEventListener('input', updateSelectionSummary);
+ }
+});
+
+
+function doCustomize() {
+ parameters = '';
+ if (document.customize.startDate.value.length != 10 || document.customize.endDate.value.length != 10) {
+   popModalWindowWithHTML(600, 200,
+       "<h3>Error</h3>" +
+       "Dates must be entered as 'YYYY-MM-DD'.");
+   return false;
+ }
+ isGoodDate = true;
+ for (n = 0; n < 10; ++n) {
+   if (n <= 3 || n == 5 || n == 6 || n == 8 || n == 9) {
+     if (document.customize.startDate.value.charAt(n) < '0' || document.customize.startDate.value.charAt(n) > '9' || document.customize.endDate.value.charAt(n) < '0' || document.customize.endDate.value.charAt(n) > '9') {
+       isGoodDate = false;
+     }
+   } else if (n == 4 || n == 7) {
+     if (document.customize.startDate.value.charAt(n) != '-' || document.customize.endDate.value.charAt(n) != '-') {
+       isGoodDate = false;
+     }
+   }
+ }
+ if (!isGoodDate) {
+   popModalWindowWithHTML(600, 200,
+       "<h3>Error</h3>" +
+       "Dates must be entered as 'YYYY-MM-DD'.");
+   return false;
+ }
+ if ((document.customize.startDate.value + ' ' + document.customize.startTime.value) > (document.customize.endDate.value + ' ' + document.customize.endTime.value)) {
+   popModalWindowWithHTML(600, 200,
+       "<h3>Error</h3>" +
+       "The start date must precede the end date.");
+   return false;
+ }
+ if ((document.customize.startDate.value + ' ' + document.customize.startTime.value) < sdate) {
+   popModalWindowWithHTML(600, 250,
+       "<h3>Warning</h3>" +
+       "You have requested data prior to " + sdate + ", which is the earliest available date/time.  The start date/time will be reset.");
+   document.customize.startDate.value = sdate.substr(0, 10);
+   document.customize.startTime.value = sdate.substr(11, 5);
+ }
+ if ((document.customize.endDate.value + ' ' + document.customize.endTime.value) > edate) {
+   popModalWindowWithHTML(600, 250,
+       "<h3>Warning</h3>" +
+       "You have requested data beyond " + edate + ", which is the latest available date/time.  The end date/time will be reset.");
+   document.customize.endDate.value = edate.substr(0, 10);
+   document.customize.endTime.value = edate.substr(11, 5);
+ }
+ num_checkboxes = 0;
+ num_checked = 0;
+ for (n = 0; n < document.customize.elements.length; ++n) {
+   if (document.customize.elements[n].name == "parameter") {
+       ++num_checkboxes;
+       if (document.customize.elements[n].checked) {
+         ++num_checked;
+       }
+   }
+ }
+ if (num_checked == 0) {
+   popModalWindowWithHTML(600, 200,
+       "<h3>Error</h3>" +
+       "You must choose at least one parameter from the list.");
+   return false;
+ }
+ for (n = 0; n < document.customize.elements.length; ++n) {
+   if (document.customize.elements[n].name == "parameter" && document.customize.elements[n].checked) {
+     if (parameters.length > 0) {
+       parameters += '&';
+     }
+     parameters += 'parameter=' + document.customize.elements[n].value;
+   }
+ }
+ parameters += '&startDate=' + document.customize.startDate.value + '&startTime=' + document.customize.startTime.value + '&endDate=' + document.customize.endDate.value + '&endTime=' + document.customize.endTime.value;
+ {% if listtyp != "subset" %}
+ if (document.customize.ptfile && document.customize.ptfile.value.length > 0) {
+   parameters += '&ptfile=' + document.customize.ptfile.value;
+ }
+ {% endif %}
+ if (document.customize.gindex) {
+   if (document.customize.gindex.nodeName == "SELECT") {
+     idx = document.customize.gindex.selectedIndex;
+     if (idx > 0) {
+       parameters += '&gindex=' + document.customize.gindex[idx].value +
+           '&gtitle=' + document.customize.gindex[idx].text;
+     }
+   } else {
+     parameters += '&gindex=' + document.customize.gindex.value + '&gtitle=' +
+         document.customize.gtitle.value;
+   }
+ }
+ if (document.customize.preset && document.customize.preset.selectedIndex > 0) {
+   parameters += '&preset=' + document.customize.preset[document.customize.preset.selectedIndex].value;
+ }
+ if (document.customize.date_type) {
+   for (n = 0; n < document.customize.date_type.length; ++n) {
+       if (document.customize.date_type[n].checked && document.customize.date_type[n].value == "init") {
+         parameters += '&init=yes';
+       }
+   }
+ }
+ parameters += "&csrfmiddlewaretoken={{ csrf_token }}";
+ getContentFromPost('ds_content', '/datasets/{{ dsid }}/facbrowse/{{ listtyp }}/query/grml/', parameters, 'Checking your selections ...');
+ window.scrollTo(0, 0);
+}
+
+
 function showMostRecent() {
-  post_data = "startDate={{ recent_start_date }}&startTime=00:00&endDate=" +
-      "&endTime=&csrfmiddlewaretoken={{ csrf_token }}";
-  let params = new Array();
-  for (n = 0; n < document.customize.elements.length; ++n) {
-    if (document.customize.elements[n].name == "parameter") {
-      params.push(document.customize.elements[n].value);
-    }
-  }
-  if (params.length > 0) {
-    post_data += "&parameter=" + params.join("&parameter=");
-  }
-  {% if gindex %}
-  post_data += "&gindex={{ gindex }}&gtitle={{ gtitle }}";
-  {% endif %}
-  getContentFromPost('ds_content',
-      '/datasets/{{ dsid }}/facbrowse/{{ listtyp }}/query/grml/', post_data,
-      'Checking your selections ...');
+ post_data = "startDate={{ recent_start_date }}&startTime=00:00&endDate=" +
+     "&endTime=&csrfmiddlewaretoken={{ csrf_token }}";
+ let params = new Array();
+ for (n = 0; n < document.customize.elements.length; ++n) {
+   if (document.customize.elements[n].name == "parameter") {
+     params.push(document.customize.elements[n].value);
+   }
+ }
+ if (params.length > 0) {
+   post_data += "&parameter=" + params.join("&parameter=");
+ }
+ {% if gindex %}
+ post_data += "&gindex={{ gindex }}&gtitle={{ gtitle }}";
+ {% endif %}
+ getContentFromPost('ds_content',
+     '/datasets/{{ dsid }}/facbrowse/{{ listtyp }}/query/grml/', post_data,
+     'Checking your selections ...');
 }
 </script>
 
-{% if listtyp == "subset" %}
-<h2 class="font-weight-bolder"><i class="fas fa-pizza-slice pe-2"></i>Get a Subset</h2>
-<p>
-    A subset is a partial selection of the records from each data file.  Make selections from the following options to request a subset of data that matches your selections (you will then have further opportunity to refine your subset), and then click the "Continue" button below.
-</p>
-<p>
-    <a href="/resources/web-services/" target="_scriptsubmit">Can I submit requests without going through this interface?</a> <sup><i class="fas fa-external-link-alt" alt="opens in a new window" title="opens in a new window"></i></sup>
-</p>
-{% elif listtyp == "weblist" %}
-<h2 class="font-weight-bolder"><i class="fas fa-file-download pe-2"></i>Web Download Files - Create a File List</h2>
-{% elif listtyp == "gladelist" %}
-<h2 class="font-weight-bolder"><i class="fas fa-file-download pe-2"></i>GLobally Accessible Data Environment (GLADE) Files</h2>
-{% endif %}
-{% if listtyp == "weblist" or listtyp == "gladelist" %}
-<p>
-    Make selections from the following options (or accept the defaults) and then click the "Continue" button below. You will get a list of {% if listtyp == "gladelist" %}GLADE{% endif %} data files that match your selections, and you will have further opportunity to refine your list.
-</p>
-{% if recent_start_date %}
-<p>
-    You can also view only the <a href="javascript:void(0)" onclick="showMostRecent()">most recently-added</a> data files.
-</p>
-{% endif %}
-{% endif %}
-<ul class="pt-1">
-    <form name="customize" action="post" onsubmit="return doCustomize()">
-        {% if gindex %}
-        <div class="mt-2">
-            <b class="text-uppercase">Dataset Product:</b>&nbsp;{{ gtitle }}
-            <input type="hidden" name="gindex" value="{{ gindex }}">
-            <input type="hidden" name="gtitle" value="{{ gtitle }}">
-        </div>
-        {% elif groups and groups|length > 1 %}
-        <div class="mt-2">
-            <b class="text-uppercase">Dataset Product:</b>&nbsp;
-            <select name="gindex" onchange="changed_selection=true">
-                <option value="">All</option>
-                {% for group in groups %}
-                <option value="{{ group.gindex }}">{{ group.title }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        {% endif %}
-        <div class="mt-2">
-            <b class="text-uppercase">Temporal Selection:</b>
-            <input class="font-monospace ms-1" type="text" name="startDate" size="10" maxlength="10" value="{{ set_start }}">
-            <select class="ms-1" name="startTime" onchange="changed_selection=true">
-                {% for time in times %}
-                <option value="{{ time }}" {% if time == start_time %}selected{% endif %}>{{ time }}</option>
-                {% endfor %}
-            </select>
-            <i class="fas fa-calendar-alt fa-lg ms-1" onclick="showCalendar('calendar_div', 'customize.startDate')"></i>
-            <b class="text-uppercase ms-2 me-1">to</b>
-            <input class="font-monospace ms-1" type="text" name="endDate" size="10" maxlength="10" value="{{ end_date }}">
-            <select class="ms-1" name="endTime" onchange="changed_selection=true">
-                {% for time in times %}
-                <option value="{{ time }}" {% if time == end_time %}selected{% endif %}>{{ time }}</option>
-                {% endfor %}
-            </select>
-            <i class="fas fa-calendar-alt fa-lg ms-1" onclick="showCalendar('calendar_div', 'customize.endDate')"></i>
-            {% if set_start != start_date %}&nbsp;(set for the most recent {% if tnum > 1 %}{{ tnum }}&nbsp;{% endif %}{{ tunit }}, but data go back to {{ start_date }}){% endif %}
-            <div class="component single-column container-lg mb-2">
-                <div class="row gx-0">
-                    <div class="col-auto col-md-auto">
-                        <div class="form-check ms-3">
-                            <input class="form-check-input" type="radio" name="date_type" id="_valid" value="valid" checked>
-                            <label class="form-check-label" for="_valid">Valid Time</label>
-                        </div>
-                    </div>
-                    <div class="col-auto col-md">
-                        <div class="form-check ms-3">
-                            <input class="form-check-input" type="radio" name="date_type" id="_init" value="init">
-                            <label class="form-check-label" for="_init">Initialization (Reference) Time</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="mt-2">
-            <b class="text-uppercase">{% if curl_subset %}<sup>&dagger;</sup> {% endif %}Parameter Selection:</b> (you must choose at least one; there is no default)
-            <ul class="mt-0">
-                {% if presets %}
-                <nobr>Parameter presets:&nbsp;
-                <select name="preset" onchange="setPreset()">
-                    <option>None chosen</option>
-                    {% for preset in presets %}
-                    <option value="{{ preset.description }}">{{ preset.description }}</option>
-                    {% endfor %}
-                </select>
-                <a href="javascript:void(0)" onclick="popModalWindowWithHTML(600, 300, '{% include_strip "facbrowse/presets.html" %}')">&nbsp;<i class="fas fa-info-circle"></i></a></nobr>
-                <br>
-                <br>
-                {% endif %}
-                <div class="component two-column container-lg overflow-hidden mb-1">
-                    {% for p in parameters %}
-                    <div class="row gx-0">
-                        <div class="col-12 col-md-6">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="parameter" id="param{{ p.0.index }}" value="{{ p.0.codes }}[!]{{ p.0.long_name }}">
-                                <label class="form-check-label" for="param{{ p.0.index }}">{{ p.0.long_name }}</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            {% if p.1 %}
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="parameter" id="param{{ p.1.index }}" value="{{ p.1.codes }}[!]{{ p.1.long_name }}">
-                                <label class="form-check-label" for="param{{ p.1.index }}">{{ p.1.long_name }}</label>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% if curl_subset %}
-                <b><sup>&dagger;</sup></b> This dataset has data files that can be subsetted using <a href="http://curl.haxx.se/" target="_blank">cURL&nbsp;<sup><i class="fas fa-external-link-alt" alt="opens in a new window" title="opens in a new window"></i></sup></a>.  If you make one or more parameter selections, you will get more information about this in your list of data files.
-                {% endif %}
-            </ul>
-        </div>
-        {% if part_file %}
-        <div class="mt-2">
-            <b class="text-uppercase">Partial Filename:</b>&nbsp;<sup><a href="javascript:void(0)" onmouseover="popInfo(this, 'pfnhelp', '#f0f0ff', 'center', 'bottom')" onmouseout="hideInfo('pfnhelp')"><i class="fas fa-info-circle fa-lg"></i></a></sup>&nbsp;<input type="text" name="ptfile" class="font-monospace" size="30" value="{{ part_file.value }}">&nbsp;<small>(you can use either <font color="green">*</font> or <font color="green">%</font> to match one or more characters)</small>
-        </div>
-        <div id="pfnhelp" class="info">
-            If you know a filename or partial filename, you can enter it and your file list will only contain data files that match your entry.
-        </div>
-        {% endif %}
-        <br>
-        <center class="mt-2">
-            <a href="javascript:void(0)" class="btn btn-primary px-2 py-1 border-1" onclick="doCustomize()">Continue</a>
-            <a href="javascript:void(0)" class="btn btn-primary px-2 py-1 border-1 ms-2" onclick="document.customize.reset()">Reset</a>
-        </center>
-    </form>
-</ul>
+
+<div class="container-fluid p-4">
+ <!-- Header -->
+ <div class="mb-4">
+   {% if listtyp == "subset" %}
+   <h2 class="fw-bold"><i class="fas fa-pizza-slice pe-2"></i>Get a Subset</h2>
+   {% elif listtyp == "weblist" %}
+   <h2 class="fw-bold"><i class="fas fa-file-download pe-2"></i>Download Full or Partial Files</h2>
+   {% elif listtyp == "gladelist" %}
+   <h2 class="fw-bold"><i class="fas fa-file-download pe-2"></i>GLobally Accessible Data Environment (GLADE) Files</h2>
+   {% endif %}
+ </div>
+
+
+ <!-- Selection Summary Bar -->
+ <div class="selection-summary-bar" id="selection-summary-bar">
+   <span class="text-muted"><i class="fas fa-info-circle me-2"></i>Make your selections below</span>
+ </div>
+
+
+ <!-- Main Interface -->
+ <div class="row main-container">
+   <!-- Left Sidebar -->
+   <div class="col-md-3 sidebar">
+     <div class="d-flex flex-column">
+       <button class="btn btn-primary view-toggle-btn active mb-2" onclick="showView('temporal')">
+        Time Range
+       </button>
+       <button class="btn btn-primary view-toggle-btn mb-2" onclick="showView('parameters')">
+         Parameter Selection
+       </button>
+         <button type="button" class="btn btn-primary mb-2" onclick="doCustomize()">
+           <i class="fas fa-check me-2"></i>Continue
+         </button>
+         <button type="button" class="btn btn-outline-secondary mb-2" onclick="document.customize.reset(); updateSelectionSummary();">
+           <i class="fas fa-undo me-2"></i>Reset
+         </button>
+     </div>
+   </div>
+
+
+   <div class="col-md-9">
+     <form name="customize" action="post" onsubmit="return doCustomize()">
+      
+       {% if gindex %}
+       <input type="hidden" name="gindex" value="{{ gindex }}">
+       <input type="hidden" name="gtitle" value="{{ gtitle }}">
+       {% endif %}
+
+
+       <!-- Temporal Selection View -->
+       <div class="view-section active" id="temporal-view">
+         <div class="card">
+           <div class="card-header">
+             <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Time Range</h5>
+           </div>
+           <div class="card-body">
+             <div class="row">
+               <div class="col-md-6">
+                 <label class="form-label fw-bold">Start Date & Time</label>
+                 <div class="input-group mb-3">
+                   <input class="form-control font-monospace" type="text" name="startDate" size="10" maxlength="10" value="{{ set_start }}" placeholder="YYYY-MM-DD">
+                   <select class="form-select" name="startTime" onchange="changed_selection=true">
+                     {% for time in times %}
+                     <option value="{{ time }}" {% if time == start_time %}selected{% endif %}>{{ time }}</option>
+                     {% endfor %}
+                   </select>
+                   <button class="btn btn-outline-secondary" type="button" onclick="showCalendar('calendar_div', 'customize.startDate')">
+                     <i class="fas fa-calendar-alt"></i>
+                   </button>
+                 </div>
+               </div>
+               <div class="col-md-6">
+                 <label class="form-label fw-bold">End Date & Time</label>
+                 <div class="input-group mb-3">
+                   <input class="form-control font-monospace" type="text" name="endDate" size="10" maxlength="10" value="{{ end_date }}" placeholder="YYYY-MM-DD">
+                   <select class="form-select" name="endTime" onchange="changed_selection=true">
+                     {% for time in times %}
+                     <option value="{{ time }}" {% if time == end_time %}selected{% endif %}>{{ time }}</option>
+                     {% endfor %}
+                   </select>
+                   <button class="btn btn-outline-secondary" type="button" onclick="showCalendar('calendar_div', 'customize.endDate')">
+                     <i class="fas fa-calendar-alt"></i>
+                   </button>
+                 </div>
+               </div>
+             </div>
+
+
+             <!-- Timeline Visualization -->
+             <!-- <div class="timeline-container">
+               <h6 class="mb-3"><i class="fas fa-chart-line me-2"></i>Time Range Visualization</h6>
+               <div class="timeline-wrapper">
+                 <div class="timeline-track"></div>
+                 <div class="timeline-selection" id="timelineSelection"></div>
+               </div>
+               <div class="timeline-dates">
+                 <small>Dataset: {{ start_date }}</small>
+                 <small id="selectedRangeText">Selected Range</small>
+                 <small>{{ end_date }}</small>
+               </div>
+               <div class="timeline-stats">
+                 <div class="stat-item">
+                   <div class="stat-value" id="totalDays">-</div>
+                   <small>Total Days</small>
+                 </div>
+                 <div class="stat-item">
+                   <div class="stat-value" id="selectedDays">-</div>
+                   <small>Selected</small>
+                 </div>
+                 <div class="stat-item">
+                   <div class="stat-value" id="coveragePercent">-</div>
+                   <small>Coverage</small>
+                 </div>
+               </div>
+             </div> -->
+            
+             {% if set_start != start_date %}
+             <div class="alert alert-info">
+               <small>Set for the most recent {% if tnum > 1 %}{{ tnum }} {% endif %}{{ tunit }}, but data go back to {{ start_date }}</small>
+             </div>
+             {% endif %}
+
+
+             <div class="mt-3">
+               <label class="form-label fw-bold">Date Type</label>
+               <div class="form-check">
+                 <input class="form-check-input" type="radio" name="date_type" id="_init" value="init" checked>
+                 <label class="form-check-label" for="_init">Initialization (Reference) Time</label>
+               </div>
+               <div class="form-check">
+                 <input class="form-check-input" type="radio" name="date_type" id="_valid" value="valid">
+                 <label class="form-check-label" for="_valid">Valid Time</label>
+               </div>
+             </div>
+            
+             {% if listtyp == "weblist" or listtyp == "gladelist" %}
+             {% if recent_start_date %}
+             <div class="mt-3">
+               <button type="button" class="btn btn-outline-primary" onclick="showMostRecent()">
+                 <i class="fas fa-clock me-2"></i>Show Most Recent Data
+               </button>
+             </div>
+             {% endif %}
+             {% endif %}
+           </div>
+         </div>
+       </div>
+
+
+       <!-- Parameter Selection View -->
+       <div class="view-section" id="parameters-view">
+         <div class="card">
+           <div class="card-header">
+             <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Parameter Selection</h5>
+             <small class="text-muted">You must choose at least one parameter</small>
+           </div>
+           <div class="card-body">
+       <div class="parameter-search-container">
+          
+           {% if presets %}
+           <div style="margin: 15px 0;">
+               <label>Parameter presets:</label>
+               <select name="preset" onchange="setPreset()" style="margin-left: 10px;">
+                   <option>None chosen</option>
+                   {% for preset in presets %}
+                   <option value="{{ preset.description }}">{{ preset.description }}</option>
+                   {% endfor %}
+               </select>
+               <a href="javascript:void(0)" onclick="popModalWindowWithHTML(600, 300, '{% include_strip "facbrowse/presets.html" %}')">&nbsp;<i class="fas fa-info-circle"></i></a>
+           </div>
+           {% endif %}
+          
+           <input type="text" id="parameterSearch" class="search-box" placeholder="🔍 Search parameters..." onkeyup="filterParameters()">
+           <div class="parameter-list">
+               <div id="searchStats" class="search-stats">Loading parameters...</div>
+               {% for p in parameters %}
+               <div class="parameter-item">
+                   <input class="form-check-input" type="checkbox" name="parameter" id="param{{ p.0.index }}" value="{{ p.0.codes }}[!]{{ p.0.long_name }}">
+                   <label class="form-check-label" for="param{{ p.0.index }}">{{ p.0.long_name }}</label>
+               </div>
+               {% if p.1 %}
+               <div class="parameter-item">
+                   <input class="form-check-input" type="checkbox" name="parameter" id="param{{ p.1.index }}" value="{{ p.1.codes }}[!]{{ p.1.long_name }}">
+                   <label class="form-check-label" for="param{{ p.1.index }}">{{ p.1.long_name }}</label>
+               </div>
+               {% endif %}
+               {% endfor %}
+           </div>
+          
+           {% if curl_subset %}
+           <div style="margin-top: 15px; font-size: 14px;">
+               <b><sup>&dagger;</sup></b> This dataset has data files that can be subsetted using <a href="http://curl.haxx.se/" target="_blank">cURL&nbsp;<sup><i class="fas fa-external-link-alt" alt="opens in a new window" title="opens in a new window"></i></sup></a>.  If you make one or more parameter selections, you will get more information about this in your list of data files.
+           </div>
+           {% endif %}
+       </div>
+       </div>
+ </div>
+</div>
+
+
+       <!-- Filename Filter View -->
+       {% if part_file %}
+       <div class="view-section" id="filename-view">
+         <div class="card">
+           <div class="card-header">
+             <h5 class="mb-0"><i class="fas fa-file me-2"></i>Other Metadata</h5>
+           </div>
+           <div class="card-body">
+             <div class="mb-3">
+               <label class="form-label fw-bold">Partial Filename</label>
+               <input type="text" name="ptfile" class="form-control font-monospace" value="{{ part_file.value }}" placeholder="Enter partial filename">
+               <div class="form-text">
+                 You can use either <code>*</code> or <code>%</code> to match one or more characters
+               </div>
+             </div>
+            
+             <div class="alert alert-info">
+               <i class="fas fa-info-circle me-2"></i>
+               If you know a filename or partial filename, you can enter it and your file list will only contain data files that match your entry.
+             </div>
+           </div>
+         </div>
+       </div>
+       {% endif %}
+     </form>
+   </div>
+ </div>
+
+
+ <!-- Additional Information -->
+ {% if listtyp == "subset" %}
+ <div class="card mt-4">
+   <div class="card-body">
+     <p>A subset is a partial selection of the records from each data file. Make selections from the options to request a subset of data that matches your selections (you will then have further opportunity to refine your subset).</p>
+     <p><a href="/resources/web-services/" target="_scriptsubmit">Can I submit requests without going through this interface?</a> <i class="fas fa-external-link-alt"></i></p>
+   </div>
+ </div>
+ {% endif %}
+</div>
+
+
 <div id="calendar_div" class="calendar"></div>
+<div id="pfnhelp" class="info">
+ If you know a filename or partial filename, you can enter it and your file list will only contain data files that match your entry.
+</div>
+
+
 <img src="/images/transpace.gif" onload="window.scrollTo(0, document.getElementsByTagName('header')[0].offsetHeight)">
