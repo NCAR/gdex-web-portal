@@ -191,8 +191,7 @@ def process_levels(cursor, dsid, level_codes):
         key = e[4] + "." + e[1] + ".xml"
         if key not in lmaps:
             lmaps[key] = ElementTree.parse(os.path.join((
-                    "/glade/campaign/collections/rda/work/rdadata/share/"
-                    "metadata/LevelTables"), key)).getroot()
+                    "/data/web/metadata/LevelTables"), key)).getroot()
 
         parts = e[2].split("-")
         tmp_lst = []
