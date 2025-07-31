@@ -31,14 +31,14 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.volume.fs.mountPath }}
           name: {{ .Values.volume.fs.name }}
-        - mountPath: {{ .Values.volume.glade.mountPath }}
-          name: {{ .Values.volume.glade.name }}
+        #- mountPath: {{ .Values.volume.glade.mountPath }}
+        #  name: {{ .Values.volume.glade.name }}
       volumes:
       - name: {{ .Values.volume.fs.name }}
         persistentVolumeClaim:
           claimName: {{ .Values.volume.fs.name }}
-      - name: {{ .Values.volume.glade.name }}
-        nfs:
-          server: {{ .Values.volume.glade.server }}
-          path: {{ .Values.volume.glade.path }}
-          readOnly: {{ .Values.volume.glade.readOnly }}
+      #- name: {{ .Values.volume.glade.name }}
+      #  nfs:
+      #    server: {{ .Values.volume.glade.server }}
+      #    path: {{ .Values.volume.glade.path }}
+      #    readOnly: {{ .Values.volume.glade.readOnly }}
