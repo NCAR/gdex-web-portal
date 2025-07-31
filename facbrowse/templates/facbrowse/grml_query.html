@@ -1287,6 +1287,7 @@ function addMarkerMapEvent() {
         }
       }
     });
+    google.maps.event.trigger(map.handles.marker, 'idle');
   }
 }
 
