@@ -1626,12 +1626,12 @@ def show_web_access(request, dsid):
                 request, "500.html",
                 {'custom_message': "Database error: '{}'".format(err)})
 
-    if res[1] == "G":
-        path = os.path.join(settings.RDA_CANONICAL_DATA_PATH, dsid)
-        if not os.path.exists(path):
-            return HttpResponse((
-                    "Data directory does not exist on the RDA web server and "
-                    "the location flag is set to 'G'"), status=500)
+    #if res[1] == "G":
+    #    path = os.path.join(settings.RDA_CANONICAL_DATA_PATH, dsid)
+    #    if not os.path.exists(path):
+    #        return HttpResponse((
+    #                "Data directory does not exist on the RDA web server and "
+    #                "the location flag is set to 'G'"), status=500)
 
     if res[0] == "0":
         return render(
