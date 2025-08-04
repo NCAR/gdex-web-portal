@@ -4,21 +4,11 @@
 {% block title %}NSF NCAR RDA | Dataset Search{% endblock %}
 
 {% block headextras %}
-{% block search_head %}
-<!--
-<link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
--->
-{% endblock %}
 {{block.super}}
 {% endblock %}
 
-<!--
-{% block main_nav %}
-  {% block search_nav %}
-  {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-nav.html' as search_nav %}
-  {% include search_nav %}
-  {% endblock %}
+{% block search_head %}
+  <script src="{% static 'gsearch/js/gsearch.js' %}"></script>
 {% endblock %}
--->
 
 {% block body %}{% endblock %}
