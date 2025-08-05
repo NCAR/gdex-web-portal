@@ -46,13 +46,9 @@
         <link rel="preload" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap">
         <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"></noscript>
+
+        <link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}">
         {% endblock %}
-
-        {# Globus search head items go in the search_head block #}
-        {% block search_head %}{% endblock %}
-
-        {# Globus search extras #}
-        {% block headextras %}{% endblock %}
 
         <title>
             {% block title %}
@@ -66,6 +62,12 @@
 
         {# additional javascript and other elements #}
         {% include "head-extras.html" %}
+
+        {# Globus search head items go in the search_head block #}
+        {% block search_head %}{% endblock %}
+
+        {# Globus search extras #}
+        {% block headextras %}{% endblock %}
     </head>
 
     <body class="ncar{% block body_class %}{% endblock %}">

@@ -1,15 +1,5 @@
 {% load static gsearch_tags %}
 
-<fieldset class="facet-fieldset">
-  <legend class="border-bottom">Filters
-  <span style="float: right;">
-    <a class="i-xtimes--before text-gray-base" href="{% url 'search' globus_portal_framework.index %}">Clear all</a>
-  </span>
-  </legend>
-  <div class="fieldset-container mb-4">
-  </div>
-</fieldset>
-
 {% for facet in search.facets %}
 <fieldset class="facet-fieldset">
   <legend class="border-bottom">{{facet.name}}</legend>

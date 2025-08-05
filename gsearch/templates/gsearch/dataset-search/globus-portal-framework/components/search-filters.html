@@ -1,0 +1,32 @@
+<fieldset class="facet-fieldset">
+  <legend class="border-bottom">Filters
+    <span style="float: right;">
+      <a class="i-xtimes--before text-gray-base" id="clear-filters" href="javascript:void(0)" onclick="clearFilters()">Clear all</a>
+  </span>
+  </legend>
+  <div class="fieldset-container mb-3">
+  </div>
+</fieldset>
+
+<fieldset class="facet-fieldset">
+  <legend class="border-bottom">
+    Temporal Range
+    <span style="float: right;">
+      <a class="i-xtimes--before text-gray-base" href="javascript:void(0)" onclick="clearTemporalRange()">Clear</a>
+    </span>
+  </legend>
+  <div class="fieldset-container mb-4">
+    <div class="facet-field me-3 mb-1">
+      <label for="temporal_start_input" class="me-1">From</label>
+      <input type="text" id="temporal_start_input" name="filter-range.temporal_range_end"
+        value={% if request.session.temporal_start_input %}"{{ request.session.temporal_start_input }}"{% else %}""{% endif %} 
+        onchange="customSearch(1);" autocomplete="off" placeholder="YYYY-MM-DD">
+    </div>
+    <div class="facet-field me-3 mb-1">
+      <label for="temporal_end_input" class="me-1">To</label>
+      <input type="text" id="temporal_end_input" name="filter-range.temporal_range_start"
+        value={% if request.session.temporal_end_input %}"{{ request.session.temporal_end_input }}"{% else %}""{% endif %} 
+        onchange="customSearch(1);" autocomplete="off" placeholder="YYYY-MM-DD">
+    </div>
+  </div>
+</fieldset>

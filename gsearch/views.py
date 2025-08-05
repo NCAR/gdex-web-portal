@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from django.contrib import messages
 import json
 
+from globus_portal_framework import load_search_client
 from globus_portal_framework.gsearch import (
     post_search, get_search_query, 
     get_search_filters, get_template,
@@ -44,8 +45,33 @@ def dataset_search(request, index):
             ] + historical_datasets
     
     context['datasets'] = get_dataset_counts()
+
     tvers = get_template_path('search.html', index=index)
     return render(request, get_template(index, tvers), context)
+
+def get_min_max_dates(index):
+    """
+    Get the minimum and maximum dates from the search index.
+    """
+    if not index:
+        return None, None
+
+    client = load_search_client()
+
+    start_dates = []
+    end_dates = []
+    query = '*'
+
+    for result in client.paginated.search(query).items():
+        start = result['entries'][0]['content']['temporal_range_start']
+        end = result['entries'][0]['content']['temporal_range_end']
+        start_dates.append(start)
+        end_dates.append(end)
+
+    minDate = min(start_dates) if start_dates else None
+    maxDate = max(end_dates) if end_dates else None
+
+    return minDate, maxDate
 
 def get_dataset_counts():
     """

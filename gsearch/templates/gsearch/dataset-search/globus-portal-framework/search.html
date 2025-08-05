@@ -1,50 +1,6 @@
 {% extends 'gsearch/dataset-search/globus-portal-framework/search-base.html' %}
 {% load static index_template is_active %}
 
-{% block headextras %}
-{%block search_head%}
-{{block.super}}
-<script>
-  /*
-  This helper function ensures queries are inserted as the first query-param
-  so that the search url is copy-pastable by the user
-  */
-  function customSearch(page=1) {
-    //copy as a hidden field so we don't change the look of the page
-    var page = $('<input>').attr({type: 'hidden', id: 'foo',
-                                 name: 'page', value: page});
-    var input = $('#search-input').clone().attr('type','hidden');
-    $('#facet-form').prepend(page).prepend(input).submit();
-  }
-  function clearFacets(facetId) {
-    // clear all filters for a specific facet
-    $('#' + facetId + ' :input').val('');
-    $('#' + facetId + ' :checked').prop('checked', false);
-    customSearch(1);    
-  }
-  function clearAll() {
-    // clear all filters
-    var input = $('#search-input').clone().attr('type','hidden');
-    var page = $('<input>').attr({type: 'hidden', id: 'foo',
-                                 name: 'page', value: 1});
-    $('#facet-form').prepend(page).prepend(input).submit();
-  }
-  $(document).ready(function() {
-    // add a listener to the clear all button
-    $('#clear-all').click(function() {
-      clearAll();
-    });
-    // add a listener to the clear filter button
-    $('.clear-facet').click(function() {
-      var facet = $(this).attr('id');
-      clearFacets(facet);
-    });
-  });
-</script>
-{%endblock%}
-{{block.super}}
-{% endblock %}
-
 {%block body%}
   <h1 class="h1 border-bottom">Search the RDA</h1>
   <p class="lead">Search the RDA datasets by entering a keyword search below, then filter by the facets in the menu on the left.</p>
@@ -80,6 +36,10 @@
       <div id="sidebar" class="col-xs-12 col-sm-4 col-md-4">
         <div id="filters">
           <div id="facet-container">
+            <form id="filter-form">
+              {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-filters.html' as it_search_filters %}
+              {% include it_search_filters %}
+            </form>
             <form id="facet-form">
               {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-facets.html' as it_search_facets %}
               {% include it_search_facets %}
@@ -124,7 +84,7 @@
                 <li class="page-item">
                 {% endif %}
                 {% block search_pagination_link %}
-                <a class="page-link" onclick="customSearch({{page.number}});">{{page.number}}</a>
+                <a class="page-link" onclick="customSearch({{ page.number }});">{{ page.number }}</a>
                 {% endblock %}
                 </li>
                 {% endfor %}
