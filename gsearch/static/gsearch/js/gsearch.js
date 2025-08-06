@@ -129,3 +129,9 @@ function clearTemporalRange() {
   // Submit the form to apply changes
   $('#facet-form').submit();
 }
+
+function clearBuckets(facetName) {
+  // Clear all checkboxes in the facet container
+  $('#facet-' + facetName + ' input[type="checkbox"]').prop('checked', false);
+  $('#facet-form').submit();
+}
