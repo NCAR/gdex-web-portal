@@ -17,7 +17,7 @@ from . import local_settings  # noqa
 # Import navigation bar items and Globus settings
 from .navigation_bar import *
 from .globus_settings import *
-from .globus_search_indexes import SEARCH_INDEXES
+from .globus_search_indexes import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os

@@ -2,8 +2,16 @@
 
 {% for facet in search.facets %}
 <fieldset class="facet-fieldset">
-  <legend class="border-bottom">{{facet.name}}</legend>
-  <div class="fieldset-container mb-4" id="facet-{{facet.name}}">
+  <legend class="border-bottom">
+    {% if facet.name == 'Location' %}
+      <i class="fa-solid fa-location-dot"></i>
+    {% else %}
+      <i class="fa-solid fa-filter"></i>
+    {% endif %}
+    {{facet.name}}
+    <a class="i-xtimes--before text-gray-base float-end" href="javascript:void(0)" onclick="clearBuckets('{{facet.name}}')">Clear</a>
+  </legend>
+  <div class="d-flex flex-column fieldset-container mb-4 overflow-auto" style="max-height: 300px;" id="facet-{{facet.name}}">
     {% if facet.buckets %}
     {% for field in facet.buckets %}
     <div class="facet-field mr-3">
@@ -27,7 +35,7 @@
       {% else %}
         {{field.value}}
       {% endif %}
-      <span class="badge rounded-pill" style="float: right; background-color: #1A658F; color: #f0f0f0;">{{field.count}}</span>
+      <span class="badge rounded-pill float-end" style="background-color: #1A658F; color: #f0f0f0;">{{field.count}}</span>
     </div>
     {% empty %}
     <div class="facet-field mr-3">No Data</div>
@@ -35,7 +43,7 @@
     {% elif facet.value %}
     <div class="facet-field mr-3">
       {% if facet.type == 'avg' %} Average {% elif facet.type == 'sum' %} Sum {% endif %}
-      <span class="badge rounded-pill" style="float: right; background-color: #1A658F; color: #f0f0f0;">{{facet.value}}</span>
+      <span class="badge rounded-pill float-end" style="background-color: #1A658F; color: #f0f0f0;">{{facet.value}}</span>
     </div>
     {% endif %}
   </div>
