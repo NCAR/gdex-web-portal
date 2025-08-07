@@ -2,7 +2,7 @@ NAVIGATION_BAR = {
     'menus': [
         {
             'title': 'Datasets',
-            'url': '/lookfordata/',
+            'url': '/gsearch/dataset-search/',
             'megamenu': [
                 {
                     'label': 'GCMD Topic',
@@ -66,7 +66,7 @@ NAVIGATION_BAR = {
                     'links': [
                         {
                             'title': 'All Reanalysis Datasets',
-                            'url': '/lookfordata/datasets/?nb=y&b=plat&v=REANALYSIS%20MODELS',
+                            'url': '/gsearch/dataset-search/?q=&page=1&filter-match-any.platform=REANALYSIS+MODELS',
                         },
                     ],
                 },
