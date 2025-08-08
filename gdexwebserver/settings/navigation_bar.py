@@ -1,7 +1,7 @@
 NAVIGATION_BAR = {
     'menus': [
         {
-            'title': 'Datasets',
+            'title': 'Find Data',
             'url': '/gsearch/dataset-search/',
         },
     ],
