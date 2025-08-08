@@ -6,7 +6,7 @@
             </div>
             {% if 'duser' in request.COOKIES %}
                 <div class="py-2">
-                    <a href="/ajax/#!cgi-bin/dashboard">User Dashboard</a>
+                    <a href="/dashboard/">User Dashboard</a>
                 </div>
                 <div class="py-2">
                     <form method="post" action="{% url 'account_logout' %}">
