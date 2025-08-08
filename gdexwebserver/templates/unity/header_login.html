@@ -1,0 +1,26 @@
+<div class="utility-menu col collapse d-none d-md-flex justify-content-end align-items-center pe-0">
+    <div class="px-2">
+        <a href="mailto:rdahelp@ucar.edu">Contact Us</a>
+    </div>
+    {% if 'duser' in request.COOKIES %}
+        <div class="px-2 border-start">
+            <a href="/dashboard/">User Dashboard</a>
+        </div>
+        <div class="px-2 border-start">
+            <form method="post" action="{% url 'account_logout' %}">
+                {% csrf_token %}
+                {% if redirect_field_value %}
+                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+                {% endif %}
+                <button type="submit" class="" 
+                        style="color:rgb(26,101,143);font-family:'Poppins','sans-serif';font-size:14px;font-weight:600;background:none;">
+                        Sign Out
+                </button>
+            </form>
+        </div>
+    {% else %}
+        <div class="ps-2">
+            <a href="/accounts/login/?return={{ request.path }}" class="btn btn-pill btn-primary px-2 py-1 border-1" aria-label="Sign In">Sign In</a>
+        </div>
+    {% endif %}
+</div>
