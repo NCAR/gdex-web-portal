@@ -11,19 +11,14 @@ SEARCH_INDEXES = {
         'uuid': 'fc7218fe-742c-4112-ab05-fc40472ced92',
         'facets': [
           {
+            'name': 'Keyword',
+            'field_name': 'gcmd_topics_and_terms',
+            'size': 1000
+          },
+          {
             'name': 'Variables',
-            'field_name': 'variables',
+            'field_name': 'gcmd_variables',
             'size': 1000,
-          },
-          {
-            'name': 'Data Type',
-            'field_name': 'data_type',
-            'size': 1000
-          },
-          {
-            'name': 'Time Resolution',
-            'field_name': 'time_resolution',
-            'size': 1000
           },
           {
             'name': 'Platform',
@@ -36,8 +31,18 @@ SEARCH_INDEXES = {
             'size': 1000
           },
           {
-            'name': 'Topic/Subtopic',
-            'field_name': 'gcmd_keywords',
+            'name': 'Time Resolution',
+            'field_name': 'time_resolution',
+            'size': 1000
+          },
+          {
+            'name': 'Data Format',
+            'field_name': 'format',
+            'size': 1000
+          },
+          {
+            'name': 'Data Type',
+            'field_name': 'data_type',
             'size': 1000
           },
           {
@@ -48,11 +53,6 @@ SEARCH_INDEXES = {
           {
             'name': 'Supports Project',
             'field_name': 'supports_project',
-            'size': 1000
-          },
-          {
-            'name': 'Data Format',
-            'field_name': 'format',
             'size': 1000
           },
           {
