@@ -36,15 +36,3 @@ def search(request):
         'search_query': search_query,
         'search_results': search_results,
     })
-
-
-def dssearch(request):
-    if 'words' in request.GET and len(request.GET['words']) > 0:
-        # block xss injections
-        if request.GET['words'].find(");") >= 0:
-            return render(request, "400.html")
-
-        ctx = SearchResults(request).to_json()
-        return render(request, "search/dssearch.html", ctx)
-    else:
-        return redirect("/")
