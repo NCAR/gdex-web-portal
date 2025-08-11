@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'home',
     'oai',
     'login',
-    'lookfordata',
     'metaman',
     'search',
     #'accounts',
