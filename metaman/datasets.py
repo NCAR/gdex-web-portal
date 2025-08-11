@@ -327,7 +327,7 @@ def commit_changes(request, dsid):
             rparts = p.split("[!]")
             d = {}
             if len(rparts[0]) > 0:
-                d.update({'url': rparts[0]})
+                d.update({'url': rparts[0].replace("&", "&amp;")})
 
             if len(rparts[1]) > 0:
                 d.update({'name': rparts[1]})
