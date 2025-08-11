@@ -6,8 +6,6 @@ from django.shortcuts import redirect
 from wagtail.models import Page
 from wagtail.contrib.search_promotions.models import Query
 
-from .utils import SearchResults
-
 
 def search(request):
     search_query = request.GET.get('query', None)
