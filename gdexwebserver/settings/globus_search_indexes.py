@@ -67,12 +67,6 @@ SEARCH_INDEXES = {
           },
         ],
         'filter_match': 'match-any',
-        'sort': [
-            {
-                'field_name': 'dataset_id',
-                'order': 'asc',
-            },
-        ],
         'boosts': [
             {
                 'field_name': 'title',
