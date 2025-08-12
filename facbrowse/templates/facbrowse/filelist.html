@@ -32,13 +32,18 @@ function createTableBody(page_start) {
     let e = file_data[n];
     body +=
         '<tr>' +
-        {% if fcodes|length > 1 %}
+        {% if listtyp != "gladelist" and fcodes|length > 1 %}
         '<td class="text-center"><input type="checkbox" name="sfile" ' +
         'value="' + e[0] + '" onclick="checkBox(this, ' + (n-page_start) +
         ')">' + '</td>' +
         {% endif %}
-        '<td class="text-left"><a href="' + e[1] + '">' +
-        e[1].split("/").reverse()[0] + '</a></td>' +
+        '<td class="text-left">' +
+        {% if listtyp == "weblist" %}
+        '<a href="' + e[1] + '">' + e[1].split("/").reverse()[0] + '</a>' +
+        {% elif listtyp == "gladelist" %}
+        '{{ rda_data_path }}' + e[0] +
+        {% endif %}
+        '</td>' +
         '<td class="text-center">' + e[2] + '</td>' +
         '<td class="text-center">' + e[3] + ' {% if db == "WGrML" %}Grids{% elif db == "WObML" %}Observations{% endif %}</td>' +
         '<td class="text-center">' + e[4] + '</td>' +
@@ -230,7 +235,7 @@ function doScriptSubmit() {
             <table class="table">
                 <thead>
                     <tr>
-                        {% if fcodes|length > 1 %}
+                        {% if listtyp != "gladelist" and fcodes|length > 1 %}
                         <th></th>
                         {% endif %}
                         <th class="text-left">
