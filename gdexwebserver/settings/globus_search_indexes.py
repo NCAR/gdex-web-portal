@@ -7,7 +7,7 @@ SEARCH_RESULTS_PER_PAGE=10
 
 SEARCH_INDEXES = {
     'dataset-search': {
-        'name': 'NSF NCAR RDA Dataset Search',
+        'name': 'NSF NCAR GDEX Dataset Search',
         'uuid': 'fc7218fe-742c-4112-ab05-fc40472ced92',
         'facets': [
           {
