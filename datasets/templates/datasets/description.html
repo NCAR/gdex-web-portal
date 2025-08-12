@@ -116,6 +116,9 @@
         </div>
         {% else %}
         See the <a href="javascript:void(0)" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/detailed_metadata/?view=level')">detailed metadata</a> for level information.
+        {% if page.levels.grib2 %}
+        See also the <a href="javascript:void(0)" onclick="$.get('/datasets/{{ page.dsid }}/metadata/grib2_levels.html', replace_ds_content)">GRIB2 level table</a>.
+        {% endif %}
         {% endif %}
     </div>
 </div>
