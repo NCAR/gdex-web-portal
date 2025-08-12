@@ -6,6 +6,7 @@ import smtplib
 import subprocess
 
 from datetime import datetime
+from doi_manager import local_settings as doi_manager_settings
 from dsspellchecker import SpellChecker
 from email.message import EmailMessage
 from libpkg.metautils import open_dataset_overview
@@ -42,7 +43,8 @@ def adopt(request, dsid):
     if len(iuser) == 0:
         return render(request, "500.html")
 
-    d = {'dsid': dsid}
+    d = {'dsid': dsid,
+         'resolution_domain': doi_manager_settings.resolution_domain}
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()

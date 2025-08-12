@@ -68,7 +68,7 @@ function verifyDOI() {
             <h5 class="d-inline">DOI Resolution:</h5>&nbsp;
         </div>
         <div class="col-12 col-md-10">
-            <input type="text" name="res_url" size="100" placeholder="https://rda.ucar.edu/datasets/{{ data.dsid }}">
+            <input type="text" name="res_url" size="100" placeholder="https://{{ data.resolution_domain }}/datasets/{{ data.dsid }}">
             <br>
             <small>(You should ALMOST ALWAYS leave this field as the default and not modify it. In very specific instances, a DOI will need to resolve to a non-RDA dataset, which will require prior approval. In a case like that, enter the URL to where the DOI should resolve.)</small>
         </div>
