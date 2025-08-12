@@ -1,19 +1,11 @@
-{%extends "globus-portal-framework/v3/base.html"%}
+{%extends "gsearch/dataset-search/globus-portal-framework/base.html"%}
 {% load static %}
 
 {%block headextras%}
   {{ block.super}}
-  <link rel="stylesheet" type="text/css" href="{% static 'globus-portal-framework/v3/search.css' %}" />
 {% endblock %}
 
-
 {% block body %}
-
-<div class="row">
-  <div class="col">
-    <h2 class="text-center mt-3 mb-5">{{project_title}}</h2>
-  </div>
-</div>
 
 {% block list_indexes %}
 {% for index, index_data in search_indexes.items %}
