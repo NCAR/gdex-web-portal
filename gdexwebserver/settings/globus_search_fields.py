@@ -6,8 +6,6 @@ from typing import List, Mapping, Any
 
 from .globus_settings import GLOBUS_DATA_ENDPOINT_ID, GLOBUS_FILE_MANAGER_URL
 
-GDEX_DOMAIN = "gdex.k8s.ucar.edu"
-
 def search_highlights(result: List[Mapping[str, Any]]) -> List[Mapping[str, dict]]:
     """Prepare the most useful pieces of information for users on the search results page."""
 
@@ -75,8 +73,7 @@ def dataset_url(result):
     """ URL for the main dataset page """
     url = result[0]["url"]
     parsed = urlsplit(url)
-    netloc = GDEX_DOMAIN
-    return urlunsplit((parsed.scheme, netloc, parsed.path, "", ""))
+    return parsed.path
 
 def https_url(result):
     """Add a direct download link to files over HTTPS"""
