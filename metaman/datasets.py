@@ -2404,7 +2404,7 @@ def get_license_options():
     try:
         conn = psycopg2.connect(**settings.RDADB['wagtail2_config_pg'])
         cursor = conn.cursor()
-        cursor.execute("select id, name from wagtail.home_datalicense")
+        cursor.execute("select id, name from wagtail2.home_datalicense")
         res = cursor.fetchall()
         for e in res:
             licenses.append({'value': e[0], 'title': e[1]})

@@ -357,7 +357,7 @@ def validate_dataset(dsid):
 
         # check for broken links in related resources
         wcursor.execute((
-                "select related_rsrc_list from wagtail."
+                "select related_rsrc_list from wagtail2."
                 "dataset_description_datasetdescriptionpage where dsid = %s"),
                 (dsid, ))
         rsrcs = wcursor.fetchone()
