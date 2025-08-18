@@ -26,8 +26,6 @@
         {{field.datetime|date:'M d Y'}}
       {% elif field.filter_type in 'hour minute second' %}
         {{field.datetime|date:'M d Y H:i:s T'}}
-      {% elif field.field_name == 'gcmd_keywords' %}
-        {% truncate_facet field.value num=2 %}
       {% elif field.field_name == 'location' or field.field_name == 'platform' %}
         {% truncate_facet field.value %}
       {% elif field.field_name == 'spatial_resolution' or field.field_name == 'time_resolution' %}
