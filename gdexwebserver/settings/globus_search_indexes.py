@@ -106,9 +106,7 @@ SEARCH_INDEXES = {
           ("search_highlights", search_fields.search_highlights),
         ],
         'facet_modifiers': [
-            'globus_portal_framework.modifiers.facets.sort_terms',
-            'globus_portal_framework.modifiers.facets.sort_terms_numerically',
-            'gsearch.modifiers.sort_time_and_spatial_resolution_facets',
+            'gsearch.modifiers.custom_sort_facets',
         ],
     }
 }
