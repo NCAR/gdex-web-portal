@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.utils.timezone import now
 import difflib
 from api.common import get_dataset_location, get_request_info, get_dataset_webhome, format_dataset_id
+import secrets
 
 try:
     from urllib.parse import urlencode, unquote
@@ -50,7 +51,7 @@ def authcallback(request):
     # Set up our Globus Auth/OAuth2 state
     this_url = reverse('authcallback-view')
     redirect_uri = request.build_absolute_uri(this_url)
-    state = generate_state_parameter(request, settings.GLOBUS_APP_CLIENT_ID, settings.GLOBUS_APP_PRIVATE_KEY)
+    state = generate_state_parameter(request)
 
     scopes = request.session.get('scopes', USER_SCOPES)
     
@@ -456,32 +457,18 @@ def get_guest_collection_file_path(origin_path, wfile):
     return os.path.join(origin_path, wfile)
 
 #=========================================================================================
-def generate_state_parameter(request, client_id, private_key):
+def generate_state_parameter(request):
     """ Generate a state parameter for OAuth2 requests """
 
-    import hmac
-    from base64 import b64encode
-    import hashlib
+    state = secrets.token_urlsafe(32)
+    request.session['oauth_state'] = state
 
-    if not request.session.session_key:
-        request.session.create()
-    sid = request.session.session_key
-    raw_state = sid + client_id
-
-    """ Note hmac requires bytearrays in Python 3. Convert strings to bytes via encode(). """
-    hashed = hmac.new(private_key.encode(), raw_state.encode(), hashlib.sha1)
-    state = b64encode(hashed.digest())
-
-    """ Convert result back to string """
-    decoded_state = state.decode()
-    request.session['state'] = decoded_state
-
-    return decoded_state
+    return state
 
 #=========================================================================================
 def is_valid_state(request, state):
     """ Validate the OAuth2 state parameter """
-    if state == request.session['state']:
+    if state == request.session['oauth_state']:
         logger.debug("[is_valid_state] state validated")
         return True
     else:
