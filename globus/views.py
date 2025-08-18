@@ -51,6 +51,8 @@ def authcallback(request):
     # Set up our Globus Auth/OAuth2 state
     this_url = reverse('authcallback-view')
     redirect_uri = request.build_absolute_uri(this_url)
+    if redirect_uri.startswith("http:"):
+        redirect_uri = redirect_uri.replace("http:", "https:")
     state = generate_state_parameter(request)
 
     scopes = request.session.get('scopes', USER_SCOPES)
@@ -167,14 +169,19 @@ def transfer(request):
     """
     dsid = request.session['dsid']
     cancelurl = request.build_absolute_uri('/datasets/' + dsid + '/')
-    
+    if cancelurl.startswith("http:"):
+        cancelurl = cancelurl.replace("http:", "https:")
+
     logger.debug('[transfer] cancelurl: {}'.format(cancelurl))
 
     action_url = reverse('submit-transfer-view')
+    action_url = request.build_absolute_uri(action_url)
+    if action_url.startswith("http:"):
+        action_url = action_url.replace("http:", "https:")
 
     params = {
     	'method': 'GET',
-        'action': request.build_absolute_uri(action_url),
+        'action': action_url,
         'filelimit': 0,
         'folderlimit': 1,
         'cancelurl': cancelurl,
