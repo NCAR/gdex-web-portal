@@ -53,7 +53,6 @@ def authcallback(request):
     redirect_uri = request.build_absolute_uri(this_url)
     if redirect_uri.startswith("http:"):
         redirect_uri = redirect_uri.replace("http:", "https:")
-    state = generate_state_parameter(request)
 
     scopes = request.session.get('scopes', USER_SCOPES)
     
@@ -63,7 +62,7 @@ def authcallback(request):
     client = load_app_client()
     client.oauth2_start_flow(
         redirect_uri,
-        state = state,
+        state = request.session['oauth_state'],
         refresh_tokens=True,
         requested_scopes=scopes
     )
@@ -93,7 +92,7 @@ def authcallback(request):
             raise 
 
         if not is_valid_state(request, tokens['state']):
-            return HttpResponseForbidden(f"Invalid state {request.session['oauth_state']}")
+            return HttpResponseForbidden(f"Invalid state")
 
         request.session.update({"tokens": tokens.by_resource_server})
 
@@ -125,7 +124,8 @@ def save_filelist(request):
             request.session['dsid'] = request.POST['dsid']
             request.session['files'] = request.POST.getlist('files[]') 
 
-            # Start Globus Auth flow 
+            # Save oauth state in the session and start Globus Auth flow 
+            generate_state_parameter(request)
             return redirect('/globus/authcallback')
         else:
             logger.debug('Filelist is not validated')
@@ -465,12 +465,15 @@ def get_guest_collection_file_path(origin_path, wfile):
 
 #=========================================================================================
 def generate_state_parameter(request):
-    """ Generate a state parameter for OAuth2 requests """
+    """
+    Generate a state parameter for OAuth2 requests
+    and save it in the session
+    """
 
     state = secrets.token_urlsafe(32)
     request.session['oauth_state'] = state
 
-    return state
+    return
 
 #=========================================================================================
 def is_valid_state(request, state):
