@@ -70,9 +70,6 @@ ln -s /data/test/redeploys.py /usr/local/gdexweb/gdexwebserver/redeploys.py
 rm -rf /data/test/serverutils.py
 mv /usr/local/gdexweb/gdexwebserver/utils.py /data/test/serverutils.py
 ln -s /data/test/serverutils.py /usr/local/gdexweb/gdexwebserver/utils.py
-rm -rf /data/test/globus
-mv /usr/local/gdexweb/globus /data/test/
-ln -s /data/test/globus /usr/local/gdexweb/globus
 #
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2

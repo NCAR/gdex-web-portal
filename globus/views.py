@@ -93,7 +93,7 @@ def authcallback(request):
             raise 
 
         if not is_valid_state(request, tokens['state']):
-            return HttpResponseForbidden("Invalid state")
+            return HttpResponseForbidden(f"Invalid state {request.session['oauth_state']}")
 
         request.session.update({"tokens": tokens.by_resource_server})
 
