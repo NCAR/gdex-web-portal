@@ -73,6 +73,7 @@ ln -s /data/test/serverutils.py /usr/local/gdexweb/gdexwebserver/utils.py
 #
 chown -R www-data:www-data /data
 mkdir -p /data/logs/apache2
+mkdir -p /data/logs/django
 #
 python /usr/local/gdexweb/manage.py collectstatic --noinput
 dsspellchecker_manage build_db &
