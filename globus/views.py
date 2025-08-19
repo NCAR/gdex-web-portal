@@ -11,9 +11,9 @@ from api.common import get_dataset_location, get_request_info, get_dataset_webho
 import secrets
 
 try:
-    from urllib.parse import urlencode, unquote
+    from urllib.parse import urlencode, urljoin, unquote
 except:
-    from urllib import urlencode, unquote
+    from urllib import urlencode, urljoin, unquote
 
 from .utils import load_app_client
 from globus_sdk import (TransferClient, TransferAPIError, GlobusAPIError,
@@ -81,22 +81,18 @@ def authcallback(request):
         # and can start the process of exchanging an auth code for a token.
         logger.debug('[authcallback] code received in GET')
         code = request.GET['code']
-        logger.debug('[authcallback] code: {}'.format(code))
+        logger.debug(f"[authcallback] code: {code}")
         try:
             tokens = client.oauth2_exchange_code_for_tokens(code)
             logger.debug('[authcallback] tokens acquired')
         except Exception as e:
-            logger.error('[authcallback] Error acquring OAuth tokens')
+            logger.error('[authcallback] Error acquiring OAuth tokens')
             logger.error(e)
             logger.error(traceback.format_exc())
-            raise 
-
+            raise
         if not is_valid_state(request, tokens['state']):
             return HttpResponseForbidden(f"Invalid state")
-
         request.session.update({"tokens": tokens.by_resource_server})
-
-        logger.debug("[authcallback] session ID: {}".format(request.session.session_key))
 
         return transfer(request) 
 
@@ -172,7 +168,7 @@ def transfer(request):
     if cancelurl.startswith("http:"):
         cancelurl = cancelurl.replace("http:", "https:")
 
-    logger.debug('[transfer] cancelurl: {}'.format(cancelurl))
+    logger.debug(f'[transfer] cancelurl: {cancelurl}')
 
     action_url = reverse('submit-transfer-view')
     action_url = request.build_absolute_uri(action_url)
@@ -189,8 +185,8 @@ def transfer(request):
     }
 
     browse_url = 'helpers/browse-collections'
-    browse_endpoint = '{0}{1}?{2}'.format(settings.GLOBUS_APP_URL, browse_url, urlencode(params))
-    logger.debug("[transfer] browse_endpoint url: {}".format(browse_endpoint))
+    browse_endpoint = f"{urljoin(settings.GLOBUS_APP_URL, browse_url)}?{urlencode(params)}"
+    logger.debug(f"[transfer] browse_endpoint url: {browse_endpoint}")
 
     return redirect(browse_endpoint)
 
@@ -213,8 +209,8 @@ def submit_transfer(request):
     dsid = request.session['dsid']
     selected = request.session['files']
 
-    logger.debug("[submit_transfer] dsid: {}".format(dsid))
-        
+    logger.debug(f"[submit_transfer] dsid: {dsid}")
+
     locflag = get_dataset_location(dsid)
     if locflag == 'O':
         source_endpoint_id = settings.GLOBUS_STRATUS_ENDPOINT_ID
@@ -255,7 +251,7 @@ def submit_transfer(request):
     source_endpoint_display_name = transfer.get_endpoint(source_endpoint_id)['display_name']
     destination_endpoint_display_name = transfer.get_endpoint(destination_endpoint_id)['display_name']
 
-    default_label = "{} to {} transfer".format(source_endpoint_display_name, destination_endpoint_display_name)
+    default_label = f"{source_endpoint_display_name} to {destination_endpoint_display_name} transfer"
 
     if 'label' in request.GET:
         label = request.GET['label']
@@ -275,7 +271,7 @@ def submit_transfer(request):
     """ Add files to be transferred.  Note source_path is relative to the source
         endpoint base path. """
     for file in selected:
-        logger.debug('[submit_transfer] file: {}'.format(file))
+        logger.debug(f'[submit_transfer] file: {file}')
 
         # Trim leading '/data/', '/data/OS/', or OSDF pathnames from path if present.
         if file.startswith('/data/OS/'):
@@ -297,28 +293,19 @@ def submit_transfer(request):
             source_path = file
 
         dest_path = destination_path + file
-        logger.debug('[submit_transfer] source_path: {}'.format(source_path))
-        logger.debug('[submit_transfer] dest_path: {}'.format(dest_path))
+        logger.debug(f'[submit_transfer] source_path: {source_path}')
+        logger.debug(f'[submit_transfer] dest_path: {dest_path}')
         transfer_data.add_item(source_path, dest_path)
 
-    # endpoint_autoactivate is deprecated with GCSv5
-    # transfer.endpoint_autoactivate(source_endpoint_id)
-    # transfer.endpoint_autoactivate(destination_endpoint_id)
-    
     try:
         transfer_result = transfer.submit_transfer(transfer_data)
         task_id = transfer_result['task_id']
-        msg = ("transfer code: {0}, "
-               "submission_id: {1}, "
-               "task_id: {2}, "
-               "request_id: {3}, "
-               "message: {4}, "
-               "dsid: {5}").format(transfer_result['code'], 
-                                               transfer_result['submission_id'], 
-                                               transfer_result['task_id'], 
-                                               transfer_result['request_id'], 
-                                               transfer_result['message'], 
-                                               dsid)
+        msg = (f"transfer code: {transfer_result['code']}, "
+               f"submission_id: {transfer_result['submission_id']}, "
+               f"task_id: {transfer_result['task_id']}, "
+               f"request_id: {transfer_result['request_id']}, "
+               f"message: {transfer_result['message']}, "
+               f"dsid: {dsid}")
         logger.info(msg)
     except GlobusAPIError as e:
         context = {
@@ -331,22 +318,22 @@ def submit_transfer(request):
             }
         }
         msg = ("Globus API Error:\n"
-            "HTTP status: {0}\n"
-            "Error code: {1}\n"
-            "Error message: {2}\n"
-            "dsid: {3}\n"
-            "source endpoint: {4}\n"
-            "destination endpoint: {5}".format(e.http_status, e.code, e.message, dsid, source_endpoint_id, destination_endpoint_id)
+            f"HTTP status: {e.http_status}\n"
+            f"Error code: {e.code}\n"
+            f"Error message: {e.message}\n"
+            f"dsid: {dsid}\n"
+            f"source endpoint: {source_endpoint_id}\n"
+            f"destination endpoint: {destination_endpoint_id}"
         )
         if e.info.consent_required:
-            msg += "\nConsentRequired error with scopes: {}".format(e.info.consent_required.required_scopes)
+            msg += f"\nConsentRequired error with scopes: {e.info.consent_required.required_scopes}"
         logger.error(msg)
         return render(request, 'globus/error.html', context)
 
-    messages.info(request, 'Transfer request submitted successfully.  Task ID: {}'.format(task_id))
+    messages.info(request, f'Transfer request submitted successfully.  Task ID: {task_id}')
 
     status_url = reverse('status-view', kwargs={'task_id': task_id})
-    logger.debug('[submit_transfer] status_url: {}'.format(status_url))
+    logger.debug(f'[submit_transfer] status_url: {status_url}')
 
     return redirect(status_url)
 
@@ -372,8 +359,8 @@ def transfer_status(request, task_id):
     task_data = task.data
     task_data.update({'dsid': request.session['dsid']})
 
-    logger.debug('[transfer_status] task_id: {}'.format(task_id))
-    logger.debug('[transfer_status] task_id from task document: {}'.format(task_data['task_id']))
+    logger.debug(f'[transfer_status] task_id: {task_id}')
+    logger.debug(f'[transfer_status] task_id from task document: {task_data["task_id"]}')
 
     return render(request, 'globus/status.html', context=task_data)
 
@@ -395,7 +382,7 @@ def get_guest_collection_url(dsid=None, locflag=None, rindex=None):
         try:
             rqst_info = get_request_info(rindex)
         except:
-            msg = "[get_guest_collection_url] Problem getting info for request index {}".format(rindex)
+            msg = f"[get_guest_collection_url] Problem getting info for request index {rindex}"
             logger.error(msg)
 
         if rqst_info['location']:
@@ -404,14 +391,14 @@ def get_guest_collection_url(dsid=None, locflag=None, rindex=None):
             loc = loc.rstrip("/")
             if (loc.find(base_path) != -1):
                 path_len = len(base_path)
-                origin_path = "/{0}/".format(loc[path_len:])
+                origin_path = f"/{loc[path_len:]}/"
             else:
                 origin_path = None
         else:
-            origin_path = "/download.auto/{0}/".format(rqst_info['request_id'])
+            origin_path = f"/download.auto/{rqst_info['request_id']}/"
 
     elif dsid:
-        logger.debug("locflag: {}".format(locflag))
+        logger.debug(f"locflag: {locflag}")
         if not locflag:
             locflag = get_dataset_location(dsid)
         if locflag == 'C':
@@ -426,7 +413,7 @@ def get_guest_collection_url(dsid=None, locflag=None, rindex=None):
         origin_path = "/"
 	
     params = {'origin_id': origin_id, 'origin_path': origin_path}
-    url = '{0}?{1}'.format(globus_url, urlencode(params))
+    url = f'{globus_url}?{urlencode(params)}'
 
     return url
 
@@ -441,7 +428,7 @@ def get_guest_collection_origin_path(dsid):
         gc_base_path = settings.GLOBUS_CGD_BASE_PATH
         origin_path = webhome.replace(gc_base_path, '', 1)
     else:
-        origin_path = "/{}/".format(dsid)
+        origin_path = f"/{dsid}/"
 
     return origin_path
 
@@ -469,7 +456,6 @@ def generate_state_parameter(request):
     Generate a state parameter for OAuth2 requests
     and save it in the session
     """
-
     state = secrets.token_urlsafe(32)
     request.session['oauth_state'] = state
 
@@ -478,12 +464,12 @@ def generate_state_parameter(request):
 #=========================================================================================
 def is_valid_state(request, state):
     """ Validate the OAuth2 state parameter """
-    if state == request.session['oauth_state']:
+    if state != request.session.get('oauth_state'):
+        logger.warning("[is_valid_state] invalid state")
+        return False
+    else:
         logger.debug("[is_valid_state] state validated")
         return True
-    else:
-        logger.debug("[is_valid_state] state not validated")
-        return False
 
 #=========================================================================================
 def check_for_consent_required(transfer_client, target):
@@ -497,12 +483,12 @@ def check_for_consent_required(transfer_client, target):
         if err.info.consent_required:
             consent_required_scopes.extend(err.info.consent_required.required_scopes)
             msg = ("Transfer API Error:\n"
-                   "HTTP status: {0}\n"
-                   "Error code: {1}\n"
-                   "Error message: {2}\n"
-                   "endpoint: {3}".format(err.http_status, err.code, err.message, target)
+                   f"HTTP status: {err.http_status}\n"
+                   f"Error code: {err.code}\n"
+                   f"Error message: {err.message}\n"
+                   f"endpoint: {target}"
             )
-            msg += "\nConsentRequired error with scopes: {}\nRedirecting user to provide consent.".format(err.info.consent_required.required_scopes)
+            msg += f"\nConsentRequired error with scopes: {err.info.consent_required.required_scopes}\nRedirecting user to provide consent."
             logger.error(msg)
 
     return consent_required_scopes
