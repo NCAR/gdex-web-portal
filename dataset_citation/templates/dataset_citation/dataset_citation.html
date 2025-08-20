@@ -1,13 +1,65 @@
 {% load wagtailcore_tags %}
 
+<script id="citation_script" language="javascript">
+function changeCitation() {
+  if (document.citation) {
+    var style = document.citation.style[document.citation.style.selectedIndex].value;
+  } else {
+    var style = 'esip';
+  }
+  if (document.doi_select) {
+    var doi = document.doi_select.doi[document.doi_select.doi.selectedIndex].value;
+  } else {
+    var doi = '';
+  }
+  document.getElementById("citation").innerHTML = "Loading the citation...<br><br>";
+  getAjaxContent("GET", null, "/datasets/{{ dsid }}/citation/?style=" + style + "&doi=" + doi, "citation");
+}
+
+function copyToClipboard() {
+  let citation = document.getElementById("citation").innerHTML;
+  let idx1 = citation.indexOf("<font");
+  if (idx1 > 0) {
+    let idx2 = citation.indexOf("</font>");
+    if (idx2 > 0) {
+      citation = citation.substr(0, idx1) + citation.substr(idx2+7);
+    }
+  }
+  navigator.clipboard.writeText(citation);
+  document.getElementById("copy_icon").classList.replace("fa-clipboard", "fa-clipboard-check");
+  setTimeout(resetCopyToClipboardIcon, 3000);
+}
+
+function resetCopyToClipboardIcon() {
+  document.getElementById("copy_icon").classList.replace("fa-clipboard-check", "fa-clipboard");
+}
+
+</script>
+
 <div class="p-1">
-    <h5>How to Cite this Dataset:</h5>
+    <h5 class="d-inline">How to Cite this Dataset:</h5> <i id="copy_icon" class="fa-solid fa-clipboard ms-1" role="button" title="Copy to clipboard" onclick="copyToClipboard()"></i>
     <div id="citation" class="border p-1">
-        Loading the citation ... <img src="/images/transpace.gif" width="1" height="1" onload="getAjaxContent('GET', null, '/cgi-bin/datasets/citation?dsnum={{ dsid }}&style=esip', 'citation')" />
+        <img src="/images/transpace.gif" width="1" height="1" onload="getAjaxContent('GET', null, '/datasets/{{ dsid }}/citation/?style=esip', 'citation')" />
     </div>
-    <div class="mt-1">
-        <a href="javascript:void(0)" class="btn btn-pill btn-primary px-2 py-1 border-1" onclick="location='/cgi-bin/datasets/citation?dsnum={{ dsid }}&style=ris'">Download in RIS Format</a>
-        <a href="javascript:void(0)" class="btn btn-pill btn-primary px-2 py-1 border-1" onclick="location='/cgi-bin/datasets/citation?dsnum={{ dsid }}&style=bibtex'">Download in <span style="font-family: serif; text-transform: none">BibTeX</span> Format</a>
+    <div class="mt-1 small">
+        Bibliographic citation shown in 
+        <form name="citation" class="d-inline">
+            <select name="style" onchange="changeCitation()">
+                <option value="agu">American Geophysical Union (AGU)</option>
+                <option value="ams">American Meteorological Society (AMS)</option>
+                <option value="copernicus">Copernicus Publications</option>
+                <option value="datacite">DataCite</option>
+                <option value="esip" selected>Federation of Earth Science Information Partners (ESIP)</option>
+                <option value="gdj">Geoscience Data Journal</option>
+            </select>
+        </form> format.
+    </div>
+    <div class="mt-1 small">
+        <font color="red">&dagger;</font> Please fill in the "accessed" date with the day, month, and year (e.g. - 5 Aug 2011) you last accessed the data.
+    </div>
+    <div class="mt-2">
+        <a href="javascript:void(0)" class="btn btn-pill btn-primary px-2 py-1 border-1" onclick="location='/datasets/{{ dsid }}/citation/?style=ris'">Download in RIS Format</a>
+        <a href="javascript:void(0)" class="btn btn-pill btn-primary px-2 py-1 border-1" onclick="location='/datasets/{{ dsid }}/citation/?style=bibtex'">Download in <span style="font-family: serif; text-transform: none">BibTeX</span> Format</a>
     </div>
 </div>
 
