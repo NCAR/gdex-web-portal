@@ -641,7 +641,7 @@ function displayGridSelection(act)
    var griddisp    = document.getElementById("gridSelect");
    var stationdisp = document.getElementById("stationSelect");
    var compdisp     = document.getElementById("compSelect");
-   var submitdisp   = document.getElementById("submit");
+   var submitdisp   = document.getElementById("review-button");
 
   // Null selection
   if (act == -1) {
@@ -742,8 +742,8 @@ function displayDataFormatSelection(format)
    var regiondisp    = document.getElementById("regionGridSelect");
    var compdisp      = document.getElementById("compSelect");
    var qualitydisp   = document.getElementById("qualityMarkFrame");
-   var submitdisp    = document.getElementById("submit");
-   
+   var submitdisp    = document.getElementById("review-button");
+
 // Null selection
    if(format == -1) {
      document.form.dataFormat.value=-1;
@@ -912,62 +912,6 @@ function displayGridOptions(format)
     polyElem.disabled      = true;
     ncepgridElem.disabled  = true;
   }
-}
-
-/**
- * open a window for selection and submit to dsrqst.php if validated
- */
-function submitSubsetRequest()
-{
-   var win, doc;
-   var dsid, rindex, rtype;
-   var rnote;
-   var form = document.form;
-   
-   sflag = 0;
-
-// Validate form inputs
-   if(!checkDates()) return;
-   if(!checkFormat()) return;
-   if(!checkSpatialPref()) return;
-   if(!checkStations()) return;
-   if(!checkGrid()) return;
-   if(form.latlondisplayed.value == 1 && !checkLatLon()) return;
-   if(!checkParameters()) return;
-
-   rtype = form.rtype.value;
-   gindex = form.gindex.value;
-   dsid = form.dsid.value;
-
-   win = window.open("", "NCEP PREPBUFR Observations Subset Selection", "width=800,height=600,scrollbars=yes,resizable=yes");
-   doc = win.document;
-   doc.write("<html><head><title>NCEP PREPBUFR Observations</title></head><body>\n");
-   doc.write("<form name=\"form\" action=\"/php/dsrqst.php\" method=\"post\">\n");
-   doc.write("<P>Your NCEP PREPBUFR data request has been received. A summary of the request is given below.\n");
-   doc.write("Click the Button 'Submit Request' at the bottom if the information is <b>correct</b>;\n");
-   doc.write("otherwise click the Button 'Cancel Request' to reselect the condtions.\n");
-   doc.write("Email <a href=\"mailto:rdahelp@ucar.edu?subject=Question about PREPBUFR data request\">\n");
-   doc.write("RDA Help Desk</i></a> for questions and comments.</p>\n");
-
-   rnote = gather_request_info();
-   doc.write("<pre>" + rnote + "</pre>\n");
-
-   /* hidden inputs for submit form */
-   doc.write("<input type=\"hidden\" name=\"dsid\" value=\"" + dsid + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"gindex\" value=\"" + gindex + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"rtype\" value=\"" + rtype + "\">\n");
-   if(form.compdisplayed.value == 1 && comp != "no") {
-      doc.write("<input type=\"hidden\" name=\"afmt\" value=\"" + comp + "\">\n");
-   }      
-   doc.write("<input type=\"hidden\" name=\"sflag\" value=\"" + sflag + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"rinfo\" value=\"" + rinfo + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"rnote\" value=\"" + rnote + "\">\n");
-   doc.write("<p><input type=\"submit\" value=\"Submit Request\">");
-   doc.write("&nbsp<input type=\"button\" onClick=\"self.close()\" value=\"Cancel Request\"></p>\n");
-   doc.write("</form></body></html>\n");
-   doc.close();
-   win.focus();   
-   
 }
 
 /**
