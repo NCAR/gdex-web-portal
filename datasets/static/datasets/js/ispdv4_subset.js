@@ -633,8 +633,8 @@ $(document).ready(function() {
 function cancelRequest()
 {
    // Cancel the request and return to subset form
-   $("#subset-form-div").show();
-   $("#subset-review-div").hide();
+   $("#subset-form-div").removeClass("d-none");
+   $("#subset-review-div").addClass("d-none");
    $(document).scrollTop(0);
 }
 

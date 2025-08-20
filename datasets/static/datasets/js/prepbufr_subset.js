@@ -971,6 +971,76 @@ function submitSubsetRequest()
 }
 
 /**
+ * Review subset selections and submit to dsrqst.php
+ */
+function reviewRequest()
+{
+   var dsid, rtype;
+   var rnote;
+   var form = document.form;
+   
+   sflag = 0;
+
+// Validate form inputs
+   if(!checkDates()) return;
+   if(!checkFormat()) return;
+   if(!checkSpatialPref()) return;
+   if(!checkStations()) return;
+   if(!checkGrid()) return;
+   if(form.latlondisplayed.value == 1 && !checkLatLon()) return;
+   if(!checkParameters()) return;
+
+   rtype = form.rtype.value;
+   gindex = form.gindex.value;
+   dsid = form.dsid.value;
+   var postData;
+
+   rnote = gather_request_info();
+   $("#rnote-text").text(rnote);
+
+   postData = {
+      dsid: dsid,
+      gindex: gindex,
+      rtype: rtype,
+      sflag: sflag,
+      rinfo: rinfo,
+      rnote: rnote
+   };
+   if (comp != "no") {
+      postData.afmt = comp;
+   }
+   for (var key in postData) {
+      $("#submit-form").append("<input type=\"hidden\" name=\"" + key + "\" value=\"" + postData[key] + "\">\n");
+   }
+
+   $("#subset-form-div").addClass("d-none");
+   $("#subset-review-div").removeClass("d-none");
+   $(document).scrollTop(0);
+}
+
+$(document).ready(function() {
+   $("#submit-form").on("submit", function(event) {
+      event.preventDefault();
+
+      $("#subset-form-container").addClass("d-none");
+      $("#loading-button").removeClass("d-none");
+
+      var params = $(this).serialize();
+      $.post('/php/dsrqst.php', params).done(function(data) {
+         $("#ds_content").html(data);
+      });
+   });
+});
+
+function cancelRequest()
+{
+   // Cancel the request and return to subset form
+   $("#subset-form-div").removeClass("d-none");
+   $("#subset-review-div").addClass("d-none");
+   $(document).scrollTop(0);
+}
+
+/**
  * gather the selected information into a string buffer
  */
 function gather_request_info()
