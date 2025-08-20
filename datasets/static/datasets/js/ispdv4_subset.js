@@ -610,8 +610,8 @@ function reviewRequest()
       $("#submit-form").append("<input type=\"hidden\" name=\"" + key + "\" value=\"" + postData[key] + "\">\n");
    }
 
-   $("#subset-form-div").hide();
-   $("#subset-review-div").show();
+   $("#subset-form-div").addClass("d-none");
+   $("#subset-review-div").removeClass("d-none");
    $(document).scrollTop(0);
 }
 
@@ -619,8 +619,8 @@ $(document).ready(function() {
    $("#submit-form").on("submit", function(event) {
       event.preventDefault();
 
-      $("#submit-buttons").hide();
-      $("#loading-button").show();
+      $("#subset-form-container").addClass("d-none");
+      $("#loading-button").removeClass("d-none");
 
       var params = $(this).serialize();
       $.post('/php/dsrqst.php', params).done(function(data) {
