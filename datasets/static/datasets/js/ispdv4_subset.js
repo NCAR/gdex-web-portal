@@ -593,6 +593,7 @@ function reviewRequest()
    dsid = form.dsid.value;
 
    rnote = gather_request_info();
+   $("#rnote-text").text(rnote);
 
    postData = {
       dsid: dsid,
@@ -605,29 +606,35 @@ function reviewRequest()
    if (comp != "no") {
       postData.afmt = comp;
    }
-   params = new URLSearchParams(postData).toString();
+   for (var key in postData) {
+      $("#submit-form").append("<input type=\"hidden\" name=\"" + key + "\" value=\"" + postData[key] + "\">\n");
+   }
 
-   formContent = "<h2 class=\"py-2\">ISPD Version 4 Data Request</h2>\n";
-   formContent += "<div>Following is a summary of your data request options.\n";
-   formContent += "Click the 'Submit Request' button below if the information is <span class=\"font-weight-bold\">correct</span>;\n";
-   formContent += "otherwise select 'Cancel' to modify your selections or start over.</div>";
-   formContent += "<div class=\"py-2\"><pre><code>" + rnote + "</code></pre></div>";
-   formContent += "<div class=\"mt-1\">\n";
-   formContent += "<button class=\"btn btn-primary mt-1 p-1\" type=\"button\" style=\"font-size:1rem\" id=\"submit_request\" onclick=\"getContentFromPost('ds_content', '/php/dsrqst.php', params);\">Submit request</button>\n";
-   formContent += "<button class=\"btn btn-outline-primary mt-1 p-1\" type=\"button\" style=\"font-size:1rem\" id=\"cancel_request\" onclick=\"cancelRequest();\">Cancel</button>\n";
-   formContent += "</div>\n";
-
-   $("#subset-form").hide();
-   $("#subset-submit-form").html(formContent);
-   $("#subset-submit-form").show();
+   $("#subset-form-div").hide();
+   $("#subset-review-div").show();
    $(document).scrollTop(0);
 }
+
+$(document).ready(function() {
+   $("#submit-form").on("submit", function(event) {
+      event.preventDefault();
+
+      $("#submit-buttons").hide();
+      $("#loading-button").show();
+
+      var params = $(this).serialize();
+      $.post('/php/dsrqst.php', params).done(function(data) {
+         $("#ds_content").html(data);
+         $(document).scrollTop(0);
+      });
+   });
+});
 
 function cancelRequest()
 {
    // Cancel the request and return to subset form
-   $("#subset-form").show();
-   $("#subset-submit-form").hide();
+   $("#subset-form-div").show();
+   $("#subset-review-div").hide();
    $(document).scrollTop(0);
 }
 
