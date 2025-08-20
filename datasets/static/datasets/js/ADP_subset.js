@@ -592,7 +592,6 @@ function displayGridSelection(act)
 {
    var mapdisp     = document.getElementById("mapselect");
    var mandisp     = document.getElementById("manselect");
-   var commentsdisp = document.getElementById("comments");
    var stationdisp = document.getElementById("stationSelect");
 
   // Null selection
@@ -600,7 +599,6 @@ function displayGridSelection(act)
   {
     mapdisp.style.display="none";
     mandisp.style.display="none";
-    commentsdisp.style.display="none";
     stationdisp.style.display="none";
     document.form.mapdisplayed.value=0;
     document.form.latlondisplayed.value=0;
@@ -611,7 +609,6 @@ function displayGridSelection(act)
   if (act == 0) 
   {
     displayGoogleMap(1);
-    commentsdisp.style.display="block";
     stationdisp.style.display="none";
     document.form.stationdisplayed.value=0;
 //    loadDrawBoxMap('drawboxmap',20,0);
@@ -621,7 +618,6 @@ function displayGridSelection(act)
   if (act == 1) {
     mapdisp.style.display="none";
     stationdisp.style.display="block";
-    commentsdisp.style.display="block";
     document.form.mapdisplayed.value=0;
     document.form.latlondisplayed.value=0;
     document.form.stationdisplayed.value=1;
@@ -667,7 +663,7 @@ function gather_request_info()
    rqstinfo   += "\nRecord Types              : " + rectypes; 
    rinfo += "&rectypes=" + rectypes;
 
-   rqstinfo   += "\nAll Basic Parameters      : " + allbasic;
+   // rqstinfo   += "\nAll Basic Parameters      : " + allbasic;
    rinfo += "&allbasic=" + allbasic;
 
    rqstinfo   += "\nParameters                : " + parms; 
@@ -675,12 +671,6 @@ function gather_request_info()
 
    rqstinfo   += "\nCompression               : " + compr; 
    rinfo += "&compr=" + compr;
-
-   if(form.comments.value) 
-   {
-      rqstinfo += "\n\nComments:\n" + form.comments.value;
-      rinfo += "&cmts=" + form.comments.value;
-   }
 
 /**
  * rqstinfo is not a global variable, but we can return it as if it
@@ -707,11 +697,10 @@ function get_compress_info()
 }
 
 /**
- * open a window for selection and submit to dsrqst.php if validated
+ * Review subset selections and submit to dsrqst.php
  */
-function submitSubsetRequest()
+function reviewRequest()
 {
-   var win, doc;
    var dsid, rindex, rtype;
    var rnote;
    var form = document.form;
@@ -730,45 +719,50 @@ function submitSubsetRequest()
    gindex = form.gindex.value;    
    dsid = form.dsid.value;
    var title = dsid;
-
-   win = window.open("", title + " Subset Selection", "width=800,height=600,scrollbars=yes,resizable=yes");
-   doc = win.document;
-
-   doc.write("<html><head><title>" + title + "</title></head><body>\n");
-   doc.write("<form name=\"form\" action=\"/php/dsrqst.php\" method=\"post\">\n");
-   doc.write("<P>A "+ title + " data request has been completed. A summary of the request is given below.\n");
-   doc.write("Click the Button 'Submit Request' at the bottom if the information is <b>correct</b>;\n");
-   doc.write("otherwise click the Button 'Cancel Request' to reselect the conditions.</br/>\n");
-   doc.write("Email <a href=\"mailto:" + email + "?subject=Question about " + dsid + " data request\">\n");
-   doc.write(specialist + "</i></a> for questions and comments.</p>\n");
+   var postData, formContent;
 
    rnote = gather_request_info();
-   doc.write("<pre>" + rnote + "</pre>\n");
 
-   /* 
-      Get current values for subsetting; compare to initial vals, and calc sflag 
-
-      MUST BE CALLED AFTER 'gather_request_info()'
-   */
+// Get current values for subsetting; compare to initial vals, and calc sflag
+// MUST BE CALLED AFTER 'gather_request_info()'
    evals = getsubsetvals();
    sflag = sflagtest(ivals,evals);
 
-   /* hidden inputs for submit form */
-   doc.write("<input type=\"hidden\" name=\"dsid\"   value=\"" + dsid   + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"gindex\" value=\"" + gindex + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"rtype\"  value=\"" + rtype  + "\">\n");
-   if(compr != "no") {
-      doc.write("<input type=\"hidden\" name=\"afmt\" value=\"" + compr + "\">\n");
-   }      
-   doc.write("<input type=\"hidden\" name=\"sflag\"  value=\"" + sflag  + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"rinfo\"  value=\"" + rinfo  + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"rnote\"  value=\"" + rnote  + "\">\n");
-   doc.write("<p><input type=\"submit\" value=\"Submit Request\">");
-   doc.write("&nbsp<input type=\"button\" onClick=\"self.close()\" value=\"Cancel Request\"></p>\n");
-   doc.write("</form></body></html>\n");
-   doc.close();
-   win.focus();   
-   
+   postData = {
+      dsid: dsid,
+      gindex: gindex,
+      rtype: rtype,
+      sflag: sflag,
+      rinfo: rinfo,
+      rnote: rnote
+   };
+   if (compr != "no") {
+      postData.afmt = compr;
+   }
+   params = new URLSearchParams(postData).toString();
+
+   formContent = "<h2 class=\"py-2\">NCEP Observations Data Request</h2>\n";
+   formContent += "<div>Following is a summary of your data request options.\n";
+   formContent += "Click the 'Submit Request' button below if the information is <span class=\"font-weight-bold\">correct</span>;\n";
+   formContent += "otherwise select 'Cancel' to modify your selections or start over.</div>";
+   formContent += "<div class=\"py-2\"><pre><code>" + rnote + "</code></pre></div>";
+   formContent += "<div class=\"mt-1\">\n";
+   formContent += "<button class=\"btn btn-primary mx-1 p-1\" type=\"button\" style=\"font-size:1rem\" id=\"submit_request\" onclick=\"getContentFromPost('ds_content', '/php/dsrqst.php', params);\">Submit request</button>\n";
+   formContent += "<button class=\"btn btn-outline-primary mx-1 p-1\" type=\"button\" style=\"font-size:1rem\" id=\"cancel_request\" onclick=\"cancelRequest();\">Cancel</button>\n";
+   formContent += "</div>\n";
+
+   $("#subset-form").hide();
+   $("#subset-submit-form").html(formContent);
+   $("#subset-submit-form").show();
+   $(document).scrollTop(0);
+}
+
+function cancelRequest()
+{
+   // Cancel the request and return to subset form
+   $("#subset-form").show();
+   $("#subset-submit-form").hide();
+   $(document).scrollTop(0);
 }
 
 /**
