@@ -6,16 +6,24 @@ from dataset_description.models import DatasetDescriptionPage
 from dataset_citation.models import DatasetCitationPage
 from home.utils import slug_list
 
+from . import styles
+
 # Create your views here.
 
 
 def citation(request, dsid):
-    dsid = ng_gdex_id(dsid)
-    slist = slug_list(dsid);
+    if 'style' in request.GET:
+        if ('HTTP_X_REQUESTED_WITH' not in request.META and
+                request.GET['style'] not in ("ris", "bibtex")):
+            return render(request, "404.html")
+
+        return styles.export_citation(request, dsid)
+
+    slist = slug_list(dsid)
     for slug in slist:
         qs = Page.objects.type(DatasetCitationPage).filter(url_path__contains=slug).live().specific()
         if len(qs) > 0:
-            break;
+            break
 
     if len(qs) == 0:
         return render(request, "404.html")
