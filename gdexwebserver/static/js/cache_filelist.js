@@ -1,9 +1,9 @@
 
-var WPATH = 'https://rda.ucar.edu';
+var WPATH = 'https://gdex.ucar.edu';
 var CGIBIN = WPATH+'/cgi-bin';
-var GPATH = 'https://data.rda.ucar.edu';
-var SPATH = 'https://stratus.rda.ucar.edu';
-var RPATH = 'https://request.rda.ucar.edu';
+var GPATH = 'https://data.gdex.ucar.edu';
+var SPATH = 'https://stratus.gdex.ucar.edu';
+var RPATH = 'https://request.gdex.ucar.edu';
 
 // show loading spinner during ajax content load
 $(document).ajaxSend(function() {
@@ -165,7 +165,7 @@ function convertFiles()
     var sizes = getListFromKey(files, 'size');
     var totalSize = 0;
     $.each(sizes,function(){totalSize+=parseFloat(this) || 0;});
-    var contact = "rdahelp@ucar.edu";
+    var contact = "datahelp@ucar.edu";
     var dsid = $('#file_table').attr('data-dsid');
     var message = `Click the following button to send a request for converting format to NetCDF
 
@@ -173,7 +173,7 @@ function convertFiles()
     `;
     var confirmation_div = $('<div></div>', {'id': 'confirmation-div', 'class': 'dataset p-3'});
 
-    var header = $("<h2></h2>", {'class':'mt-2'}).text('Web files selected for RDA dataset '+dsid);
+    var header = $("<h2></h2>", {'class':'mt-2'}).text('Web files selected for GDEX dataset '+dsid);
     confirmation_div.append(header);
 
     var total_size_message = $('<div></div>')
@@ -232,11 +232,11 @@ function showGlobusConfirmation()
     var sizes = getListFromKey(files, 'size');
     var totalSize = 0;
     $.each(sizes,function(){totalSize+=parseFloat(this) || 0;});
-    var contact = "rdahelp@ucar.edu";
+    var contact = "datahelp@ucar.edu";
     var dsid = $('#file_table').attr('data-dsid');
     var message = `To transfer these files using the Globus data transfer service, select the button labeled 'Globus transfer' below. 
                    You will be redirected to the Globus web app where you will be prompted to select a target endpoint to receive the 
-		   data transfer. Once you have defined a target endpoint, you will be redirected back to the RDA website and your data 
+		   data transfer. Once you have defined a target endpoint, you will be redirected back to the GDEX website and your data 
 		   transfer will be submitted.  
 		   
 		   A Globus login is required to use this service.  You may sign into Globus with your preferred identity 
@@ -246,7 +246,7 @@ function showGlobusConfirmation()
 
     var confirmation_div = $('<div></div>', {'id': 'confirmation-div', 'class': 'dataset p-3'});
 
-    var header = $("<h2></h2>", {'class':'mt-2'}).text('Files selected for RDA dataset '+dsid);
+    var header = $("<h2></h2>", {'class':'mt-2'}).text('Files selected for GDEX dataset '+dsid);
     confirmation_div.append(header);
 
     var total_size_message = $('<div></div>')
@@ -333,23 +333,23 @@ function getScript(language)
     {
     case 'python':
         script = getPythonScript(files);
-        script_name = 'rda-download.py';
+        script_name = 'gdex-download.py';
         break;
     case 'csh':
         script = getCshScript(files);
-        script_name = 'rda-download.csh';
+        script_name = 'gdex-download.csh';
         break;
     case 'jupyter':
         script = getJupyterScript(files);
-        script_name = 'rda-download.ipynb';
+        script_name = 'gdex-download.ipynb';
         break;
     case 'filelist':
         script = getFilelistScript(files);
-        script_name = 'rda-filelist.txt';
+        script_name = 'gdex-filelist.txt';
         break;
     default:
         script = getPythonScript(files);
-        script_name = 'rda-download.py';
+        script_name = 'gdex-download.py';
     }
         var blob = new Blob([script], {type: "text/plain;charset=utf-8"});
         saveBlob(blob, script_name);
@@ -360,7 +360,7 @@ function getPythonScript(filelist)
 {
     script = `#!/usr/bin/env python
 """ 
-Python script to download selected files from rda.ucar.edu.
+Python script to download selected files from gdex.ucar.edu.
 After you save the file, don't forget to make it executable
 i.e. - "chmod 755 <name_of_script>"
 """
@@ -392,7 +392,7 @@ function getCshScript(filelist)
 {
     script = `#!/usr/bin/env csh
 #
-# c-shell script to download selected files from rda.ucar.edu using Wget
+# c-shell script to download selected files from gdex.ucar.edu using Wget
 # NOTE: if you want to run under a different shell, make sure you change
 #       the 'set' commands according to your shell's syntax
 # after you save the file, don't forget to make it executable
