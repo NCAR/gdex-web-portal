@@ -116,7 +116,7 @@ def generate_notebook(request):
     b = nbb.get_builder()
 
 
-    b.add_markdown_block(" # Notebook for Downloading RDA Data.")
+    b.add_markdown_block(" # Notebook for Downloading GDEX Data.")
     b.add_code_block(
         "import sys, os",
         "import requests")
@@ -198,7 +198,7 @@ def submit(request):
     email = get_email_from_token(request)
     if email is None:
         response = rda_r.RDA_Response()
-        response.add_message('Incorrect Token. Visit "https://rda.ucar.edu/accounts/profile/" to obtain token.')
+        response.add_message('Incorrect Token. Visit "https://gdex.ucar.edu/accounts/profile/" to obtain token.')
         return JsonResponse(response.get_json())
     json_response = rdams.main("-submit", request_json, email)
     return JsonResponse(json_response)
@@ -208,7 +208,7 @@ def submit_json(request):
     email = get_email_from_token(request)
     if email is None:
         response = rda_r.RDA_Response()
-        response.add_message('Incorrect Token. Visit "https://rda.ucar.edu/accounts/profile/" to obtain token.')
+        response.add_message('Incorrect Token. Visit "https://gdex.ucar.edu/accounts/profile/" to obtain token.')
         return JsonResponse(response.get_json())
     json = rdams.main("-submit")
     return JsonResponse(json)
@@ -254,7 +254,7 @@ def purge(request, rindex):
     email = get_email_from_token(request)
     if email is None:
         response = rda_r.RDA_Response()
-        response.add_message('Incorrect Token. Visit "https://rda.ucar.edu/accounts/profile/" to obtain token.')
+        response.add_message('Incorrect Token. Visit "https://gdex.ucar.edu/accounts/profile/" to obtain token.')
         return JsonResponse(response.get_json())
     json = rdams.main("-purge", rindex, email)
     return JsonResponse(json)
