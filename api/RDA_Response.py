@@ -10,7 +10,7 @@ class RDA_Response:
     """
 
 
-    def __init__(self, code=200, contact='rdahelp@ucar.edu', app_name=None):
+    def __init__(self, code=200, contact='datahelp@ucar.edu', app_name=None):
         """ Creates default values.
         If ```error_code``` exists, treat response as error.
         """
@@ -45,7 +45,7 @@ class RDA_Response:
                468 : "JSON not found.",
                469 : "JSON not found.",
                # Any error should be handled. This shouldn't happen.
-               512 : "Unknown Server Error. Please contact rdahelp@ucar.edu",
+               512 : "Unknown Server Error. Please contact datahelp@ucar.edu",
                513 : "Problem connecting to database.",
                }
         if code not in message_dict:
