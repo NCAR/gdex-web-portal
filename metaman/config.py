@@ -18,11 +18,6 @@ bin_utils = {
     'rdadatarun': local_settings.rdadatarun,
 }
 
-spellchecker_settings = {
-    'db_config': local_settings.spellcheck_db_config,
-    'valids_schema': "metautil",
-}
-
 ISO_topics = [
     "biota",
     "boundaries",
