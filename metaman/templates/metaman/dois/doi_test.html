@@ -41,7 +41,7 @@ function changeCitation() {
     var style = 'esip';
   }
   document.getElementById("citation").innerHTML = "Loading the citation...<br><br>";
-  getContent('citation', '/cgi-bin/datasets/citation?dsnum={{ dsid }}&style=' + style);
+  getContent('citation', '/datasets/{{ dsid }}/citation/?style=' + style);
 }
 registerAjaxCallback('changeCitation');
 </script>
