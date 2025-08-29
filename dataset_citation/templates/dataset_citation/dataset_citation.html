@@ -37,7 +37,7 @@ function resetCopyToClipboardIcon() {
 </script>
 
 <div class="p-1">
-    <h5 class="d-inline">How to Cite this Dataset:</h5> <i id="copy_icon" class="fa-solid fa-clipboard ms-1" role="button" title="Copy to clipboard" onclick="copyToClipboard()"></i>
+    <h5 class="d-inline">How to Cite this Dataset:</h5> <i id="copy_icon" class="fa-solid fa-lg fa-clipboard ms-1" role="button" title="Copy to clipboard" onclick="copyToClipboard()"></i>
     <div id="citation" class="border p-1">
         <img src="/images/transpace.gif" width="1" height="1" onload="getAjaxContent('GET', null, '/datasets/{{ dsid }}/citation/?style=esip', 'citation')" />
     </div>

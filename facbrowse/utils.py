@@ -1,7 +1,6 @@
 import os
 import psycopg2
 
-from lxml import etree as ElementTree
 from pathlib import Path
 
 from django.conf import settings
@@ -101,21 +100,22 @@ def validate_request(request, listtyp):
 
 def has_continuing_updates(dsid):
     try:
-        tree = (ElementTree.parse("/data/web/datasets/" + dsid +
-                "/metadata/dsOverview.xml"))
+        conn = psycopg2.connect(**settings.RDADB['wagtail2_config_pg'])
+        cursor = conn.cursor()
+        cursor.execute((
+                "select update_freq from wagtail2."
+                "dataset_description_datasetdescriptionpage where dsid = %s"),
+                (dsid, ))
+        update = cursor.fetchone()
+        if update is None or len(update[0]) == 0:
+            return (False, None)
+
+        return (True, update[0].lower())
     except Exception:
         return (False, None)
-
-    root = tree.getroot()
-    e = root.find("./continuingUpdate")
-    if e is None:
-        return (False, None)
-
-    update = e.get("value")
-    if update == "yes":
-        return (True, e.get("frequency"))
-
-    return (False, None)
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 
 def get_groups(dsid):
