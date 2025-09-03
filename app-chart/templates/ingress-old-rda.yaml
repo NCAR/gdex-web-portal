@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-old-rda
+  namespace: {{ .Release.Namespace }}
+  labels:
+    group: {{ .Values.webapp.group }}
+  annotations:
+    cert-manager.io/cluster-issuer: "incommon"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      return 301 https://rda.ucar.edu$request_uri;
+spec:
+  ingressClassName: nginx-internal
+  tls:
+    - hosts:
+      - rda.k8s.ucar.edu
+      secretName: incommon-cert.rda.k8s.ucar.edu
+  rules:
+  - host: rda.k8s.ucar.edu
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: service-dummy
+            port:
+              number: 80
