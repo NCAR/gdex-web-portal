@@ -7,7 +7,7 @@
 {% has_alt_index data.files as has_alt_index_flag %}
 {% if has_alt_index_flag %}
 <script>
-$.get('/OS/web/datasets/{{ request.path|get_dsid_from_url|dsid_dash_to_dot }}/docs/alt_index.html', function(response) {
+$.get('https://data-osdf.rda.ucar.edu/ncar-rda/web/datasets/{{ request.path|get_dsid_from_url|dsid_dash_to_dot }}/docs/alt_index.html', function(response) {
           $('#ds_content').html(response);
                  })
 </script>
@@ -21,7 +21,7 @@ $.get('/OS/web/datasets/{{ request.path|get_dsid_from_url|dsid_dash_to_dot }}/do
 <thead>
 <tr>
 <th>Filename <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
-<th>Size (KB) <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
+<th>Size (B) <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
 <th>Date Modified <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
 <th>Description</th>
 </tr>
@@ -37,11 +37,13 @@ $.get('/OS/web/datasets/{{ request.path|get_dsid_from_url|dsid_dash_to_dot }}/do
  {% if row.url is not None %}
  <a href='{{row.url}}' >{{ v }} </a>
  {% else %}
- <a href='/OS/web/datasets/{{data.dsid}}/docs/{{row.hfile}}' >{{ v }} </a>
+ <a href='https://data-osdf.rda.ucar.edu/ncar-rda/web/datasets/{{data.dsid}}/docs/{{row.hfile}}' >{{ v }} </a>
 {% endif %}
 
 {% else %}
+ {% if v is not None %}
  {{ v }}
+{% endif %}
 {% endif %}
 </td>
 {% endif %}
