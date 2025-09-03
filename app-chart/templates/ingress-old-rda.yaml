@@ -7,7 +7,7 @@ metadata:
     group: {{ .Values.webapp.group }}
   annotations:
     cert-manager.io/cluster-issuer: "incommon"
-    nginx.ingress.kubernetes.io/permanent-redirect: "https://rda.ucar.edu"
+    nginx.ingress.kubernetes.io/rewrite-target: https://rda.ucar.edu$1$2
 spec:
   ingressClassName: nginx-internal
   tls:
@@ -18,8 +18,8 @@ spec:
   - host: rda.k8s.ucar.edu
     http:
       paths:
-      - path: /
-        pathType: ImplementationSpecific
+      - path: /([^/]*)(.*)
+        pathType: Prefix
         backend:
           service:
             name: service-dummy
