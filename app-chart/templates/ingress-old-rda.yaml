@@ -8,6 +8,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: "incommon"
     nginx.ingress.kubernetes.io/rewrite-target: https://rda.ucar.edu/$1$2
+    nginx.ingress.kubernetes.io/permanent-redirect-code: "301"
 spec:
   ingressClassName: nginx-internal
   tls:
