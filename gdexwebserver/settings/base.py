@@ -356,17 +356,26 @@ for app in INSTALLED_APPS:
 # General settings
 ########################################################################
 
-RDA_DATA_PATH = '/glade/campaign/collections/rda/data/'
-RDA_REQUEST_PATH = '/glade/campaign/collections/rda/transfer/'
-RDA_REQUEST_HOME = '/glade/campaign/collections/rda/transfer/dsrqst'
-RDA_CANONICAL_DATA_PATH = '/glade/campaign/collections/rda/data/'
-RDA_CANONICAL_REQUEST_PATH = '/glade/campaign/collections/rda/transfer/'
+GDEX_BASE_PATH = '/glade/campaign/collections/gdex/'
+# RDA_BASE_PATH = '/glade/campaign/collections/rda/'
+RDA_BASE_PATH = GDEX_BASE_PATH
+
+RDA_DATA_PATH = os.path.join(RDA_BASE_PATH, 'data/')
+RDA_REQUEST_PATH = os.path.join(RDA_BASE_PATH, 'transfer/')
+RDA_REQUEST_HOME = os.path.join(RDA_BASE_PATH, 'transfer/dsrqst/')
+RDA_CANONICAL_DATA_PATH = os.path.join(RDA_BASE_PATH, 'data/')
+RDA_CANONICAL_REQUEST_PATH = os.path.join(RDA_BASE_PATH, 'transfer/')
 
 # Data domains and base URLs
 OSDF_DOMAIN = 'data-osdf.rda.ucar.edu'
 OSDF_DATA_PATH = 'ncar/rda'
 OSDF_REQUEST_PATH = 'ncar/rda-transfer'
 OSDF_STRATUS_PATH = 'ncar-rda'
+
+# OSDF_DOMAIN = 'data-osdf.gdex.ucar.edu'
+# OSDF_DATA_PATH = 'ncar/gdex'
+# OSDF_STRATUS_PATH = 'ncar-gdex'
+
 OSDF_DATA_DOMAIN = os.path.join(OSDF_DOMAIN, OSDF_DATA_PATH)
 OSDF_REQUEST_DOMAIN = os.path.join(OSDF_DOMAIN, OSDF_REQUEST_PATH)
 OSDF_STRATUS_DOMAIN = os.path.join(OSDF_DOMAIN, OSDF_STRATUS_PATH)
@@ -389,8 +398,8 @@ CGD_DATA_BASE_URL = 'https://'+CGD_HTTPS_DOMAIN
 # Production base URLs used for web file lists.
 # Change to 'GLOBUS' URLs in the event that OSDF service is unavailable
 #------------------------------------------------------------------------
-# RDA_DATA_BASE_URL = GLOBUS_DATA_BASE_URL
-RDA_DATA_BASE_URL = OSDF_BASE_URL
+RDA_DATA_BASE_URL = GLOBUS_DATA_BASE_URL
+# RDA_DATA_BASE_URL = OSDF_BASE_URL
 
 RDA_REQUEST_BASE_URL = GLOBUS_REQUEST_BASE_URL
 # RDA_REQUEST_BASE_URL = OSDF_REQUEST_URL
