@@ -14,9 +14,31 @@ spec:
   tls:
     - hosts:
       - {{ .Values.webapp.tls.fqdn }}
+      - {{ .Values.webapp.tls.fqdnAPI }}
+      - {{ .Values.webapp.tls.fqdnGDEX }}
       secretName: {{ .Values.webapp.tls.secretName }}
   rules:
   - host: {{ .Values.webapp.tls.fqdn }}
+    http:
+      paths:
+      - path: {{ .Values.webapp.path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.webapp.name }}
+            port:
+              number: {{ .Values.webapp.container.port }}
+  - host: {{ .Values.webapp.tls.fqdnAPI }}
+    http:
+      paths:
+      - path: {{ .Values.webapp.path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.webapp.name }}
+            port:
+              number: {{ .Values.webapp.container.port }}
+  - host: {{ .Values.webapp.tls.fqdnGDEX }}
     http:
       paths:
       - path: {{ .Values.webapp.path }}
