@@ -11,6 +11,7 @@
  
 var dates, flts, vars, comp, tarflag, rinfo, sflag, reanqcs, ivads;
 var dcks, pts, sids;
+var corevars, icoadsvars, immts, modqcs, metavos, nocns, ecrs;
 var FP = 100;
 
 /**
@@ -62,7 +63,7 @@ function checkSelection()
    if(!checkLatLon()) return false;
    if(!checkVariables()) return false;
    if(!checkReanqc()) return false;
-   if(!checkIvad()) return false;
+   if(!checkIvad()) return false;   
    return true;
 }
 
@@ -299,6 +300,7 @@ function checkVariables()
    var i, j, k;
    var attm, vname, vcnt, dcnt;
    var attms = new Array("core", "icoads", "immt", "mqc", "metavos", "nocn", "ecr");
+   var attmVars;
 
    dcnt = 0;
    vars = null;
@@ -308,7 +310,10 @@ function checkVariables()
          sflag |= 1;
          continue;
       }
-      attm = document.getElementsByName(attms[i]);      
+      attmName = attms[i];
+      attm = document.getElementsByName(attmName);
+      attmVars = null;
+
       for(vcnt = j = 0; j < attm.length; j++) {
          if(attm[j].checked) {
             vcnt++;
@@ -318,6 +323,11 @@ function checkVariables()
                dcnt++;
                vname = vname.substring(0, k);
             }
+            if(attmVars == null) {
+               attmVars = vname;
+            } else {
+               attmVars += ", " + vname;
+            }
             if(vars == null) {
                vars = vname;
             } else {
@@ -326,6 +336,15 @@ function checkVariables()
          }
       }
       if(vcnt < attm.length) sflag |= 1;
+      if(attmVars != null) {
+         if(attmName == "core")      corevars = attmVars;
+         if(attmName == "icoads")    icoadsvars = attmVars;
+         if(attmName == "immt")      immts = attmVars;
+         if(attmName == "mqc")       modqcs = attmVars;
+         if(attmName == "metavos")   metavos = attmVars;
+         if(attmName == "nocn")      nocns = attmVars;
+         if(attmName == "ecr")       ecrs = attmVars;
+      }
    }
    if(dcnt == 0) {
       alert("Please select at least one of the data elements (marked by an asterisk '*' in Core, Immt, Mod-qc, Meta-vos, Nocn, or Ecr) to continue.");
@@ -612,11 +631,11 @@ function displayGoogleMap(act)
 }
 
 /**
- * open a window for selection and submit to dsrqst.php if validated
+ * Review subset selections and submit to dsrqst.php
  */
-function submitSubsetRequest()
+function reviewRequest()
 {
-   var win, doc, gindex;
+   var gindex;
    var dsid, rindex, rtype;
    var rnote;
 
@@ -628,38 +647,54 @@ function submitSubsetRequest()
    gindex = document.getElementById("gindex").value;
    dsid = document.getElementById("dsid").value;
 
-   win = window.open("", "IMMA", "width=800,height=600,scrollbars=yes,resizable=yes");
-   doc = win.document;
-   doc.write("<html><head><title>ICOADS R3.0 IMMA Subset</title></head><body>\n");
-   doc.write("<form name=\"form\" action=\"/php/dsrqst.php\" method=\"post\">\n");
-   doc.write("<P>Your ICOADS R3.0 data request has been completed. A summary of the request is given below.\n");
-   doc.write("Click the Button 'Submit Request' at the bottom if the information is <b>correct</b>;\n");
-   doc.write("otherwise click the Button 'Cancel Request' to reselect the condtions.\n");
-   doc.write("Email <a href=\"mailto:Zaihua Ji <zji@ucar.edu>?subject=Help for DS540.0 Request Result!\">\n");
-   doc.write("Zaihua Ji</i></a> for questions and comments.</p>\n");
-
    rnote = gather_request_info();
-   doc.write("<pre>\n" + rnote + "\n</pre>\n");
+   $("#rnote-text").text(rnote);
 
-   /* hidden inputs for submit form */
-   doc.write("<input type=\"hidden\" name=\"dsid\" value=\"" + dsid + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"gindex\" value=\"" + gindex + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"rtype\" value=\"" + rtype + "\">\n");
-   if(comp != "no") {
-      doc.write("<input type=\"hidden\" name=\"afmt\" value=\"" + comp + "\">\n");
+   postData = {
+      dsid: dsid,
+      gindex: gindex,
+      rtype: rtype,
+      sflag: sflag,
+      rinfo: rinfo,
+      rnote: rnote
+   };
+   if (comp != "no") {
+      postData.afmt = comp;
    }
-   if(tarflag != "N") {
-      doc.write("<input type=\"hidden\" name=\"tflag\" value=\"" + tarflag + "\">\n");
+   if (tarflag != "N") {
+      postData.tflag = tarflag;
    }
-   doc.write("<input type=\"hidden\" name=\"sflag\" value=\"" + sflag + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"rinfo\" value=\"" + rinfo + "\">\n");
-   doc.write("<input type=\"hidden\" name=\"rnote\" value=\"" + rnote + "\">\n");
-   doc.write("<p><input type=\"submit\" value=\"Submit Request\">");
-   doc.write("&nbsp<input type=\"button\" onClick=\"self.close()\" value=\"Cancel Request\"></p>\n");
-   doc.write("</form></body></html>\n");
-   doc.close();
-   win.focus();   
-   
+   for (var key in postData) {
+      $("#submit-form").append("<input type=\"hidden\" name=\"" + key + "\" value=\"" + postData[key] + "\">\n");
+   }
+
+   $("#subset-form-div").addClass("d-none");
+   $("#subset-review-div").removeClass("d-none");
+   $(document).scrollTop(0);
+}
+
+$(document).ready(function() {
+   $("#submit-form").on("submit", function(event) {
+      event.preventDefault();
+
+      $("#subset-form-container").addClass("d-none");
+      $("#loading-button").removeClass("d-none");
+
+      var params = $(this).serialize();
+      $.post('/php/dsrqst.php', params).done(function(data) {
+         $("#ds_content").html(data);
+         $(document).scrollTop(0);
+      });
+   });
+});
+
+function cancelRequest()
+{
+   // Cancel the request and return to subset form
+   $("#subset-form-div").removeClass("d-none");
+   $("#subset-review-div").addClass("d-none");
+   togglePage(1);
+   $(document).scrollTop(0);
 }
 
 /**
@@ -678,12 +713,13 @@ function gather_request_info()
    rnote = "Date Limits      : " + dates +
          "\nLatitude Limits  : " + lats +
          "\nLongitude Limits : " + lons +
-         "\nFilter options   : " + flts +
-         "\nVariable Names   : " + vars;
+         "\nFilter options   : " + flts;
 
    rinfo = "dates=" + dates + "&lats=" + lats + "&lons=" + lons +
            "&flts=" + flts  + "&vars=" + vars;
 
+   if(corevars) rnote += "\nCore variables   : " + corevars;
+   if(icoadsvars) rnote += "\nIcoads variables : " + icoadsvars;
    if(dcks) {
      rnote += "\nDeck numbers     : " + dcks;
      rinfo += "&dcks=" + dcks;
@@ -696,12 +732,17 @@ function gather_request_info()
      rnote += "\nSource IDs       : " + sids;
      rinfo += "&sids=" + sids;
    }
+   if(immts) rnote +=   "\nImmt parameters : " + immts;
+   if(modqcs) rnote +=  "\nMod-qc parameters : " + modqcs;
+   if(metavos) rnote += "\nMeta-vos parameters : " + metavos;
+   if(nocns) rnote +=   "\nNocn parameters : " + nocns;
+   if(ecrs) rnote +=    "\nEcr parameters : " + ecrs;
    if(reanqcs) {
-     rnote += "\nRean-qc Attms    : " + reanqcs;
+     rnote += "\nRean-qc parameters : " + reanqcs;
      rinfo += "&Rean-qc=" + reanqcs;
    }
    if(ivads) {
-     rnote += "\nIvad Attms       : " + ivads;
+     rnote += "\nIvad parameters : " + ivads;
      rinfo += "&Ivad=" + ivads;
    }
      
@@ -761,7 +802,7 @@ function togglePage(page)
       disableParams();
       pOne.style.display="none";
       pTwo.style.display="block";
-      scrollTo("pageTwo");
+      $(document).scrollTop(0);
    }
 }
 
