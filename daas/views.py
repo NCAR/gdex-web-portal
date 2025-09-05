@@ -10,18 +10,18 @@ dssdb_config = get_dssdb_config()
 def my_submissions(request):
     user = get_user(request)
     submissions = get_all_submissions(user)
-    return render(request,'daas_my_submissions.html', {'submissions':submissions})
+    return render(request,'daas/daas_my_submissions.html', {'submissions':submissions})
 
 def user_submissions(request):
     user = get_user(request)
     submissions = get_submissions(user)
-    return render(request,'daas_my_submissions.html', {'submissions':submissions})
+    return render(request,'daas/daas_my_submissions.html', {'submissions':submissions})
 
 def full_submission(request):
     _id = request.GET['id']
     user = get_user(request)
     submission_description = get_submission_description(_id)
-    return render(request,'daas_full_submission.html', {'data' : submission_description})
+    return render(request,'daas/daas_full_submission.html', {'data' : submission_description})
 
 def accept(request):
     _id = request.GET['id']
@@ -38,14 +38,14 @@ def get_all_submissions(user):
     specialists =  cursor.fetchall()
     specialists = [a[0] for a in specialists]
     logname =  user.split('@ucar.edu')[0]
-     
+
     if logname in specialists:
         query = 'select "DatasetID", "DatasetFullTitle", "DatasetStatus", "DateSubmitted", "DateResolved", "UserEmailAddress" from "dataset_AS"'
         cursor.execute(query)
         result = cursor.fetchall()
     else:
         result = get_submissions(user)
-        
+
     #result = format_date_resolved(result)
     return result
 
@@ -67,7 +67,7 @@ def get_submission_description(_id):
     cursor.execute(query, (_id,))
     result = cursor.fetchone()
     return result
-    
+
 def format_date_resolved(result):
     date_resolved_idx = 4
     for submission in result:
@@ -81,6 +81,6 @@ def get_user(request):
     if 'duser' in cookies:
         return cookies['duser']
     return ""
-    
+
     sys.stderr.write(str(cookies))
-    
+
