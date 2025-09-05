@@ -5,7 +5,6 @@ import tempfile
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 
 
 def make_tempdir():
@@ -58,13 +57,12 @@ def upload(request):
     return HttpResponse("Bad request.", status=400, reason="Bad Request")
 
 
-@csrf_exempt
 def unlink(request):
     if 'API-key' not in request.headers:
         return HttpResponse("Missing API key.", status=400,
                             reason="Bad Request")
 
-    if request.headers['API-key'] not in LOCAL_API_KEYS['unlink']:
+    if request.headers['API-key'] not in settings.LOCAL_API_KEYS['unlink']:
         return HttpResponse("Invalid API key.", status=403, reason="Forbidden")
 
     if 'path' not in request.POST:
