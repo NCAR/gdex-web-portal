@@ -1,22 +1,22 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-old-rda
+  name: ingress-old-api.rda
   namespace: {{ .Release.Namespace }}
   labels:
     group: {{ .Values.webapp.group }}
   annotations:
     cert-manager.io/cluster-issuer: "incommon"
-    nginx.ingress.kubernetes.io/permanent-redirect: "https://gdex.ucar.edu$request_uri"
+    nginx.ingress.kubernetes.io/permanent-redirect: "https://api.gdex.ucar.edu$request_uri"
 spec:
   ingressClassName: nginx-internal
   tls:
     - hosts:
-      - rda.k8s.ucar.edu
-      - rda.ucar.edu
+      - api.rda.k8s.ucar.edu
+      - api.rda.ucar.edu
       secretName: incommon-cert.rda.k8s.ucar.edu
   rules:
-  - host: rda.k8s.ucar.edu
+  - host: api.rda.k8s.ucar.edu
     http:
       paths:
       - path: /
