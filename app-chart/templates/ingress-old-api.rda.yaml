@@ -12,11 +12,11 @@ spec:
   ingressClassName: nginx-internal
   tls:
     - hosts:
-      - api.rda.k8s.ucar.edu
+      - api-rda.k8s.ucar.edu
       - api.rda.ucar.edu
       secretName: incommon-cert.rda.k8s.ucar.edu
   rules:
-  - host: api.rda.k8s.ucar.edu
+  - host: api-rda.k8s.ucar.edu
     http:
       paths:
       - path: /
