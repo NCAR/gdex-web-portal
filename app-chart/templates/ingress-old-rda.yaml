@@ -14,7 +14,6 @@ spec:
     - hosts:
       - rda.k8s.ucar.edu
       - rda.ucar.edu
-      - api.rda.ucar.edu
       secretName: incommon-cert.rda.k8s.ucar.edu
   rules:
   - host: rda.k8s.ucar.edu
