@@ -8,10 +8,8 @@
 
 <ul class='nav nav-tabs'>
     <li class='nav-item'>
-	<a class='nav-link {% if request.path == "/resources/daas/" %}active{%endif%}' href='/resources/daas/'>Submission Home</a>
+	<a class='nav-link {% if request.path == "/resources/daas/" %}active{% endif %}' href='/resources/daas/'>Submission Home</a>
     </li>
-    <li class='nav-item'>
-	<a class='nav-link' href='/resources/daas/my_submissions'>My Submissions</a>
     <li class='nav-item'>
 	<a class='nav-link' href='/resources/daas/instructions-for-submission'>Form Instructions</a>
     </li>
@@ -36,13 +34,9 @@
 	        </div>
                 <hr>
                 <div>
-	            <h3>To start a new Dataset Submission Form, please sign into the RDA first and then click the button below:</h3> 
+	            <h3>To start a new dataset submission form, click the button below:</h3> 
                     <div class="col-12 mt2 mt-md4">
                         <a class="btn btn-primary" href='https://submit-data.ucar.edu/'/>Start New Dataset Submission Form</a>
-                    </div>
-                    <div>
-                        <br/>
-                        For submitted forms or to continue to work on previously saved forms, please see <a href=/resources/daas/my_submissions/>My Submissions</a> tab above.
                     </div>
                 </div>
                 <hr>
