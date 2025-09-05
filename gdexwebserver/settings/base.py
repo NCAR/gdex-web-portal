@@ -501,3 +501,5 @@ GMAP_API_KEY = local_settings.gmap_api_key
 ICOOKIE = local_settings.ICOOKIE
 
 CSRF_TRUSTED_ORIGINS = ["https://gdex.k8s.ucar.edu", "https://*.ucar.edu"]
+
+LOCAL_API_KEYS = local_settings.LOCAL_API_KEYS
