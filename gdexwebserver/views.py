@@ -65,6 +65,10 @@ def error(request):
     return HttpResponse("Bad request.")
 
 
+def unlink(request):
+    return utils.unlink(request)
+
+
 def upload(request):
     return utils.upload(request)
 
