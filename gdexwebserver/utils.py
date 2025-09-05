@@ -72,4 +72,18 @@ def unlink(request):
         return HttpResponse("Path does not exist.", status=400,
                             reason="Bad Request")
 
+    if request.POST['path'][-1] == '/':
+        try:
+            shutil.rmtree(request.POST['path'])
+        except Exception:
+            return HttpResponse("Remove failed: {}".format(err), status=500,
+                                reason="Internal Server Error")
+
+    else:
+        try:
+            os.remove(request.POST['path'])
+        except Exception:
+            return HttpResponse("Remove failed: {}".format(err), status=500,
+                                reason="Internal Server Error")
+
     return HttpResponse("Success.")
