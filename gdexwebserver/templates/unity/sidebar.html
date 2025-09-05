@@ -17,24 +17,30 @@
                 {% comment "Special case when the page's parent is the root" %} {% endcomment %}
                 {% if page.get_parent.url == '/' %} 
                     {% for i in page.get_children %} 
+		     {% if i.show_in_menus and i.live %}
                         <li class="nav-item">
                             <a class="nav-link {% if i.url == page.url %}active{% endif %}" href="{{ i.url }}">{{ i.title }}</a>
                         </li>
+		     {% endif %}
                     {% endfor %}          
                 {% else %}
                     {% for i in page.get_siblings %} 
+		      {% if i.show_in_menus and i.live %}
                         <li class="nav-item">
                             <a class="nav-link {% if i.url == page.url %}active{% endif %}" href="{{ i.url }}">{{ i.title }}</a>
                             {% if i.url == page.url and page.get_children %}
                                 <ul class='nav flex-column ms-2'>
                                 {% for c in page.get_children %} 
+		                  {% if c.show_in_menus and c.live %}
                                     <li class="nav-item">
                                         <a class="nav-link" href="{{ c.url }}">{{ c.title }}</a>
                                     </li>
+				    {% endif %}
                                 {% endfor %}
                                 </ul>
                             {% endif %}
                         </li>
+                      {% endif %}
                     {% endfor %}          
                 {% endif %}
             </ul>
