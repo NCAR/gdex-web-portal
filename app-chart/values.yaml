@@ -24,11 +24,11 @@ webapp:
 volume:
   fs:
     name: gdexdata
-    size: 55Gi
+    size: 2Ti
     mountPath: /data
-  glade:
-    name: glade-campaign
-    server: gladedm1.ucar.edu
-    path: /gpfs/csfs1
-    mountPath: /glade/campaign
-    readOnly: true
+  #glade:
+  #  name: glade-campaign
+  #  server: gladedm1.ucar.edu
+  #  path: /gpfs/csfs1
+  #  mountPath: /glade/campaign
+  #  readOnly: true
