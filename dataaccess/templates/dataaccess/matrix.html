@@ -82,7 +82,7 @@
     {% comment %} Begin "Union" Row {% endcomment %}
 
     {% if matrix.group_data %}
-    <div class="d-des o-blk tx-c fw-bold text-uppercase" style="grid-column: 1 / 3; grid-row: 3">Union of Available Products</div>
+    <div class="d-des o-blk tx-c fw-bold text-uppercase" style="grid-column: 1 / 3; grid-row: 3">All Data Products</div>
     {% endif %}
     {% if matrix.columns.web_files %}
     <div class="d-fil o-blk tx-c" style="grid-row: 3">
@@ -132,7 +132,7 @@
     {% if matrix.columns.glade %}
     <div style="grid-row: 3"></div>
     <div class="c-fil o-blk tx-c" style="grid-row: 3">
-        <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}', replace_ds_content)">GLADE File<br>Listing</a>
+        <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}', replace_ds_content)">Access Data from <br>NSF NCAR HPC Systems</a>
     </div>
     {% endif %}
 
@@ -194,7 +194,7 @@
             {% if matrix.columns.glade %}
             <div style="grid-row: {{ row }}"></div>
             <div class="c-fil o-blk tx-c" style="grid-row: {{ row }}">
-                <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}/{% if group.index %}{{ group.index }}/{% endif %}?fl=glade', replace_ds_content)">GLADE File<br>Listing</a>
+                <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}/{% if group.index %}{{ group.index }}/{% endif %}?fl=glade', replace_ds_content)">Access Data from<br>NSF NCAR HPC Systems</a>
             </div>
             {% endif %}
 	    {% else %} {% comment %} If ARCO groups: {% endcomment %}
@@ -220,13 +220,13 @@
 
 {% comment %} Bubble Divs {% endcomment %}
 <div id="iweb" class="bubble-top-left-arrow" style="width: 200px">
-    Download RDA data files via HTTPS, hosted on the Open Science Data Federation.
+    Download GDEX data files via HTTPS, hosted on the Open Science Data Federation.
 </div>
 <div id="iglob" class="bubble-top-left-arrow" style="width: 200px">
-    Transfer RDA data files to your computer via the Globus transfer service (GridFTP). See http://www.globus.org for more information.
+    Transfer GDEX data files to your computer via the Globus transfer service (GridFTP). See http://www.globus.org for more information.
 </div>
 <div id="ifmt" class="bubble-top-left-arrow" style="width: 200px">
-    Request that RDA data files be converted from their native format to a new format (e.g. from GRIB to netCDF).
+    Request that GDEX data files be converted from their native format to a new format (e.g. from GRIB to netCDF).
 </div>
 <div id="isubs" class="bubble-top-left-arrow" style="width: 300px">
     Make selections (e.g. temporal range, spatial area, parameters, etc.) to be extracted from the files in this dataset. The option to receive the output in a different data format may also be available.
@@ -239,6 +239,6 @@
     {% endif %}
 </div>
 <div id="incar" class="bubble-top-left-arrow" style="width: 180px">
-    Find the locations of RDA holdings residing on GLADE disk.
+    Find the locations of GDEX holdings available on NSF NCAR HPC systems.
 </div>
 {% endif %}
