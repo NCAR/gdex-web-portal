@@ -26,9 +26,3 @@ volume:
     name: gdexdata
     size: 2Ti
     mountPath: /data
-  #glade:
-  #  name: glade-campaign
-  #  server: gladedm1.ucar.edu
-  #  path: /gpfs/csfs1
-  #  mountPath: /glade/campaign
-  #  readOnly: true
