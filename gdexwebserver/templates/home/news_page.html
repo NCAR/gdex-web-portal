@@ -21,7 +21,7 @@
         </div>
 
         <div class="col-4 justify-content-center text-center">
-        <a class="btn px-3 btn-icon-gray" id="rda-news-home" href="/news">RDA News</a>
+        <a class="btn px-3 btn-icon-gray" id="rda-news-home" href="/news">GDEX News</a>
         </div>
 
         <div class="col-4 justify-content-end text-end">       
@@ -57,7 +57,7 @@
                         <div class='d-inline ms-2 text-secondary'>
                             Posted by: 
                             {% if not page.news_authors.all %}
-                                <a href='mailto:rdahelp@ucar.edu'>RDA Team</a>
+                                <a href='mailto:datahelp@ucar.edu'>GDEX Team</a>
                             {% else %}
                                 {% for iter in page.news_authors.all %}
                                     <a href='mailto:{{ iter.author.email }}'>{{ iter.author.name }}</a>

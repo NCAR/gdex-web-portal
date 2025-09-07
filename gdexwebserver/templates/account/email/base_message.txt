@@ -4,7 +4,7 @@ Hello from the Research Data Archive
 
 {% block content %}{% endblock %}
 
-If you have any further questions, please contact rdahelp@ucar.edu
-Thank you for using the RDA!
+If you have any further questions, please contact datahelp@ucar.edu
+Thank you for using GDEX!
 
 {% endautoescape %}
