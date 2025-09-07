@@ -24,7 +24,7 @@ def contact_us(request):
     if request.method == "POST":
         msg = EmailMessage()
         msg['From'] = request.POST['email']
-        msg['To'] = "rdahelp@ucar.edu"
+        msg['To'] = "datahelp@ucar.edu"
         msg['Subject'] = request.POST['subject']
         msg.set_content(request.POST['request'])
         with smtplib.SMTP("localhost") as s:
