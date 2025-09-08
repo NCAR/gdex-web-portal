@@ -136,7 +136,7 @@ def subset_json_checks(in_json, response):
     if 'dataset' in in_json and in_json['dataset'] == 'ds633.0':
         if 'groupindex' not in in_json:
             response.add_error_message("This dataset requires that you specify a 'groupindex' key in your controlfile")
-            response.add_error_message(f"groupindexes can be found at rda.ucar.edu/api/summary/{in_json['dataset']}")
+            response.add_error_message(f"groupindexes can be found at gdex.ucar.edu/api/summary/{in_json['dataset']}")
 
     return response
 
@@ -435,7 +435,7 @@ def submit_subset_request(in_json, user_email=None):
         request_id = rdams_submit(in_json['dataset'], request_str, in_json['request_type'], request_info_str, '128.117.10.120', user_email)
         response.add_data( {'request_id':request_id} )
     except Exception as e:
-        response.add_error_message("There was a problem submitting the request. Please try again or contact rdahelp@ucar.edu")
+        response.add_error_message("There was a problem submitting the request. Please try again or contact datahelp@ucar.edu")
         print("Error with dsrqst submission:" + str(e))
         print(str(user_email) + request_info_str)
 

@@ -89,7 +89,7 @@ def build_matrix(request, dsid):
         template = "dataaccess/matrix_page.html"
         d = {
             'dsid': dsid.replace("-", "."),
-            'title': "NCAR RDA Dataset {} Data Access".format(dsid),
+            'title': "NSF NCAR GDEX | Dataset {} Data Access".format(dsid),
             'url': ""}
         slist = slug_list(dsid)
         qs = Page.objects.type(DatasetDescriptionPage).filter(
@@ -125,7 +125,7 @@ def listopt_gindex(request, dsid, listtyp, gindex):
 
         d = {
             'dsid': dsid,
-            'title': "NCAR RDA Dataset {} Data Access".format(dsid),
+            'title': "NSF NCAR GDEX | Dataset {} Data Access".format(dsid),
             'url': ""}
         slist = slug_list(dsid)
         qs = Page.objects.type(DatasetDescriptionPage).filter(

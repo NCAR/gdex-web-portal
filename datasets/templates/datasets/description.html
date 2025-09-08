@@ -237,7 +237,7 @@
 
 {% if page.related_dslist %}
 <div class="row gx-0 mb-2 mb-md-3">
-    <div class="col-12 col-md-2 dataset-label">Related RDA Datasets:</div>
+    <div class="col-12 col-md-2 dataset-label">Related GDEX Datasets:</div>
     <div class="col-12 col-md-10">
         <div style="display: grid; grid-template-columns: 1fr 1fr 98fr">
         {% for ds in page.related_dslist %}
@@ -273,6 +273,6 @@
     </div>
 </div>
 
-<div id="icite" class="bubble-left-top-arrow" style="width: 600px">Citation counts are compiled through information provided by publicly-accessible APIs according to the guidelines developed through the https://makedatacount.org/ project.  If journals do not provide citation information to these publicly-accessible services, then this citation information will not be included in RDA citation counts. Additionally citations that include dataset DOIs are the only types included in these counts, so legacy citations without DOIs, references found in publication acknowledgements, or references to a related publication that describes a dataset will not be included in these counts.</div>
+<div id="icite" class="bubble-left-top-arrow" style="width: 600px">Citation counts are compiled through information provided by publicly-accessible APIs according to the guidelines developed through the https://makedatacount.org/ project.  If journals do not provide citation information to these publicly-accessible services, then this citation information will not be included in GDEX citation counts. Additionally citations that include dataset DOIs are the only types included in these counts, so legacy citations without DOIs, references found in publication acknowledgements, or references to a related publication that describes a dataset will not be included in these counts.</div>
 {% endif %}
 {% comment %}end NON-DEAD datasets{% endcomment %}
