@@ -116,8 +116,10 @@ def export_citation(request, dsid, **kwargs):
                 url = os.path.join(metaformat_settings.DOI_DOMAIN,
                                    dois[0][0])
             else:
-                url = os.path.join(metaformat_settings.ARCHIVE['datasets_url'],
-                                   dsid, "")
+                url = os.path.join((
+                        "https://", metaformat_settings.ARCHIVE['domain'],
+                        metaformat_settings.ARCHIVE['datasets_path'], dsid,
+                        ""))
 
             dagger = '<font color="red">&dagger;</font>'
             return HttpResponse(
@@ -129,16 +131,17 @@ def export_citation(request, dsid, **kwargs):
                             publisher=metaformat_settings.ARCHIVE[
                                     'pub_name']['default'],
                             url=url, dagger=dagger))
-        except Exception as err:
-            #pass
-            return HttpResponse(str(err))
+        except Exception:
+            return HttpResponse((
+                    "An internal error occurred and citation cannot be "
+                    "loaded."))
         finally:
             if 'conn' in locals():
                 conn.close()
 
     if request.GET['style'] == "bibtex":
-         return export_to_bibtex(dsid)
+        return export_to_bibtex(dsid)
     elif request.GET['style'] == "ris":
-         return export_to_ris(dsid)
+        return export_to_ris(dsid)
 
     return HttpResponse('<font color="red">Citation unavailable</font>')
