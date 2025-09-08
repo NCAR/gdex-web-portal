@@ -2,6 +2,7 @@ from django import template
 import psycopg2
 from django.conf import settings
 from pathlib import Path
+from urllib.parse import urlparse
 
 register = template.Library()
 
@@ -23,11 +24,8 @@ def is_active(value, page_url):
 register.filter('is_active', is_active)
 
 def is_remote_url(value):
-    s = value[7:19]
-    if s == 'rda.ucar.edu':
-        return False
-    s = value[8:20]
-    if s == 'rda.ucar.edu':
+    parsed = urlparse(value)
+    if parsed.netloc in ['gdex.ucar.edu', 'rda.ucar.edu']:
         return False
     return True
 
