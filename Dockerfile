@@ -61,9 +61,9 @@ ln -s /glade/campaign/collections/rda/work/metrics/ /data/local/gdexweb/media/me
 touch /data/local/gdexweb/media/metrics/
 #
 # link django apps for testing here
-rm -rf /data/test/metaman
-mv /usr/local/gdexweb/metaman /data/test/
-ln -s /data/test/metaman /usr/local/gdexweb/metaman
+rm -rf /data/test/data_citation
+mv /usr/local/gdexweb/data_citation /data/test/
+ln -s /data/test/data_citation /usr/local/gdexweb/data_citation
 rm -rf /data/test/redeploys.py
 mv /usr/local/gdexweb/gdexwebserver/redeploys.py /data/test/
 ln -s /data/test/redeploys.py /usr/local/gdexweb/gdexwebserver/redeploys.py
