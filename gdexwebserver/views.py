@@ -84,8 +84,8 @@ def do_redirect(request, old_gdex_path):
                 "%s"), (old_gdex_path, ))
         dsid = cursor.fetchone()
         if dsid is None:
-            return render(request, "404.html")
+            return render(request, "404.html", status=404)
 
         return redirect("/datasets/" + dsid[0] + "/")
     except Exception:
-        return render(request, "500.html")
+        return render(request, "500.html", status=500)

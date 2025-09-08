@@ -61,7 +61,7 @@ def upload(request):
 def unlink(request):
     parts = request.META['HTTP_HOST'].split(".")
     if parts[0] != "api":
-        return render(request, "404.html")
+        return render(request, "404.html", status=404)
 
     if 'API-key' not in request.headers:
         return HttpResponse("Missing API key.", status=400,
