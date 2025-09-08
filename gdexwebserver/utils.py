@@ -5,6 +5,7 @@ import tempfile
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.shortcuts import render
 
 
 def make_tempdir():
@@ -58,6 +59,10 @@ def upload(request):
 
 
 def unlink(request):
+    parts = request.META['HTTP_HOST'].split(".")
+    if parts[0] != "api":
+        return render(request, "404.html")
+
     if 'API-key' not in request.headers:
         return HttpResponse("Missing API key.", status=400,
                             reason="Bad Request")
