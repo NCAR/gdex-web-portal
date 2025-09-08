@@ -377,10 +377,11 @@ def respond_to_request(request):
                      [{'code': "badArgument",
                       'message': "'verb' argument must not be repeated"}])
 
-    ctx = {'base_url': os.path.join(metaformat_settings.ARCHIVE['url'],
+    ctx = {'base_url': os.path.join("https://",
+                                    metaformat_settings.ARCHIVE['domain'],
                                     "oai")}
-    uparts = metaformat_settings.ARCHIVE['url'].split("//")
-    ctx.update({'repo_identifier': ".".join(reversed(uparts[1].split(".")))})
+    uparts = metaformat_settings.ARCHIVE['domain'].split(".")
+    ctx.update({'repo_identifier': ".".join(reversed(uparts))})
     oai_args = [t for t in request.GET.lists() if t[0] != 'verb']
     errors = check_args(oai_args, ctx['repo_identifier'])
     if len(errors) > 0:
