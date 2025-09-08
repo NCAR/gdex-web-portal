@@ -43,7 +43,7 @@ function verifyDOI() {
         {% else %}
         <h2>DOI Already In Use</h2>
         <p>
-            The DOI that you entered is already in use by the RDA. This DOI cannot be adopted.
+            The DOI that you entered is already in use by GDEX. This DOI cannot be adopted.
         </p>
         {% endif %}
     {% else %}
@@ -53,7 +53,7 @@ function verifyDOI() {
     </p>
     {% endif %}
 {% else %}
-<h2>Adopt an External DOI for RDA Dataset {{ data.dsid }}</h2>
+<h2>Adopt an External DOI for GDEX Dataset {{ data.dsid }}</h2>
 <form name="adopt_form" action="javascript:void(0)" onsubmit="return verifyDOI()">
     <div class="row gx-0 mb-2 mb-md-1">
         <div class="col-12 col-md-2 text-end">
@@ -70,7 +70,7 @@ function verifyDOI() {
         <div class="col-12 col-md-10">
             <input type="text" name="res_url" size="100" placeholder="https://{{ data.resolution_domain }}/datasets/{{ data.dsid }}">
             <br>
-            <small>(You should ALMOST ALWAYS leave this field as the default and not modify it. In very specific instances, a DOI will need to resolve to a non-RDA dataset, which will require prior approval. In a case like that, enter the URL to where the DOI should resolve.)</small>
+            <small>(You should ALMOST ALWAYS leave this field as the default and not modify it. In very specific instances, a DOI will need to resolve to a non-GDEX dataset, which will require prior approval. In a case like that, enter the URL to where the DOI should resolve.)</small>
         </div>
     </div>
     <center>
