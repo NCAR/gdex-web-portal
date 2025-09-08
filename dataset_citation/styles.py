@@ -116,10 +116,10 @@ def export_citation(request, dsid, **kwargs):
                 url = os.path.join(metaformat_settings.DOI_DOMAIN,
                                    dois[0][0])
             else:
-                url = os.path.join((
+                url = os.path.join(
                         "https://", metaformat_settings.ARCHIVE['domain'],
                         metaformat_settings.ARCHIVE['datasets_path'], dsid,
-                        ""))
+                        "")
 
             dagger = '<font color="red">&dagger;</font>'
             return HttpResponse(
