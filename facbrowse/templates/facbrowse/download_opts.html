@@ -15,7 +15,7 @@ function downloadViaGlobus(g_type, dsnum, cancel_url, rqst_params) {
   dsid = document.createElement("input");
   dsid.type = "hidden";
   dsid.name = "dsid";
-  dsid.value = "ds" + dsnum;
+  dsid.value = dsnum;
   form.appendChild(dsid);
   cookies = decodeURIComponent(document.cookie).split("; ");
   for (n = 0; n < cookies.length; ++n) {
@@ -60,7 +60,7 @@ function downloadViaGlobus(g_type, dsnum, cancel_url, rqst_params) {
         eval("gfile" + n + " = document.createElement('input')");
         eval("gfile" + n + ".type = 'hidden'");
         eval("gfile" + n + ".name = 'files[]'");
-        eval("gfile" + n + ".value = '/data/ds" + dsnum + "/" +
+        eval("gfile" + n + ".value = '/" + dsnum + "/" +
             f.elements[n].value + "'");
         eval("form.appendChild(gfile" + n + ")");
       }
