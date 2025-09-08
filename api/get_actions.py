@@ -5,7 +5,7 @@ import pdb
 import json
 from .RDA_Response import RDA_Response
 from . import common
-
+from django.conf import settings
 
 def handle_connection_error(response, err):
     """Inits connection and handles errors.
@@ -372,7 +372,7 @@ def get_request_files_old(request_index, email=None):
         print("Request is not completed.\nCurrent Status : "+request_info['status'])
         exit(1)
 
-    download_url = 'https://request.rda.ucar.edu/dsrqst/' + request_info['request_id']
+    download_url = os.path.join(settings.RDA_REQUEST_BASE_URL, 'dsrqst', request_info['request_id'])
 
     web_files = common.get_web_files(request_index)
     # Get unique tindexes from web_files
@@ -415,7 +415,7 @@ def get_request_files(request_index, email=None):
         return response
 
     request_info = common.get_request_info(request_index)
-    download_url = 'https://request.rda.ucar.edu/dsrqst/' + request_info['request_id']
+    download_url = os.path.join(settings.RDA_REQUEST_BASE_URL, 'dsrqst', request_info['request_id'])
 
     web_files = common.get_web_files(request_index)
 

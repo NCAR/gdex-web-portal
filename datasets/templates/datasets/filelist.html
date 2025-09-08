@@ -300,9 +300,9 @@
                  role='button' 
                  onClick="
                     {% if not data.is_glade %}
-                    copyText('https://data.rda.ucar.edu/datasets/{{data.dsid}}/{{ col.webpath }}') && 
+                    copyText('https://data.gdex.ucar.edu/datasets/{{data.dsid}}/{{ col.webpath }}') && 
 		     {% else %}
-                    copyText('/glade/campaign/collections/rda/data/{{data.dsid}}/{{ col.webpath }}') && 
+                    copyText('/glade/campaign/collections/gdex/data/{{data.dsid}}/{{ col.webpath }}') && 
 		     {% endif %}
                     $(this).removeClass('bg-primary').addClass('bg-success').text('Link Copied');
                     setTimeout(function(ele){

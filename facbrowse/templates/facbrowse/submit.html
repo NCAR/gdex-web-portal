@@ -14,7 +14,7 @@
             </p>
             {% else %}
             <p>
-                According to the selections that you have made,{% if large_request %} we are not able to determine the size of your request, but it will likely be very large. You can still submit this request, <i>but if the total volume is too large, it may be rejected</i>. Or you can adjust your selections to narrow down the size.{% else %} your subset request matches <strong>{{ fcodes|length }} RDA data files</strong>.{% endif %}
+                According to the selections that you have made,{% if large_request %} we are not able to determine the size of your request, but it will likely be very large. You can still submit this request, <i>but if the total volume is too large, it may be rejected</i>. Or you can adjust your selections to narrow down the size.{% else %} your subset request matches <strong>{{ fcodes|length }} GDEX data files</strong>.{% endif %}
             {% if volume < 1000000000000 %}
             {% if ststep.selected %}
             </p>

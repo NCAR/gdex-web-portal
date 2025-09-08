@@ -2,19 +2,19 @@
 {% load wagtailcore_tags static decs_tags home_tags custom_tags %}
 
 {% block title %}
-NSF NCAR RDA | Data Request {{ info.request_index }}
+NSF NCAR GDEX | Data Request {{ info.request_index }}
 {% endblock %}
 
 {% block request_title %}
-<h2 id='request_title'>RDA Data Request {{ info.request_index }}</h2>
+<h2 id='request_title'>GDEX Data Request {{ info.request_index }}</h2>
 {% endblock %}
 
 {% block request_summary %}
 <div id="summary" class="p-2">
-    Your request for data from the NSF NCAR Research Data Archive is complete, but returned no 
+    Your request for data from the NSF NCAR Geoscience Data Exchange is complete, but returned no 
     data based the parameters of your request.  Please email 
-    <a href="mailto:rdahelp@ucar.edu?subject=Question about data request {{ info.request_index }}">
-      rdahelp@ucar.edu
+    <a href="mailto:datahelp@ucar.edu?subject=Question about data request {{ info.request_index }}">
+      datahelp@ucar.edu
     </a>
     if you have questions regarding this request.
 </div>

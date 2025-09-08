@@ -2,11 +2,11 @@
 {% load wagtailcore_tags static decs_tags home_tags custom_tags %}
 
 {% block title %}
-NSF NCAR RDA | Data Request {{ info.request_index }}
+NSF NCAR GDEX | Data Request {{ info.request_index }}
 {% endblock %}
 
 {% block request_title %}
-<h2 id='request_title'>RDA Data Request {{ info.request_index }}</h2>
+<h2 id='request_title'>GDEX Data Request {{ info.request_index }}</h2>
 {% endblock %}
 
 {% block request_summary %}
@@ -20,8 +20,8 @@ NSF NCAR RDA | Data Request {{ info.request_index }}
     An error has occurred with processing your data request.
   {% endif %}
   Please email 
-  <a href="mailto:rdahelp@ucar.edu?subject=Question about request {{ info.request_index }}">
-    rdahelp@ucar.edu
+  <a href="mailto:datahelp@ucar.edu?subject=Question about request {{ info.request_index }}">
+    datahelp@ucar.edu
   </a>
   if you have questions regarding this request.
 </div>
