@@ -162,7 +162,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
                 <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="software-tab" data-toggle="tab" href="#" role="tab" aria-controls="software" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/software/', 'Software')">Software</a>
             </li>
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2" id="metrics-tab" data-toggle="tab" href="#" role="tab" onclick="switch_to_metrics()" aria-controls="metrics" aria-selected="false">Metrics</a>
+                <a class="nav-link px-3 py-2" id="metrics-tab" data-toggle="tab" style='cursor:pointer' role="tab" onclick="switch_to_metrics()" aria-controls="metrics" aria-selected="false">Metrics</a>
             </li>
         </ul>
         {% comment %} End Dataset Tabs {% endcomment %}
@@ -183,7 +183,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
     <script type="text/javascript" src="{% static 'js/FileSaver.min.js' %}"></script>
     <script language="javascript" type="text/javascript">
         function switch_to_metrics() {
-            window.history.pushState("","",'metrics')
+            window.history.pushState("","",'/datasets/{{ page.dsid }}/metrics/#')
             $.get('/datasets/{{ page.dsid }}/metrics', replace_ds_content)
             // Load needs to be synchronous
     	    $.getScript("{% static 'js/d3.v5.min.js' %}").done(function()
