@@ -131,9 +131,10 @@ def export_citation(request, dsid, **kwargs):
                             publisher=metaformat_settings.ARCHIVE[
                                     'pub_name']['default'],
                             url=url, dagger=dagger))
-        except Exception:
+        except Exception as err:
+            print("CITATION EXPORT ERROR: '" + str(err) + "'")
             return HttpResponse((
-                    "An internal error occurred and citation cannot be "
+                    "An internal error occurred and the citation cannot be "
                     "loaded."))
         finally:
             if 'conn' in locals():
