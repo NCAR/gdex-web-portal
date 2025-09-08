@@ -1,13 +1,10 @@
 {% load wagtailcore_tags decs_tags custom_tags home_tags static %}
 <script type="text/javascript" src="{% static 'js/cache_filelist.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/FileSaver.min.js' %}"></script>
-<script src="/js/jquery.js"></script>
-
 
 {% has_alt_index data.files as has_alt_index_flag %}
 {% if has_alt_index_flag %}
 <script>
-$.get('https://data-osdf.rda.ucar.edu/ncar-rda/web/datasets/{{ request.path|get_dsid_from_url|dsid_dash_to_dot }}/docs/alt_index.html', function(response) {
+$.get('{{settings.DOCUMENTATION_BASE_URL}}/{{ request.path|get_dsid_from_url|dsid_dash_to_dot }}/docs/alt_index.html', function(response) {
           $('#ds_content').html(response);
                  })
 </script>
@@ -37,7 +34,7 @@ $.get('https://data-osdf.rda.ucar.edu/ncar-rda/web/datasets/{{ request.path|get_
  {% if row.url is not None %}
  <a href='{{row.url}}' >{{ v }} </a>
  {% else %}
- <a href='https://data-osdf.rda.ucar.edu/ncar-rda/web/datasets/{{data.dsid}}/docs/{{row.hfile}}' >{{ v }} </a>
+ <a href='{{settings.DOCUMENTATION_BASE_URL}}/{{data.dsid}}/docs/{{row.hfile}}' >{{ v }} </a>
 {% endif %}
 
 {% else %}

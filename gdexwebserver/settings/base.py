@@ -357,7 +357,6 @@ for app in INSTALLED_APPS:
 ########################################################################
 
 GDEX_BASE_PATH = '/glade/campaign/collections/gdex/'
-# RDA_BASE_PATH = '/glade/campaign/collections/rda/'
 RDA_BASE_PATH = GDEX_BASE_PATH
 
 RDA_DATA_PATH = os.path.join(RDA_BASE_PATH, 'data/')
@@ -366,18 +365,16 @@ RDA_REQUEST_HOME = os.path.join(RDA_BASE_PATH, 'transfer/dsrqst/')
 RDA_CANONICAL_DATA_PATH = os.path.join(RDA_BASE_PATH, 'data/')
 RDA_CANONICAL_REQUEST_PATH = os.path.join(RDA_BASE_PATH, 'transfer/')
 
-# Data domains and base URLs
-OSDF_DOMAIN = 'data-osdf.rda.ucar.edu'
-OSDF_DATA_PATH = 'ncar/rda'
-OSDF_REQUEST_PATH = 'ncar/rda-transfer'
-OSDF_STRATUS_PATH = 'ncar-rda'
+GDEX_DATA_PATH = os.path.join(GDEX_BASE_PATH, 'data')
+GDEX_REQUEST_PATH = os.path.join(GDEX_BASE_PATH, 'transfer')
+GDEX_REQUEST_HOME = os.path.join(GDEX_BASE_PATH, 'transfer/dsrqst')
 
-# OSDF_DOMAIN = 'data-osdf.gdex.ucar.edu'
-# OSDF_DATA_PATH = 'ncar/gdex'
-# OSDF_STRATUS_PATH = 'ncar-gdex'
+# Data domains and base URLs
+OSDF_DOMAIN = 'osdf-data.gdex.ucar.edu'
+OSDF_DATA_PATH = 'ncar/gdex'
+OSDF_STRATUS_PATH = 'ncar-gdex'
 
 OSDF_DATA_DOMAIN = os.path.join(OSDF_DOMAIN, OSDF_DATA_PATH)
-OSDF_REQUEST_DOMAIN = os.path.join(OSDF_DOMAIN, OSDF_REQUEST_PATH)
 OSDF_STRATUS_DOMAIN = os.path.join(OSDF_DOMAIN, OSDF_STRATUS_PATH)
 OSDF_DIRECTOR_URL = 'https://osdf-director.osg-htc.org'
 OSDF_NCAR_ORIGIN = 'https://ncar.nationalresearchplatform.org:8443'
@@ -389,7 +386,6 @@ GLOBUS_DATA_BASE_URL = 'https://'+GLOBUS_DATA_DOMAIN
 GLOBUS_REQUEST_BASE_URL = 'https://'+GLOBUS_REQUEST_DOMAIN
 GLOBUS_STRATUS_BASE_URL = 'https://'+GLOBUS_STRATUS_DOMAIN
 OSDF_BASE_URL = 'https://'+OSDF_DATA_DOMAIN
-OSDF_REQUEST_URL = 'https://'+OSDF_REQUEST_DOMAIN
 OSDF_STRATUS_BASE_URL = 'https://'+OSDF_STRATUS_DOMAIN
 NCAR_STRATUS_URL = 'https://'+NCAR_STRATUS_DOMAIN
 CGD_DATA_BASE_URL = 'https://'+CGD_HTTPS_DOMAIN
@@ -398,14 +394,18 @@ CGD_DATA_BASE_URL = 'https://'+CGD_HTTPS_DOMAIN
 # Production base URLs used for web file lists.
 # Change to 'GLOBUS' URLs in the event that OSDF service is unavailable
 #------------------------------------------------------------------------
-RDA_DATA_BASE_URL = GLOBUS_DATA_BASE_URL
-# RDA_DATA_BASE_URL = OSDF_BASE_URL
+# RDA_DATA_BASE_URL = GLOBUS_DATA_BASE_URL
+RDA_DATA_BASE_URL = OSDF_BASE_URL
 
 RDA_REQUEST_BASE_URL = GLOBUS_REQUEST_BASE_URL
-# RDA_REQUEST_BASE_URL = OSDF_REQUEST_URL
 
 # RDA_STRATUS_BASE_URL = GLOBUS_STRATUS_BASE_URL
 RDA_STRATUS_BASE_URL = OSDF_STRATUS_BASE_URL
+
+# DOCUMENTATION_BASE_URL = os.path.join(GLOBUS_STRATUS_BASE_URL, 'web/datasets')
+# SOFTWARE_BASE_URL = os.path.join(GLOBUS_STRATUS_BASE_URL, 'web/datasets')
+DOCUMENTATION_BASE_URL = os.path.join(OSDF_STRATUS_BASE_URL, 'web/datasets')
+SOFTWARE_BASE_URL = os.path.join(OSDF_STRATUS_BASE_URL, 'web/datasets')
 
 # Flag to use new dataset ID format 'dnnnnnn'
 NEW_DATASET_ID = True
@@ -434,6 +434,12 @@ SETTINGS_EXPORT = [
     'RDA_STRATUS_BASE_URL',
     'CGD_DATA_BASE_URL',
     'OSDF_BASE_URL',
+    'DOCUMENTATION_BASE_URL',
+    'SOFTWARE_BASE_URL',
+    'GDEX_BASE_PATH',
+    'GDEX_DATA_PATH',
+    'GDEX_REQUEST_PATH',
+    'GDEX_REQUEST_HOME',
 ]
 
 ## AllAuth ##
