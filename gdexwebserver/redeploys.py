@@ -1,6 +1,8 @@
 import json
 import subprocess
 
+from metaman import local_settings as metaman_settings
+
 from django.conf import settings
 from django.http import HttpResponse
 
@@ -45,6 +47,16 @@ def redeploy_spellchecker():
     return respond(o)
 
 
+def redeploy_doi_manager():
+    o = subprocess.run((
+            "pip install git+https://github.com/NCAR/rda-doi_manager; "
+            "/usr/local/gdexweb/bin/doi_manage " +
+            metaman_settings.doi_manager_auth_key + " configure "
+            "/data/local/doi_manager/settings.txt"),
+            shell=True, capture_output=True)
+    return respond(o)
+
+
 def redeploy(request, pkg):
     if pkg[0:5] == "dsgen":
         return redeploy_dsgen(pkg)
@@ -52,5 +64,7 @@ def redeploy(request, pkg):
         return redeploy_libpkg()
     elif pkg == "spellchecker":
         return redeploy_spellchecker()
+    elif pkg == "doi_manager":
+        return redeploy_doi_manager()
 
     return HttpResponse("bad request")
