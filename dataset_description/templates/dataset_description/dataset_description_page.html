@@ -184,7 +184,8 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
     <script language="javascript" type="text/javascript">
         function switch_to_metrics() {
             window.history.pushState("","",'/datasets/{{ page.dsid }}/metrics/#')
-            $.get('/datasets/{{ page.dsid }}/metrics', replace_ds_content)
+            $.get('/datasets/{{ page.dsid }}/metrics', replace_ds_content).done(function()
+                {
             // Load needs to be synchronous
     	    $.getScript("{% static 'js/d3.v5.min.js' %}").done(function()
                     {
@@ -196,6 +197,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
                             })
                         });
                     });
+                })
              }
     </script>
 
