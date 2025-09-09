@@ -1,5 +1,5 @@
 {% load i18n %}{% autoescape off %}
-Hello from the Research Data Archive
+Hello from the Geoscience Data Exchange
 
 
 {% block content %}{% endblock %}
