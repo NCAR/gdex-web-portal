@@ -1,7 +1,7 @@
 {% autoescape off %}
 <?xml version="1.0" ?>
 <dsOverview xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:noNamespaceSchemaLocation="http://rda.ucar.edu/schemas/dsOverview3.xsd"
+            xsi:noNamespaceSchemaLocation="http://gdex.ucar.edu/schemas/dsOverview3.xsd"
             ID="{{ dsid }}" type="{{ ds_type }}" curationLevel="{{ curation_level }}">
   <timeStamp value="{{ timestamp }}" />
   <continuingUpdate value="{{ continuing_update.value }}"{% if continuing_update.value == "yes" %} frequency="{{ continuing_update.frequency }}"{% endif %} />
