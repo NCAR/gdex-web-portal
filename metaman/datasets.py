@@ -1192,9 +1192,9 @@ def create(request, dsid):
             f.write("<?xml version=\"1.0\" ?>\n")
             f.write(("<dsOverview xmlns:xsi=\"http://www.w3.org/2001/"
                      "XMLSchema-instance\"\n"))
-            f.write(("            xsi:schemaLocation=\"https://rda.ucar.edu/"
+            f.write(("            xsi:schemaLocation=\"https://gdex.ucar.edu/"
                      "schemas\n"))
-            f.write(("                                https://rda.ucar.edu/"
+            f.write(("                                https://gdex.ucar.edu/"
                      "schemas/dsOverview3.xsd\"\n"))
 
             f.write(("            ID=\"" + dsid + "\" type=\""
