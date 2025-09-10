@@ -47,7 +47,6 @@ cat <<'EOFCAT' > /usr/local/bin/start_container
 #
 # replace apache2 configuration files from repository
 cp -r /usr/local/gdexweb/apache2/* /etc/apache2/
-rm /etc/apache2/mods-enabled/mpm_prefork.*
 #
 # move wsgi.py so that it can be "touched" to clear the django cache
 mv /usr/local/gdexweb/gdexwebserver/wsgi.py /data/local/gdexweb/gdexwebserver/
