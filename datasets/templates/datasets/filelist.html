@@ -68,6 +68,7 @@
 {% if data.groups.0.gindex|add:"0" < 0  %} {% comment %} If an ARCO group {% endcomment %}
     {% include "datasets/filelist-zarr-catalogs.html" %}
 {% else %}
+
 {% for group in data.groups %}
 {% if group.title and data.groups|length > 1 %}
      <h3 id='{{group.group_id|slugify}}'>
