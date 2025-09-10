@@ -131,7 +131,7 @@
     {% if matrix.columns.glade %}
     <div style="grid-row: 3"></div>
     <div class="c-fil o-blk tx-c" style="grid-row: 3">
-        <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}', replace_ds_content)">NCAR HPC<br>Data Access</a>
+        <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}?fl=glade', replace_ds_content)">NCAR HPC<br>Data Access</a>
     </div>
     {% endif %}
 
@@ -193,7 +193,7 @@
             {% if matrix.columns.glade %}
             <div style="grid-row: {{ row }}"></div>
             <div class="c-fil o-blk tx-c" style="grid-row: {{ row }}">
-                <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}/{% if group.index %}{{ group.index }}/{% endif %}?fl=glade', replace_ds_content)">NCAR HPC<br>Data Access</a>
+                <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}{% if group.index %}{{ group.index }}/{% endif %}?fl=glade', replace_ds_content)">NCAR HPC<br>Data Access</a>
             </div>
             {% endif %}
 	    {% else %} {% comment %} If ARCO groups: {% endcomment %}

@@ -357,13 +357,15 @@ for app in INSTALLED_APPS:
 ########################################################################
 
 GDEX_BASE_PATH = '/glade/campaign/collections/gdex/'
+GDEX_SHORT_PATH = '/gdex/'
+
 RDA_BASE_PATH = GDEX_BASE_PATH
 
-RDA_DATA_PATH = os.path.join(RDA_BASE_PATH, 'data/')
-RDA_REQUEST_PATH = os.path.join(RDA_BASE_PATH, 'transfer/')
-RDA_REQUEST_HOME = os.path.join(RDA_BASE_PATH, 'transfer/dsrqst/')
-RDA_CANONICAL_DATA_PATH = os.path.join(RDA_BASE_PATH, 'data/')
-RDA_CANONICAL_REQUEST_PATH = os.path.join(RDA_BASE_PATH, 'transfer/')
+RDA_DATA_PATH = os.path.join(GDEX_BASE_PATH, 'data/')
+RDA_REQUEST_PATH = os.path.join(GDEX_BASE_PATH, 'transfer/')
+RDA_REQUEST_HOME = os.path.join(GDEX_BASE_PATH, 'transfer/dsrqst/')
+RDA_CANONICAL_DATA_PATH = os.path.join(GDEX_SHORT_PATH, 'data/')
+RDA_CANONICAL_REQUEST_PATH = os.path.join(GDEX_SHORT_PATH, 'transfer/')
 
 GDEX_DATA_PATH = os.path.join(GDEX_BASE_PATH, 'data')
 GDEX_REQUEST_PATH = os.path.join(GDEX_BASE_PATH, 'transfer')
