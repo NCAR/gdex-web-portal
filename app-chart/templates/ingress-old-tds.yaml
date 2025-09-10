@@ -12,11 +12,11 @@ spec:
   ingressClassName: nginx-external
   tls:
     - hosts:
-      - tds.k8s.ucar.edu
+      - tds2.k8s.ucar.edu
       - tds.ucar.edu
-      secretName: incommon-cert.tds.k8s.ucar.edu
+      secretName: incommon-cert.tds2.k8s.ucar.edu
   rules:
-  - host: tds.k8s.ucar.edu
+  - host: tds2.k8s.ucar.edu
     http:
       paths:
       - path: /
