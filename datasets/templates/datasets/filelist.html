@@ -64,37 +64,9 @@
    </div>
 <hr/>
 {% endif %}
+
 {% if data.groups.0.gindex|add:"0" < 0  %} {% comment %} If an ARCO group {% endcomment %}
-<input type='hidden' id=clipboard></input>
-<div id='arco-container' class='d-flex flex-column w-75'>
-{% for row in data.groups.0.rows %}
-  {% if row.2.value != 'CSV' %}
-    <div class='arco-asset {% if forloop.counter|divisibleby:2 %}bg-light{% else %}bg-light-subtle{% endif %} d-flex justify-content-between p-1 mb-1 border border-info align-items-center'>
-     <div class='' style='font-family:monospaced'>
-	    {{row.0.value}} {# Maybe we should display full URL here? #}
-     </div>
-     <div class='p-1 ms-3 border rounded bg-primary text-light' 
-	 style='transition:all 0.2s ease' 
-	 role='button' 
-	 onClick="
-	    copyText('{{row.0.url}}') && 
-	    $(this).removeClass('bg-primary').addClass('bg-success').text('Link Copied');
-            setTimeout(function(ele){
-		          ele.removeClass('bg-success').addClass('bg-primary').text('');
-			  ele.append('<i class=\'fa-solid fa-copy\'></i> Copy Full URL');},1000, $(this)
-			  )">
-       <i class="fa-solid fa-copy"></i>
-       Copy Full URL
-     </div>
-    </div>
-    {% if row.0.note %}
-    <div class='d-inline p-1 m-1'>
-    	<i class="fa-solid fa-circle-info"></i>
-    {{row.0.note}}
-    {% endif %}
-  {% endif %}
-{% endfor %}
-</div>
+    {% include "datasets/filelist-zarr-catalogs.html" %}
 {% else %}
 {% for group in data.groups %}
 {% if group.title and data.groups|length > 1 %}
@@ -288,38 +260,38 @@
     {% endif %}
      {% for col in row %}
        <td class='{{col.name}}' {% if col.name == 'Size' %}data-size='{{col.value}}'{% endif %}>
-         {% if col.url %}
-          {% if col.is_file %}
-           <a style="font-family:'Roboto Mono';"{% if not data.is_glade %} href="{{col.url}} {% endif %}">
-          {% else %}
-	    {% if col.webpath|slice:"-5:" == ".zarr" %}
-	    <!--Zarr format-->
-            <div class='d-inline-block px-2 py-1 border rounded bg-primary text-light' 
-                 style='transition:all 0.2s ease; float:right' 
-                 role='button' 
-                 onClick="
-                    {% if not data.is_glade %}
-                       copyText('{{settings.RDA_STRATUS_BASE_URL}}/datasets/{{data.dsid}}/{{ col.webpath }}') && 
-		            {% else %}
-                       copyText('{{settings.GDEX_CANONICAL_DATA_PATH}}/{{data.dsid}}/{{ col.webpath }}') && 
-		            {% endif %}
-                    $(this).removeClass('bg-primary').addClass('bg-success').text('Link Copied');
-                    setTimeout(function(ele){
-                	    ele.removeClass('bg-success').addClass('bg-primary').text('');
-                		ele.append('<i class=\'fa-solid fa-copy pe-1\'></i>Copy Full {% if not data.is_glade %}URL{% else %}Path{% endif %}');
-                    }, 1000, $(this))">
-                <i class="fa-solid fa-copy pe-1"></i>
-                Copy Full {% if not data.is_glade %}URL{% else %}Path{% endif %}
-            </div>
-            {% elif data.is_ajax %}
-             <a href='javascript:void(0);' 
-                col-data='{{col.url}}' 
-                onclick="$.get('{{col.url}}{% if data.is_glade %}?fl=glade{% endif %}', function(d){replace_ds_content(d);$('#datasetTab')[0].scrollIntoView();});">
+        {% if col.url %}
+            {% if col.is_file %}
+               <a style="font-family:'Roboto Mono';"{% if not data.is_glade %} href="{{col.url}} {% endif %}">
             {% else %}
-             <a href="{{col.url}}{% if data.is_glade %}?fl=glade{% endif %}">
+	           {% if col.webpath|slice:"-5:" == ".zarr" %}
+	              <!--Zarr format-->
+                  {% with data.is_glade as is_glade %}
+                  {% with settings.RDA_STRATUS_BASE_URL as rda_base_url %}
+                  {% with settings.GDEX_CANONICAL_DATA_PATH as gdex_base_path %}
+                  <button class='btn btn-primary px-2 py-1 text-light float-end' 
+                      type='button' 
+                      style='transition:all 0.2s ease; font-size:1rem;' 
+                      onclick="copyFullLink(
+                          this, 
+                          '{% if is_glade %}{{gdex_base_path}}{% else %}{{rda_base_url}}/datasets{% endif %}/{{data.dsid}}/{{ col.webpath }}',
+                          'Copy Full {% if is_glade %}Path{% else %}URL{% endif %}'
+                          )">
+                      <i class="fa-solid fa-copy pe-1"></i>                     
+                      Copy Full {% if is_glade %}Path{% else %}URL{% endif %}
+                  </button>
+                  {% endwith %}
+                  {% endwith %}
+                  {% endwith %}
+
+               {% elif data.is_ajax %}
+                   <a href='javascript:void(0);' col-data='{{col.url}}' 
+                      onclick="$.get('{{col.url}}{% if data.is_glade %}?fl=glade{% endif %}', function(d){replace_ds_content(d);$('#datasetTab')[0].scrollIntoView();});">
+               {% else %}
+                  <a href="{{col.url}}{% if data.is_glade %}?fl=glade{% endif %}">
+               {% endif %}
             {% endif %}
-          {% endif %}
-          <!--a href={{ col.url }}-->
+           <!--a href={{ col.url }}-->
            {% if data.is_glade and col.is_file %}
              {{ col.data_path|make_glade_URL }}
              </a>

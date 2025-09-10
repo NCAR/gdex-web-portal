@@ -1,0 +1,35 @@
+<input type='hidden' id=clipboard></input>
+<div id='arco-container' class='container mt-4 mb-4'>
+    <table id="zarr-catalogs-table" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">Catalog Name</th>
+                <th scope="col">Access</th>
+                <th scope="note">Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data.groups.0.rows %}
+                {% if row.2.value != 'CSV' %}
+                    <tr>
+                        <td class="roboto-regular" style="font-family: Roboto Mono;">{{ row.0.value }}</td>
+                        <td>
+                            <button class="btn btn-primary px-2 py-1" 
+                                    type="button" 
+                                    style="transition: all 0.2s ease; font-size: 1rem;" 
+                                    onClick="copyFullLink(this, '{{ row.0.url }}', 'Copy Full URL')">
+                                <i class="fa-solid fa-copy pe-1"></i>
+                                Copy Full URL
+                            </button>
+                        </td>
+                        {% if row.0.note %}
+                            <td><i class="fa-solid fa-circle-info"></i>{{ row.0.note }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
