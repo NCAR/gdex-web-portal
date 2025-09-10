@@ -370,6 +370,8 @@ RDA_CANONICAL_REQUEST_PATH = os.path.join(GDEX_SHORT_PATH, 'transfer/')
 GDEX_DATA_PATH = os.path.join(GDEX_BASE_PATH, 'data')
 GDEX_REQUEST_PATH = os.path.join(GDEX_BASE_PATH, 'transfer')
 GDEX_REQUEST_HOME = os.path.join(GDEX_BASE_PATH, 'transfer/dsrqst')
+GDEX_CANONICAL_DATA_PATH = os.path.join(GDEX_SHORT_PATH, 'data')
+GDEX_CANONICAL_REQUEST_PATH = os.path.join(GDEX_SHORT_PATH, 'transfer')
 
 # Data domains and base URLs
 OSDF_DOMAIN = 'osdf-data.gdex.ucar.edu'

@@ -294,23 +294,22 @@
           {% else %}
 	    {% if col.webpath|slice:"-5:" == ".zarr" %}
 	    <!--Zarr format-->
-
-            <div class='d-inline-block p-1 border rounded bg-primary text-light' 
+            <div class='d-inline-block px-2 py-1 border rounded bg-primary text-light' 
                  style='transition:all 0.2s ease; float:right' 
                  role='button' 
                  onClick="
                     {% if not data.is_glade %}
-                    copyText('{{settings.RDA_STRATUS_BASE_URL}}/datasets/{{data.dsid}}/{{ col.webpath }}') && 
-		     {% else %}
-                    copyText('{{settings.GDEX_DATA_PATH}}/{{data.dsid}}/{{ col.webpath }}') && 
-		     {% endif %}
+                       copyText('{{settings.RDA_STRATUS_BASE_URL}}/datasets/{{data.dsid}}/{{ col.webpath }}') && 
+		            {% else %}
+                       copyText('{{settings.GDEX_CANONICAL_DATA_PATH}}/{{data.dsid}}/{{ col.webpath }}') && 
+		            {% endif %}
                     $(this).removeClass('bg-primary').addClass('bg-success').text('Link Copied');
                     setTimeout(function(ele){
-                	          ele.removeClass('bg-success').addClass('bg-primary').text('');
-                		  ele.append('<i class=\'fa-solid fa-copy\'></i> Copy Full {% if not data.is_glade %}URL{% else %}Path{% endif %}');},1000, $(this)
-                		  )">
-              <i class="fa-solid fa-copy"></i>
-              Copy Full {% if not data.is_glade %}URL{% else %}Path{% endif %}
+                	    ele.removeClass('bg-success').addClass('bg-primary').text('');
+                		ele.append('<i class=\'fa-solid fa-copy pe-1\'></i>Copy Full {% if not data.is_glade %}URL{% else %}Path{% endif %}');
+                    }, 1000, $(this))">
+                <i class="fa-solid fa-copy pe-1"></i>
+                Copy Full {% if not data.is_glade %}URL{% else %}Path{% endif %}
             </div>
             {% elif data.is_ajax %}
              <a href='javascript:void(0);' 
