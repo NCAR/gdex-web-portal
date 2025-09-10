@@ -19,6 +19,7 @@ spec:
       containers:
       - name: {{ .Values.webapp.name }}
         image: {{ .Values.webapp.container.image }}
+        imagePullPolicy: Always
         resources:
           requests:
             memory: {{ .Values.webapp.container.requests.memory }}
