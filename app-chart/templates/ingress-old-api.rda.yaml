@@ -9,7 +9,7 @@ metadata:
     cert-manager.io/cluster-issuer: "incommon"
     nginx.ingress.kubernetes.io/permanent-redirect: "https://api.gdex.ucar.edu$request_uri"
 spec:
-  ingressClassName: nginx-internal
+  ingressClassName: nginx-external
   tls:
     - hosts:
       - api.rda.k8s.ucar.edu
