@@ -737,6 +737,21 @@ function get_user_email(remove) {
 }
 
 /**
+ * Copies full URL or path (link) to clipboard and updates button text.
+ * Button text resets after 2 seconds.
+ * @param {HTMLElement} btn 
+ * @param {string} link 
+ */
+function copyFullLink(btn, link, text='Copy Full URL') {
+    copyText(link);
+    $(btn).removeClass('btn-primary').addClass('btn-success').text('Link Copied');
+    setTimeout(function(ele){
+    ele.removeClass('btn-success').addClass('btn-primary').text('');
+    ele.append('<i class="fa-solid fa-copy pe-1"></i>'+text);
+    }, 2000, $(btn));
+}
+
+/**
   * Copies text to clipboard.
   */
 function copyText(text) {

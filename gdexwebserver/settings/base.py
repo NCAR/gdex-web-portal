@@ -370,6 +370,8 @@ RDA_CANONICAL_REQUEST_PATH = os.path.join(GDEX_SHORT_PATH, 'transfer/')
 GDEX_DATA_PATH = os.path.join(GDEX_BASE_PATH, 'data')
 GDEX_REQUEST_PATH = os.path.join(GDEX_BASE_PATH, 'transfer')
 GDEX_REQUEST_HOME = os.path.join(GDEX_BASE_PATH, 'transfer/dsrqst')
+GDEX_CANONICAL_DATA_PATH = os.path.join(GDEX_SHORT_PATH, 'data')
+GDEX_CANONICAL_REQUEST_PATH = os.path.join(GDEX_SHORT_PATH, 'transfer')
 
 # Data domains and base URLs
 OSDF_DOMAIN = 'osdf-data.gdex.ucar.edu'
@@ -404,10 +406,10 @@ RDA_REQUEST_BASE_URL = GLOBUS_REQUEST_BASE_URL
 # RDA_STRATUS_BASE_URL = GLOBUS_STRATUS_BASE_URL
 RDA_STRATUS_BASE_URL = OSDF_STRATUS_BASE_URL
 
-# DOCUMENTATION_BASE_URL = os.path.join(GLOBUS_STRATUS_BASE_URL, 'web/datasets')
-# SOFTWARE_BASE_URL = os.path.join(GLOBUS_STRATUS_BASE_URL, 'web/datasets')
-DOCUMENTATION_BASE_URL = os.path.join(OSDF_STRATUS_BASE_URL, 'web/datasets')
-SOFTWARE_BASE_URL = os.path.join(OSDF_STRATUS_BASE_URL, 'web/datasets')
+DOCUMENTATION_BASE_URL = os.path.join(GLOBUS_STRATUS_BASE_URL, 'web/datasets')
+SOFTWARE_BASE_URL = os.path.join(GLOBUS_STRATUS_BASE_URL, 'web/datasets')
+# DOCUMENTATION_BASE_URL = os.path.join(OSDF_STRATUS_BASE_URL, 'web/datasets')
+# SOFTWARE_BASE_URL = os.path.join(OSDF_STRATUS_BASE_URL, 'web/datasets')
 
 # Flag to use new dataset ID format 'dnnnnnn'
 NEW_DATASET_ID = True
@@ -442,6 +444,8 @@ SETTINGS_EXPORT = [
     'GDEX_DATA_PATH',
     'GDEX_REQUEST_PATH',
     'GDEX_REQUEST_HOME',
+    'GDEX_CANONICAL_DATA_PATH',
+    'GDEX_CANONICAL_REQUEST_PATH',
 ]
 
 ## AllAuth ##

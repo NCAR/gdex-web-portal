@@ -196,21 +196,23 @@
                 <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}{% if group.index %}{{ group.index }}/{% endif %}?fl=glade', replace_ds_content)">NCAR HPC<br>Data Access</a>
             </div>
             {% endif %}
-	    {% else %} {% comment %} If ARCO groups: {% endcomment %}
-            <div class="d-des o-blk tx-l" style="margin-top:7px;background:#7e7ecf;grid-row: {{ row }}">
+	    {% else %}
+            {% comment %} If ARCO groups {% endcomment %}
+            <div class="d-des o-blk tx-l mt-1" style="background:#7e7ecf;grid-row: {{ row }}">
                 {{ group.title|richtext }}
-		<br>
-		<div style="background:#f9dada;color:black;display:inline-block;
-			font-size:small;border-radius:15px;padding-left:3px;padding-right:4px">Analysis Ready</div>
+                <div>
+                    <span class="badge rounded-pill float-start" style="background-color: #f9dada; color: #000000;">Analysis Ready</span>
+                </div>
             </div>
+
             {% if matrix.columns.web_files %}
-            <div class="d-fil o-blk tx-c" style="margin-top:7px;grid-row: {{ row }}; background:#dadaff">
-		    <a href="javascript:void(0)" onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)">Web<br>Download</a>
-            </div>
+                <div class="d-fil o-blk tx-c mt-1" style="grid-row: {{ row }}; background:#dadaff">
+                    <a href="javascript:void(0)" onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)">Web File<br>Listing</a>
+                </div>
             {% endif %}
 
 	    {% endif %}
-            {% endwith %}
+        {% endwith %}
         {% endfor %}
     {% endif %}
 
