@@ -61,12 +61,15 @@ ln -s /glade/campaign/collections/rda/work/metrics/ /data/local/gdexweb/media/me
 touch /data/local/gdexweb/media/metrics/
 #
 # link django apps for testing here
-rm -rf /data/test/dataset_citation
-mv /usr/local/gdexweb/dataset_citation /data/test/
-ln -s /data/test/dataset_citation /usr/local/gdexweb/dataset_citation
 rm -rf /data/test/redeploys.py
-mv /usr/local/gdexweb/gdexwebserver/redeploys.py /data/test/
-ln -s /data/test/redeploys.py /usr/local/gdexweb/gdexwebserver/redeploys.py
+mv /usr/local/gdexweb/gdexwebserver/redeploys.py /data/test/gdexwebserver/
+ln -s /data/test/gdexwebserver/redeploys.py /usr/local/gdexweb/gdexwebserver/redeploys.py
+rm -rf /data/test/gdexwebserver/utils.py
+mv /usr/local/gdexweb/gdexwebserver/utils.py /data/test/gdexwebserver/
+ln -s /data/test/gdexwebserver/utils.py /usr/local/gdexweb/gdexwebserver/utils.py
+rm -rf /data/test/gdexwebserver/views.py
+mv /usr/local/gdexweb/gdexwebserver/views.py /data/test/gdexwebserver/
+ln -s /data/test/gdexwebserver/views.py /usr/local/gdexweb/gdexwebserver/views.py
 rm -rf /data/test/serverutils.py
 mv /usr/local/gdexweb/gdexwebserver/utils.py /data/test/serverutils.py
 ln -s /data/test/serverutils.py /usr/local/gdexweb/gdexwebserver/utils.py
