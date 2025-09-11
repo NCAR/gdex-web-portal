@@ -406,10 +406,10 @@ RDA_REQUEST_BASE_URL = GLOBUS_REQUEST_BASE_URL
 # RDA_STRATUS_BASE_URL = GLOBUS_STRATUS_BASE_URL
 RDA_STRATUS_BASE_URL = OSDF_STRATUS_BASE_URL
 
-# DOCUMENTATION_BASE_URL = os.path.join(GLOBUS_STRATUS_BASE_URL, 'web/datasets')
-# SOFTWARE_BASE_URL = os.path.join(GLOBUS_STRATUS_BASE_URL, 'web/datasets')
-DOCUMENTATION_BASE_URL = os.path.join(OSDF_STRATUS_BASE_URL, 'web/datasets')
-SOFTWARE_BASE_URL = os.path.join(OSDF_STRATUS_BASE_URL, 'web/datasets')
+DOCUMENTATION_BASE_URL = os.path.join(GLOBUS_STRATUS_BASE_URL, 'web/datasets')
+SOFTWARE_BASE_URL = os.path.join(GLOBUS_STRATUS_BASE_URL, 'web/datasets')
+# DOCUMENTATION_BASE_URL = os.path.join(OSDF_STRATUS_BASE_URL, 'web/datasets')
+# SOFTWARE_BASE_URL = os.path.join(OSDF_STRATUS_BASE_URL, 'web/datasets')
 
 # Flag to use new dataset ID format 'dnnnnnn'
 NEW_DATASET_ID = True
