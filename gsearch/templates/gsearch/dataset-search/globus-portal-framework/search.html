@@ -3,11 +3,14 @@
 
 {%block body%}
   <h1 class="h1 border-bottom">Search GDEX</h1>
-  <p class="lead">
+  <div class="lead mb-3">
     Search and discover datasets in GDEX by entering a keyword search below, 
     then filter by the facets in the menu on the left. Click
     <a href="/datasets/">here</a> to view the full list of all datasets in GDEX.
-  </p>
+  </div>
+  <div class="mb-3 fst-italic">
+    GDEX search and discovery is powered by <a href="https://docs.globus.org/api/search/">Globus Search</a> and the <a href="https://django-globus-portal-framework.readthedocs.io/en/stable/">Django Globus Portal Framework</a>.
+  </div>
 
   {% block search_nav %}
     {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-nav.html' as search_nav %}
