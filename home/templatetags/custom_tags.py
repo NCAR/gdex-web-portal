@@ -3,6 +3,7 @@ from django.conf import settings
 import math
 import re
 import os
+from pathlib import Path
 
 register = template.Library()
 
@@ -111,3 +112,10 @@ def template_exists(value):
         return True
     except template.TemplateDoesNotExist:
         return False
+
+@register.filter
+def get_extension(value):
+    """Return the file extension of the given filename"""
+    if not value:
+        return ''
+    return Path(value).suffix.lstrip('.').lower()
