@@ -1,0 +1,23 @@
+<hr class="my-1">
+<div class="pb-2" id="filter_search">
+    <div><strong>File name filter</strong></div>
+    <div><em>Enter a case-sensitive file name pattern to filter this file list.</em></div>
+    <input type="text" id="filterwfile" class='form-control' placeholder="Enter a filter string" name="filter_wfile"{% if data.filter_wfile %} value="{{data.filter_wfile}}"{% endif %}>
+    <button class="btn btn-primary my-2 rounded" style="font-size:1rem" id="applyFilters">Apply filter</button>
+    <button class="btn btn-outline-primary my-2 rounded" style="font-size:1rem" id="clearFilters">Clear filter</button>
+</div>
+<script>
+$("#applyFilters").on("click", function() {
+    url='/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?filter_wfile='+$("#filterwfile").val();
+    $.get(url, function(d) {
+        replace_ds_content(d);
+    });
+})
+$("#clearFilters").on("click", function() {
+    $("input[id^='filter']").val("");
+    url='/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}{% endif %}';
+    $.get(url, function(d) {
+        replace_ds_content(d);
+    });
+})
+</script>
