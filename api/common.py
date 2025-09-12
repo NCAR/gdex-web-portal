@@ -916,14 +916,14 @@ def long_name(key):
     Typically converts database keys to a longer name.
     """
     name_change = {
-        'wfile' : 'File Name',
-        'data_size' : 'Size',
-        'data_format' : 'Data Format',
-        'date_modified' : 'Date Archived',
-        'groupid' : 'Group ID',
-        'grpid':' Group Name',
+        'wfile': 'File Name',
+        'data_size': 'Size',
+        'data_format': 'Data Format',
+        'date_modified': 'Date Archived',
+        'groupid': 'Group ID',
+        'grpid': 'Group Name',
         'webcnt': 'File Count',
-        'title':  'Description'
+        'title': 'Description'
     }
     return name_change[key]
 
