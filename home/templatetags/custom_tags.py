@@ -119,3 +119,44 @@ def get_extension(value):
     if not value:
         return ''
     return Path(value).suffix.lstrip('.').lower()
+
+@register.filter
+def get_data_format_from_row(row):
+    """ 
+    Given a static filelist row entry, return the data format.
+    The row is a list of dictionaries with 'name' and 'value' keys.
+    """
+    if not row or not isinstance(row, list):
+        return ''
+    for item in row:
+        name = item.get('name', '').lower()
+        if name == 'data format':
+            return item.get('value', '').lower()
+    return ''
+
+@register.simple_tag
+def get_file_from_row(row):
+    """ 
+    Given a static filelist row entry, return the file info including name, size, data format, etc.
+    The input row is a list of dictionaries with 'name' and 'value' keys.
+    """
+    if not row or not isinstance(row, list):
+        return ''
+    file_info = {}
+    for item in row:
+        if not isinstance(item, dict):
+            continue
+        name = item.get('name', '').lower()
+        if name == 'data format':
+            file_info['data_format'] = item.get('value', '').lower()
+        elif name == 'size':
+            file_info['size'] = item.get('value', '').lower()
+        elif name == 'date archived':
+            file_info['date_archived'] = item.get('value', '')
+        if 'data path' in item:
+            file_info['file_path'] = item.get('data path', '')
+            file_info['file_name'] = item.get('value', '')
+            file_info['file_url'] = item.get('url', '')
+            file_info['file_note'] = item.get('note', None)
+
+    return file_info

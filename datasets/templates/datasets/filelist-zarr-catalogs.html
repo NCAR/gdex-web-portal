@@ -10,23 +10,20 @@
         </thead>
         <tbody>
             {% for row in data.groups.0.rows %}
-                {% if row.name == "Data Format" and row.value != 'CSV' %}
+                {% get_file_from_row row as file %}
+                {% if file.data_format != 'csv' %}
                     <tr>
-                        <td class="roboto-regular" style="font-family: Roboto Mono;">{{ row.0.value }}</td>
+                        <td class="roboto-regular" style="font-family: Roboto Mono;">{{ file.file_name }}</td>
                         <td>
                             <button class="btn btn-primary px-2 py-1 rounded" 
                                     type="button" 
                                     style="transition: all 0.2s ease; font-size: 1rem;" 
-                                    onClick="copyFullLink(this, '{{ row.0.url }}', 'Copy Full URL')">
+                                    onClick="copyFullLink(this, '{{ file.file_url }}', 'Copy Full URL')">
                                 <i class="fa-solid fa-copy pe-1"></i>
                                 Copy Full URL
                             </button>
                         </td>
-                        {% if row.0.note %}
-                            <td><i class="fa-solid fa-circle-info pe-1"></i>{{ row.0.note }}</td>
-                        {% else %}
-                            <td></td>
-                        {% endif %}
+                        <td>{% if file.file_note %}<i class="fa-solid fa-circle-info pe-1"></i>{{ file.file_note }}</td>
                     </tr>
                 {% endif %}
             {% endfor %}
