@@ -10,7 +10,7 @@
         </thead>
         <tbody>
             {% for row in data.groups.0.rows %}
-                {% if row.2.value != 'CSV' %}
+                {% if row.name == "Data Format" and row.value != 'CSV' %}
                     <tr>
                         <td class="roboto-regular" style="font-family: Roboto Mono;">{{ row.0.value }}</td>
                         <td>
