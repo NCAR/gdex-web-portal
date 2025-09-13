@@ -3,6 +3,7 @@ from django.conf import settings
 import math
 import re
 import os
+from pathlib import Path
 
 register = template.Library()
 
@@ -111,3 +112,51 @@ def template_exists(value):
         return True
     except template.TemplateDoesNotExist:
         return False
+
+@register.filter
+def get_extension(value):
+    """Return the file extension of the given filename"""
+    if not value:
+        return ''
+    return Path(value).suffix.lstrip('.').lower()
+
+@register.filter
+def get_data_format_from_row(row):
+    """ 
+    Given a static filelist row entry, return the data format.
+    The row is a list of dictionaries with 'name' and 'value' keys.
+    """
+    if not row or not isinstance(row, list):
+        return ''
+    for item in row:
+        name = item.get('name', '').lower()
+        if name == 'data format':
+            return item.get('value', '').lower()
+    return ''
+
+@register.inclusion_tag('datasets/filelist-zarr-catalogs.html', takes_context=True)
+def show_arco_catalogs(context):
+    """ 
+    Takes the context from filelist.html and returns a list of dicts with ARCO file information
+    (data format, size, date archived, file path, file name, file url, file note).
+    """
+    file_rows = []
+    for row in context['data']['groups'][0]['rows']:
+        file_info = { 'data_format': '', 'size': None, 'date_archived': '', 'file_path': '', 'file_name': '', 'file_url': '', 'file_note': None }
+        for item in row:
+            name = item.get('name', '').lower()
+            if name == 'data format':
+                file_info['data_format'] = item.get('value', '').lower()
+            elif name == 'size':
+                file_info['size'] = item.get('value', '')
+            elif name == 'date archived':
+                file_info['date_archived'] = item.get('value', '')
+            elif 'data_path' in item:
+                file_info['file_path'] = item.get('data_path', '')
+                file_info['file_name'] = item.get('value', '')
+                file_info['file_url'] = item.get('url', '')
+                file_info['file_note'] = item.get('note', None)
+
+        file_rows.append(file_info)
+
+    return { 'arco_files': file_rows }

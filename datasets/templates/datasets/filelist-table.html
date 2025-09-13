@@ -1,0 +1,69 @@
+{% load static %}
+{% load custom_tags %}
+<table id='{{group.group_id|slugify}}_table' class='table table-light table-striped'>
+    <thead>
+        <tr>
+            {% if not group.is_group_summary %}
+                <th><input class='table_group me-1' type='checkbox' id='{{ group.group_id|slugify }}_group_index'></input>Index</th>
+            {% endif %}
+            {% for col in group.column_headers %}
+                <th>{{col}}<i role='button' class="fas fa-solid fa-sort sort-column ps-1"></i></th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in group.rows %}
+            <tr>
+                {% if not group.is_group_summary %}
+                    <td><input class='file me-1' type='checkbox'></input>{{ forloop.counter }}</td>
+                {% endif %}
+                {% for col in row %}
+                    <td class='{{col.name}}' {% if col.name == 'Size' %}data-size='{{col.value}}'{% endif %}>
+                    {% if col.url %}
+                        
+                        {% if col.is_file %}
+                            <a style="font-family:'Roboto Mono';"{% if not data.is_glade %} href="{{col.url}}"{% endif %}>
+                        {% else %}
+	                        {% if col.webpath|get_extension == "zarr" %}
+	                            {# Zarr catalog file #}
+                                {% include "datasets/filelist-arco-button.html" %}
+                            {% elif data.is_ajax %}
+                                <a href='javascript:void(0);' col-data='{{col.url}}' 
+                                   onclick="$.get('{{col.url}}{% if data.is_glade %}?fl=glade{% endif %}', function(d){replace_ds_content(d);$('#datasetTab')[0].scrollIntoView();});">
+                            {% else %}
+                                <a href="{{col.url}}{% if data.is_glade %}?fl=glade{% endif %}">
+                            {% endif %}
+                        {% endif %}
+
+                        <!--a href={{ col.url }}-->
+
+                        {% if data.is_glade and col.is_file %}
+                            {{ col.data_path|make_glade_URL }}
+                            </a>
+	                    {% elif col.webpath|get_extension == "zarr" %}
+	                        {{ col.webpath|basename }}
+                        {% else %}
+                            {{ col.value }}
+                            </a>
+                        {% endif %}
+                        
+                        {% if col.meta_link != 'N' and col.is_file %}
+                            <a title='Click for Detailed Metadata' target='_blank' 
+                               href="/ajax/#cgi-bin/transform?xml=/datasets/{{data.dsid}}/metadata/wfmd{{col.data_path|remove_datadsid}}.{{col.meta_link}}ML">
+                               <i class="pe-1 fas fa-info-circle"> </i>
+                            </a>
+                        {% endif %}
+                    
+                    {% else %}
+                        {% if col.name == 'Size' %}
+                            {{ col.value|convert_bytes }}
+                        {% else %}
+                            {{ col.value }}
+                        {% endif %}
+                    {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

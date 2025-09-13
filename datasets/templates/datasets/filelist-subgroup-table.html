@@ -1,0 +1,34 @@
+   <h2> Subgroup Summary </h2>
+   <div>
+      {% if data.is_glade %}
+         {% include "datasets/glade_buttons.html" %}
+      {% else %}
+         {% include "datasets/download_buttons.html" %}
+      {% endif %}
+      <table class='table table-striped'>
+        <thead>
+            <tr>
+                <th>Group ID</th>
+                <th>Data Description</th>
+                <th>File Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in data.groups %}
+            <tr>
+                <td>
+                    <input type='checkbox' class='parent_group' id='{{group.group_id|slugify}}_parent'></input>
+                    <a href='#{{group.group_id|slugify}}' onclick="$event.preventDefault()">{{ group.group_id }}</a>
+                </td>
+                <td>
+                    {{ group.title }}
+                </td>
+                <td>
+                    {{ group.rows|length }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+   </div>
+<hr/>

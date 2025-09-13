@@ -1,0 +1,92 @@
+{% comment %}
+  Note about pagination: group.paginator.cur_page and group.paginator.max_pages start with
+  index 0 in views.py.  For this template, add 1 to these indexes so that they display
+  relative to index 1 on the web pages.
+{% endcomment %}
+  
+  <hr class="my-1">
+  <div class="font-weight-bold text-center"><strong>Filelist page navigation ({{ group.paginator.max_pages|add:"1" }} pages)</strong></div>
+  <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center">
+  
+      {% if group.paginator.cur_page != 0 %}
+          <li class="page-item">
+              <a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page=0{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});" aria-label="First">
+                  <i aria-hidden="true" class="fas fa-angle-double-left"></i>
+                  <span class="sr-only">First</span>
+              </a>
+          </li>
+          <li class="page-item">
+              <a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});" aria-label="Previous">
+                  <i aria-hidden="true" class="fas fa-angle-left"></i>
+                  <span class="sr-only">Previous</span>
+              </a>
+          </li>
+      {% endif %}
+  
+          {% comment %} Case 1: current page is first page {% endcomment %}    
+          {% if group.paginator.cur_page == 0 %}
+                  <li class="page-item active"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"1"}}</a></li>
+              {% if group.paginator.cur_page|add:"1" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"2"}}</a></li>
+              {% endif %}            
+              {% if group.paginator.cur_page|add:"2" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"2"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"3" }}</a></li>
+              {% endif %}
+              {% if group.paginator.cur_page|add:"3" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"3"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"4" }}</a></li>
+              {% endif %}
+              {% if group.paginator.cur_page|add:"4" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"4"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"5" }}</a></li>
+              {% endif %}
+  
+          {% comment %} Case 2: current page is last page {% endcomment %}
+          {% elif group.paginator.cur_page == group.paginator.max_pages %}
+              {% if group.paginator.cur_page|add:"-4" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-4"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"-3"}}</a></li>
+              {% endif %}            
+              {% if group.paginator.cur_page|add:"-3" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-3"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"-2"}}</a></li>
+              {% endif %}            
+              {% if group.paginator.cur_page|add:"-2" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-2"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"-1"}}</a></li>
+              {% endif %}            
+              {% if group.paginator.cur_page|add:"-1" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page}}</a></li>
+              {% endif %}            
+                  <li class="page-item active"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"1" }}</a></li>
+  
+          {% comment %} Case 3: general case, current page is between first and last pages {% endcomment %}
+          {% else %}
+              {% if group.paginator.cur_page|add:"-2" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-2"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"-1"}}</a></li>
+              {% endif %}            
+              {% if group.paginator.cur_page|add:"-1" >= 0 %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"-1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page}}</a></li>
+              {% endif %}            
+                  <li class="page-item active"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"1"}}</a></li>
+              {% if group.paginator.cur_page|add:"1" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"2" }}</a></li>
+              {% endif %}        
+              {% if group.paginator.cur_page|add:"2" <= group.paginator.max_pages %}
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"2"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});">{{group.paginator.cur_page|add:"3" }}</a></li>
+              {% endif %}        
+          {% endif %}
+  
+          {% if group.paginator.cur_page != group.paginator.max_pages %}
+              <li class="page-item">
+                  <a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.cur_page|add:"1"}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});" aria-label="Next">
+                      <i aria-hidden="true" class="fas fa-angle-right"></i>
+                      <span class="sr-only">Next</span>
+                  </a>
+              </li>
+              <li class="page-item">
+                  <a class="page-link" href="javascript:void(0);" onclick="$.get('/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?page={{group.paginator.max_pages}}{% if data.is_glade %}&fl=glade{% endif %}{% if data.filter_wfile %}&filter_wfile={{ data.filter_wfile }}{% endif %}', function(d){replace_ds_content(d)});" aria-label="Last">
+                      <i aria-hidden="true" class="fas fa-angle-double-right"></i>
+                      <span class="sr-only">Last</span>
+                  </a>
+              </li>
+         {% endif %}
+      </ul>
+  </nav>
+  <hr class="my-1">
