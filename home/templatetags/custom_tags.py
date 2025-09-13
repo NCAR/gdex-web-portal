@@ -134,29 +134,29 @@ def get_data_format_from_row(row):
             return item.get('value', '').lower()
     return ''
 
-@register.simple_tag
-def get_file_from_row(row):
+@register.inclusion_tag('datasets/filelist-zarr-catalogs.html', takes_context=True)
+def show_arco_catalogs(context):
     """ 
-    Given a static filelist row entry, return the file info including name, size, data format, etc.
-    The input row is a list of dictionaries with 'name' and 'value' keys.
+    Takes the context from filelist.html and returns a list of dicts with ARCO file information
+    (data format, size, date archived, file path, file name, file url, file note).
     """
-    if not row or not isinstance(row, list):
-        return ''
-    file_info = {}
-    for item in row:
-        if not isinstance(item, dict):
-            continue
-        name = item.get('name', '').lower()
-        if name == 'data format':
-            file_info['data_format'] = item.get('value', '').lower()
-        elif name == 'size':
-            file_info['size'] = item.get('value', '').lower()
-        elif name == 'date archived':
-            file_info['date_archived'] = item.get('value', '')
-        if 'data path' in item:
-            file_info['file_path'] = item.get('data path', '')
-            file_info['file_name'] = item.get('value', '')
-            file_info['file_url'] = item.get('url', '')
-            file_info['file_note'] = item.get('note', None)
+    file_rows = []
+    for row in context['data']['groups'][0]['rows']:
+        file_info = { 'data_format': '', 'size': None, 'date_archived': '', 'file_path': '', 'file_name': '', 'file_url': '', 'file_note': None }
+        for item in row:
+            name = item.get('name', '').lower()
+            if name == 'data format':
+                file_info['data_format'] = item.get('value', '').lower()
+            elif name == 'size':
+                file_info['size'] = item.get('value', '')
+            elif name == 'date archived':
+                file_info['date_archived'] = item.get('value', '')
+            elif 'data_path' in item:
+                file_info['file_path'] = item.get('data_path', '')
+                file_info['file_name'] = item.get('value', '')
+                file_info['file_url'] = item.get('url', '')
+                file_info['file_note'] = item.get('note', None)
 
-    return file_info
+        file_rows.append(file_info)
+
+    return { 'arco_files': file_rows }

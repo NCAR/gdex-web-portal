@@ -23,7 +23,7 @@
     {# If NCAR HPC or glade filelist is being viewed, show note about file access and generating a text file list #}
     <p class='border p-1 bg-light d-inline-block rounded-sm'>
         <i class="pe-1 fas fa-info-circle"></i>
-        <strong>To access data files: </strong> data files are directly accessible from any NSF NCAR HPC computing system at the file paths listed below.  You may also generate a text file containing a list of file paths by selecting any or all files in the table, then clicking the "Get Filelist" button below.
+        <strong>To access data files: </strong> Data files are directly accessible from any NSF NCAR HPC computing system at the file paths listed below.  You may also generate a text file containing a list of file paths by selecting any or all files in the table, then clicking the "Get Filelist" button below.
     </p>
 {% endif %}
 
@@ -39,7 +39,7 @@
 
 {% if data.groups.0.gindex|add:"0" < 0  %} 
     {# If an ARCO group, display Zarr/ARCO filelist table #}
-    {% include "datasets/filelist-zarr-catalogs.html" %}
+    {% show_arco_catalogs %}
 {% else %}
     {# Standard filelist table display #}
     {% for group in data.groups %}

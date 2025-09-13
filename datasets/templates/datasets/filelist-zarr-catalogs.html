@@ -9,21 +9,20 @@
             </tr>
         </thead>
         <tbody>
-            {% for row in data.groups.0.rows %}
-                {% get_file_from_row row as arco_file %}
+            {% for arco_file in arco_files %}
                 {% if arco_file.data_format != 'csv' %}
                     <tr>
                         <td class="roboto-regular" style="font-family: Roboto Mono;">{{ arco_file.file_name }}</td>
                         <td>
                             <button class="btn btn-primary px-2 py-1 rounded" 
-                                    type="button" 
-                                    style="transition: all 0.2s ease; font-size: 1rem;" 
-                                    onClick="copyFullLink(this, '{{ arco_file.file_url }}', 'Copy Full URL')">
+                                type="button" 
+                                style="transition: all 0.2s ease; font-size: 1rem;" 
+                                onClick="copyFullLink(this, '{{ arco_file.file_url }}', 'Copy Full URL')">
                                 <i class="fa-solid fa-copy pe-1"></i>
                                 Copy Full URL
                             </button>
                         </td>
-                        <td>{% if arco_file.file_note %}<i class="fa-solid fa-circle-info pe-1"></i>{{ arco_file.file_note }}</td>
+                        <td>{% if arco_file.file_note %}<i class="fa-solid fa-circle-info pe-1"></i>{{ arco_file.file_note }}{% endif %}</td>
                     </tr>
                 {% endif %}
             {% endfor %}
