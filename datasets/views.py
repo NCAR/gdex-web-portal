@@ -143,7 +143,7 @@ def listopt_gindex(request, dsid, listtyp, gindex):
 
     return render(request, 'dataaccess/not_authorized.html')
 
-def get_alt_index(json, _type):
+def get_alt_index(json, _type='docs'):
     """Get HTML from alt_index if it exists as a helpfile.
 
     Args:
