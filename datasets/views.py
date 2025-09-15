@@ -157,7 +157,7 @@ def get_alt_index(json, _type='docs'):
     try:
         for file in json['data']['files']:
             if file['hfile'] == 'alt_index.html':
-                alt_url = os.path.path.join(
+                alt_url = os.path.join(
                         settings.GLOBUS_STRATUS_BASE_URL,
                         'web/datasets',
                         dsid,
