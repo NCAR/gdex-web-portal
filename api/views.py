@@ -81,7 +81,7 @@ def get_web_files(request,dsid, gindex, filter_wfile=None):
 #@cache_page(4 * 24 * 60 * 60) # cache for 4 days
 def assemble_filelist(request, dsid):
     root_groups = common.get_root_groups()
-    
+
 
 def get_dataset_documentation(request, dsid):
     dsid = common.format_dataset_id(dsid)
@@ -109,10 +109,10 @@ def generate_notebook(request):
         return HttpResponseBadRequest("no 'filelist' in request")
     #if 'wpath' not in request.POST:
     #    return HttpResponseBadRequest("no 'wpath' in request")
-        
+
     filelist = request.POST.getlist('filelist[]')
     #wpath = request.POST['wpath'][0]
-    
+
     b = nbb.get_builder()
 
 
@@ -163,7 +163,7 @@ def generate_notebook(request):
                      "        if cur_key not in coords:",
                      "            primary_variables[cur_key] = cur_var",
                      "    return primary_variables ")
-    
+
     b.add_code_block("var = widgets.Dropdown(",
                      "    options=get_primary(ds).keys(),",
                      "    description='Variable')",
@@ -192,6 +192,7 @@ def submit(request):
     if request.method != 'POST':
         response = rda_r.RDA_Response()
         response.add_message('This action requires a POST request')
+        print('method is '+request.method)
         return JsonResponse(response.get_json())
     request_body = request.body
     request_json = json.loads(request_body)
@@ -220,7 +221,7 @@ def print_help(request):
 def get_control_file_template(request, dsid):
     json = rdams.main("-get_control_file_template", dsid)
     return JsonResponse(json)
-    
+
 def get_control_file_template_old(request, dsid):
     json = rdams.main("-get_control_file_template_old", dsid)
     return JsonResponse(json)
