@@ -143,6 +143,30 @@ def listopt_gindex(request, dsid, listtyp, gindex):
 
     return render(request, 'dataaccess/not_authorized.html')
 
+def get_alt_index(json, _type):
+    """Get HTML from alt_index if it exists as a helpfile.
+
+    Args:
+        json (obj): JSON formatted object from API call
+                    for documentation
+        _type (str): 'docs' or 'software'
+
+    Returns (str): HTML content from alt_index.html helpfile
+    """
+    dsid = json['data']['dsid']
+    try:
+        for i in json['data']['files']:
+            if files['hfile'] == 'alt_index.html':
+                alt_url = os.path.path.join(
+                        settings.GLOBUS_STRATUS_BASE_URL,
+                        'web/datasets',
+                        dsid,
+                        f'{_type}/alt_index.html')
+                return requests.get(alt_url).text.replace('\n','')
+    except KeyError as e:
+        print(e)
+        return None
+    return None
 
 def get_documentation_table(request, dsnum):
     hostname = get_hostname()
@@ -153,6 +177,12 @@ def get_documentation_table(request, dsnum):
     documentation = requests.get(url)
     documentation = documentation.content
     documentation_json = json.loads(documentation)
+
+    alt_index = get_alt_index(documentation_json)
+    if alt_index:
+        documentation_json['data'].update({'alt_index':alt_index})
+
+
     if "HTTP_X_REQUESTED_WITH" in request.META:
         template = "datasets/documentation_table.html"
     else:
