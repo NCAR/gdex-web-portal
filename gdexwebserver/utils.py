@@ -25,18 +25,45 @@ def remove_tempdir(tdir_name):
 
 
 def upload(request):
-    if 'file' in request.FILES and 'path' in request.POST:
-        idx = request.POST['path'].rfind("/")
+    parts = request.META['HTTP_HOST'].split(".")
+    if parts[0] != "api":
+        return render(request, "404.html", status=404)
+
+    if 'API-key' not in request.headers:
+        return HttpResponse("Missing API key.", status=400,
+                            reason="Bad Request")
+
+    if request.headers['API-key'] not in settings.LOCAL_API_KEYS['upload']:
+        return HttpResponse("Invalid API key.", status=403, reason="Forbidden")
+
+    if 'file' in request.FILES:
+        path = settings.LOCAL_API_KEYS['upload'][request.headers['API-key']]
+        if 'path' in request.POST:
+            if len(path) == 0 and request.POST['path'][0] != '/':
+                return HttpResponse("Invalid path.", status=400,
+                                    reason="Bad Request")
+
+            else:
+                if len(path) > 0 and request.POST['path'][0] == '/':
+                    return HttpResponse("Invalid path.", status=400,
+                                        reason="Bad Request")
+
+            path = os.path.join(path, request.POST['path'])
+
+        if len(path) == 0:
+            return HttpResponse("Missing path.", status=400,
+                                reason="Bad Request")
+
+        idx = path.rfind("/")
         if idx < 0:
             return HttpResponse("Invalid path.", status=400,
                                 reason="Bad Request")
 
         try:
-            pathlib.Path(request.POST['path'][0:idx]).mkdir(parents=True,
-                                                     exist_ok=True)
+            pathlib.Path(path[0:idx]).mkdir(parents=True, exist_ok=True)
             out_len = 0
             MAX_OUT = 30000000
-            with open(request.POST['path'], "wb") as f:
+            with open(path, "wb") as f:
                 for chunk in request.FILES['file']:
                     out_len += len(chunk)
                     if (out_len <= MAX_OUT):
@@ -45,7 +72,7 @@ def upload(request):
                         break
 
             if out_len > MAX_OUT:
-                os.remove(request.POST['path'])
+                os.remove(path)
                 return HttpResponse("File is too large.", status=413,
                                     reason="Content Too Large")
 
@@ -55,7 +82,8 @@ def upload(request):
 
         return HttpResponse("Success.")
 
-    return HttpResponse("Bad request.", status=400, reason="Bad Request")
+    return HttpResponse("Upload file missing.",
+                        status=400, reason="Bad Request")
 
 
 def unlink(request):
@@ -80,14 +108,14 @@ def unlink(request):
     if request.POST['path'][-1] == '/':
         try:
             shutil.rmtree(request.POST['path'])
-        except Exception:
+        except Exception as err:
             return HttpResponse("Remove failed: {}".format(err), status=500,
                                 reason="Internal Server Error")
 
     else:
         try:
             os.remove(request.POST['path'])
-        except Exception:
+        except Exception as err:
             return HttpResponse("Remove failed: {}".format(err), status=500,
                                 reason="Internal Server Error")
 
