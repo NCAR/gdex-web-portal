@@ -70,6 +70,9 @@ ln -s /data/test/gdexwebserver/utils.py /usr/local/gdexweb/gdexwebserver/utils.p
 rm -rf /data/test/gdexwebserver/views.py
 mv /usr/local/gdexweb/gdexwebserver/views.py /data/test/gdexwebserver/
 ln -s /data/test/gdexwebserver/views.py /usr/local/gdexweb/gdexwebserver/views.py
+rm -rf /data/test/gdexwebserver/urls.py
+mv /usr/local/gdexweb/gdexwebserver/urls.py /data/test/gdexwebserver/
+ln -s /data/test/gdexwebserver/urls.py /usr/local/gdexweb/gdexwebserver/urls.py
 rm -rf /data/test/serverutils.py
 mv /usr/local/gdexweb/gdexwebserver/utils.py /data/test/serverutils.py
 ln -s /data/test/serverutils.py /usr/local/gdexweb/gdexwebserver/utils.py
