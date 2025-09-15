@@ -71,6 +71,7 @@ def unlink(request):
     return utils.unlink(request)
 
 
+@csrf_exempt
 def upload(request):
     return utils.upload(request)
 
