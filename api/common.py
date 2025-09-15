@@ -29,6 +29,8 @@ cursor = None
 # cache is designed where each key is a tablename.
 cache = {}
 
+XML_DIR = '/data/web/metadata/'
+
 def get_IGrML_config():
     return settings.RDADB['IGrML_config_pg']
 
@@ -204,7 +206,7 @@ def get_param_info(full_code, key_change=None):
     if param_dict is not None:
         return param_dict[code]
 
-    xml_location = '/gpfs/u/home/rdadata/share/metadata/ParameterTables/'
+    xml_location = os.path.join(XML_DIR,'ParameterTables/'
     filenames = glob.glob(xml_location + '*'+tablename+'.xml')
     if len(filenames) > 1:
         raise ValueError('Glob should only return 1 filename')
@@ -222,7 +224,7 @@ def get_level_info(map_name, code):
     #if level_dict is not None:
     #    return level_dict[code]
 
-    xml_location = '/gpfs/u/home/rdadata/share/metadata/LevelTables/'
+    xml_location = os.path.join(XML_DIR,'LevelTables/'
     glob_str = xml_location + '*'+map_name+'.xml'
     filenames = glob.glob(glob_str)
     if len(filenames) > 1:
@@ -1240,7 +1242,7 @@ def get_web_files_from_gindex(dsid, gindex, page=0, filter_wfile=None):
     return data
 
 def get_webfile_base_url(dsid, test_wfile, locflag=None):
-    """ 
+    """
     Returns the base URL for dataset web files.
     """
     dsid = format_dataset_id(dsid)
@@ -1274,11 +1276,11 @@ def get_webfile_base_url(dsid, test_wfile, locflag=None):
         else:
             # if OSDF is not reachable, use Globus domain
             return globus_base_url
-    
+
     return base_url
 
 def get_webfile_url(dsid, wfile, base_url, origin_path=None, locflag=None):
-    """ 
+    """
     Returns the URL for a dataset web file.
         Optional argument 'locflag' = dataset location flag
           ('G' = glade, 'O' = stratus, 'B' = both,
