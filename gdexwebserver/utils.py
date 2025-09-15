@@ -36,24 +36,18 @@ def upload(request):
     if request.headers['API-key'] not in settings.LOCAL_API_KEYS['upload']:
         return HttpResponse("Invalid API key.", status=403, reason="Forbidden")
 
-    if 'file' in request.FILES:
+    if 'file' in request.FILES and 'path' in request.POST:
         path = settings.LOCAL_API_KEYS['upload'][request.headers['API-key']]
-        if 'path' in request.POST:
-            if len(path) == 0 and request.POST['path'][0] != '/':
-                return HttpResponse("Invalid path.", status=400,
-                                    reason="Bad Request")
-
-            else:
-                if len(path) > 0 and request.POST['path'][0] == '/':
-                    return HttpResponse("Invalid path.", status=400,
-                                        reason="Bad Request")
-
-            path = os.path.join(path, request.POST['path'])
-
-        if len(path) == 0:
-            return HttpResponse("Missing path.", status=400,
+        if len(path) == 0 and request.POST['path'][0] != '/':
+            return HttpResponse("Invalid path.", status=400,
                                 reason="Bad Request")
 
+        else:
+            if len(path) > 0 and request.POST['path'][0] == '/':
+                return HttpResponse("Invalid path.", status=400,
+                                        reason="Bad Request")
+
+        path = os.path.join(path, request.POST['path'])
         idx = path.rfind("/")
         if idx < 0:
             return HttpResponse("Invalid path.", status=400,
