@@ -206,7 +206,7 @@ def get_param_info(full_code, key_change=None):
     if param_dict is not None:
         return param_dict[code]
 
-    xml_location = os.path.join(XML_DIR,'ParameterTables/'
+    xml_location = os.path.join(XML_DIR,'ParameterTables/')
     filenames = glob.glob(xml_location + '*'+tablename+'.xml')
     if len(filenames) > 1:
         raise ValueError('Glob should only return 1 filename')
@@ -224,7 +224,7 @@ def get_level_info(map_name, code):
     #if level_dict is not None:
     #    return level_dict[code]
 
-    xml_location = os.path.join(XML_DIR,'LevelTables/'
+    xml_location = os.path.join(XML_DIR,'LevelTables/')
     glob_str = xml_location + '*'+map_name+'.xml'
     filenames = glob.glob(glob_str)
     if len(filenames) > 1:
