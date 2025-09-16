@@ -1,6 +1,7 @@
 import os
 import pathlib
 import shutil
+import subprocess
 import tempfile
 
 from django.conf import settings
@@ -24,6 +25,16 @@ def remove_tempdir(tdir_name):
         pass
 
 
+def good_path(key_path, spec_path):
+    if len(key_path) == 0 and spec_path[0] != '/':
+        return False
+    else:
+        if len(key_path) > 0 and spec_path[0] == '/':
+            return False
+
+    return True
+
+
 def upload(request):
     parts = request.META['HTTP_HOST'].split(".")
     if parts[0] != "api":
@@ -37,17 +48,17 @@ def upload(request):
         return HttpResponse("Invalid API key.", status=403, reason="Forbidden")
 
     if 'file' in request.FILES and 'path' in request.POST:
-        path = settings.LOCAL_API_KEYS['upload'][request.headers['API-key']]
-        if len(path) == 0 and request.POST['path'][0] != '/':
+        is_good_path = good_path(
+                (settings.LOCAL_API_KEYS['upload']
+                 [request.headers['API-key']]),
+                request.POST['path'])
+        if not is_good_path:
             return HttpResponse("Invalid path.", status=400,
                                 reason="Bad Request")
 
-        else:
-            if len(path) > 0 and request.POST['path'][0] == '/':
-                return HttpResponse("Invalid path.", status=400,
-                                        reason="Bad Request")
-
-        path = os.path.join(path, request.POST['path'])
+        path = os.path.join(
+                settings.LOCAL_API_KEYS['upload'][request.headers['API-key']],
+                request.POST['path'])
         idx = path.rfind("/")
         if idx < 0:
             return HttpResponse("Invalid path.", status=400,
@@ -75,6 +86,34 @@ def upload(request):
                                 status=500, reason="Internal Server Error")
 
         return HttpResponse("Success.")
+
+    if len(request.META['QUERY_STRING']) > 0:
+        if request.META['QUERY_STRING'][0:4] == "list":
+            parts = request.META['QUERY_STRING'].split("=")
+            is_good_path = good_path(
+                    (settings.LOCAL_API_KEYS['upload']
+                     [request.headers['API-key']]),
+                    parts[-1])
+            if is_good_path:
+                path = os.path.join(
+                        (settings.LOCAL_API_KEYS['upload']
+                         [request.headers['API-key']]),
+                        parts[-1])
+                o = subprocess.run("ls -FGAhlp " + path, shell=True,
+                                   capture_output=True)
+                err = o.stderr.decode("utf-8")
+                if len(err) > 0:
+                    return HttpResponse("Not found.", status=404,
+                                        reason="Not Found")
+
+                lines = o.stdout.decode("utf-8").splitlines()
+                out_lines = []
+                for line in lines:
+                    parts = line.split()
+                    if len(parts) > 7:
+                        out_lines.append(" ".join(parts[3:8]))
+
+                return HttpResponse("\n".join(out_lines))
 
     return HttpResponse("Upload file missing.",
                         status=400, reason="Bad Request")
