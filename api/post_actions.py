@@ -54,7 +54,7 @@ def rdams_purge(rindex, purge_date, purge_time):
         purge_time (str): Time at which to purge in format HH:MM
     """
     from rda_python_common import PgDBI
-    
+
     donereq = PgDBI.pgget("dsrqst", "*", "rindex =" + str(rindex))
     donereq['date_purge'] = str(purge_date)
     donereq['time_purge'] = str(purge_time)
@@ -131,7 +131,7 @@ def subset_json_checks(in_json, response):
         response.add_error_message('Found \'griddef\' keyword without \'gridproj\' keyword')
     elif 'gridproj' in in_json and 'griddef' not in in_json:
         response.add_error_message('Found \'gridproj\' keyword without \'griddef\' keyword')
-    
+
     # Special dataset checks
     if 'dataset' in in_json and in_json['dataset'] == 'ds633.0':
         if 'groupindex' not in in_json:
@@ -280,9 +280,9 @@ def get_request_str(in_json, metadata, response):
             + 'product=' + product_str + ';' \
             + 'level=' + level_str
 
-    #if (common.format_dataset_id(in_json['dataset'], remove_ds=True) == '093.0' 
-    # or common.format_dataset_id(in_json['dataset'], remove_ds=True) == '094.0') 
-    # and in_json['elon'] == 180 and in_json['wlon'] == -180 
+    #if (common.format_dataset_id(in_json['dataset'], remove_ds=True) == '093.0'
+    # or common.format_dataset_id(in_json['dataset'], remove_ds=True) == '094.0')
+    # and in_json['elon'] == 180 and in_json['wlon'] == -180
     # and in_json['nlat'] == 90 and in_json['slat'] == -90:
     if in_json['elon'] == 180 and in_json['wlon'] == -180 and in_json['nlat'] == 90 and in_json['slat'] == -90:
             pass
@@ -373,7 +373,7 @@ def submit_subset_request(in_json, user_email=None):
         except ValueError:
             response.add_error_message(463)
             return response
- 
+
     if user_email is None:
         try:
             user_email = in_json['email']
@@ -383,7 +383,7 @@ def submit_subset_request(in_json, user_email=None):
             user_email = common.get_local_emailname()
     # Check if User has too many requests
     request_limit = 10
-    special_limits = {'drews@ucar.edu':100}
+    special_limits = {'drews@ucar.edu':200}
     if user_email in special_limits:
         request_limit = special_limits[user_email]
     num_requests = len(common.get_rqst_indexes(user_email))
@@ -436,7 +436,7 @@ def submit_subset_request(in_json, user_email=None):
         response.add_data( {'request_id':request_id} )
     except Exception as e:
         response.add_error_message("There was a problem submitting the request. Please try again or contact datahelp@ucar.edu")
-        print("Error with dsrqst submission:" + str(e))
+        print("Error with dsrqst submission: " + str(e))
         print(str(user_email) + request_info_str)
 
     return response
@@ -451,14 +451,14 @@ def rdams_submit(dsid, rinfo, rtype, rnote, ip, email):
         rtype (str): Request type. (T, S, etc.)
         rnote (str): Human readable version of request info.
         ip (str): IP of requester. Generally not used.
-        email (str): Email of requester. 
+        email (str): Email of requester.
 
-    Returns: 
+    Returns:
         (str) 6 digit request index.
     """
     from rda_python_common import PgOPT
     from rda_python_dsrqst import PgRDARqst
-    
+
     rqst = {}
     rqst['dsid'] = dsid
     rqst['rinfo'] = rinfo
@@ -469,7 +469,7 @@ def rdams_submit(dsid, rinfo, rtype, rnote, ip, email):
     rqst['rnote'] = rnote
     rqst['location'] = "web"
     rqst['fromflag'] = "A"
-    
+
     msg = PgRDARqst.rda_request(rqst);
     m = re.search(r'.*(\d\d\d\d\d\d).*', msg)
     return m.group(1)
