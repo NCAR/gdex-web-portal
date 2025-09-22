@@ -12,3 +12,6 @@ def realtime(request):
 
 def requests(request):
     return render(request,'requests_metrics.html', {'display':True})
+
+def test_home(request):
+    return render(request, 'home/home-test.html', {'display': True})

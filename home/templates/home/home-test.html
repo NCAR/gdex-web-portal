@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+<div class="d-grid d-print-flex">
+    <article class="main-content-wrapper">
+        {% block welcome_message %}
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="text-center">
+                    <h3 class="display-6 text-black mb-2">Data for Atmospheric and Ocean Sciences Research</h3>
+                    <p class="text-black-50">The NSF NCAR Geoscience Data Exchange - Integrated Research Data Commons (GDEX) contains an extensive collection of meteorological, atmospheric composition, and oceanographic observations and model outputs to support Earth System Science research. GDEX supports "data proximate" computational research through its integration with NSF NCAR High Performance Compute services, which are made accessible to US researchers through a range of allocations opportunities.</p>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+
+        {% block home_search_bar %}
+        {% include 'home/home_search_bar.html' %}
+        {% endblock %}
+
+        {% block grid_cards %}
+        {% include 'home/home-grid-cards-test.html' %}
+        {% endblock %}
+    </article>
+</div>
+{% include_block page.card_1 %}
+{% endblock %}
