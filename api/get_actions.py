@@ -449,7 +449,7 @@ def get_control_file_template_old(dsid=None, json=False):
     This function simply prints the control file, while the none '_old'
     function will return a RDA_response json.
     """
-    template_dir = "/glade/campaign/collections/rda/transfer/rpconroy/rdams_control_files/"
+    template_dir = "/data/local/gdexweb/media/metrics/templates"
     if dsid is not None:
         dsid = common.format_dataset_id(dsid)
         template_file = template_dir+str(dsid) + "_control_file"
@@ -465,7 +465,7 @@ def get_control_file_template_old(dsid=None, json=False):
 def get_control_file_template(dsid=None, json=False):
     """Get's a control file for a given dsid"""
     response = RDA_Response()
-    template_dir = "/glade/campaign/collections/rda/transfer/rpconroy/rdams_control_files/"
+    template_dir = "/data/local/gdexweb/media/metrics/templates"
     if dsid is not None:
         dsid = common.format_dataset_id(dsid)
         template_file = template_dir+str(dsid) + "_control_file"
