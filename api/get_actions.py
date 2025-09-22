@@ -452,7 +452,7 @@ def get_control_file_template_old(dsid=None, json=False):
     template_dir = "/data/local/gdexweb/media/metrics/templates"
     if dsid is not None:
         dsid = common.format_dataset_id(dsid)
-        template_file = template_dir+str(dsid) + "_control_file"
+        template_file = os.path.join(template_dir,str(dsid) + "_control_file")
         if not os.path.exists(template_file):
             template_file = template_dir + "dsnnn.n_control_file"
     else:
@@ -468,7 +468,7 @@ def get_control_file_template(dsid=None, json=False):
     template_dir = "/data/local/gdexweb/media/metrics/templates"
     if dsid is not None:
         dsid = common.format_dataset_id(dsid)
-        template_file = template_dir+str(dsid) + "_control_file"
+        template_file = os.path.join(template_dir,str(dsid) + "_control_file")
         if not os.path.exists(template_file):
             template_file = template_dir + "dsnnn.n_control_file"
     else:
