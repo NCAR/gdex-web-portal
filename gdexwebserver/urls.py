@@ -42,6 +42,7 @@ urlpatterns = [
     path('upload/', views.upload),
     path('dataset/<old_gdex_path>/', views.do_redirect),
     re_path(r'^accounts/profile/$', login_required(TemplateView.as_view(template_name='account/profile.html')), name='user_profile'),
+    path('test-home/', home_views.test_home, name='test_home'), # New test home view
 ]
 
 urlpatterns += staticfiles_urlpatterns()
