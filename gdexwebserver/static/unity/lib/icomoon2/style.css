@@ -1,0 +1,37 @@
+@font-face {
+  font-family: 'icomoon';
+  src:  url('fonts/icomoon.eot?vqwhom');
+  src:  url('fonts/icomoon.eot?vqwhom#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?vqwhom') format('truetype'),
+    url('fonts/icomoon.woff?vqwhom') format('woff'),
+    url('fonts/icomoon.svg?vqwhom#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-jupyter-logomark:before {
+  content: "\e900";
+}
+.icon-jupyter-logo:before {
+  content: "\e901";
+}
+.icon-jupyter:before {
+  content: "\e902";
+  color: #f37626;
+}
