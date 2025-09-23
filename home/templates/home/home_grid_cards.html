@@ -5,44 +5,74 @@
         <div class="col-10 primary">
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-2 g-md-4">
                 <div class="col">
-                    <div class="card h-100">
+                    <div class="card h-100 grid-card-group">
+                        <a href="/gsearch/dataset-search/" class="stretched-link"></a>
                         <div class="card-body">
-                            <h3 class="card-title text-center"><a href="/gsearch/dataset-search/" class="text-white">{{ page.card_1_title }}</a></h3>
                             <div class="icon py-2 text-center">
-                                <i class="fas fa-{{ page.card_1_icon_name }} fa-2x"></i>
+                                <i class="fa-solid fa-magnifying-glass fa-2x"></i>
                             </div>
-                            <p class="card-text text-center">{{ page.card_1_text|richtext }}</p>
-                        </div>
-                        <div class="card-footer text-center">
-                            <a href="/gsearch/dataset-search/" class="btn btn-outline-light">{{ page.card_1_footer_text }}</a>
+                            <h4 class="card-title text-center text-white">Explore All Datasets</h4>
+                            <p class="card-text text-center pt-2">Browse our dataset collections by category, location, or time</p>
                         </div>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="card h-100">
+                    <div class="card h-100 grid-card-group">
                         <div class="card-body">
-                            <h3 class="card-title text-center"><a href="{{ page.card_2_footer_page.url }}" class="text-white">{{ page.card_2_title }}</a></h3>
+                            <a href="https://github.com/NCAR/rda-apps-clients" class="stretched-link" target="_blank"></a>
                             <div class="icon py-2 text-center">
-                                <i class="fas fa-{{ page.card_2_icon_name }} fa-2x"></i>
+                                <i class="fa-solid fa-laptop-code fa-2x"></i>
                             </div>
-                            <p class="card-text text-center">{{ page.card_2_text|richtext }}</p>
-                        </div>
-                        <div class="card-footer text-center">
-                            <a href="{{ page.card_2_footer_page.url }}" class="btn btn-outline-light">{{ page.card_2_footer_text }}</a>
+                            <h4 class="card-title text-center text-white">API<i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></h4>
+                            <p class="card-text text-center pt-2">Search GDEX datasets and submit data subset requests</p>
                         </div>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="card h-100">
+                    <div class="card h-100 grid-card-group">
                         <div class="card-body">
-                            <h3 class="card-title text-center"><a href="{{ page.card_3_footer_page.url }}" class="text-white">{{ page.card_3_title }}</a></h3>
+                            <a href="/resources/daas/" class="stretched-link"></a>
                             <div class="icon py-2 text-center">
-                                <i class="fas fa-{{ page.card_3_icon_name }} fa-2x"></i>
+                                <i class="fa-solid fa-cloud-arrow-up fa-2x"></i>
                             </div>
-                            <p class="card-text text-center">{{ page.card_3_text|richtext }}</p>
+                            <h4 class="card-title text-center text-white">Deposit Data</h4>
+                            <p class="card-text text-center pt-2">Request to deposit a dataset in GDEX</p>
                         </div>
-                        <div class="card-footer text-center">
-                            <a href="{{ page.card_3_footer_page.url }}" class="btn btn-outline-light">{{ page.card_3_footer_text }}</a>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 grid-card-group">
+                        <div class="card-body">
+                            <a href="https://ncar-hpc-docs.readthedocs.io/en/latest/compute-systems/jupyterhub/#getting-started" class="stretched-link" target="_blank"></a>
+                            <div class="icon py-2 text-center">
+                                <i class="icon-jupyter-logomark" style="font-size: 3em;"></i>
+                            </div>
+                            <h4 class="card-title text-center text-white">JupyterHub<i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></h4>
+                            <p class="card-text text-center pt-2">Access and process GDEX data through NSF NCAR's Community Compute Services</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 grid-card-group">
+                        <div class="card-body">
+                            <a href="https://arc.ucar.edu/xras_submit/opportunities" class="stretched-link" target="_blank"></a>
+                            <div class="icon py-2 text-center">
+                                <i class="fa-solid fa-network-wired fa-2x"></i>
+                            </div>
+                            <h4 class="card-title text-center text-white">NSF NCAR Compute<i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></h4>
+                            <p class="card-text text-center pt-2">Request an allocation on NSF NCAR Community Compute Services</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 grid-card-group">
+                        <div class="card-body">
+                            <a href="/news/" class="stretched-link"></a>
+                            <div class="icon py-2 text-center">
+                                <i class="fa-solid fa-bullhorn fa-2x"></i>
+                            </div>
+                            <h4 class="card-title text-center text-white">News</h4>
+                            <p class="card-text text-center pt-2">The latest from GDEX, including informational blog posts and data service announcements</p>
                         </div>
                     </div>
                 </div>
