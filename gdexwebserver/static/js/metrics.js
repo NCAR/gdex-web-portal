@@ -1221,7 +1221,7 @@ function RankingsGraph(container, jsonFilename, gcurkey, title)
     initDefs(this.svg)
     curkey = gcurkey
     this.mykey = gcurkey;
-    
+
     this.title = title;
     this.drawLargeTitle(title);
     this.color = this.getColorScheme()
@@ -1425,7 +1425,7 @@ RankingsGraph.prototype.initConfig = function()
 {
     this.config = {
         'totals' : {
-            'totalsString' : 'RDA Total',
+            'totalsString' : 'GDEX Total',
             'overrideKey' : { // Place key's where you want to override a value
                 // e.g.
                 //'Number of Users per Country' : 'one million'
