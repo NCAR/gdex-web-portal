@@ -437,35 +437,42 @@ def parse_grml_query(cursor, dsid, listtyp, request, **kwargs):
         sparams = [x.split("!")[-1] for x in sparams]
         if any(key.endswith("codes") for key in kwargs):
             bitmap_agg = False
-            q = ("select string_agg(distinct cast(file_code as text), '[!]'), "
-                 "string_agg(distinct cast(time_range_code as text), '[!]'), "
-                 "string_agg(distinct cast(grid_definition_code as text), "
-                 "'[!]'), parameter, level_type_codes, min(start_date), max("
-                 "end_date) from \"WGrML\"." + dsid + "_grids2 where "
-                 "parameter in %s and start_date <= %s and end_date >= %s")
+            q = ("select string_agg(distinct cast(g.file_code as text), "
+                 "'[!]'), string_agg(distinct cast(g.time_range_code as "
+                 "text), '[!]'), string_agg(distinct cast("
+                 "g.grid_definition_code as text), '[!]'), concat("
+                 "w.format_code, '!', g.parameter), g.level_type_codes, "
+                 "min(g.start_date), max(g.end_date) from \"WGrML\"." + dsid +
+                 "_grids2 as g left join \"WGrML\"." + dsid + "_webfiles2 as "
+                 "w on w.code = g.file_code where g.parameter in %s and "
+                 "g.start_date <= %s and g.end_date >= %s")
             vars = [tuple(sparams), end, start]
             if 'pcodes' in kwargs:
-                q += " and time_range_code in %s"
+                q += " and g.time_range_code in %s"
                 vars.append(tuple(kwargs['pcodes']))
 
             if 'gcodes' in kwargs:
-                q += " and grid_definition_code in %s"
+                q += " and g.grid_definition_code in %s"
                 vars.append(tuple(kwargs['gcodes']))
 
-            q += " group by parameter, level_type_codes"
+            q += (" group by concat(w.format_code, '!', g.parameter), "
+                  "g.level_type_codes")
             cursor.execute(q, tuple(vars))
         else:
             bitmap_agg = True
-            q = ("select string_agg(distinct cast(file_code as text), '[!]'), "
-                 "string_agg(distinct time_range_codes, '[!]'), string_agg("
-                 "distinct grid_definition_codes, '[!]'), parameter, "
-                 "string_agg(distinct level_type_codes, '[!]'), min("
-                 "start_date), max(end_date) from \"WGrML\"." + dsid +
-                 "_agrids2 where parameter in %s and start_date <= %s and "
-                 "end_date >= %s group by parameter")
+            q = ("select string_agg(distinct cast(a.file_code as text), "
+                 "'[!]'), string_agg(distinct a.time_range_codes, '[!]'), "
+                 "string_agg(distinct a.grid_definition_codes, '[!]'), "
+                 "concat(w.format_code, '!', a.parameter), "
+                 "string_agg(distinct a.level_type_codes, '[!]'), min("
+                 "a.start_date), max(a.end_date) from \"WGrML\"." + dsid +
+                 "_agrids2 as a left join \"WGrML\"." + dsid + "_webfiles2 as "
+                 "w on w.code = a.file_code where a.parameter in %s and "
+                 "a.start_date <= %s and a.end_date >= %s group by "
+                 "concat(w.format_code, '!', a.parameter)")
             if 'gindex' in request.POST:
-                q += (", level_type_codes, time_range_codes, "
-                      "grid_definition_codes")
+                q += (", a.level_type_codes, a.time_range_codes, "
+                      "a.grid_definition_codes")
             vars = [tuple(sparams), end, start]
             cursor.execute(q, tuple(vars))
 
