@@ -8,6 +8,8 @@ on:
       - ".github/**"
       - ".gitignore"
       - "app-chart/**"
+      - "README.md"
+      - "LICENSE"
 
 jobs:
   container-rebuild:
