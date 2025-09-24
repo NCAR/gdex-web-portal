@@ -134,7 +134,7 @@ def minter(minter, query_dict, **kwargs):
         res = cursor.fetchall()
         list = []
         for e in res:
-            d = {'doi': e['DOI_data']}
+            d = {'doi': e['doi_data']}
             if not 'asset-type' in query_dict:
                 d.update({'asset-type': e['asset_type']})
 
