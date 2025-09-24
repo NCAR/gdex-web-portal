@@ -6,7 +6,7 @@ metadata:
   labels:
     group: {{ .Values.webapp.group }}
   annotations:
-    cert-manager.io/cluster-issuer: "incommon"
+    cert-manager.io/cluster-issuer: "letsencrypt"
     nginx.ingress.kubernetes.io/permanent-redirect: "https://gdex.ucar.edu"
 spec:
   ingressClassName: nginx-external
@@ -14,7 +14,7 @@ spec:
     - hosts:
       - esg.k8s.ucar.edu
       - earthsystemgrid.org
-      secretName: incommon-cert.esg.k8s.ucar.edu
+      secretName: letsencrypt-cert.esg.k8s.ucar.edu
   rules:
   - host: esg.k8s.ucar.edu
     http:
