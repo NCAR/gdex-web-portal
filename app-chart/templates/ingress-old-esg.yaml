@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-old-rda
+  name: ingress-old-esg
   namespace: {{ .Release.Namespace }}
   labels:
     group: {{ .Values.webapp.group }}
