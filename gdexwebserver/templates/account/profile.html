@@ -44,11 +44,11 @@
           See the documentation to learn more about the GDEX API client.
         </a>
       </div>
-      <div id="validdate" class="p-1">
+      <div id="validdate" class="px-2 py-1">
         <em>Expires {{ request.user.usertoken.valid_until }}</em>
       </div>
       <div class='p-2'>
-        <button onclick='generate()' id='generate' class='btn btn-primary rounded'>Generate New Token</button>
+        <button class='btn btn-primary rounded' id='generate' onclick='generate()'>Generate New Token</button>
       </div>
     </div>  
   </div>
