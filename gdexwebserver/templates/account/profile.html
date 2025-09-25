@@ -36,7 +36,7 @@
       <h4>API Token</h4>
       <div class='d-flex p-1'>
         <div id='token' class='border bg-light p-2'>{{ request.user.usertoken.value }}</div>
-        <button class="btn btn-primary rounded ms-2 px-2 py-1" style="font-size: 1rem;" onclick="copyToken(this)"><i class="fa-solid fa-copy pe-1"></i> Copy to clipboard</button>
+        <button class="btn btn-primary rounded ms-2 px-2 py-1" style="font-size: 1em;" onclick="copyToken(this)"><i class="fa-solid fa-copy pe-1"></i> Copy to clipboard</button>
       </div>
       <div class="px-2 py-1">
         Your API token can be used to authenticate when using the GDEX API client.  
@@ -48,7 +48,7 @@
         <em>Expires {{ request.user.usertoken.valid_until }}</em>
       </div>
       <div class='p-2'>
-        <button class='btn btn-primary rounded' id='generate' onclick='generate()'>Generate New Token</button>
+        <button class='btn btn-primary rounded' id='generate' style="font-size: 1em;" onclick='generate()'>Generate New Token</button>
       </div>
     </div>  
   </div>

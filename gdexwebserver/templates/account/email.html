@@ -23,19 +23,19 @@
                 <input id="email_radio_{{forloop.counter}}" type="checkbox" name="email" {% if emailaddress.primary or emailaddresses|length == 1 %}checked="checked"{%endif %} value="{{emailaddress.email}}"/>
                 {{ emailaddress.email }}
                 {% if emailaddress.verified %}
-                <span class="verified bg-success text-white px-2">{% trans "Verified" %}</span>
+                <span class="badge rounded-pill bg-success ms-1 px-2">{% trans "Verified" %}</span>
                 {% else %}
-                <span class="unverified bg-danger text-white px-2">{% trans "Unverified" %}</span>
+                <span class="badge rounded-pill bg-danger text-white ms-1 px-2">{% trans "Unverified" %}</span>
                 {% endif %}
-                {% if emailaddress.primary %}<span class="primary bg-primary text-white px-2">{% trans "Primary" %}</span>{% endif %}
+                {% if emailaddress.primary %}<span class="badge rounded-pill bg-primary text-white ms-1 px-2">{% trans "Primary" %}</span>{% endif %}
               </label>
             </div>
             {% endfor %}
 
             <div class="buttonHolder pt-2">
-              <button class="secondaryAction btn btn-primary" type="submit" name="action_primary" >{% trans 'Make Primary' %}</button>
-              <button class="secondaryAction btn btn-primary" type="submit" name="action_send" >{% trans 'Re-send Verification' %}</button>
-              <button class="primaryAction btn btn-primary" type="submit" name="action_remove" >{% trans 'Remove' %}</button>
+              <button class="secondaryAction btn btn-primary rounded" type="submit" name="action_primary" style="font-size: 1em;">{% trans 'Make Primary' %}</button>
+              <button class="secondaryAction btn btn-primary rounded" type="submit" name="action_send" style="font-size: 1em;">{% trans 'Re-send Verification' %}</button>
+              <button class="primaryAction btn btn-primary rounded" type="submit" name="action_remove" style="font-size: 1em;">{% trans 'Remove' %}</button>
             </div>
           </fieldset>
         </form>
@@ -53,7 +53,7 @@
         <form method="post" action="{% url 'account_email' %}" class="add_email">
           {% csrf_token %}
           {{ form.as_p }}
-          <button class='btn btn-primary' name="action_add" type="submit">{% trans "Add Email" %}</button>  
+          <button class='btn btn-primary rounded' name="action_add" type="submit" style="font-size: 1em;">{% trans "Add Email" %}</button>  
         </form>
       </div>
     </div>
