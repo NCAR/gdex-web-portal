@@ -19,7 +19,7 @@ webapp:
       memory: 16Gi
       cpu: 6
     responseTimeout: 180
-    maxUploadSize: 30m
+    maxUploadSize: 60m
 
 volume:
   fs:

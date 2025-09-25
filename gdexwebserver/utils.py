@@ -67,7 +67,7 @@ def upload(request):
         try:
             pathlib.Path(path[0:idx]).mkdir(parents=True, exist_ok=True)
             out_len = 0
-            MAX_OUT = 30000000
+            MAX_OUT = 60000000
             with open(path, "wb") as f:
                 for chunk in request.FILES['file']:
                     out_len += len(chunk)
