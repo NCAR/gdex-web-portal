@@ -743,7 +743,7 @@ def do_grml_query(request, dsid, listtyp):
                 ctx['rnote']['grids'] += "    " + grid + "\\n"
 
     if listtyp == "gladelist":
-        ctx['rda_data_path'] = settings.RDA_DATA_PATH
+        ctx['rda_data_path'] = settings.RDA_CANONICAL_DATA_PATH
     else:
         cursor.execute((
                 "select s.inet_access, d.locflag from search.datasets as s "
