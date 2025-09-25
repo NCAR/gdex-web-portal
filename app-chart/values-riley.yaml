@@ -1,0 +1,28 @@
+replicaCount: 1
+
+webapp:
+  name: gdex-webserver
+  group: gdex-web
+  path: /
+  tls:
+    fqdn: riley-gdex.k8s.ucar.edu
+    fqdnGDEX: riley-gdex.ucar.edu
+    fqdnAPI: riley-api.gdex.ucar.edu
+    secretName: incommon-cert-gdex-webserver
+  container: 
+    image: docker.io/dattore/gdex-web-portal:v194
+    port: 8080
+    requests:
+      memory: 4Gi
+      cpu: 1
+    limits:
+      memory: 16Gi
+      cpu: 6
+    responseTimeout: 180
+    maxUploadSize: 30m
+
+volume:
+  fs:
+    name: gdexdata
+    size: 2Ti
+    mountPath: /data

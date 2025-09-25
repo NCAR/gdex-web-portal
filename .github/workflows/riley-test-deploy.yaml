@@ -1,0 +1,53 @@
+on:
+  push:
+    branches:
+      - riley-test
+    paths-ignore:
+      - ".github/**"
+      - ".gitignore"
+      - "app-chart/**"
+
+jobs:
+  container-rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.RILEY_HARBOR_USERNAME }}
+          password: ${{ secrets.RILEY_HARBOR_PASSWORD }}
+          registry: hub.k8s.ucar.edu/riley_gdex_test
+            #- name: Try to get the current version number from the running webserver
+            #  run: echo "VERSION_NUMBER=$(curl -s --max-time 10 -o - 'https://gdex.k8s.ucar.edu/static/version')" >> $GITHUB_ENV
+            #- name: If the webserver is unavailable, pull the latest image
+            #  if: ${{ env.VERSION_NUMBER == '' }}
+            #  run: |
+            #    docker pull dattore/gdex-web-portal:latest
+            #    echo "VERSION_NUMBER=$(docker run dattore/gdex-web-portal /bin/bash -c '/usr/local/bin/get_version_number')" >> $GITHUB_ENV
+            #- name: Increment the version number
+            #  run: echo "VERSION_NUMBER=$(($VERSION_NUMBER+1))" >> $GITHUB_ENV
+            #- name: Checkout the repository
+            #  uses: actions/checkout@v4
+            #  with:
+            #    ref: main
+            #    ssh-key: ${{ secrets.ACTIONS_PUSH_KEY }}
+            #- name: Build a new version of container
+            #  run: >
+            #    docker build --platform linux/amd64
+            #    --build-arg VERSION_NUMBER=$VERSION_NUMBER
+            #    -t dattore/gdex-web-portal:v$VERSION_NUMBER
+            #    --no-cache .
+            #- name: Push the new image to Docker Hub
+            #  run: |
+            #    docker push dattore/gdex-web-portal:v$VERSION_NUMBER
+            #    docker tag dattore/gdex-web-portal:v$VERSION_NUMBER dattore/gdex-web-portal:latest
+            #    docker push dattore/gdex-web-portal:latest
+            #- name: Update the Helm chart
+            #  run: |
+            #    git config user.email "${{ secrets.GIT_CONFIG_USER_EMAIL }}"
+            #    git config user.name "${{ secrets.GIT_CONFIG_USER_NAME }}"
+            #    sed -E "/image/s/gdex-web-portal:(.){1,}/gdex-web-portal:v$VERSION_NUMBER/" app-chart/values.yaml > app-chart/values.yaml.new
+            #    mv app-chart/values.yaml.new app-chart/values.yaml
+            #    git add app-chart/values.yaml
+            #    git commit -m "increment version"
+            #    git push
