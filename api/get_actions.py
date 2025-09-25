@@ -454,9 +454,9 @@ def get_control_file_template_old(dsid=None, json=False):
         dsid = common.format_dataset_id(dsid)
         template_file = os.path.join(template_dir,str(dsid) + "_control_file")
         if not os.path.exists(template_file):
-            template_file = template_dir + "dsnnn.n_control_file"
+            template_file = os.path.join(template_dir, "dsnnn.n_control_file")
     else:
-        template_file = template_dir + "dsnnn.n_control_file"
+        template_file = os.path.join(template_dir, "dsnnn.n_control_file")
     with open(template_file, 'r') as fh:
         contents = fh.read()
         print(contents)
