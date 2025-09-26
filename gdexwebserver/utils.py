@@ -3,6 +3,7 @@ import pathlib
 import shutil
 import subprocess
 import tempfile
+import urllib.parse
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -48,17 +49,17 @@ def upload(request):
         return HttpResponse("Invalid API key.", status=403, reason="Forbidden")
 
     if 'file' in request.FILES and 'path' in request.POST:
+        rpath = urllib.parse.unquote(request.POST['path'])
         is_good_path = good_path(
                 (settings.LOCAL_API_KEYS['upload']
-                 [request.headers['API-key']]),
-                request.POST['path'])
+                 [request.headers['API-key']]), rpath)
         if not is_good_path:
             return HttpResponse("Invalid path.", status=400,
                                 reason="Bad Request")
 
         path = os.path.join(
                 settings.LOCAL_API_KEYS['upload'][request.headers['API-key']],
-                request.POST['path'])
+                rpath)
         idx = path.rfind("/")
         if idx < 0:
             return HttpResponse("Invalid path.", status=400,
