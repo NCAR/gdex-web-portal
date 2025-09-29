@@ -21,9 +21,9 @@ jobs:
         run: echo "VERSION_NUMBER=$(curl -s --max-time 10 -o - 'https://gdex.k8s.ucar.edu/static/version')" >> $GITHUB_ENV
       - name: If the webserver is unavailable, pull the latest image
         if: ${{ env.VERSION_NUMBER == '' }}
-          run: |
-            docker pull dattore/gdex-web-portal:latest
-            echo "VERSION_NUMBER=$(docker run dattore/gdex-web-portal /bin/bash -c '/usr/local/bin/get_version_number')" >> $GITHUB_ENV
+        run: |
+          docker pull dattore/gdex-web-portal:latest
+          echo "VERSION_NUMBER=$(docker run dattore/gdex-web-portal /bin/bash -c '/usr/local/bin/get_version_number')" >> $GITHUB_ENV
             #      - name: Increment the version number
             #        run: echo "VERSION_NUMBER=$(($VERSION_NUMBER+1))" >> $GITHUB_ENV
       - name: Checkout the repository
