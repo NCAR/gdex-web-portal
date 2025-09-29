@@ -9,3 +9,5 @@ This project contains the Python Django framework supporting the [NSF NCAR Geosc
     
     - `common.py` 
         - Mostly a database interface and helper functions
+    - `get_actions.py`
+        - Entry point for HTTP GET requests

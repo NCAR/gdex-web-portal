@@ -33,18 +33,18 @@ jobs:
           ssh-key: ${{ secrets.ACTIONS_PUSH_KEY }}
       - name: Generate Random string
         run: |
-          echo "RANDOM_NUNBER={RANDOM}{RANDOM}" >> $GITHUB_ENV
+          echo "RANDOM_NUNBER=${RANDOM}${RANDOM}" >> $GITHUB_ENV
           echo "$RANDOM_NUMBER"
       - name: Build a new version of container
         run: >
           docker build --platform linux/amd64
           --build-arg VERSION_NUMBER=$VERSION_NUMBER
-          -t riley_gdex_test/gdex-web-portal:v$RANDOM_NUMBER
+          -t hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v$RANDOM_NUMBER
           --no-cache .
       - name: Push the new image to Harbor
         run: |
           docker push hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v$RANDOM_NUMBER
-          docker tag riley_gdex_test/gdex-web-portal:v$RANDOM_NUMBER riley_gdex_test/gdex-web-portal:latest
+          docker tag hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v$RANDOM_NUMBER hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:latest
           docker push hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:latest
           #- name: Update the Helm chart
           #  run: |
