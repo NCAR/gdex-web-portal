@@ -6,3 +6,6 @@ This project contains the Python Django framework supporting the [NSF NCAR Geosc
 
 ### api
     This contains code to support the api
+    
+    - `common.py` 
+        - Mostly a database interface and helper functions
