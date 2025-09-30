@@ -58,7 +58,7 @@ function submitDataRequest(nvp) {
       }
     }
   }
-  let post_data = "dsid={{ dsid }}";
+  let post_data = "dsid={{ dsid }}&gindex={% if gindex %}{{ gindex }}{% else %}0{% endif %}";
   if (ofmt.length > 0) {
     post_data += "&rtype=T";
   } else {
@@ -285,7 +285,7 @@ function submitDataRequest(nvp) {
   post_data += "&rnote={{ rnote.ofmt }}{{ rnote.dates }}{{ rnote.parameters }}{{ rnote.levels }}{{ rnote.products }}{{ rnote.grids }}" + rnote_bounds;
   {% endautoescape %}
   {% if listtyp == "subset" %}
-  getContentFromPost("ds_content", "/php/dsrqst.php", post_data);
+  getContentFromPost("ds_content", "/datasets/{{ dsid }}/request/", post_data);
   {% elif listtyp == "opendap" %}
   document.getElementById("dap_response").style.display = "block";
   getContent("dap_response",
