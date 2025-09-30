@@ -24,7 +24,7 @@
                         {% if col.is_file %}
                             <a style="font-family:'Roboto Mono';"{% if not data.is_glade %} href="{{col.url}}"{% endif %}>
                         {% else %}
-	                        {% if col.webpath|get_extension == "zarr" %}
+	                        {% if col.webpath|get_extension == "zarr" or col.value|get_extension == "zarr" %}
 	                            {# Zarr catalog file #}
                                 {% include "datasets/filelist-arco-button.html" %}
                             {% elif data.is_ajax %}
