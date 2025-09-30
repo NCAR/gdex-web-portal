@@ -3,6 +3,7 @@ import pathlib
 import shutil
 import subprocess
 import tempfile
+import urllib.parse
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -50,8 +51,7 @@ def upload(request):
     if 'file' in request.FILES and 'path' in request.POST:
         is_good_path = good_path(
                 (settings.LOCAL_API_KEYS['upload']
-                 [request.headers['API-key']]),
-                request.POST['path'])
+                 [request.headers['API-key']]), request.POST['path'])
         if not is_good_path:
             return HttpResponse("Invalid path.", status=400,
                                 reason="Bad Request")
@@ -90,15 +90,16 @@ def upload(request):
     if len(request.META['QUERY_STRING']) > 0:
         if request.META['QUERY_STRING'][0:4] == "list":
             parts = request.META['QUERY_STRING'].split("=")
+            lpath = urllib.parse.unquote(parts[-1])
             is_good_path = good_path(
                     (settings.LOCAL_API_KEYS['upload']
                      [request.headers['API-key']]),
-                    parts[-1])
+                    lpath)
             if is_good_path:
                 path = os.path.join(
                         (settings.LOCAL_API_KEYS['upload']
                          [request.headers['API-key']]),
-                        parts[-1])
+                        lpath)
                 o = subprocess.run("ls -FGAhlp " + path, shell=True,
                                    capture_output=True)
                 err = o.stderr.decode("utf-8")
