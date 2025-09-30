@@ -8,6 +8,7 @@ import subprocess
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.forms import ValidationError
 #from django.views.decorators.cache import cache_page
 from os.path import exists
@@ -488,9 +489,11 @@ def metadata_view(request, dsid):
     md = md.replace("<", "&lt;").replace(">", "&gt;")
     return HttpResponse("<pre>" + md + "</pre>")
 
+@csrf_exempt
 def submit_web_data_request(request, dsid):
     """ View to handle subset data request submitted from the web interface """
 
+    d = None
     if "HTTP_X_REQUESTED_WITH" in request.META:
         confirm_template = 'datasets/request-submit-confirm.html'
         error_template = 'datasets/request-submit-error.html'
