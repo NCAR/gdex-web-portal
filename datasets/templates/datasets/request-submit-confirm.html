@@ -1,0 +1,32 @@
+{% load wagtailcore_tags static %}
+
+<script type="text/javascript" src="{% static 'datasets/js/datasets.js' %}"></script>
+
+<div>
+    <h2>{{ response.data.title }}</h2>
+</div>
+<div class="pt-2">
+    <p>
+        Your {{ response.data.rstr }} request has been submitted successfully. A summary of your request is provided below.
+    </p>
+    <p>
+        Your request will be processed soon, and you will be informed via email when the data are ready to be downloaded.  
+        You may check the processing status of your request in your <a href="/dashboard/">User Dashboard</a> under the 
+        "Customized Data Requests" section.
+    </p>
+    <p>
+        The rdams_client.py Python client provides an additional option for users to download request output files, 
+        and is available at: <a href="https://github.com/NCAR/gdex-api-client">https://github.com/NCAR/gdex-api-client</a>
+    </p>
+</div>
+<div class="pt-2">
+    <ul>
+        <li>If the information below is <span class="fw-bold">correct</span> no further action is need.</li>
+        <li>
+            If the information is <span class="fw-bold">not correct</span>, or if you have additional questions or comments, 
+            you may send an email to the 
+            <a href="mailto:?to=datahelp@ucar.edu&subject=Question regardng NSF NCAR GDEX data request {{ response.data.rindex }}"><i>NSF NCAR Research Data Help desk</i></a>.
+        </li>
+    </ul>
+</div>
+<div class="py-2"><pre><code>{{ response.summary }}</code></pre></div>
