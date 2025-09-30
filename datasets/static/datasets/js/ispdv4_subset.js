@@ -623,10 +623,15 @@ $(document).ready(function() {
       $("#loading-button").removeClass("d-none");
 
       var params = $(this).serialize();
+      $.post('/datasets/d132002/request/', params)
+
+      /** 
       $.post('/php/dsrqst.php', params).done(function(data) {
          $("#ds_content").html(data);
          $(document).scrollTop(0);
       });
+      **/
+
    });
 });
 
