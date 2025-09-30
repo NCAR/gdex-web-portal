@@ -8,6 +8,15 @@ def get_duser(request):
     duser = duser if ":" not in duser else duser[:duser.find(":")]
     return duser
 
+def get_user_email(request):
+    email = None
+    if 'duser' in request.COOKIES:
+        email = request.COOKIES.get('duser')
+        if ':' in email:
+            idx = email.index(':')
+            email = email[0:idx]
+    return email
+
 def is_internal_user(request):
     duser = get_duser(request)
     if not duser:
