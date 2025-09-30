@@ -511,25 +511,25 @@ def submit_web_data_request(request, dsid):
         mutable_post['location'] = 'web'  # enforce location = 'web' for web requests
 
         # get user email if not provided
-        if 'email' not in mutable_post or not mutable_post['email']:
+        if not mutable_post.get('email', None):
             mutable_post['email'] = get_user_email(request)
         
         # instantiate a form instance and populate it with data from the request:
         form = DatasetRequestForm(mutable_post)
 
-        # if email is still missing, return an error
-        if not form['email']:
-            form.add_error('email', "Please log in at <a href='/dashboard/'>Dashboard</a> to submit a data request.")
-            response = {'error': {'code': 'missing_email'}}
-            context = {'form': form, 'response': response}
-            if d:
-                context.update({'page': d})
-            template = error_template
-            logger.info("Missing email error: {}".format(response))
-            return render(request, template, context)
-
         # validate the form
         if form.is_valid():
+            # check if email is still missing after validation
+            if not form.cleaned_data.get('email'):
+                form.add_error('email', "Please log in at <a href='/dashboard/'>Dashboard</a> to submit a data request.")
+                response = {'error': {'code': 'missing_email'}}
+                context = {'form': form, 'response': response}
+                if d:
+                    context.update({'page': d})
+                template = error_template
+                logger.info("Missing email error after validation: {}".format(response))
+                return render(request, template, context)
+            
             # process the data in form.cleaned_data as required
             try:
                 response = rda_request(form.cleaned_data)
@@ -564,7 +564,6 @@ def submit_web_data_request(request, dsid):
             for field_name, errors in form.errors.items():
                 for error in errors:
                     logger.error("Form error in field '{}': {}".format(field_name, error))
-                    form.add_error(field_name, ValidationError(error))
             # redirect to the form error page
             logger.info("Form validation error: {}".format(form.errors))
             response = {'error': {'code': 'invalid_form'}}
