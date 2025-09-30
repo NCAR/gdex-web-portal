@@ -4,6 +4,7 @@ webapp:
   name: gdex-webserver
   group: gdex-web
   path: /
+  ingressClassName: nginx-external
   tls:
     fqdn: gdex.k8s.ucar.edu
     fqdnGDEX: gdex.ucar.edu
