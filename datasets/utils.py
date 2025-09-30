@@ -1,10 +1,9 @@
-import json
-import socket
 from django.http import HttpResponse
 from django.conf import settings
 import psycopg2
-from api.common import format_dataset_id
 
+from logging import getLogger
+logger = getLogger(__name__)
 
 def ng_gdex_id(dsid):
     if dsid.find("ds") == 0:
@@ -14,7 +13,6 @@ def ng_gdex_id(dsid):
         dsid = "d" + dsid[0:3] + "00" + dsid[4:5]
 
     return dsid
-
 
 def bookmark(request, dsid):
     img_src = "hollow-black-star.png"
@@ -42,7 +40,6 @@ def bookmark(request, dsid):
     conn.commit()
     conn.close()
     return HttpResponse(img_src)
-
 
 def get_hostname():
     return 'https://gdex.k8s.ucar.edu'

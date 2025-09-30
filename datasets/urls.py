@@ -4,7 +4,6 @@ from django.urls import include, path, re_path
 from . import views
 from . import utils
 
-
 urlpatterns = [
     re_path(r"^(d[0-9]{6})/$", views.description),
     re_path(r"^(d[0-9]{6})/bookmark/$", utils.bookmark),
@@ -23,6 +22,7 @@ urlpatterns = [
     re_path(r"^(d[0-9]{6})/provenance/", include("dataset_provenance.urls")),
     re_path(r"^(d[0-9]{6})/native/", views.get_native),
     re_path(r"^request/(?P<rqstid>\w+[0-9]+)/$", views.get_request),
+    re_path(r"^(d[0-9]{6})/request/", views.submit_web_data_request, name="submit_web_data_request"),
     re_path(r"^ds([0-9]{3})[\-\.]([0-9])/(.{0,})$",
         lambda request, id1, id2, rest:
             redirect(f"/datasets/d{id1}00{id2}/{rest}", permanent=True)

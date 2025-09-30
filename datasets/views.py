@@ -6,8 +6,9 @@ import re
 import subprocess
 
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.forms import ValidationError
 #from django.views.decorators.cache import cache_page
 from os.path import exists
 try:
@@ -31,12 +32,31 @@ from dataset_description.models import DatasetDescriptionPage
 from home.utils import slug_list
 from globus.views import get_guest_collection_url
 from gdexwebserver.utils import make_tempdir, remove_tempdir
+from dashboard.utils import get_user_email, is_internal_user
+
+from .forms import DatasetRequestForm
+from rda_python_dsrqst.PgRDARqst import rda_request
 
 import logging
 logger = logging.getLogger(__name__)
 
 metadb_config = settings.RDADB['metadata_config_pg']
 
+def get_dataset_description_context(dsid):
+    """ Return basic dataset description context (dsid, dsdoi, dstitle) """
+    slist = slug_list(dsid)
+    qs = Page.objects.type(DatasetDescriptionPage).filter(
+                           slug__in=slist).live().specific()
+    if len(qs) > 0:
+        d = {
+            'url': "",
+            'dsid': qs[0].dsid,
+            'dsdoi': qs[0].dsdoi,
+            'dstitle': qs[0].dstitle
+            }
+        return d
+    else:
+        return None
 
 def get_result_list(config, query):
     conn = psycopg2.connect(**config)
@@ -297,7 +317,11 @@ def get_request(request, rqstid):
     try:
         rinfo = get_request_info(rindex)
         note = rinfo['subset_info']['note']
-        note = re.sub(r'^(\r\n|\n\r|\r|\n)', '', note)
+        # set note to single space if empty to avoid KeyError in template
+        if note:
+            note = re.sub(r'^(\r\n|\n\r|\r|\n)', '', note)
+        else:
+            note = ' '
         rinfo['subset_info']['note'] = note
     except ValueError:
         request_data = {"info": "Request not found", "rqstid": rqstid}
@@ -414,27 +438,6 @@ def get_detailed_metadata(request, dsid):
                   template,
                   {'page': d})
 
-
-def custom_subset(request, dsid):
-    # if this is a POST request we need to process the form data
-    if request.method == 'POST':
-        # create a form instance and populate it with data from the request:
-        form = get_custom_subset_form(dsid, request.POST)
-        # check whether it's valid:
-        if form.is_valid():
-            # process the data in form.cleaned_data as required
-
-            # redirect to a new URL:
-            return render(request, 'datasets/custom_subset_confirm.html',
-                          {'form': form})
-
-    # if a GET (or any other method) we'll create a blank form
-    else:
-        form = get_custom_subset_form(dsid)
-
-    return render(request, 'datasets/ispdv4_subset.html', {'form': form})
-
-
 def metadata_view(request, dsid):
     if "HTTP_X_REQUESTED_WITH" not in request.META:
         return render(request, "404.html")
@@ -485,6 +488,128 @@ def metadata_view(request, dsid):
     md = md.replace("<", "&lt;").replace(">", "&gt;")
     return HttpResponse("<pre>" + md + "</pre>")
 
+def submit_web_data_request(request, dsid):
+    """ View to handle subset data request submitted from the web interface """
+
+    if "HTTP_X_REQUESTED_WITH" in request.META:
+        confirm_template = 'datasets/request-submit-confirm.html'
+        error_template = 'datasets/request-submit-error.html'
+        logger.info("Rendering AJAX request submission for dataset {}".format(dsid))
+    else:
+        d = get_dataset_description_context(dsid)
+        if d is None:
+            return render(request, "404.html")
+        confirm_template = 'datasets/request-submit-confirm-base.html'
+        error_template = 'datasets/request-submit-error-base.html'
+        logger.info("Rendering full request submission page for dataset {}".format(dsid))
+
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a mutable copy of POST data
+        mutable_post = request.POST.copy()
+        mutable_post['fromflag'] = 'W'  # enforce fromflag = 'W' for web requests
+        mutable_post['location'] = 'web'  # enforce location = 'web' for web requests
+
+        # get user email if not provided
+        if not mutable_post.get('email', None):
+            mutable_post['email'] = get_user_email(request)
+        
+        # instantiate a form instance and populate it with data from the request:
+        form = DatasetRequestForm(mutable_post)
+
+        # validate the form
+        if form.is_valid():
+            # check if email is still missing after validation
+            if not form.cleaned_data.get('email'):
+                form.add_error('email', "Please log in at <a href='/dashboard/'>Dashboard</a> to submit a data request.")
+                response = {'error': {'code': 'missing_email'}}
+                context = {'form': form, 'response': response}
+                if d:
+                    context.update({'page': d})
+                template = error_template
+                logger.info("Missing email error after validation: {}".format(response))
+                return render(request, template, context)
+            
+            # process the data in form.cleaned_data as required
+            try:
+                response = rda_request(form.cleaned_data)
+            except Exception as e:
+                logger.info("Error processing data request: {}".format(e))
+                form.add_error(None, str(e))
+                response = {'error': {'code': 'processing_error', 'message': str(e)}}
+                context = {'form': form, 'response': response}
+                if d:
+                    context.update({'page': d})
+                template = error_template
+                return render(request, template, context)
+
+            if 'error' in response:
+                logger.info("Request submission error: {}".format(response))
+                form.add_error(None, response['error']['message'])
+                context = {'form': form, 'response': response}
+                if d:
+                    context.update({'page': d})
+                template = error_template
+                return render(request, template, context)
+
+            # successful request submission, redirect to the confirmation page
+            logger.info("Request submission successful: {}".format(response))
+            template = confirm_template
+            context = {'response': response}
+            if d:
+                context.update({'page': d})
+                logger.info("Added dataset description context to confirmation page for dataset {}".format(dsid))
+            return render(request, template, context)
+        else:
+            for field_name, errors in form.errors.items():
+                for error in errors:
+                    logger.error("Form error in field '{}': {}".format(field_name, error))
+            # redirect to the form error page
+            logger.info("Form validation error: {}".format(form.errors))
+            response = {'error': {'code': 'invalid_form'}}
+            context = {'form': form, 'response': response}
+            if d:
+                context.update({'page': d})
+            template = error_template
+            return render(request, template, context)
+
+    # If a GET (or any other method) redirect user to the data access page.
+    # DECS staff get a blank request form
+    else:
+        if is_internal_user(request):
+            return blank_request_form(request, dsid)
+        else:
+            return redirect(f'/datasets/{dsid}/dataaccess/')
+
+def blank_request_form(request, dsid):
+    """ 
+    View to display a blank subset request form and manually 
+    submit a subset data request. This view is only accessible
+    to internal DECS staff. External users are redirected to the
+    data access page. 
+    """
+    if not is_internal_user(request):
+        return render(request, "403.html")
+    
+    d = None
+    
+    if "HTTP_X_REQUESTED_WITH" in request.META:
+        form_template = 'datasets/request-submit-form.html'
+        logger.info("Rendering AJAX request form for dataset {}".format(dsid))
+    else:
+        d = get_dataset_description_context(dsid)
+        if d is None:
+            return render(request, "404.html")
+        form_template = 'datasets/request-submit-form-base.html'
+        logger.info("Rendering full request form page for dataset {}".format(dsid))
+
+    form = DatasetRequestForm()
+    context = {'form': form}
+    if d:
+        context.update({'page': d})
+        logger.info("Added dataset description context to form page for dataset {}".format(dsid))
+    template = form_template
+    return render(request, template, context)
 
 def get_native(request, dsid):
     tdir_name = make_tempdir()

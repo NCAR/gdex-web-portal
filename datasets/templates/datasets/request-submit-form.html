@@ -1,0 +1,36 @@
+{% load wagtailcore_tags static form_filters %}
+
+<script type="text/javascript" src="{% static 'datasets/js/datasets.js' %}"></script>
+
+<h2>Dataset {{ page.dsid }} - Submit a Subset Data Request</h2>
+<div class="p-2 bg-light">
+    <p class="mb-0">This form allows DECS staff to manually enter and submit subset data requests for themselves or on behalf of users. Fields marked with an asterisk (*) are required.</p>
+</div>
+<div id="request-form" class="component webform yellow-orange-border p-2 mb-4">
+    <form method="post" class="row g-3" action="/datasets/{{ page.dsid }}/request/">
+        {% csrf_token %}
+        {% for field in form.visible_fields %}
+            <div class="form-field">
+                {{ field.errors }}
+                <label class="form-label" for="{{ field.id_for_label }}">
+                    {{ field.label }}{% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {% if field|widget_type == "Textarea" %}
+                    <textarea class="form-control" id="{{ field.id_for_label }}" name="{{ field.name }}" rows="4">{{ field.value|default:'' }}</textarea>
+                {% elif field.field.choices %}
+                    <select class="form-select" id="{{ field.id_for_label }}" name="{{ field.name }}">
+                        {% for value, label in field.field.choices %}
+                            <option value="{{ value }}"{% if value == field.value %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                {% else %}
+                    <input class="form-control" id="{{ field.id_for_label }}" name="{{ field.name }}" type="{{ field.field.widget.type }}" value="{{ field.value|default:'' }}">
+                {% endif %}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button class="btn btn-primary rounded px-2 py-1" style="font-size: 1em;" type="submit">Submit Request</button>
+    </form>
+</div>

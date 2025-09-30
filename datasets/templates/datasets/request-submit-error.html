@@ -1,0 +1,31 @@
+{% load wagtailcore_tags static %}
+
+<script type="text/javascript" src="{% static 'datasets/js/datasets.js' %}"></script>
+
+<h2>Data request submission error: {{ response.error.message }}</h2>
+{% if response.error.code == 'too_many_requests' %}
+    <p>Your data request is declined because you have {{ response.data.cnt }} outstanding requests for this dataset (a maximum of {{ response.data.max_requests }} is allowed).  Please try again later after your other requests have completed processing.</p>
+{% endif %}
+{% if response.error.code == 'request_period_exceeded' %}
+    <p>Your data request period {{ response.data.request_start_date }} - {{ response.data.request_end_date }} is longer than the allowed period of {{ response.data.maximum_period }}.  Please shorten your request period and try again.</p>
+{% endif %}
+{% if response.error.code == 'duplicate_request' %}
+    <p>Your data request is declined because it appears to be a duplicate of your existing request <strong>{{ response.data.rindex }}</strong>.  Please check the status of your existing request at your <a href='/dashboard/'>User Dashboard</a>.</p>
+{% endif %}
+
+{% if response.error.code == 'missing_email' %}
+    <p>Email is required. Please log in at <a href='/dashboard/'>Dashboard</a> to submit a data request.</p>
+{% endif %}
+
+{% if response.error.code == 'invalid_form' %}
+    <p>An error occurred while processing your request.  Please contact us at the email provided below for further assistance.</p>
+    <p>Error code: {{ response.error.code }}</p>
+{% endif %}
+
+{% if not response.error.code %}
+    <p>An unknown error occurred. Please try again later.</p>
+{% endif %}
+
+<hr>
+<h3>General Information</h3>
+<p>If you have questions or need assistance, please contact the <a href="mailto:datahelp@ucar.edu">NSF NCAR Research Data Help desk</a>.</p>
