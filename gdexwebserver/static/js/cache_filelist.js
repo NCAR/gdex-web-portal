@@ -743,12 +743,11 @@ function get_user_email(remove) {
  * @param {string} link 
  */
 function copyFullLink(btn, link, text='Copy Full URL') {
-    copyText(link);
-    $(btn).removeClass('btn-primary').addClass('btn-success').text('Link Copied');
-    setTimeout(function(ele){
-    ele.removeClass('btn-success').addClass('btn-primary').text('');
-    ele.append('<i class="fa-solid fa-copy pe-1"></i>'+text);
-    }, 2000, $(btn));
+    navigator.clipboard.writeText(link);
+    $(btn).removeClass('btn-primary').addClass('btn-success').html('<i class="fa-solid fa-check pe-1"></i> Copied!');
+    setTimeout(() => {
+      $(btn).removeClass('btn-success').addClass('btn-primary').html('<i class="fa-solid fa-copy pe-1"></i> '+text);
+    }, 5000);
 }
 
 /**
