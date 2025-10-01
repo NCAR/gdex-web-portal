@@ -53,7 +53,8 @@ def get_dataset_description_context(dsid):
             'url': "",
             'dsid': qs[0].dsid,
             'dsdoi': qs[0].dsdoi,
-            'dstitle': qs[0].dstitle
+            'dstitle': qs[0].dstitle,
+            'dslogo': qs[0].dslogo,
             }
         return d
     else:
@@ -107,17 +108,14 @@ def build_matrix(request, dsid):
     if "HTTP_X_REQUESTED_WITH" in request.META:
         template = "dataaccess/matrix.html"
     else:
-        template = "dataaccess/matrix_page.html"
-        d = {
-            'dsid': dsid.replace("-", "."),
-            'title': "NSF NCAR GDEX | Dataset {} Data Access".format(dsid),
-            'url': ""}
-        slist = slug_list(dsid)
-        qs = Page.objects.type(DatasetDescriptionPage).filter(
-                               slug__in=slist).live().specific()
-        if len(qs) > 0:
-            d.update({'dsdoi': qs[0].dsdoi, 'dstitle': qs[0].dstitle})
+        d = get_dataset_description_context(dsid)
+        if d is None:
+            return render(request, "404.html")
 
+        template = "dataaccess/matrix_page.html"
+        d.update ({
+            'title': "NSF NCAR GDEX | Dataset {} Data Access".format(dsid),
+        })
         ctx.update({'page': d})
 
     return render(request, template, ctx)
@@ -144,16 +142,13 @@ def listopt_gindex(request, dsid, listtyp, gindex):
         else:
             ctx.update({'error': 'no such list type'})
 
-        d = {
-            'dsid': dsid,
-            'title': "NSF NCAR GDEX | Dataset {} Data Access".format(dsid),
-            'url': ""}
-        slist = slug_list(dsid)
-        qs = Page.objects.type(DatasetDescriptionPage).filter(
-                               slug__in=slist).live().specific()
-        if len(qs) > 0:
-            d.update({'dsdoi': qs[0].dsdoi, 'dstitle': qs[0].dstitle})
+        d = get_dataset_description_context(dsid)
+        if d is None:
+            return render(request, "404.html")
 
+        d.update({
+            'title': "NSF NCAR GDEX | Dataset {} Data Access".format(dsid),
+        })
         ctx.update({'page': d})
         if "HTTP_X_REQUESTED_WITH" in request.META:
             template = "dataaccess/listopt.html"
@@ -207,17 +202,11 @@ def get_documentation_table(request, dsnum):
     if "HTTP_X_REQUESTED_WITH" in request.META:
         template = "datasets/documentation_table.html"
     else:
-        template = "datasets/documentation_table_page.html"
-        d = {'url': ""}
-        slist = slug_list(dsnum)
-        qs = Page.objects.type(DatasetDescriptionPage).filter(
-                               slug__in=slist).live().specific()
-        if len(qs) > 0:
-            d.update({
-                'dsid': qs[0].dsid,
-                'dsdoi': qs[0].dsdoi,
-                'dstitle': qs[0].dstitle})
+        d = get_dataset_description_context(dsid)
+        if d is None:
+            return render(request, "404.html")
 
+        template = "datasets/documentation_table_page.html"
         documentation_json.update({'page': d})
 
     return render(request, template, documentation_json)
@@ -244,7 +233,8 @@ def examples_page(request, dsnum):
             d.update({
                 'dsid': qs[0].dsid,
                 'dsdoi': qs[0].dsdoi,
-                'dstitle': qs[0].dstitle})
+                'dstitle': qs[0].dstitle,
+                'dslogo': qs[0].dslogo})
 
         documentation_json.update({'page': d})
 
@@ -390,6 +380,7 @@ def get_detailed_metadata(request, dsid):
             'dsid': ng_gdex_id(dsid),
             'dsdoi': qs[0].dsdoi,
             'dstitle': qs[0].dstitle,
+            'dslogo': qs[0].dslogo,
             'data_types': qs[0].data_types,
             'data_formats': qs[0].data_formats,
             'contributors': qs[0].contributors,
