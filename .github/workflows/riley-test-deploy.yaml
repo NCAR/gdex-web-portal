@@ -31,6 +31,14 @@ jobs:
         with:
           ref: riley-test
           ssh-key: ${{ secrets.ACTIONS_PUSH_KEY }}
+      - name: Rename ingress
+        run: |
+          cd app-chart/templates
+          for i in ingress-old*.yaml; do mv $i $i.NO_READ; done
+          git add -u
+          git commit -m "change ingress"
+          git push origin riley-test
+
       - name: Generate Random string
         run: |
           echo "RANDOM_NUNBER=${RANDOM}${RANDOM}" >> $GITHUB_ENV
