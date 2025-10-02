@@ -510,7 +510,7 @@ def submit_web_data_request(request, dsid):
             mutable_post['email'] = get_user_email(request)
         
         # instantiate a form instance and populate it with data from the request:
-        form = DatasetRequestForm(mutable_post)
+        form = DatasetRequestForm(mutable_post, initial={'dsid': dsid})
 
         # validate the form
         if form.is_valid():
