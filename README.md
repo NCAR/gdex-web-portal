@@ -13,3 +13,5 @@ This project contains the Python Django framework supporting the [NSF NCAR Geosc
         - Entry point for HTTPS GET requests
     - `post_actions.py`
         - Entry point for HTTPS POST requests
+    - `others`
+        - default response template
