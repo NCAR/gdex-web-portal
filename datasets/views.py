@@ -503,6 +503,7 @@ def submit_web_data_request(request, dsid):
         mutable_post = request.POST.copy()
         mutable_post['fromflag'] = 'W'  # enforce fromflag = 'W' for web requests
         mutable_post['location'] = 'web'  # enforce location = 'web' for web requests
+        mutable_post['gindex'] = mutable_post.get('gindex', 0)  # default gindex to 0 if not provided
 
         # get user email if not provided
         if not mutable_post.get('email', None):
@@ -559,7 +560,6 @@ def submit_web_data_request(request, dsid):
                 for error in errors:
                     logger.error("Form error in field '{}': {}".format(field_name, error))
             # redirect to the form error page
-            logger.info("Form validation error: {}".format(form.errors))
             response = {'error': {'code': 'invalid_form'}}
             context = {'form': form, 'response': response}
             if d:
@@ -597,7 +597,7 @@ def blank_request_form(request, dsid):
         form_template = 'datasets/request-submit-form-base.html'
         logger.info("Rendering full request form page for dataset {}".format(dsid))
 
-    form = DatasetRequestForm()
+    form = DatasetRequestForm(initial={'dsid': dsid})
     context = {'form': form}
     if d:
         context.update({'page': d})
