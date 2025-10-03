@@ -1755,7 +1755,7 @@ def ai_readiness(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
 
-    if 'inetOption' in request.POST:
+    if 'aiOption' in request.POST:
         return do_ai_readiness_toggle(request, dsid)
 
     return show_ai_readiness(request, dsid)
