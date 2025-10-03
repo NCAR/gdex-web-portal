@@ -615,7 +615,6 @@ function reviewRequest()
    $(document).scrollTop(0);
 }
 
-/**
 $(document).ready(function() {
    $("#submit-form").on("submit", function(event) {
       event.preventDefault();
@@ -624,15 +623,15 @@ $(document).ready(function() {
       $("#loading-button").removeClass("d-none");
 
       var params = $(this).serialize();
+      var dsid = document.form.dsid.value;
 
-      $.post('/datasets/d132002/request/', params).done(function(data) {
+      $.post('/datasets/' + dsid + '/request/', params).done(function(data) {
          $("#ds_content").html(data);
          $(document).scrollTop(0);
       });
 
    });
 });
-**/
 
 function cancelRequest()
 {
