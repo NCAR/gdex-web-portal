@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.urls import include, path, re_path
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.views.generic import RedirectView
 
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
@@ -30,13 +31,13 @@ urlpatterns = [
     path('metrics/', include('home.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('datasets/', include('datasets.urls')),
-    #path('login/', include('login.urls')),
     path('globus/', include('globus.urls')),
     path('gsearch/', include('gsearch.urls')),
     path('oai/', include("oai.urls")),
     path('metaman/', include('metaman.urls')),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
+    path('login/', RedirectView.as_view(url='/accounts/login/')),
     path('redeploy/<pkg>/', redeploys.redeploy),
     path('unlink/', views.unlink),
     path('upload/', views.upload),
