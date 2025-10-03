@@ -7,9 +7,10 @@ import xml.etree.ElementTree as ET
 import glob
 import psycopg2
 from psycopg2 import sql
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 import requests
+import json
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -1515,6 +1516,79 @@ def get_all_datasets():
     cursor.execute('select dsid,title from dataset')
     data = cursor.fetchall()
     return data
+def get_number_of_datasets():
+    """Get the total number of datasets in the GDEX
+    """
+    con,cur =  init_connection_new()
+    query = "select count(dsid) from dataset"
+    cur.execute(query)
+    response = cur.fetchone()
+    close_connection(con,cur)
+    return response[0]
+
+def get_gdex_volume():
+    """Get the total volume of data in the GDEX
+    Returns value in PB
+    """
+    con,cur =  init_connection_new()
+    query = "select sum(dweb_size) from dataset"
+    cur.execute(query)
+    response = cur.fetchone()
+    close_connection(con,cur)
+    return math.floor(response[0]/1000/1000/1000/1000/1000)
+
+def get_total_citations():
+    """Get total number of citations"""
+    con,cur = init_connection_new(config=get_WGrML_config())
+    query = "select distinct v.dsid,c.DOI_work,e.title,d.pub_year from citation.data_citations as c left join dssdb.dsvrsn as v on v.doi = c.DOI_data left join citation.works as d on c.DOI_work = d.DOI left join dssdb.dataset as e on e.dsid = v.dsid ;"
+    cur.execute(query)
+    response = cur.fetchall()
+    close_connection(con,cur)
+    return len(response)
+
+def get_number_of_unique_users(since=None):
+    if since is None:
+        since = datetime.now() - timedelta(days=365) # One year ago
+
+    cur_year = datetime.now().year
+    current_metrics_file = f'/usr/local/gdexweb/media/metrics/json/{cur_year}_all.json'
+    last_metrics_file = f'/usr/local/gdexweb/media/metrics/json/{cur_year - 1}_all.json'
+    try:
+        metrics = json.load(open(current_metrics_file)) + json.load(open(last_metrics_file))
+    except FileNotFoundError as e:
+        print(e)
+        return 'Unknown'
+
+    total_unique_users = 0
+    for year_month in metrics:
+        year,month = year_month['Date'].split('-')
+        obj_date = datetime(year=int(year), month=int(month), day=1)
+        if obj_date > since:
+            total_unique_users += year_month['Total Number of Unique Users']
+
+    return total_unique_users
+
+def get_volume_downloaded(since=None):
+    if since is None:
+        since = datetime.now() - timedelta(days=365) # One year ago
+
+    cur_year = datetime.now().year
+    current_metrics_file = f'/usr/local/gdexweb/media/metrics/json/{cur_year}_all.json'
+    last_metrics_file = f'/usr/local/gdexweb/media/metrics/json/{cur_year - 1}_all.json'
+    try:
+        metrics = json.load(open(current_metrics_file)) + json.load(open(last_metrics_file))
+    except FileNotFoundError as e:
+        print(e)
+        return 'Unknown'
+
+    total_volume_downloaded = 0
+    for year_month in metrics:
+        year,month = year_month['Date'].split('-')
+        obj_date = datetime(year=int(year), month=int(month), day=1)
+        if obj_date > since:
+            total_volume_downloaded += year_month['Total Volume Downloaded (TB)']
+
+    return total_volume_downloaded
 
 def add_ds(ds):
     """Adds 'ds' to input string if not already there.
