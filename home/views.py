@@ -1,6 +1,7 @@
 import sys
 from django.shortcuts import render
 from django.http import HttpResponse
+from api import common
 
 # Create your views here.
 
