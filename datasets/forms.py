@@ -12,7 +12,7 @@ class DatasetRequestForm(forms.Form):
     gindex = forms.TypedChoiceField(required=True, coerce=int, empty_value=None, choices=None, label="gindex", help_text="Group Index from dsrqst control (default 0)")
     email = forms.EmailField(required=False, initial=None, label="email", help_text="User Email Address (retrieved from user login if not provided)")
     rstat = forms.ChoiceField(choices=[("Q", "Q - Queued"), ("W", "W - Wait")], initial="Q",required=False, label="rstat", help_text="Request Status")
-    sflag = forms.ChoiceField(required=False, choices=[(0, "0 - Default"), (1, "1 - Variable"), (2, "2 - Temporal"), (4, "4 - Spatial")], label="sflag", help_text="Subset Flag")
+    sflag = forms.ChoiceField(required=False, choices=None, label="sflag", help_text="Bitwise Subset Flag")
     tflag = forms.ChoiceField(choices=[("Y", "Yes"), ("N", "No")], required=False, initial="N", label="tflag", help_text="Tar Flag")
     dfmt = forms.CharField(max_length=10, required=False, label="dfmt", help_text="Data Format")
     afmt = forms.CharField(max_length=10, required=False, label="afmt", help_text="Archive Format (Zip/Tar/compress, GZ, TAR.GZ, etc.)")
@@ -30,8 +30,10 @@ class DatasetRequestForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(DatasetRequestForm, self).__init__(*args, **kwargs)
         self.fields['gindex'].choices = self.get_gindex_choices()
+        self.fields['sflag'].choices = self.get_sflag_choices()
         
     def get_gindex_choices(self):
+        """ Provides choices for the group index field based on the dataset request control records. """
         conn, cursor = init_connection_new()
         cursor.execute("SELECT gindex FROM rcrqst WHERE dsid = %s AND (rqsttype = 'S' OR rqsttype = 'T')", (self.initial.get('dsid', None),))
         choices = cursor.fetchall()
@@ -41,3 +43,16 @@ class DatasetRequestForm(forms.Form):
             return [(0, "0 - Default group index")]
         else:
             return [(choice[0], f"{choice[0]}") for choice in choices]
+
+    def get_sflag_choices(self):
+        """ Provides choices for the bitwise subset flag field. """
+        return [
+            (0, "0 - Default"), 
+            (1, "1 - Variable"), 
+            (2, "2 - Temporal"), 
+            (3, "3 - Variable and Temporal"), 
+            (4, "4 - Spatial"),
+            (5, "5 - Variable and Spatial"), 
+            (6, "6 - Temporal and Spatial"), 
+            (7, "7 - Variable, Temporal, and Spatial")
+        ]
