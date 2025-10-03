@@ -757,7 +757,8 @@ $(document).ready(function() {
       $("#loading-button").removeClass("d-none");
 
       var params = $(this).serialize();
-      $.post('/php/dsrqst.php', params).done(function(data) {
+      var dsid = document.form.dsid.value;
+      $.post('/datasets/' + dsid + '/request/', params).done(function(data) {
          $("#ds_content").html(data);
          $(document).scrollTop(0);
       });
