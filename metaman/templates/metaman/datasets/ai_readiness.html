@@ -1,0 +1,29 @@
+{% if toggle_access %}
+<h2>AI Readiness for {{ dsid }}</h2>
+<p>
+    AI Readiness for {{ dsid }} has been successfully set to  <b class="text-decoration-underline">{{ ai_option }}</b>.
+</p>
+{% else %}
+<script id="toggleAI_script" language="javascript">
+function toggleAI() {
+  if (!document.toggle_ai.elements[0].checked) {
+    alert("There is nothing to submit");
+  } else {
+    getContentFromPost('metaman_content', 'ai-readiness/{{ dsid }}/', 'aiOption=' + document.toggle_ai.elements[0].value + '&csrfmiddlewaretoken={{ csrf_token }}');
+  }
+}
+</script>
+<h2>AI Readiness for {{ dsid }}</h2>
+<p>
+    AI Readiness for this dataset is currently set to <b class="text-decoration-underline">{{ current_setting }}</b>.
+</p>
+<ul>
+    <form name="toggle_ai" action="javascript:void(0)" onsubmit="toggleAI()">
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="toggle_checkbox" value="{{ new_setting }}">
+            <label class="form-check-label" for="toggle_checkbox">Check this box to set AI Readiness to {{ new_setting }}</label>
+        </div>
+        <button class="btn btn-primary px-2 py-1 border-1" onclick="document.toggle_ai.submit()">Submit</button>
+    </form>
+</ul>
+{% endif %}
