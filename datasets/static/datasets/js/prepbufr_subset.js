@@ -962,7 +962,6 @@ function reviewRequest()
    $(document).scrollTop(0);
 }
 
-/**
 $(document).ready(function() {
    $("#submit-form").on("submit", function(event) {
       event.preventDefault();
@@ -977,7 +976,6 @@ $(document).ready(function() {
       });
    });
 });
-*/
 
 function cancelRequest()
 {
