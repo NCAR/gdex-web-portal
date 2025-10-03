@@ -15,3 +15,13 @@ def requests(request):
 
 def test_home(request):
     return render(request, 'home/home-test.html', {'display': True})
+
+def by_the_numbers(request):
+    ctx = {
+            'datasets': common.get_number_of_datasets(),
+            'citations': common.get_total_citations(),
+            'users' : common.get_number_of_unique_users(),
+            'dowloaded' : common.get_volume_downloaded(),
+            'volume' : common.get_gdex_volume()
+    }
+    return render(request, 'home/splash.html', ctx)
