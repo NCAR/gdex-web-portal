@@ -40,7 +40,6 @@ function toggleCitation() {
 }
 
 var spec_reqs_already_open=false;
-months = new Array("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
 timezones = new Array("", "", "", "", "", "", "MDT", "MST");
 
 function toggleControlledRequests() {
@@ -59,7 +58,10 @@ function toggleControlledRequests() {
     getContent("specreqs", "/php/ckrqst.php", null, function() {
     document.getElementById('specreqs-refresh').classList.replace('d-none', 'd-block');
     date = new Date();
-    document.getElementById('specreqs-refresh-date').innerHTML = "Information valid as of " + ("0" + date.getDate()).slice(-2) + " " + months[date.getMonth()] + " " + date.getFullYear() + " " + ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2) + ":" + ("0" + date.getSeconds()).slice(-2) + " " + timezones[date.getTimezoneOffset() / 60];
+    let options = {year: "numeric", month: "short", day: "2-digit",
+                   hour: "2-digit", minute: "2-digit", second: "2-digit",
+                   hour12: false};
+    document.getElementById('specreqs-refresh-date').innerHTML = "Information valid as of " + date.toLocaleDateString("en-us", options) + " " + timezones[date.getTimezoneOffset() / 60];
     });
   } else {
     spec_req_button.innerHTML = "Show Requests";
@@ -74,7 +76,10 @@ function refreshControlledRequests() {
   if (e.classList.contains('d-block')) {
     getContent("specreqs", "/php/ckrqst.php", null, function () {
       date = new Date();
-      document.getElementById('specreqs-refresh-date').innerHTML = "Information valid as of " + ("0" + date.getDate()).slice(-2) + " " + months[date.getMonth()] + " " + date.getFullYear() + " " + ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2) + ":" + ("0" + date.getSeconds()).slice(-2) + " " + timezones[date.getTimezoneOffset() / 60];
+      let options = {year: "numeric", month: "short", day: "2-digit",
+                     hour: "2-digit", minute: "2-digit", second: "2-digit",
+                     hour12: false};
+      document.getElementById('specreqs-refresh-date').innerHTML = "Information valid as of " + date.toLocaleDateString("en-us", options) + " " + timezones[date.getTimezoneOffset() / 60];
     });
   }
 }
