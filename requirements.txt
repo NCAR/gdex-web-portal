@@ -54,7 +54,7 @@ python-liquid==2.0.1
 python3-openid==3.2.0
 pytz==2025.2
 PyYAML==6.0.2
-rda_python_common==1.0.47
+rda_python_common==1.0.48
 rda_python_dsrqst==1.0.11
 rda_python_globus==1.0.2
 requests==2.32.3
