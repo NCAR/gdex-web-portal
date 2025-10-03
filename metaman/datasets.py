@@ -1699,6 +1699,68 @@ def web_access(request, dsid):
     return show_web_access(request, dsid)
 
 
+def show_ai_readiness(request, dsid):
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        cursor.execute(("select ai_ready from search.datasets where dsid = "
+                        "%s"), (dsid, ))
+        res = cursor.fetchone()
+
+    except psycopg2.Error as err:
+        log_error(err, source="show_ai_readiness")
+        return render(
+                request, "500.html",
+                {'custom_message': "Database error: '{}'".format(err)})
+
+    cursor.close()
+    conn.close()
+    if res[0] == "Y":
+        curr_set = "True"
+        new_set = "False"
+    else:
+        curr_set = "False"
+        new_set = "True"
+
+    return render(request, "metaman/datasets/ai_readiness.html", {
+                 'dsid': dsid,
+                 'current_setting': curr_set,
+                 'new_setting': new_set})
+
+
+def do_ai_readiness_toggle(request, dsid):
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        ai_ready = "Y" if request.POST['aiOption'] == "True" else "N"
+        cursor.execute(("update search.datasets set ai_ready = %s where dsid "
+                        "= %s"), (ai_ready, dsid))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    except psycopg2.Error as err:
+        log_error(err, source="do_ai_readiness_toggle")
+        return render(
+                request, "500.html",
+                {'custom_message': "Database error: '{}'".format(err)})
+
+    return render(request, "metaman/datasets/ai_readiness.html", {
+                  'toggle_access': True,
+                  'dsid': dsid,
+                  'ai_option': request.POST['aiOption']})
+
+
+def ai_readiness(request, dsid):
+    if 'HTTP_X_REQUESTED_WITH' not in request.META:
+        return render(request, "404.html")
+
+    if 'inetOption' in request.POST:
+        return do_ai_readiness_toggle(request, dsid)
+
+    return show_ai_readiness(request, dsid)
+
+
 def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
                                  spellchecker):
     page_vars = {

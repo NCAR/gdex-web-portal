@@ -26,6 +26,7 @@ urlpatterns = [
     path("manage-datasets/show-logos/", views.show_logos),
     path("manage-datasets/upload-logo/", views.upload_logo),
     path("manage-datasets/web-file-access/<dsid>/", views.web_access),
+    path("manage-datasets/ai-readiness/<dsid>/", views.ai_readiness),
     re_path("manage-datasets/.*/$", views.unknown),
     path("manage-dataset-dois/choose-existing-dataset/",
          views.choose_existing_dataset),

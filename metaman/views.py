@@ -153,6 +153,10 @@ def web_access(request, dsid):
     return datasets.web_access(request, dsid)
 
 
+def ai_readiness(request, dsid):
+    return datasets.ai_readiness(request, dsid)
+
+
 def assign(request, dsid):
     return dois.assign(request, dsid)
 
