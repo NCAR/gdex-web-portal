@@ -1551,8 +1551,8 @@ def get_number_of_unique_users(since=None):
         since = datetime.now() - timedelta(days=365) # One year ago
 
     cur_year = datetime.now().year
-    current_metrics_file = f'/usr/local/gdexweb/media/metrics/json/{cur_year}_all.json'
-    last_metrics_file = f'/usr/local/gdexweb/media/metrics/json/{cur_year - 1}_all.json'
+    current_metrics_file = f'/data/local/gdexweb/media/metrics/json/{cur_year}_all.json'
+    last_metrics_file = f'/data/local/gdexweb/media/metrics/json/{cur_year - 1}_all.json'
     try:
         metrics = json.load(open(current_metrics_file)) + json.load(open(last_metrics_file))
     except FileNotFoundError as e:
@@ -1573,8 +1573,8 @@ def get_volume_downloaded(since=None):
         since = datetime.now() - timedelta(days=365) # One year ago
 
     cur_year = datetime.now().year
-    current_metrics_file = f'/usr/local/gdexweb/media/metrics/json/{cur_year}_all.json'
-    last_metrics_file = f'/usr/local/gdexweb/media/metrics/json/{cur_year - 1}_all.json'
+    current_metrics_file = f'/data/local/gdexweb/media/metrics/json/{cur_year}_all.json'
+    last_metrics_file = f'/data/local/gdexweb/media/metrics/json/{cur_year - 1}_all.json'
     try:
         metrics = json.load(open(current_metrics_file)) + json.load(open(last_metrics_file))
     except FileNotFoundError as e:
