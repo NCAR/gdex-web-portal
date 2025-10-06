@@ -34,7 +34,7 @@ jobs:
       - name: Rename ingress
         run: |
           cd app-chart/templates
-          for i in ingress-old*.yaml; do mv $i $i.NO_READ; done
+          for i in ingress-old*.yaml; do git mv $i $i.NO_READ; done
           git config user.email "${{ secrets.GIT_CONFIG_USER_EMAIL_RILEY }}"
           git config user.name "${{ secrets.GIT_CONFIG_USER_NAME_RILEY }}"
           git add -u
