@@ -1537,6 +1537,36 @@ def get_gdex_volume():
     close_connection(con,cur)
     return math.floor(response[0]/1000/1000/1000/1000/1000)
 
+def get_total_requests(since=None):
+    if since is None:
+        since = datetime.now() - timedelta(days=365) # One year ago
+    con,cur =  init_connection_new()
+    query = f"select count(*) from dspurge where date_rqst > '{since.year}-{since.month}-{since.day}'"
+    cur.execute(query)
+    response = cur.fetchone()
+    close_connection(con,cur)
+    return response[0]
+
+
+def get_top_datasets(top=6):
+    rankings_file = '/data/local/gdexweb/media/metrics/rankings/rankingsYear.json'
+    try:
+        rankings = json.load(open(rankings_file))
+        return rankings[:top]
+
+    except FileNotFoundError as e:
+        print(e)
+        return 'Unknown'
+
+def get_AI_datasets(limit=8):
+    con,cur = init_connection_new(config=get_WGrML_config())
+    query = f"select dsid,title from search.datasets where ai_ready = 'Y' limit {limit};"
+    cur.execute(query)
+    res = cur.fetchall()
+    close_connection(con,cur)
+    return res
+
+
 def get_total_citations():
     """Get total number of citations"""
     con,cur = init_connection_new(config=get_WGrML_config())
