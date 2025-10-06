@@ -23,6 +23,9 @@ def by_the_numbers(request):
             'citations': common.get_total_citations(),
             'users' : common.get_number_of_unique_users(),
             'dowloaded' : common.get_volume_downloaded(),
-            'volume' : common.get_gdex_volume()
+            'volume' : common.get_gdex_volume(),
+            'requests' : common.get_total_requests(),
+            'top_datasets' : common.get_top_datasets(),
+            'ai_datasets' : common.get_AI_datasets(),
     }
     return render(request, 'home/splash.html', ctx)
