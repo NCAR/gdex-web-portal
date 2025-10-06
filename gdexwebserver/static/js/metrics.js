@@ -1691,7 +1691,7 @@ RankingsGraph.prototype.computeSize = function(container)
 {
     this.margin = {
         left : 60,
-        right : 50,
+        right : 80,
         top : 70,
         bottom : 60
     }
