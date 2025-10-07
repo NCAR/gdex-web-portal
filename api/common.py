@@ -1613,8 +1613,8 @@ def get_volume_downloaded_db(since=None):
 
     con,cur =  init_connection_new()
 
-    query = f"select sum(size_read) from wusage_{last_year} where date_read > '{last_ymd}'" +
-    " union all select sum(size_read) from wusage_{cur_year}"
+    query = f"select sum(size_read) from wusage_{last_year} where date_read > '{last_ymd}'" + \
+    f" union all select sum(size_read) from wusage_{cur_year}"
     cur.execute(query)
     res = cur.fetchall()
     close_connection(con,cur)
