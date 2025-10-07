@@ -242,6 +242,11 @@ def get_req_files_old(request, rindex):
     json = rdams.main("-get_req_files_old", rindex)
     return JsonResponse(json)
 
+@cache_page(4 * 24 * 60 * 60) # cache for 4 days
+def volume_downloaded(request):
+    volume = get_volume_downloaded_db
+    return JsonResponse({'volume':volume})
+
 def globus_download(request, rindex, endpoint):
     json = rdams.main("-globus_download", rindex, endpoint)
     return JsonResponse(json)

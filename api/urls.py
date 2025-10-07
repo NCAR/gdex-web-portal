@@ -21,11 +21,14 @@ urlpatterns = [
     path(r'get_req_files_old/<rindex>/', views.get_req_files_old ),
     path(r'globus_download/<rindex>/<endpoint>', views.globus_download ),
     path(r'purge/<rindex>/', views.purge ),
-    
+
+    # Metrics
+    path(r'metrics/volume_downloaded/', views.volume_downloaded ),
+
     # Notebook script
     path(r'generate_notebook', views.generate_notebook),
-    
-    # dataset calls
+
+    # Dataset calls
     path(r'datasets/<dsid>/documentation/', views.get_dataset_documentation ),
     path(r'datasets/<dsid>/software/', views.get_dataset_software ),
     path(r'datasets/<dsid>/groups/', views.get_root_groups ),

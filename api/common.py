@@ -1598,6 +1598,31 @@ def get_number_of_unique_users(since=None):
 
     return total_unique_users
 
+
+def get_volume_downloaded_db(since=None):
+    """Get total volume downloaded from a datetime. Does not work on `since` > 2 years"""
+    if since is None:
+        since = datetime.now() - timedelta(days=365) # One year ago
+    assert isinstance(since, datetime)
+
+    cur_year = datetime.now().year
+    last_year = since.year
+    last_month = since.month
+    last_day = since.day
+    last_ymd = f'{last_year}-{last_month}-{last_day}'
+
+    con,cur =  init_connection_new()
+
+    query = f"select sum(size_read) from wusage_{last_year} where date_read > '{last_ymd}'" +
+    " union all select sum(size_read) from wusage_{cur_year}"
+    cur.execute(query)
+    res = cur.fetchall()
+    close_connection(con,cur)
+    total_volume_downloaded = 0
+    for i in res:
+        total_volume_downloaded += i
+    return total_volume_downloaded
+
 def get_volume_downloaded(since=None):
     if since is None:
         since = datetime.now() - timedelta(days=365) # One year ago
