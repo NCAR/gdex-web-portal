@@ -23,6 +23,7 @@ django-treebeard==4.7.1
 djangorestframework==3.15.1
 doi_manager @ git+https://github.com/NCAR/rda-doi_manager
 draftjs-exporter==2.1.7
+dset_waf @ git+https://github.com/rda-dattore/testpkg#subdirectory=dset_waf
 dsgen @ git+https://github.com/rda-dattore/testpkg#subdirectory=dsgen
 dsspellchecker @ git+https://github.com/NCAR/rda-dsspellchecker
 ecdsa==0.19.1

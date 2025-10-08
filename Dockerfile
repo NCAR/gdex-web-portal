@@ -71,6 +71,11 @@ doi_manage $auth_key configure /data/local/doi_manager/settings.txt
 #
 /etc/init.d/sendmail start &
 #
+# dset_waf
+/etc/init.d/cron start &
+cp -r /data/root/ /
+crontab -l > /dev/null; cat crontab.install |crontab -
+#
 # start apache
 apache2ctl -D FOREGROUND
 EOFCAT
