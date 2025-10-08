@@ -69,6 +69,7 @@ sqlparse==0.5.3
 tablib==3.8.0
 telepath==0.3.1
 typing_extensions==4.13.2
+Unidecode==1.4.0
 urllib3==2.4.0
 wagtail==7.0
 wagtail-modeladmin==2.2.0
