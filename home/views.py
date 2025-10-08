@@ -2,6 +2,9 @@ import sys
 from django.shortcuts import render
 from django.http import HttpResponse
 from api import common
+from api import views as api_views
+import json
+import requests
 
 # Create your views here.
 
@@ -22,7 +25,10 @@ def by_the_numbers(request):
             'datasets': common.get_number_of_datasets(),
             'citations': common.get_total_citations(),
             'users' : common.get_number_of_unique_users(),
-            'dowloaded' : common.get_volume_downloaded(),
+            'downloaded' : common.get_volume_downloaded(),
+            'downloaded_db' : json.loads( # doing this to take advantage of cacheing
+                requests.get('gdex.ucar.edu/metrics/volume_downloaded/').content
+                )['volume'],
             'volume' : common.get_gdex_volume(),
             'requests' : common.get_total_requests(),
             'top_datasets' : common.get_top_datasets(),
