@@ -1621,7 +1621,7 @@ def get_volume_downloaded_db(since=None):
     total_volume_downloaded = 0
     for i in res:
         total_volume_downloaded += i[0]
-    return total_volume_downloaded/1000/1000/1000/1000/1000
+    return math.floor(total_volume_downloaded/1000/1000/1000/1000/1000)
 
 def get_volume_downloaded(since=None):
     if since is None:
