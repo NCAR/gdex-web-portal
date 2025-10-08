@@ -1613,15 +1613,15 @@ def get_volume_downloaded_db(since=None):
 
     con,cur =  init_connection_new()
 
-    query = f"select sum(size_read) from wusage_{last_year} where date_read > '{last_ymd}'" + \
-    f" union all select sum(size_read) from wusage_{cur_year}"
+    query = f"select sum(size) from allusage_{last_year} where date > '{last_ymd}'" + \
+    f" union all select sum(size) from allusage_{cur_year}"
     cur.execute(query)
     res = cur.fetchall()
     close_connection(con,cur)
     total_volume_downloaded = 0
     for i in res:
-        total_volume_downloaded += i
-    return total_volume_downloaded
+        total_volume_downloaded += i[0]
+    return total_volume_downloaded/1000/1000/1000/1000/1000
 
 def get_volume_downloaded(since=None):
     if since is None:
