@@ -56,7 +56,7 @@ python3-openid==3.2.0
 pytz==2025.2
 PyYAML==6.0.2
 rda_python_common==1.0.49
-rda_python_dsrqst==1.0.12
+rda_python_dsrqst==1.0.13
 rda_python_globus==1.0.2
 requests==2.32.3
 requests-oauthlib==2.0.0
