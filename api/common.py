@@ -1181,7 +1181,6 @@ def has_webfiles(dsid, gindex):
     return len(data) > 0
 
 def get_child_groups(dsid, gindex):
-	"""Get child groups."""
     dsid = format_dataset_id(dsid)
     con,cur = init_connection_new()
     columns = ('grpid','gindex','inote','mnote','dwebcnt','webcnt','title','webpath')
