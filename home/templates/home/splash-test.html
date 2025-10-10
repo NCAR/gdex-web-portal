@@ -8,11 +8,13 @@
 {% block content %}
 {% load humanize %}
 
-<figure class="figure full-width">
-    <picture>
-        <img src="/media/images/GDEX_banner_image.original.jpg" alt="banner" class="figure-img img-fluid">
-    </picture>
-</figure>
+<div id="banner" class="component banner mb-0" style="background-image: url('/media/images/GDEX_banner_Earth.original.jpg'); background-size: cover;">
+    <div class="banner-gradient d-flex align-items-end pb-2 pb-md-5">
+        <div class="container-lg">
+            <h1>GDEX By the Numbers</h1>
+        </div>
+    </div>
+</div>
 
 <div class='col-12 mt-2'>
     <div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 g-2 g-md-4'>
@@ -95,10 +97,12 @@
 </div>
 
 <hr>
+
 <div id="list" class="component list mt-3">
     <h2 class='text-center'><i class="fa-solid fa-robot pe-1"></i>AI-Ready Datasets</h2>
 
     {% for i in ai_datasets %}
+
     <div class="list-item p-3">
             <a href=/datasets/{{i.0}}>
             <div>{{i.1}}</div>
