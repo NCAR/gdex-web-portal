@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% load wagtailcore_tags %}
@@ -9,8 +8,13 @@
 {% load humanize %}
 
 <div id="banner" class="component banner mb-0" style="background-image: url('/media/images/GDEX_banner_Earth.original.jpg'); background-size: cover;">
-    <div class="banner-gradient d-flex align-items-end pb-2 pb-md-5">
-        <div class="container-lg">
+    <div class="banner-gradient d-flex flex-row">
+        <div class="container-lg align-self-start pt-2 ps-2 ps-md-4">
+            <picture>
+                <img src="/media/images/GDEX_Logo_White_y5JOad0.original.png" alt="GDEX Logo" class="img-fluid" style="max-height: 80px;">
+            </picture>
+        </div>
+        <div class="container-lg align-self-end pb-2 pb-md-4 ps-md-4 text-white">
             <h1>GDEX By the Numbers</h1>
         </div>
     </div>
