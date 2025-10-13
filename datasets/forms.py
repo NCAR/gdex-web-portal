@@ -35,11 +35,19 @@ class DatasetRequestForm(forms.Form):
         
     def get_gindex_choices(self):
         """ Provides choices for the group index field. """
-        choices = get_groups(self.initial.get('dsid', None))
-        if not choices:
+        groups = get_groups(self.initial.get('dsid', None))
+        if not groups:
             return [(0, "0 - Default group index")]
         else:
-            return [(choice['gindex'], f"{choice['gindex']} - {choice['title']}") for choice in choices]
+            choices = [(0, "0 - Default group index")]
+            for group in groups:
+                index = group['gindex']
+                if 'title' not in group or not group['title']:
+                    title = 'No Title'
+                else:
+                    title = group['title']
+                choices.append((index, f"{index} - {title}"))
+            return choices
 
     def get_sflag_choices(self):
         """ Provides choices for the bitwise subset flag field. """
