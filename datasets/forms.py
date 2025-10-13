@@ -35,14 +35,14 @@ class DatasetRequestForm(forms.Form):
     def get_gindex_choices(self):
         """ Provides choices for the group index field based on the dataset request control records. """
         conn, cursor = init_connection_new()
-        cursor.execute("SELECT gindex FROM rcrqst WHERE dsid = %s AND (rqsttype = 'S' OR rqsttype = 'T' OR rqsttype = 'N' OR rqsttype = 'F')", (self.initial.get('dsid', None),))
+        cursor.execute("SELECT gindex, title FROM dsgroup WHERE dsid = %s AND pindex = 0 AND dwebcnt > 0", (self.initial.get('dsid', None),))
         choices = cursor.fetchall()
         cursor.close()
         conn.close()
         if not choices:
             return [(0, "0 - Default group index")]
         else:
-            return [(choice[0], f"{choice[0]}") for choice in choices]
+            return [(choice[0][0], f"{choice[0][0]} - {choice[0][1]}") for choice in choices]
 
     def get_sflag_choices(self):
         """ Provides choices for the bitwise subset flag field. """
