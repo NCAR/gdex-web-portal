@@ -1,6 +1,7 @@
 from django import forms
 import re
 from api.common import init_connection_new
+from facbrowse.utils import get_groups
 
 def validate_dsid(value):
     if not re.match(r'^[a-z]{1}[0-9]{6}$', value):
@@ -33,16 +34,12 @@ class DatasetRequestForm(forms.Form):
         self.fields['sflag'].choices = self.get_sflag_choices()
         
     def get_gindex_choices(self):
-        """ Provides choices for the group index field based on the dataset request control records. """
-        conn, cursor = init_connection_new()
-        cursor.execute("SELECT gindex, title FROM dsgroup WHERE dsid = %s AND pindex = 0 AND dwebcnt > 0", (self.initial.get('dsid', None),))
-        choices = cursor.fetchall()
-        cursor.close()
-        conn.close()
+        """ Provides choices for the group index field. """
+        choices = get_groups(self.initial.get('dsid', None))
         if not choices:
             return [(0, "0 - Default group index")]
         else:
-            return [(choice[0][0], f"{choice[0][0]} - {choice[0][1]}") for choice in choices]
+            return [(choice['gindex'], f"{choice['gindex']} - {choice['title']}") for choice in choices]
 
     def get_sflag_choices(self):
         """ Provides choices for the bitwise subset flag field. """
