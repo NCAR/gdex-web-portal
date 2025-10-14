@@ -238,6 +238,10 @@ def get_level_info(map_name, code):
     else:
         levels = get_levels_from_xml(filenames[0])
     #add_to_cache('level_codes', map_name, levels)
+    if code not in levels:
+        print(f'code: "{code}" not found in {levels}')
+        print(f'{filenames}')
+        return {}
     return levels[code]
 
 def get_param_inventory(dsid, param_code):
