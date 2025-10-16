@@ -71,10 +71,10 @@ doi_manage $auth_key configure /data/local/doi_manager/settings.txt
 #
 /etc/init.d/sendmail start &
 #
-# dset_waf
-/etc/init.d/cron start &
+# need cron and ssh keys for dset_waf
 cp -r /data/root/ /
-crontab -l > /dev/null; cat crontab.install |crontab -
+crontab -l > /dev/null; cat /root/crontab.install |crontab -
+/etc/init.d/cron start &
 #
 # start apache
 apache2ctl -D FOREGROUND
