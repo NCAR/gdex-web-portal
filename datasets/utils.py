@@ -42,4 +42,4 @@ def bookmark(request, dsid):
     return HttpResponse(img_src)
 
 def get_hostname():
-    return 'https://gdex.k8s.ucar.edu'
+    return 'http://127.0.0.1:8080'
