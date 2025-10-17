@@ -5,6 +5,7 @@ from api import common
 from api import views as api_views
 import json
 import requests as http_request
+from datasets import utils
 
 # Create your views here.
 
@@ -27,7 +28,7 @@ def by_the_numbers(request):
             'users' : common.get_number_of_unique_users(),
             'downloaded' : common.get_volume_downloaded(),
             'downloaded_db' : json.loads( # doing this to take advantage of cacheing
-                        http_request.get('https://gdex.ucar.edu/api/metrics/volume_downloaded/').content
+                                         http_request.get(utils.get_hostname()+'/api/metrics/volume_downloaded/').content
                 )['volume'],
             'volume' : common.get_gdex_volume(),
             'requests' : common.get_total_requests(),
@@ -43,7 +44,7 @@ def test_splash(request):
             'users' : common.get_number_of_unique_users(),
             'downloaded' : common.get_volume_downloaded(),
             'downloaded_db' : json.loads( # doing this to take advantage of cacheing
-                        http_request.get('https://gdex.ucar.edu/api/metrics/volume_downloaded/').content
+                        http_request.get(utils.get_hostname()+'/api/metrics/volume_downloaded/').content
                 )['volume'],
             'volume' : common.get_gdex_volume(),
             'requests' : common.get_total_requests(),
