@@ -508,6 +508,9 @@ function submitSelections() {
         document.selections.gindex.selectedIndex].value;
   }
   {% endif %}
+  {% if request.POST.gtitle %}
+  post_data += "&gtitle={{ request.POST.gtitle }}";
+  {% endif %}
   if (document.selections.spatial) {
     if (document.selections.spatial.selectedIndex == 1) {
       if (document.getElementById("manual_lat_lon").style.display == 'block') {
