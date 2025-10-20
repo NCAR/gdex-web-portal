@@ -471,7 +471,7 @@ def metadata_view(request, dsid):
                               settings.RDADB['wagtail2_config_pg'])
     elif request.GET['format'] == "json-ld":
         md = json_ld.export(dsid, settings.RDADB['metadata_config_pg'],
-                            indent=2)
+                            settings.RDADB['wagtail2_config_pg'], indent=2)
 
     if md is None:
         return HttpResponse((
