@@ -1,9 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.webapp.name }}
+  name: {{ .Release.Name }}-{{ .Values.webapp.name }}
   namespace: {{ .Release.Namespace }}
   labels:
+    {{- include "common.labels" . | nindent 4 }}
     app: {{ .Values.webapp.name }}
     group: {{ .Values.webapp.group }}
 spec:
@@ -11,13 +12,15 @@ spec:
   selector:
     matchLabels:
       app: {{ .Values.webapp.name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
         app: {{ .Values.webapp.name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
-      - name: {{ .Values.webapp.name }}
+      - name: {{ .Release.Name }}-{{ .Values.webapp.name }}
         image: {{ .Values.webapp.container.image }}
         imagePullPolicy: Always
         resources:
@@ -32,6 +35,7 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.volume.fs.mountPath }}
           name: {{ .Values.volume.fs.name }}
+          readOnly: {{ .Values.volume.readonly }}
       volumes:
       - name: {{ .Values.volume.fs.name }}
         persistentVolumeClaim:

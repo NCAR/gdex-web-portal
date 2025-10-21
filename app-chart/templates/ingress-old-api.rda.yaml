@@ -1,9 +1,11 @@
+{{- if .Values.webapp.ingress.oldrdaRedirect }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-old-api.rda
   namespace: {{ .Release.Namespace }}
   labels:
+    {{- include "common.labels" . | nindent 4 }}
     group: {{ .Values.webapp.group }}
   annotations:
     cert-manager.io/cluster-issuer: "incommon"
@@ -36,3 +38,4 @@ spec:
             name: service-dummy
             port:
               number: 80
+{{- end }}

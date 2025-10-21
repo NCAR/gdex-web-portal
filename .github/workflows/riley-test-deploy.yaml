@@ -41,27 +41,23 @@ jobs:
           git commit -m "change ingress"
           git push origin riley-test
 
-      - name: Generate Random string
-        run: |
-          echo "RANDOM_NUNBER=${RANDOM}${RANDOM}" >> $GITHUB_ENV
-          echo "$RANDOM_NUMBER"
       - name: Build a new version of container
         run: >
           docker build --platform linux/amd64
           --build-arg VERSION_NUMBER=$VERSION_NUMBER
-          -t hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v$RANDOM_NUMBER
+          -t hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v${{ github.run_id }}
           --no-cache .
       - name: Push the new image to Harbor
         run: |
-          docker push hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v$RANDOM_NUMBER
-          docker tag hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v$RANDOM_NUMBER hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:latest
+          docker push hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v${{ github.run_id }}
+          docker tag hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v${{ github.run_id }} hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:latest
           docker push hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:latest
-          #- name: Update the Helm chart
-          #  run: |
-          #    git config user.email "${{ secrets.GIT_CONFIG_USER_EMAIL }}"
-          #    git config user.name "${{ secrets.GIT_CONFIG_USER_NAME }}"
-          #    sed -E "/image/s/gdex-web-portal:(.){1,}/gdex-web-portal:v$VERSION_NUMBER/" app-chart/values.yaml > app-chart/values.yaml.new
-          #    mv app-chart/values.yaml.new app-chart/values.yaml
-          #    git add app-chart/values.yaml
-          #    git commit -m "increment version"
-          #    git push
+      - name: Update the Helm chart
+        run: |
+          git config user.email "${{ secrets.GIT_CONFIG_USER_EMAIL_RILEY }}"
+          git config user.name "${{ secrets.GIT_CONFIG_USER_NAME_RILEY }}"
+          sed -E "/image/s/gdex-web-portal:(.){1,}/gdex-web-portal:v${{ github.run_id }}/" app-chart/riley-values.yaml > app-chart/riley-values.yaml.new
+          mv app-chart/riley-values.yaml.new app-chart/riley-values.yaml
+          git add app-chart/riley-values.yaml
+          git commit -m "increment version"
+          git push

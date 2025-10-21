@@ -27,3 +27,4 @@ volume:
     name: gdexdata
     size: 2Ti
     mountPath: /data
+    readonly: false

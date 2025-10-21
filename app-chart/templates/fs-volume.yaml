@@ -1,8 +1,9 @@
+{{- if and .Values.volume.enabled (not .Values.volume.fs.existingClaim) }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.volume.fs.name }}
-  namespace: {{ .Release.Namespace}}
+  namespace: {{ .Release.Namespace }}
 spec:
   accessModes:
     - ReadWriteMany
@@ -10,3 +11,4 @@ spec:
   resources:
     requests:
       storage: {{ .Values.volume.fs.size | default "1Gi" }} 
+{{- end }}

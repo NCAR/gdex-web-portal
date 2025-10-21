@@ -1,16 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Values.webapp.name }}
+  name: {{ .Release.Name }}-{{ .Values.webapp.name }}
   namespace: {{ .Release.Namespace }}
   labels:
+    {{- include "common.labels" . | nindent 4 }}
     group: {{ .Values.webapp.group }}
   annotations:
     cert-manager.io/cluster-issuer: "incommon"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "{{ .Values.webapp.container.responseTimeout }}"
     nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.webapp.container.maxUploadSize }}
 spec:
-  ingressClassName: {{ .Values.webapp.ingressClassName }}
+  ingressClassName: nginx-external
   tls:
     - hosts:
       - {{ .Values.webapp.tls.fqdn }}
@@ -25,7 +26,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.webapp.name }}
+            name: {{ .Release.Name }}-{{ .Values.webapp.name }}
             port:
               number: {{ .Values.webapp.container.port }}
   - host: {{ .Values.webapp.tls.fqdnAPI }}
@@ -35,7 +36,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.webapp.name }}
+            name: {{ .Release.Name }}-{{ .Values.webapp.name }}
             port:
               number: {{ .Values.webapp.container.port }}
   - host: {{ .Values.webapp.tls.fqdnGDEX }}
@@ -45,6 +46,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.webapp.name }}
+            name: {{ .Release.Name }}-{{ .Values.webapp.name }}
             port:
               number: {{ .Values.webapp.container.port }}

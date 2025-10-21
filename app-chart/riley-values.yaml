@@ -4,12 +4,11 @@ webapp:
   name: gdex-webserver
   group: gdex-web
   path: /
-  ingressClassName: nginx-internal
   tls:
     fqdn: riley-gdex.k8s.ucar.edu
     fqdnGDEX: riley-gdex.ucar.edu
     fqdnAPI: riley-api.gdex.ucar.edu
-    secretName: incommon-cert-gdex-webserver
+    secretName: incommon-cert-riley-gdex-webserver
   container: 
     image: hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v
     port: 8080
@@ -17,13 +16,21 @@ webapp:
       memory: 4Gi
       cpu: 1
     limits:
-      memory: 8Gi
-      cpu: 22
+      memory: 4Gi
+      cpu: 4
     responseTimeout: 180
-    maxUploadSize: 30m
+    maxUploadSize: 60m
+  ingress:
+    ingressClassName: nginx-internal
+    oldrdaRedirect: false
+    oldesgRedirect: false
+    oldrdaRedirect: false
+    oldtdsRedirect: false
 
 volume:
+  enabled: true
+  readonly: true
   fs:
+    existingClaim: gdexdata
     name: gdexdata
-    size: 2Ti
     mountPath: /data
