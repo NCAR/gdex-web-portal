@@ -31,15 +31,6 @@ jobs:
         with:
           ref: riley-test
           ssh-key: ${{ secrets.ACTIONS_PUSH_KEY }}
-      - name: Rename ingress
-        run: |
-          cd app-chart/templates
-          for i in ingress-old*.yaml; do git mv $i $i.NO_READ; done
-          git config user.email "${{ secrets.GIT_CONFIG_USER_EMAIL_RILEY }}"
-          git config user.name "${{ secrets.GIT_CONFIG_USER_NAME_RILEY }}"
-          git add -u
-          git commit -m "change ingress"
-          git push origin riley-test
 
       - name: Build a new version of container
         run: >
