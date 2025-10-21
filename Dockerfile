@@ -48,21 +48,11 @@ cat <<'EOFCAT' > /usr/local/bin/start_container
 # replace apache2 configuration files from repository
 cp -r /usr/local/gdexweb/apache2/* /etc/apache2/
 #
-# move wsgi.py so that it can be "touched" to clear the django cache
-mv /usr/local/gdexweb/gdexwebserver/wsgi.py /data/local/gdexweb/gdexwebserver/
-ln -s /data/local/gdexweb/gdexwebserver/wsgi.py /usr/local/gdexweb/gdexwebserver/wsgi.py
-#
 # link django settings files
-mv /usr/local/gdexweb/gdexwebserver/settings/base.py /data/local/gdexweb/gdexwebserver/settings/
-ln -s /data/local/gdexweb/gdexwebserver/settings/base.py /usr/local/gdexweb/gdexwebserver/settings/base.py
 ln -s /data/local/gdexweb/gdexwebserver/settings/local_settings.py /usr/local/gdexweb/gdexwebserver/settings/local_settings.py
 ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/local_settings.py
-ln -s /glade/campaign/collections/rda/work/metrics/ /data/local/gdexweb/media/metrics/
-touch /data/local/gdexweb/media/metrics/
 #
 chown -R www-data:www-data /data
-mkdir -p /data/logs/apache2
-mkdir -p /data/logs/django
 #
 python /usr/local/gdexweb/manage.py collectstatic --noinput
 dsspellchecker_manage build_db &
