@@ -1,0 +1,29 @@
+replicaCount: 1
+
+webapp:
+  name: gdex-webserver
+  group: gdex-web
+  path: /
+  ingressClassName: nginx-internal
+  tls:
+    fqdn: riley-gdex.k8s.ucar.edu
+    fqdnGDEX: riley-gdex.ucar.edu
+    fqdnAPI: riley-api.gdex.ucar.edu
+    secretName: incommon-cert-gdex-webserver
+  container: 
+    image: hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v
+    port: 8080
+    requests:
+      memory: 4Gi
+      cpu: 1
+    limits:
+      memory: 8Gi
+      cpu: 22
+    responseTimeout: 180
+    maxUploadSize: 30m
+
+volume:
+  fs:
+    name: gdexdata
+    size: 2Ti
+    mountPath: /data

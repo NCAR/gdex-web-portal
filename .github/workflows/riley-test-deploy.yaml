@@ -31,7 +31,6 @@ jobs:
         with:
           ref: riley-test
           ssh-key: ${{ secrets.ACTIONS_PUSH_KEY }}
-
       - name: Build a new version of container
         run: >
           docker build --platform linux/amd64
