@@ -245,7 +245,7 @@ def get_level_info(map_name, code):
     return levels[code]
 
 def get_param_inventory(dsid, param_code):
-    """ Returns param_code with appropriate inventory number. """
+    """Returns param_code with appropriate inventory number. """
     #dsid = format_dataset_id(dsid)
     #dsid = "".join(dsid.split('.'))
 
