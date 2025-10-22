@@ -21,7 +21,11 @@ def search_highlights(result: List[Mapping[str, Any]]) -> List[Mapping[str, dict
         {
             "field_name": "format",
             "title": "Data Format"
-        }
+        },
+        {
+            "field_name": "tags",
+            "title": "Tags"
+        },
     ]
 
     search_highlights = list()
@@ -37,8 +41,6 @@ def search_highlights(result: List[Mapping[str, Any]]) -> List[Mapping[str, dict
         if name == "temporal_range_start":
             value = datetime.datetime.strptime(value, date_fmt)
             value_type = "date"
-        elif name == "tags":
-            value = ", ".join(value)
 
         # Add the value to the list
         search_highlights.append(
