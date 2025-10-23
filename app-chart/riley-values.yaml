@@ -5,12 +5,12 @@ webapp:
   group: gdex-web
   path: /
   tls:
-    fqdn: riley-gdex.k8s.ucar.edu
-    fqdnGDEX: riley-gdex.ucar.edu
-    fqdnAPI: riley-api.gdex.ucar.edu
+    fqdn: riley.k8s.ucar.edu
+    fqdnGDEX: riley.ucar.edu
+    fqdnAPI: riley-api.ucar.edu
     secretName: incommon-cert-riley-gdex-webserver
   container: 
-    image: hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v18696890217
+    image: hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:latest
     port: 8080
     requests:
       memory: 4Gi

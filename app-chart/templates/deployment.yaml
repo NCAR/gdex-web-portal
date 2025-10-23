@@ -5,18 +5,18 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "common.labels" . | nindent 4 }}
-    app: {{ .Values.webapp.name }}
+    app: {{ .Release.Name }}-{{ .Values.webapp.name }}
     group: {{ .Values.webapp.group }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Values.webapp.name }}
+      app: {{ .Release.Name }}-{{ .Values.webapp.name }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.webapp.name }}
+        app: {{ .Release.Name }}-{{ .Values.webapp.name }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:

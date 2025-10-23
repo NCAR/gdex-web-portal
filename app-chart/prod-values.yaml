@@ -21,6 +21,12 @@ webapp:
       cpu: 6
     responseTimeout: 180
     maxUploadSize: 60m
+  ingress:
+    ingressClassName: nginx-internal
+    oldrdaRedirect: false
+    oldesgRedirect: false
+    oldrdaRedirect: false
+    oldtdsRedirect: false
 
 volume:
   fs:

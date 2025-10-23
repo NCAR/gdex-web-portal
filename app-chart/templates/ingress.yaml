@@ -11,7 +11,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "{{ .Values.webapp.container.responseTimeout }}"
     nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.webapp.container.maxUploadSize }}
 spec:
-  ingressClassName: {{ .Values.webapp.ingressClassName }}
+  ingressClassName: {{ .Values.webapp.ingress.ingressClassName }}
   tls:
     - hosts:
       - {{ .Values.webapp.tls.fqdn }}

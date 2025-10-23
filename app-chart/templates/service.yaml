@@ -10,5 +10,5 @@ spec:
   ports:
   - port: {{ .Values.webapp.container.port }}
   selector:
-    app: {{ .Values.webapp.name }}
-    app.kubernets.io/instance: {{ .Release.Name }}
+    app: {{ .Release.Name }}-{{ .Values.webapp.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
