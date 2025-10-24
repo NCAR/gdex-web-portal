@@ -14,8 +14,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 #       be stored in this file.  Please put these in local_settings.py
 from . import local_settings  # noqa
 
-# Import navigation bar items and Globus settings
+# Navigation bar, domain settings, and globus settings
 from .navigation_bar import *
+from .domain_settings import *
 from .globus_settings import *
 from .globus_search_indexes import *
 
