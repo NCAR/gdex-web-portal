@@ -19,11 +19,6 @@ GLOBUS_REQUEST_ENDPOINT_ID = "0104eacd-94b4-4202-9966-817247f0ca8c"
 GLOBUS_STRATUS_ENDPOINT_ID = "be4aa6a8-9e35-11eb-8a8e-d70d98a40c8d"
 GLOBUS_CGD_ENDPOINT_ID = "11651c26-80c2-4dac-a236-7755530731ac"
 
-GLOBUS_DATA_DOMAIN = 'data.gdex.ucar.edu'
-GLOBUS_STRATUS_DOMAIN = 'stratus.gdex.ucar.edu'
-GLOBUS_REQUEST_DOMAIN = 'request.gdex.ucar.edu'
-CGD_HTTPS_DOMAIN = 'g-09c647.7a577b.6fbd.data.globus.org'
-
 GLOBUS_RDA_DATA_BASE_PATH = '/glade/campaign/collections/gdex/data/'
 GLOBUS_REQUEST_BASE_PATH = '/glade/campaign/collections/gdex/transfer/'
 
