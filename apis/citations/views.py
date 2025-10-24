@@ -9,12 +9,12 @@ from lxml import etree as ElementTree
 metadb_config = settings.RDADB['metadata_config_pg']
 
 def citations(request, output_format=None):
-    response = {'response': "Bad request", 'status': 400}
     parts = request.META['HTTP_HOST'].split(".")
     if parts[0] != "api":
         return render(request, "404.html", {})
 
-    parts = request.path.split("/")
+    response = {'response': "Bad request", 'status': 400}
+    parts = request.path.replace("%2F", "/").split("/")
     if parts[-1] == "":
         parts.pop()
 
