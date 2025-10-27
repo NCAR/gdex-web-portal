@@ -32,7 +32,7 @@ def citations(request, output_format=None):
 
     elif parts[2] == "minters":
         if len(parts) == 3:
-            response = minters()
+            response = minters(output_format)
 
     elif parts[2] == "publishers":
         if len(parts) == 3:
@@ -163,8 +163,16 @@ def minter(minter, query_dict, **kwargs):
 
     return {'response': response, 'status': 200}
 
-def minters():
-    return {'response': {'minters': utils.valid_minters()}, 'status': 200}
+def minters(output_format):
+    minters = utils.valid_minters()
+    if output_format == ".xml":
+        response = ElementTree.Element('minters')
+        for minter in minters:
+           ElementTree.SubElement(response, 'minter').text = minter
+    else:
+        response = {'minters': minters}
+
+    return {'response': response, 'status': 200}
 
 def publishers(output_format):
     if output_format == ".xml":
