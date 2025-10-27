@@ -67,8 +67,9 @@ def get_counts(query_dict, cursor, doi, output_format):
     if output_format == ".xml":
         counts = ElementTree.Element('counts')
         for row in rows:
-            e = ElementTree.SubElement(counts, "y" + str(row[0]))
-            e.text = str(row[1])
+            e = ElementTree.SubElement(counts, "entry")
+            ElementTree.SubElement(e, "year").text = str(row[0])
+            ElementTree.SubElement(e, "citations").text = str(row[1])
 
         return counts
     else:
