@@ -6,7 +6,9 @@ import json
 from . import utils
 from lxml import etree as ElementTree
 
+
 metadb_config = settings.RDADB['metadata_config_pg']
+
 
 def citations(request, output_format=None):
     parts = request.META['HTTP_HOST'].split(".")
@@ -20,9 +22,11 @@ def citations(request, output_format=None):
 
     if parts[2] == "doi":
         if len(parts) == 5:
-            response = doi(parts[3], parts[4], request.GET, output_format=output_format)
+            response = doi(parts[3], parts[4], request.GET,
+                           output_format=output_format)
         elif len(parts) == 6:
-            response = doi(parts[3], parts[4], request.GET, show=parts[5], output_format=output_format)
+            response = doi(parts[3], parts[4], request.GET, show=parts[5],
+                           output_format=output_format)
 
     elif parts[2] == "minter":
         if len(parts) == 4:
@@ -39,13 +43,14 @@ def citations(request, output_format=None):
             response = publishers(output_format)
 
     indent = None
-    if 'pretty-indent' in request.GET and len(request.GET['pretty-indent']) > 0:
+    if ('pretty-indent' in request.GET and len(request.GET['pretty-indent']) >
+            0):
         indent = int(request.GET['pretty-indent'])
 
     status = response['status']
     if output_format == ".xml":
         content_type = "application/xml"
-        if not indent == None:
+        if indent is not None:
             space = " " * indent
             ElementTree.indent(response['response'], space=space, level=0)
 
@@ -60,6 +65,7 @@ def citations(request, output_format=None):
             headers={'Access-Control-Allow-Origin': "*",
                      'Access-Control-Allow-Headers': "X-Requested-With"})
 
+
 def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
     doi = doi_prefix + "/" + doi_suffix
     if kwargs['output_format'] == ".xml":
@@ -73,14 +79,18 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
     if 'show' in kwargs:
         if kwargs['show'] == "counts":
             if kwargs['output_format'] == ".xml":
-                response.append(utils.get_counts(query_dict, cursor, doi, kwargs['output_format']))
+                response.append(utils.get_counts(query_dict, cursor, doi,
+                                kwargs['output_format']))
             else:
-                response.update(utils.get_counts(query_dict, cursor, doi, kwargs['output_format']))
+                response.update(utils.get_counts(query_dict, cursor, doi,
+                                kwargs['output_format']))
         elif kwargs['show'] == "publications":
             if kwargs['output_format'] == ".xml":
-                response.append(utils.get_publications(query_dict, cursor, doi, kwargs['output_format']))
+                response.append(utils.get_publications(query_dict, cursor, doi,
+                                kwargs['output_format']))
             else:
-                response.update(utils.get_publications(query_dict, cursor, doi, kwargs['output_format']))
+                response.update(utils.get_publications(query_dict, cursor, doi,
+                                kwargs['output_format']))
 
     else:
         tbls = utils.citations_tables()
@@ -89,9 +99,12 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
             if x > 0:
                 u += " union "
 
-            u += "select DOI_work, pub_year from citation." + tbls[x] + " as d left join citation.works as w on w.DOI = d.DOI_work where d.DOI_data = '" + doi + "' and pub_year is not null"
+            u += ("select DOI_work, pub_year from citation." + tbls[x] + " as "
+                  "d left join citation.works as w on w.DOI = d.DOI_work "
+                  "where d.DOI_data = '" + doi + "' and pub_year is not null")
 
-        query = "select count(distinct DOI_work), min(pub_year), max(pub_year) from (" + u + ") as t"
+        query = ("select count(distinct DOI_work), min(pub_year), "
+                 "max(pub_year) from (" + u + ") as t")
         cursor.execute(query)
         row = cursor.fetchone()
         if row[0] == 0:
@@ -104,18 +117,23 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
                 years.set('min', str(row[1]))
                 years.set('max', str(row[2]))
             else:
-                response.update({'total_citations': row[0], 'years': {'min': row[1], 'max': row[2]}})
+                response.update({'total_citations': row[0],
+                                 'years': {'min': row[1], 'max': row[2]}})
 
     cursor.close()
     conn.close()
     return {'response': response, 'status': 200}
 
+
 def minter(minter, query_dict, **kwargs):
     response = {'minter': minter.upper()}
     minter = minter.lower()
     valid_minters = utils.valid_minters()
-    if not minter in valid_minters:
-        return {'response': {'error_message': "The specified minter \"" + minter + "\" is not a valid minter."}, 'status': 400}
+    if minter not in valid_minters:
+        return {'response': {
+                    'error_message': ("The specified minter \"" + minter +
+                                      "\" is not a valid minter.")},
+                    'status': 400}
 
     if minter == "rda":
         minter = ""
@@ -125,12 +143,17 @@ def minter(minter, query_dict, **kwargs):
     conn = psycopg2.connect(**metadb_config)
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     if 'show' in kwargs:
-        query = "select distinct c.DOI_data, d.DOI_data, d.publisher, d.asset_type from citation.data_citations" + minter + " as c left join citation.doi_data as d on d.DOI_data = c.DOI_data"
+        query = ("select distinct c.DOI_data, d.DOI_data, d.publisher, "
+                 "d.asset_type from citation.data_citations" + minter + " as "
+                 "c left join citation.doi_data as d on d.DOI_data = "
+                 "c.DOI_data")
         if 'asset-type' in query_dict:
-            query += " where d.asset_type = '" + query_dict.get('asset-type') + "'"
+            query += (" where d.asset_type = '" + query_dict.get('asset-type')
+                      + "'")
             response.update({'asset-type': query_dict.get('asset-type')})
         elif 'publisher' in query_dict:
-            query += " where d.publisher = '" + query_dict.get('publisher').strip('"') + "'"
+            query += (" where d.publisher = '" +
+                      query_dict.get('publisher').strip('"') + "'")
             response.update({'publisher': query_dict.get('publisher')})
 
         query += " order by c.DOI_data"
@@ -139,40 +162,44 @@ def minter(minter, query_dict, **kwargs):
         list = []
         for e in res:
             d = {'doi': e['doi_data']}
-            if not 'asset-type' in query_dict:
+            if 'asset-type' not in query_dict:
                 d.update({'asset-type': e['asset_type']})
 
-            if not 'publisher' in query_dict:
+            if 'publisher' not in query_dict:
                 d.update({'publisher': e['publisher']})
 
             list.append(d)
 
         response.update({'list': list})
     else:
-        query = "select distinct d.publisher, d.asset_type from citation.data_citations_ucar as c left join citation.doi_data as d on d.DOI_data = c.DOI_data"
+        query = ("select distinct d.publisher, d.asset_type from "
+                 "citation.data_citations_ucar as c left join "
+                 "citation.doi_data as d on d.DOI_data = c.DOI_data")
         cursor.execute(query)
         res = cursor.fetchall()
         pubs = []
         assets = []
         for e in res:
             pubs.append(e['publisher'])
-            if not e['asset_type'] in assets:
+            if e['asset_type'] not in assets:
                 assets.append(e['asset_type'])
 
         response.update({'asset-types': assets, 'publishers': pubs})
 
     return {'response': response, 'status': 200}
 
+
 def minters(output_format):
     minters = utils.valid_minters()
     if output_format == ".xml":
         response = ElementTree.Element('minters')
         for minter in minters:
-           ElementTree.SubElement(response, 'minter').text = minter
+            ElementTree.SubElement(response, 'minter').text = minter
     else:
         response = {'minters': minters}
 
     return {'response': response, 'status': 200}
+
 
 def publishers(output_format):
     if output_format == ".xml":
