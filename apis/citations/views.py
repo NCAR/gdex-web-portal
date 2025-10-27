@@ -36,7 +36,7 @@ def citations(request, output_format=None):
 
     elif parts[2] == "publishers":
         if len(parts) == 3:
-            response = publishers()
+            response = publishers(output_format)
 
     indent = None
     if 'pretty-indent' in request.GET and len(request.GET['pretty-indent']) > 0:
@@ -54,7 +54,10 @@ def citations(request, output_format=None):
         content_type = "application/json"
         response = json.dumps(response['response'], indent=indent)
 
-    return HttpResponse(response, content_type=content_type, status=status, headers={'Access-Control-Allow-Origin': "*", 'Access-Control-Allow-Headers': "X-Requested-With"})
+    return HttpResponse(
+            response, content_type=content_type, status=status,
+            headers={'Access-Control-Allow-Origin': "*",
+                     'Access-Control-Allow-Headers': "X-Requested-With"})
 
 def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
     doi = doi_prefix + "/" + doi_suffix
@@ -162,14 +165,21 @@ def minter(minter, query_dict, **kwargs):
 def minters():
     return {'response': {'minters': utils.valid_minters()}, 'status': 200}
 
-def publishers():
+def publishers(output_format):
+    if output_format == ".xml":
+        response = ElementTree.Element('publishers')
+    else:
+        response = {'publishers': []}
+
     conn = psycopg2.connect(**metadb_config)
     cursor = conn.cursor()
     query = "select distinct publisher from citation.doi_data"
     cursor.execute(query)
     res = cursor.fetchall()
-    l = []
     for e in res:
-        l.append(e[0])
+        if output_format == ".xml":
+            ElementTree.SubElement(response, 'publisher').text = e[0]
+        else:
+            response['publishers'].append(e[0])
 
-    return {'response': {'publishers': l}, 'status': 200}
+    return {'response': response, 'status': 200}
