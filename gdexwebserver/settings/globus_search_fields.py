@@ -36,6 +36,7 @@ def search_highlights(result: List[Mapping[str, Any]]) -> List[Mapping[str, dict
         name = field['field_name']
         value = result[0].get(name)
         value_type = "str"
+        query_key = f"filter-match-all.{name}"
 
         # Parse a date if it's a date. All dates expected isoformat
         if name == "temporal_range_start":
@@ -49,6 +50,7 @@ def search_highlights(result: List[Mapping[str, Any]]) -> List[Mapping[str, dict
                 "title": field['title'],
                 "value": value,
                 "type": value_type,
+                "search_filter_query_key": query_key,
             }
         )
     return search_highlights
