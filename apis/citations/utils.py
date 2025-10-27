@@ -74,7 +74,7 @@ def get_counts(query_dict, cursor, doi, output_format):
     else:
         list = []
         for row in rows:
-            list.append({str(row[0]): row[1]})
+            list.append({'year': str(row[0]), 'citations': row[1]})
 
         return {'counts': list}
 
