@@ -25,6 +25,24 @@
       $('#facet-form').append(end_input);
     }
 
+    // get all query parameters from the url
+    var queryParams = new URLSearchParams(window.location.search);
+
+    // iterate through each url query parameter and add it as a hidden input if not
+    // included already or if it's not in #facet-form
+    queryParams.forEach(function(value, key) {
+      if ($('#facet-form').find('input[name="' + key + '"]').length === 0 &&
+          key !== 'page' && key !== 'search_input' &&
+          key !== 'temporal_start_input' && key !== 'temporal_end_input') {
+        var hiddenInput = $('<input>').attr({
+          type: 'hidden',
+          name: key,
+          value: value
+        });
+        $('#facet-form').append(hiddenInput);
+      }
+    });
+
     //prepend the page and text query to the facet form, then submit it
     $('#facet-form').prepend(page).prepend(input).submit();
   }
