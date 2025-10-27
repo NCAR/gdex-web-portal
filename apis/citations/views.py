@@ -49,7 +49,8 @@ def citations(request, output_format=None):
             space = " " * indent
             ElementTree.indent(response['response'], space=space, level=0)
 
-        response = ElementTree.tostring(response['response'], encoding="unicode")
+        response = ElementTree.tostring(
+                response['response'], xml_declaration=True, encoding="utf-8")
     else:
         content_type = "application/json"
         response = json.dumps(response['response'], indent=indent)
