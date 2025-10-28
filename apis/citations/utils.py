@@ -196,7 +196,7 @@ def get_publications(query_dict, cursor, doi, output_format):
                     pg = ElementTree.SubElement(j, 'pages')
                     pg.text = j_row[2]
                 else:
-                    d.update({'journal':
+                    d.update({'journal_article':
                               {'title': j_row[0], 'volume': j_row[1],
                                'pages': j_row[2]}})
 
@@ -215,7 +215,7 @@ def get_publications(query_dict, cursor, doi, output_format):
                     pg = ElementTree.SubElement(p, 'pages')
                     pg.text = p_row[2]
                 else:
-                    d.update({'publication':
+                    d.update({'conference_paper':
                               {'title': p_row[0], 'volume': p_row[1],
                                'pages': p_row[2]}})
 
