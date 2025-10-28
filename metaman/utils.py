@@ -406,7 +406,9 @@ def check_html(html, spellchecker):
                 try:
                     response = requests.get(
                             anchor.get("href"), headers=linkcheck_headers)
-                    response.raise_for_status()
+                    if response.status_code != 403:
+                        response.raise_for_status()
+
                 except Exception:
                     errs.append((
                             "- Unresolvable URL <i>" + anchor.get("href") +
