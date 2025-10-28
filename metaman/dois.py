@@ -66,7 +66,9 @@ def adopt(request, dsid):
             try:
                 response = requests.get(request.POST['res_url'],
                                         headers=linkcheck_headers)
-                response.raise_for_status()
+                if response.status_code != 403:
+                    response.raise_for_status()
+
             except Exception:
                 d.update({'error':
                           ("The resolution URL provided is invalid or cannot "
@@ -366,7 +368,9 @@ def validate_dataset(dsid):
                 try:
                     response = requests.get(
                             rsrc['url'], headers=linkcheck_headers)
-                    response.raise_for_status()
+                    if response.status_code != 403:
+                        response.raise_for_status()
+
                 except Exception:
                     errors.append((
                             "<b>Related Websites</b>: Unresolvable URL <i>" +

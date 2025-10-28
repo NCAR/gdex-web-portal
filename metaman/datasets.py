@@ -1850,7 +1850,9 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
                     try:
                         response = requests.get(
                                 url, headers=config.linkcheck_headers)
-                        response.raise_for_status()
+                        if response.status_code != 403:
+                            response.raise_for_status()
+
                     except Exception:
                         log_error(("Link check failure for '" + url + "': " +
                                    str(response.status_code)),
@@ -2306,7 +2308,9 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
         if len(x[0]) > 0:
             try:
                 response = requests.get(x[0], headers=config.linkcheck_headers)
-                response.raise_for_status()
+                if response.status_code != 403:
+                    response.raise_for_status()
+
             except Exception:
                 log_error(("Link check failure for '" + x[0] + "': " +
                            str(response.status_code)),
@@ -2358,7 +2362,9 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             try:
                 response = requests.get(
                         parts[0], headers=config.linkcheck_headers)
-                response.raise_for_status()
+                if response.status_code != 403:
+                    response.raise_for_status()
+
             except Exception:
                 log_error(("Link check failure for '" + parts[0] + "': " +
                            str(response.status_code)),
@@ -2377,7 +2383,9 @@ def fill_from_uncommitted_changes(cursor, dsid, spellchecker):
             test = "https://doi.org/" + parts[0] + "?noredirect"
             try:
                 response = requests.get(test, headers=config.linkcheck_headers)
-                response.raise_for_status()
+                if response.status_code != 403:
+                    response.raise_for_status()
+
             except Exception:
                 log_error(("Link check failure for '" + test + "': " +
                            str(response.status_code)),
@@ -2694,7 +2702,9 @@ def check_related_dois(doi_list):
         test = "https://doi.org/" + parts[0] + "?noredirect"
         try:
             response = requests.get(test, headers=config.linkcheck_headers)
-            response.raise_for_status()
+            if response.status_code != 403:
+                response.raise_for_status()
+
         except Exception:
             log_error(("Link check failure for '" + test + "': " +
                        str(response.status_code)),
@@ -2716,7 +2726,9 @@ def check_related_sites(site_list):
         try:
             response = requests.get(
                     url, headers=config.linkcheck_headers, timeout=10)
-            response.raise_for_status()
+            if response.status_code != 403:
+                response.raise_for_status()
+
         except Exception as err:
             log_error("Link check failure for '" + parts[0] + "': " + str(err),
                       source="check_related_sites")
@@ -2745,7 +2757,9 @@ def check_redundancies(ref_list):
 
             response = requests.get(
                     url, headers=config.linkcheck_headers, timeout=10)
-            response.raise_for_status()
+            if response.status_code != 403:
+                response.raise_for_status()
+
         except Exception:
             errs.append(("- Unresolvable URL <i>" + parts[0] + "</i> must "
                          "be fixed or removed"))
@@ -2778,7 +2792,9 @@ def check_references(ref_list):
                 try:
                     response = requests.get(
                             url, headers=config.linkcheck_headers, timeout=10)
-                    response.raise_for_status()
+                    if response.status_code != 403:
+                        response.raise_for_status()
+
                 except Exception as err:
                     log_error(("Link check failure for '" + part[4:] + "': "
                                + str(err)), source="check_references")
