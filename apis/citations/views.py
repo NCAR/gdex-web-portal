@@ -109,18 +109,19 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
                  "max(pub_year) from (" + u + ") as t")
         cursor.execute(query)
         row = cursor.fetchone()
-        if row[0] == 0:
-            response.update({'total_citations': 0})
+        if kwargs['output_format'] == ".xml":
+            ElementTree.SubElement(response, 'total_citations').text = (
+                    str(row[0]))
         else:
+            response.update({'total_citations': row[0]})
+
+        if row[0] > 0:
             if kwargs['output_format'] == ".xml":
-                tot_cit = ElementTree.SubElement(response, 'total_citations')
-                tot_cit.text = str(row[0])
                 years = ElementTree.SubElement(response, 'years')
                 years.set('min', str(row[1]))
                 years.set('max', str(row[2]))
             else:
-                response.update({'total_citations': row[0],
-                                 'years': {'min': row[1], 'max': row[2]}})
+                response.update({'years': {'min': row[1], 'max': row[2]}})
 
     cursor.close()
     conn.close()
