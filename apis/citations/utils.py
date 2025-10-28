@@ -105,15 +105,17 @@ def get_publications(query_dict, cursor, doi, output_format):
         list = ElementTree.Element('publications')
     else:
         list = []
+
     for row in rows:
         if output_format == ".xml":
-            d = ElementTree.SubElement(list, 'doi')
+            d = ElementTree.SubElement(list, "doi")
             d.set('ID', row[0])
-            y = ElementTree.SubElement(d, 'year')
+            ptype = ElementTree.SubElement(d, "publication_type")
+            y = ElementTree.SubElement(d, "year")
             y.text = str(row[2])
-            a_list = ElementTree.SubElement(d, 'authors')
+            a_list = ElementTree.SubElement(d, "authors")
         else:
-            d = {'doi': row[0], 'year': row[2]}
+            d = {'publication_type': "", 'doi': row[0], 'year': row[2]}
             a_list = []
         cursor.execute((
                 "select concat_ws('" + a_ws + "', first_name, case when "
@@ -155,7 +157,8 @@ def get_publications(query_dict, cursor, doi, output_format):
                             "= '" + c_row[1] + "'"))
                     ed_res = cursor.fetchall()
                     if output_format == ".xml":
-                        bc = ElementTree.SubElement(d, 'book_chapter')
+                        ptype.text = "book_chapter"
+                        bc = ElementTree.SubElement(d, 'published_in')
                         i = ElementTree.SubElement(bc, 'ISBN')
                         i.text = c_row[1]
                         ed_list = ElementTree.SubElement(bc, 'editors')
@@ -176,7 +179,8 @@ def get_publications(query_dict, cursor, doi, output_format):
                             ed_list.append(editor[0])
 
                     if output_format is None or output_format == ".json":
-                        d.update({'book_chapter':
+                        d['publication_type'] = "book_chapter"
+                        d.update({'published_in':
                                   {'ISBN': c_row[1], 'editors': ed_list,
                                    'title': b_row[0], 'publisher': b_row[1],
                                    'pages': c_row[0]}})
@@ -188,7 +192,8 @@ def get_publications(query_dict, cursor, doi, output_format):
             j_row = cursor.fetchone()
             if j_row is not None:
                 if output_format == ".xml":
-                    j = ElementTree.SubElement(d, 'journal')
+                    ptype.text = "journal_article"
+                    j = ElementTree.SubElement(d, 'published_in')
                     t = ElementTree.SubElement(j, 'title')
                     t.text = j_row[0]
                     v = ElementTree.SubElement(j, 'volume')
@@ -196,7 +201,8 @@ def get_publications(query_dict, cursor, doi, output_format):
                     pg = ElementTree.SubElement(j, 'pages')
                     pg.text = j_row[2]
                 else:
-                    d.update({'journal_article':
+                    d['publication_type'] = "journal_article"
+                    d.update({'published_in':
                               {'title': j_row[0], 'volume': j_row[1],
                                'pages': j_row[2]}})
 
@@ -207,7 +213,8 @@ def get_publications(query_dict, cursor, doi, output_format):
             p_row = cursor.fetchone()
             if p_row is not None:
                 if output_format == ".xml":
-                    p = ElementTree.SubElement(d, 'publication')
+                    ptype.text = "conference_paper"
+                    p = ElementTree.SubElement(d, 'published_in')
                     t = ElementTree.SubElement(p, 'title')
                     t.text = p_row[0]
                     v = ElementTree.SubElement(p, 'volume')
@@ -215,7 +222,8 @@ def get_publications(query_dict, cursor, doi, output_format):
                     pg = ElementTree.SubElement(p, 'pages')
                     pg.text = p_row[2]
                 else:
-                    d.update({'conference_paper':
+                    d['publication_type'] = "conference_paper"
+                    d.update({'published_in':
                               {'title': p_row[0], 'volume': p_row[1],
                                'pages': p_row[2]}})
 
@@ -375,3 +383,13 @@ def format_as_bibliography(list, **kwargs):
         list.append(entry.replace("::", ", "))
 
     return {'bibliography': list}
+
+
+def error(output_format, error_message):
+    if output_format == ".xml":
+        response = ElementTree.Element("Error")
+        ElementTree.SubElement(response, "ErrorMessage").text = error_message
+    else:
+        response = {'error_message': error_message}
+
+    return {'response': response, 'status': 400}
