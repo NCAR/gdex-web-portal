@@ -74,25 +74,29 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
         response = ElementTree.Element('doi')
         response.set('ID', doi)
     else:
-        response = {'doi': doi}
+        response = {'doi': {'ID': doi}}
 
     conn = psycopg2.connect(**metadb_config)
     cursor = conn.cursor()
     if 'show' in kwargs:
         if kwargs['show'] == "counts":
             if kwargs['output_format'] == ".xml":
-                response.append(utils.get_counts(query_dict, cursor, doi,
-                                kwargs['output_format']))
+                response.append(
+                        utils.get_counts(query_dict, cursor, doi,
+                                         kwargs['output_format']))
             else:
-                response.update(utils.get_counts(query_dict, cursor, doi,
-                                kwargs['output_format']))
+                response['doi'].update(
+                        utils.get_counts(query_dict, cursor, doi,
+                                         kwargs['output_format']))
         elif kwargs['show'] == "publications":
             if kwargs['output_format'] == ".xml":
-                response.append(utils.get_publications(query_dict, cursor, doi,
-                                kwargs['output_format']))
+                response.append(
+                        utils.get_publications(query_dict, cursor, doi,
+                                               kwargs['output_format']))
             else:
-                response.update(utils.get_publications(query_dict, cursor, doi,
-                                kwargs['output_format']))
+                response['doi'].update(
+                        utils.get_publications(query_dict, cursor, doi,
+                                               kwargs['output_format']))
 
     else:
         tbls = utils.citations_tables()
@@ -113,15 +117,16 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
             ElementTree.SubElement(response, 'total_citations').text = (
                     str(row[0]))
         else:
-            response.update({'total_citations': row[0]})
+            response['doi'].update({'total_citations': row[0]})
 
         if row[0] > 0:
             if kwargs['output_format'] == ".xml":
                 years = ElementTree.SubElement(response, 'years')
-                years.set('min', str(row[1]))
-                years.set('max', str(row[2]))
+                ElementTree.SubElement(years, "min").text = str(row[1])
+                ElementTree.SubElement(years, "max").text = str(row[2])
             else:
-                response.update({'years': {'min': row[1], 'max': row[2]}})
+                response['doi'].update({'years': {'min': row[1],
+                                                  'max': row[2]}})
 
     cursor.close()
     conn.close()
