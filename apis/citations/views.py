@@ -30,9 +30,11 @@ def citations(request, output_format=None):
 
     elif parts[2] == "minter":
         if len(parts) == 4:
-            response = minter(parts[3], request.GET)
+            response = minter(parts[3], request.GET,
+                              output_format=output_format)
         elif len(parts) == 5:
-            response = minter(parts[3], request.GET, show=parts[4])
+            response = minter(parts[3], request.GET, show=parts[4],
+                              output_format=output_format)
 
     elif parts[2] == "minters":
         if len(parts) == 3:
@@ -130,10 +132,10 @@ def minter(minter, query_dict, **kwargs):
     minter = minter.lower()
     valid_minters = utils.valid_minters()
     if minter not in valid_minters:
-        return {'response': {
-                    'error_message': ("The specified minter \"" + minter +
-                                      "\" is not a valid minter.")},
-                    'status': 400}
+        return utils.error(
+                kwargs['output_format'],
+                ("The specified minter \"" + minter + "\" is not a valid "
+                 "minter."))
 
     if minter == "rda":
         minter = ""
@@ -147,14 +149,18 @@ def minter(minter, query_dict, **kwargs):
                  "d.asset_type from citation.data_citations" + minter + " as "
                  "c left join citation.doi_data as d on d.DOI_data = "
                  "c.DOI_data")
+        wc = []
         if 'asset-type' in query_dict:
-            query += (" where d.asset_type = '" + query_dict.get('asset-type')
-                      + "'")
+            wc.append("d.asset_type = '" + query_dict.get('asset-type') + "'")
             response.update({'asset-type': query_dict.get('asset-type')})
-        elif 'publisher' in query_dict:
-            query += (" where d.publisher = '" +
-                      query_dict.get('publisher').strip('"') + "'")
+
+        if 'publisher' in query_dict:
+            wc.append(("d.publisher = '" +
+                       query_dict.get('publisher').strip('"') + "'"))
             response.update({'publisher': query_dict.get('publisher')})
+
+        if len(wc) > 0:
+            query += " where " + " and ".join(wc)
 
         query += " order by c.DOI_data"
         cursor.execute(query)
