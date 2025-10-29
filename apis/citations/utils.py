@@ -67,9 +67,9 @@ def get_counts(query_dict, cursor, doi, output_format):
     if output_format == ".xml":
         counts = ElementTree.Element('counts')
         for row in rows:
-            e = ElementTree.SubElement(counts, "entry")
-            ElementTree.SubElement(e, "year").text = str(row[0])
-            ElementTree.SubElement(e, "citations").text = str(row[1])
+            e = ElementTree.SubElement(counts, "year")
+            e.text = str(row[0])
+            e.set('citations', str(row[1]))
 
         return counts
     else:
@@ -115,7 +115,8 @@ def get_publications(query_dict, cursor, doi, output_format):
             y.text = str(row[2])
             a_list = ElementTree.SubElement(d, "authors")
         else:
-            d = {'publication_type': "", 'doi': row[0], 'year': row[2]}
+            d = {'doi': {'ID': row[0], 'publication_type': "",
+                         'year': row[2]}}
             a_list = []
         cursor.execute((
                 "select concat_ws('" + a_ws + "', first_name, case when "
@@ -136,8 +137,8 @@ def get_publications(query_dict, cursor, doi, output_format):
             p = ElementTree.SubElement(d, 'publisher')
             p.text = row[3]
         else:
-            d.update({'authors': a_list})
-            d.update({'title': row[1], 'publisher': row[3]})
+            d['doi'].update({'authors': a_list, 'title': row[1],
+                             'publisher': row[3]})
 
         if row[4] == "C":
             cursor.execute((
@@ -179,11 +180,12 @@ def get_publications(query_dict, cursor, doi, output_format):
                             ed_list.append(editor[0])
 
                     if output_format is None or output_format == ".json":
-                        d['publication_type'] = "book_chapter"
-                        d.update({'published_in':
-                                  {'ISBN': c_row[1], 'editors': ed_list,
-                                   'title': b_row[0], 'publisher': b_row[1],
-                                   'pages': c_row[0]}})
+                        d['doi']['publication_type'] = "book_chapter"
+                        d['doi'].update(
+                                {'published_in':
+                                 {'ISBN': c_row[1], 'editors': ed_list,
+                                  'title': b_row[0], 'publisher': b_row[1],
+                                  'pages': c_row[0]}})
 
         elif row[4] == "J":
             cursor.execute((
@@ -201,10 +203,11 @@ def get_publications(query_dict, cursor, doi, output_format):
                     pg = ElementTree.SubElement(j, 'pages')
                     pg.text = j_row[2]
                 else:
-                    d['publication_type'] = "journal_article"
-                    d.update({'published_in':
-                              {'title': j_row[0], 'volume': j_row[1],
-                               'pages': j_row[2]}})
+                    d['doi']['publication_type'] = "journal_article"
+                    d['doi'].update(
+                            {'published_in':
+                             {'title': j_row[0], 'volume': j_row[1],
+                              'pages': j_row[2]}})
 
         elif row[4] == "P":
             cursor.execute((
@@ -222,10 +225,11 @@ def get_publications(query_dict, cursor, doi, output_format):
                     pg = ElementTree.SubElement(p, 'pages')
                     pg.text = p_row[2]
                 else:
-                    d['publication_type'] = "conference_paper"
-                    d.update({'published_in':
-                              {'title': p_row[0], 'volume': p_row[1],
-                               'pages': p_row[2]}})
+                    d['doi']['publication_type'] = "conference_paper"
+                    d['doi'].update(
+                            {'published_in':
+                             {'title': p_row[0], 'volume': p_row[1],
+                              'pages': p_row[2]}})
 
         if output_format is None or output_format == ".json":
             list.append(d)
