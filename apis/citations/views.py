@@ -184,21 +184,21 @@ def minter(minter, query_dict, **kwargs):
         query += " order by c.DOI_data"
         cursor.execute(query)
         res = cursor.fetchall()
-        list = []
+        dois = []
         for e in res:
-            d = {'doi': e['doi_data']}
+            d = {'doi': {'ID': e['doi_data']}}
             if 'asset-type' not in query_dict:
-                d.update({'asset-type': e['asset_type']})
+                d['doi'].update({'asset-type': e['asset_type']})
 
             if 'publisher' not in query_dict:
-                d.update({'publisher': e['publisher']})
+                d['doi'].update({'publisher': e['publisher']})
 
-            list.append(d)
+            dois.append(d)
 
         if kwargs['output_format'] == ".xml":
             pass
         else:
-            response['minter'].update({'list': list})
+            response['minter'].update({'dois': dois})
 
     else:
         query = ("select distinct d.publisher, d.asset_type from "
