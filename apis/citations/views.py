@@ -114,7 +114,7 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
         cursor.execute(query)
         row = cursor.fetchone()
         if kwargs['output_format'] == ".xml":
-            ElementTree.SubElement(response, 'total_citations').text = (
+            ElementTree.SubElement(response, 'totalCitations').text = (
                     str(row[0]))
         else:
             response['doi'].update({'total_citations': row[0]})
@@ -134,7 +134,12 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
 
 
 def minter(minter, query_dict, **kwargs):
-    response = {'minter': minter.upper()}
+    if kwargs['output_format'] == ".xml":
+        response = ElementTree.Element('minter')
+        response.set('ID', minter.upper())
+    else:
+        response = {'minter': {'ID': minter.upper()}}
+
     minter = minter.lower()
     valid_minters = utils.valid_minters()
     if minter not in valid_minters:
@@ -158,12 +163,20 @@ def minter(minter, query_dict, **kwargs):
         wc = []
         if 'asset-type' in query_dict:
             wc.append("d.asset_type = '" + query_dict.get('asset-type') + "'")
-            response.update({'asset-type': query_dict.get('asset-type')})
+            if kwargs['output_format'] == ".xml":
+                e = ElementTree.SubElement(response, "asset-types")
+            else:
+                response['minter'].update(
+                        {'asset-type': query_dict.get('asset-type')})
 
         if 'publisher' in query_dict:
             wc.append(("d.publisher = '" +
                        query_dict.get('publisher').strip('"') + "'"))
-            response.update({'publisher': query_dict.get('publisher')})
+            if kwargs['output_format'] == ".xml":
+                e = ElementTree.SubElement(response, "publishers")
+            else:
+                response['minter'].update(
+                        {'publisher': query_dict.get('publisher')})
 
         if len(wc) > 0:
             query += " where " + " and ".join(wc)
@@ -182,7 +195,11 @@ def minter(minter, query_dict, **kwargs):
 
             list.append(d)
 
-        response.update({'list': list})
+        if kwargs['output_format'] == ".xml":
+            pass
+        else:
+            response['minter'].update({'list': list})
+
     else:
         query = ("select distinct d.publisher, d.asset_type from "
                  "citation.data_citations_ucar as c left join "
@@ -196,7 +213,18 @@ def minter(minter, query_dict, **kwargs):
             if e['asset_type'] not in assets:
                 assets.append(e['asset_type'])
 
-        response.update({'asset-types': assets, 'publishers': pubs})
+        if kwargs['output_format'] == ".xml":
+            e = ElementTree.SubElement(response, "assetTypes")
+            for asset in assets:
+                ElementTree.SubElement(e, "assetType").text = asset
+
+            e = ElementTree.SubElement(response, "publishers")
+            for pub in pubs:
+                ElementTree.SubElement(e, "publisher").text = pub
+
+        else:
+            response['minter'].update(
+                    {'asset-types': assets, 'publishers': pubs})
 
     return {'response': response, 'status': 200}
 
