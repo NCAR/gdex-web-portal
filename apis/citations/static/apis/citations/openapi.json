@@ -1,0 +1,776 @@
+{
+  "openapi": "3.1.2",
+  "info": {
+    "title": "UCAR Citations API",
+    "description": "This API allows users to retrieve citation information for UCAR assets that have been assigned a Digital Object Identifier (DOI). Responses are returned in Javascript Object Notation (JSON) by default, with the option to receive XML instead.",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.gdex.ucar.edu/citations",
+      "description": "(JSON responses)"
+    },
+    {
+      "url": "https://api.gdex.ucar.edu/citations.xml",
+      "description": "(XML responses)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "DOIs",
+      "description": "UCAR assets that are tracked by this service"
+    },
+    {
+      "name": "Minters",
+      "description": "DataCite accounts that mint DOIs and are tracked by this service"
+    },
+    {
+      "name": "Publishers",
+      "description": "UCAR entities that publish assets and are tracked by this service"
+    }
+  ],
+  "paths": {
+    "/doi/{queryDOI}": {
+      "get": {
+        "tags": [
+          "DOIs"
+        ],
+        "summary": "Get citation data for a specific asset.",
+        "description": "This operation returns citation data for the specified asset using its DOI.",
+        "operationId": "getDOI",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/queryDOI"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DOIResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DOIResponseXML"
+                }
+              }
+            }
+          },
+          "400": {
+	    "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    },
+    "/doi/{queryDOI}/counts": {
+      "get": {
+        "tags": [
+          "DOIs"
+        ],
+        "summary": "Get annual citation counts for a specific asset.",
+        "description": "This operation returns annual citation counts for the specified asset using its DOI.",
+        "operationId": "getDOICounts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/queryDOI"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DOICountsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DOICountsResponseXML"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    },
+    "/doi/{queryDOI}/publications": {
+      "get": {
+        "tags": [
+          "DOIs"
+        ],
+        "summary": "Get publications that have cited the specified asset.",
+        "description": "This operation uses the specified asset's DOI to return a list of publications that have cited the asset.",
+        "operationId": "getDOIPublications",
+        "parameters": [
+	  {
+            "$ref": "#/components/parameters/queryDOI"
+	  },
+	  {
+            "name": "format",
+            "in": "query",
+            "description": "Format the publications if `format` parameter is present and has one of the following values:\n * `bibliography` - formats the publications as a bibliography",
+	    "required": false,
+            "schema": {
+              "type": "string",
+	      "enum": [
+		"bibliography"
+	      ]
+            }
+	  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DOIPublicationsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DOIPublicationsResponseXML"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    },
+    "/minters": {
+      "get": {
+        "tags": [
+          "Minters"
+        ],
+        "summary": "Get the list of DataCite accounts.",
+        "description": "This operation returns the list of DataCite accounts.",
+        "operationId": "getMinters",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/MintersResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/MintersResponseXML"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    },
+    "/minter/{queryMinter}": {
+      "get": {
+        "tags": [
+          "Minters"
+        ],
+        "summary": "Get information about a specific minter.",
+        "description": "This operation returns information about the specified minter.",
+        "operationId": "getMinter",
+        "parameters": [
+	  "$ref": "#/components/parameters/queryMinter"
+	],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/MinterResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/MinterResponseXML"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    },
+    "/minter/{queryMinter}/dois": {
+      "get": {
+        "tags": [
+	  "Minters"
+	],
+	"summary": "Get DOIs with citations for the specified minter",
+	"description": "This operation returns all DOIs that have been minted by the specified minter and cited at least once",
+	"operationID": "getMinterDOIs",
+	"parameters": [
+	  "$ref": "#/components/parameters/queryMinter",
+	  {
+            "name": "asset-type",
+            "in": "query",
+            "description": "Restrict the list of DOIs to just those minted for `asset-type`",
+	    "required": false,
+            "type": "string"
+	  },
+	  {
+            "name": "publisher",
+            "in": "query",
+            "description": "Restrict the list of DOIs to just those minted by `publisher`",
+	    "required": false,
+            "type": "string"
+	  }
+	],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/MinterDOIsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/MinterDOIsResponseXML"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    },
+    "/publishers": {
+      "get": {
+        "tags": [
+          "Publishers"
+        ],
+        "summary": "Get the list of entities that publish assets.",
+        "description": "This operation returns the list of publishing entities.",
+        "operationId": "getPublishers",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/PublishersResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/PublishersResponseXML"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "queryDOI": {
+        "name": "queryDOI",
+        "in": "path",
+        "description": "Retrieve data for query DOI",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "queryMinter": {
+        "name": "queryMinter",
+        "in": "path",
+        "description": "Retrieve information for query minter",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schema_defs": {
+      "DOIResponse": {
+        "type": "object",
+	"properties": {
+	  "doi": {
+	    "type": "object",
+            "properties": {
+              "ID": {
+	        "type": "string"
+	      },
+              "total_citations": {
+                "type": "number",
+                "description": "Total number of citations known"
+              },
+	      "years": {
+	        "type": "object",
+	        "description": "Date range of publications that have cited the asset",
+	        "properties": {
+	          "min": {
+	            "type": "number"
+	          },
+	          "max": {
+	            "type": "number"
+	          }
+	        }
+	      }
+            }
+	  }
+	}
+      },
+      "DOIResponseXML": {
+        "type": "object",
+	"xml": {
+          "name": "doi"
+	},
+	"properties": {
+	  "ID": {
+	    "type": "string",
+	    "xml": {
+	      "attribute": true
+            }
+	  },
+	  "totalCitations": {
+	    "type": "number",
+	    "description": "Total number of citations known"
+          },
+	  "years": {
+	    "type": "object",
+	    "description": "Date range of publications that have cited the asset",
+	    "properties": {
+	      "min": {
+	        "type": "number"
+	      },
+	      "max": {
+	        "type": "number"
+	      }
+	    }
+	  }
+        }
+      },
+      "DOICountsResponse": {
+        "type": "object",
+	"properties": {
+	  "doi": {
+	    "type": "object",
+	    "properties": {
+	      "ID": {
+	        "type": "string"
+	      },
+	      "counts": {
+	        "type": "array",
+	        "description": "Citation counts by year",
+	        "items": {
+	          "type": "object",
+	          "properties": {
+	            "year": {
+		      "type": "number"
+		    },
+		    "citations": {
+		      "type": "number"
+		    }
+	          }
+	        }
+	      }
+	    }
+	  }
+	}
+      },
+      "DOICountsResponseXML": {
+        "type": "object",
+	"xml": {
+	  "name": "doi"
+	},
+	"properties": {
+	  "ID": {
+	    "type": "string",
+	    "xml": {
+	      "attribute": true
+	    }
+	  },
+	  "counts": {
+	    "type": "array",
+	    "description": "Citation counts by year",
+	    "items": {
+	      "type": "object",
+	      "properties": {
+	        "year": {
+		  "type": "object",
+		  "properties": {
+		    "citations": {
+		      "type": "number",
+		      "xml": {
+		        "attribute": true
+		      }
+		    }
+		  }
+	        }
+	      }
+	    }
+	  }
+	}
+      },
+      "DOIPublicationsResponse": {
+        "type": "object",
+	"properties": {
+	  "doi": {
+            "type": "object",
+	    "properties": {
+	      "ID": {
+	        "type": "string"
+	      },
+	      "publications": {
+	        "type": "array",
+	        "items": {
+	          "type": "object",
+	          "properties": {
+	            "doi": {
+		      "type": "object",
+		      "properties": {
+			"ID": {
+		          "type": "string",
+		          "description": "DOI of citing work"
+		        },
+		        "publication_type": {
+		          "type": "string",
+		          "description": "Type of publication\n  * *book_chapter*\n  * *conference_paper*\n  * *journal_article*"
+		        },
+		        "year": {
+		          "type": "number",
+		          "description": "Publication year of the citing work"
+		        },
+		        "authors": {
+		          "type": "array",
+		          "description": "Author list of the citing work",
+		          "items": {
+		            "type": "string"
+		          }
+		        },
+		        "title": {
+		          "type": "string",
+		          "description": "Title of the citing work"
+		        },
+		        "publisher": {
+		          "type": "string",
+		          "description": "Publisher of the citing work"
+		        },
+		        "published_in": {
+		          "type": "object",
+		          "description": "Varies by *publication_type*:\n  * *book_chapter:* {\"ISBN\": \"*string*\", \"editors\": *[]*, \"title\": \"*string*\", \"publisher\": \"*string*\", \"pages\": \"*string*\"}\n  * *conference_paper:* {\"title\": \"*string*\", \"volume\": \"*string*\", \"pages\": \"*string*\"}\n  * *journal_article:* {\"title\": \"*string*\", \"volume\": \"*string*\", \"pages\": \"*string*\"}"
+			}
+	              }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      },
+      "DOIPublicationsResponseXML": {
+        "type": "object",
+	"xml": {
+	  "name": "doi"
+	},
+	"properties":  {
+	  "ID": {
+	    "type": "string",
+	    "xml": {
+	      "attribute": true
+            }
+	  },
+	  "publications": {
+	    "type": "array",
+	    "items": {
+	      "type": "object",
+	      "properties": {
+	        "doi": {
+	          "type": "object",
+		  "properties": {
+	            "ID": {
+	              "type": "string",
+	              "xml": {
+	                "attribute": true
+                      }
+	            },
+	            "publicationType": {
+	              "type": "string",
+	              "description": "Type of publication\n  * *book_chapter*\n  * *conference_paper*\n  * *journal_article*"
+	            },
+	            "year": {
+	              "type": "number",
+	              "description": "Publication year of the citing work"
+	            },
+	            "authors": {
+	              "type": "object",
+	              "description": "Author list of the citing work",
+	              "properties": {
+	                "author": {
+	                  "type": "array",
+		          "items": {
+		            "type": "string"
+	                  }
+	                }
+	              }
+	            },
+	            "title": {
+	              "type": "string",
+	              "description": "Title of the citing work"
+	            },
+	            "publisher": {
+	              "type": "string",
+	              "description": "Publisher of the citing work"
+	            },
+	            "publishedIn": {
+	              "type": "object",
+	              "description": "Varies by *publicationType*\n  * *book_chapter:* &lt;ISBN&gt;*string*&lt;/ISBN&gt;&lt;editors&gt;&lt;editor&gt;*string*&lt;/editor&gt;&lt;/editors&gt;&lt;title&gt;*string*&lt;/title&gt;&lt;publisher&gt;*string*&lt;/publisher&gt;&lt;pages&gt;*string*&lt;/pages&gt;\n  * *conference_paper:* &lt;title&gt;*string*&lt;/title&gt;&lt;volume&gt;*string*&lt;/volume&gt;&lt;pages&gt;*string*&lt;/pages&gt;\n  * *journal_article:* &lt;title&gt;*string*&lt;/title&gt;&lt;volume&gt;*string*&lt;/volume&gt;&lt;pages&gt;*string*&lt;/pages&gt;"
+	            }
+	          }
+	        }
+	      }
+	    }
+	  }
+	}
+      },
+      "MintersResponse": {
+        "type": "object",
+	"properties": {
+	  "minters": {
+	    "type": "array",
+	    "items": {
+	      "type": "string"
+	    }
+	  }
+	}
+      },
+      "MintersResponseXML": {
+        "type": "object",
+	"xml": {
+          "name": "minters"
+	},
+	"properties": {
+	  "minter": {
+	    "type": "string"
+	  }
+	}
+      },
+      "MinterResponse": {
+        "type": "object",
+	"properties": {
+	  "minter": {
+	    "type": "object",
+	    "properties": {
+	      "ID": {
+		"type": "string"
+	      },
+	      "asset-types": {
+		"type": "array",
+		"items": {
+		  "type": "string"
+		}
+	      },
+	      "publishers": {
+		"type": "array",
+		"items": {
+		  "type": "string"
+		}
+	      }
+	    }
+	  }
+	}
+      },
+      "MinterResponseXML": {
+        "type": "object",
+	"xml": {
+	  "name": "minter"
+	},
+	"properties": {
+          "ID": {
+	    "type": "string",
+	    "xml": {
+	      "attribute": true
+	    }
+          },
+	  "assetTypes": {
+	    "type": "object",
+	    "properties": {
+	      "assetType": {
+		"type": "array",
+		"items": {
+		  "type": "string"
+	        }
+	      }
+	    },
+	    "xml": {
+	      "wrapped": true
+	    }
+          },
+	  "publishers": {
+	    "type": "object",
+	    "properties": {
+	      "publisher": {
+		"type": "array",
+		"items": {
+		  "type": "string"
+		}
+	      }
+	    }
+          }
+	}
+      },
+      "MinterDOIsResponse": {
+        "type": "object",
+	"properties": {
+	  "minter": {
+	    "type": "object",
+	    "properties": {
+	      "ID": {
+		"type": "string"
+	      },
+	      "dois": {
+		"type": "array",
+		"items": {
+		  "type": "object",
+		  "properties": {
+		    "doi": {
+		      "type": "object",
+		      "properties": {
+			"ID": {
+			  "type": "string"
+		        },
+			"asset-type": {
+			  "type": "string"
+			},
+			"publisher": {
+			  "type": "string"
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      },
+      "MinterDOIsResponseXML": {
+        "type": "object",
+	"xml": {
+	  "name": "minter"
+	},
+	"properties": {
+	  "ID": {
+	    "type": "string",
+	    "xml": {
+	      "attribute": true
+	    }
+	  },
+	  "dois": {
+	    "type": "array",
+	    "items": {
+	      "type": "object",
+	      "properties": {
+	        "doi": {
+		  "type": "object",
+		  "properties": {
+		    "ID": {
+		      "type": "string",
+		      "xml": {
+		        "attribute": true
+		      }
+		    },
+		    "assetType": {
+		      "type": "string"
+	            },
+		    "publisher": {
+		      "type": "string"
+	            }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      },
+      "PublishersResponse": {
+        "type": "object",
+	"properties": {
+	  "publishers": {
+	    "type": "array",
+	    "items": {
+	      "type": "string"
+	    }
+	  }
+	}
+      },
+      "PublishersResponseXML": {
+        "type": "object",
+	"xml": {
+          "name": "publishers"
+	},
+	"properties": {
+	  "publisher": {
+	    "type": "string"
+	  }
+        }
+      },
+      "BadRequest": {
+	"type": "object",
+	"properties": {
+	  "error_message": {
+	    "type": "string"
+	  }
+	}
+      },
+      "BadRequestXML": {
+	"type": "object",
+	"xml": {
+	  "name": "Error"
+	},
+	"properties": {
+	  "ErrorMessage": {
+	    "type": "string"
+	  }
+	}
+      }
+    },
+    "responses": {
+      "400": {
+        "description": "Bad request",
+	"content": {
+	  "application/json": {
+	    "schema": {
+	      "$ref": "#/components/schema_defs/BadRequest"
+	    }
+	  },
+          "application/xml": {
+            "schema": {
+              "$ref": "#/components/schema_defs/BadRequestXML"
+            }
+          }
+	}
+      }
+    }
+  }
+}

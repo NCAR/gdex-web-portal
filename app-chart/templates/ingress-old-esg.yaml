@@ -13,21 +13,10 @@ spec:
   tls:
     - hosts:
       - esg.k8s.ucar.edu
-      - earthsystemgrid.org
       - www.earthsystemgrid.org
       secretName: letsencrypt-cert.esg.k8s.ucar.edu
   rules:
   - host: esg.k8s.ucar.edu
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: service-dummy
-            port:
-              number: 80
-  - host: earthsystemgrid.org
     http:
       paths:
       - path: /

@@ -20,5 +20,6 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from . import views
 
 urlpatterns = [
+    path('', views.swagger),
     re_path(r'^[a-zA-Z].*$', views.citations),
 ]
