@@ -164,7 +164,8 @@ def minter(minter, query_dict, **kwargs):
         if 'asset-type' in query_dict:
             wc.append("d.asset_type = '" + query_dict.get('asset-type') + "'")
             if kwargs['output_format'] == ".xml":
-                e = ElementTree.SubElement(response, "asset-types")
+                ElementTree.SubElement(response, "assetType").text = (
+                        query_dict.get('asset-type'))
             else:
                 response['minter'].update(
                         {'asset-type': query_dict.get('asset-type')})
@@ -173,7 +174,8 @@ def minter(minter, query_dict, **kwargs):
             wc.append(("d.publisher = '" +
                        query_dict.get('publisher').strip('"') + "'"))
             if kwargs['output_format'] == ".xml":
-                e = ElementTree.SubElement(response, "publishers")
+                ElementTree.SubElement(response, "publisher").text = (
+                        query_dict.get('publisher'))
             else:
                 response['minter'].update(
                         {'publisher': query_dict.get('publisher')})
@@ -196,7 +198,18 @@ def minter(minter, query_dict, **kwargs):
             dois.append(d)
 
         if kwargs['output_format'] == ".xml":
-            pass
+            e = ElementTree.SubElement(response, "dois")
+            for doi in dois:
+                d = ElementTree.SubElement(e, "doi")
+                d.set('ID', doi['doi']['ID'])
+                if 'asset-type' not in query_dict:
+                    ElementTree.SubElement(d, "assetType").text = (
+                            doi['doi']['asset-type'])
+
+                if 'publisher' not in query_dict:
+                    ElementTree.SubElement(d, "publisher").text = (
+                            doi['doi']['publisher'])
+
         else:
             response['minter'].update({'dois': dois})
 
