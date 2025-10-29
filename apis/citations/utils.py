@@ -110,7 +110,7 @@ def get_publications(query_dict, cursor, doi, output_format):
         if output_format == ".xml":
             d = ElementTree.SubElement(list, "doi")
             d.set('ID', row[0])
-            ptype = ElementTree.SubElement(d, "publication_type")
+            ptype = ElementTree.SubElement(d, "publicationType")
             y = ElementTree.SubElement(d, "year")
             y.text = str(row[2])
             a_list = ElementTree.SubElement(d, "authors")
@@ -159,7 +159,7 @@ def get_publications(query_dict, cursor, doi, output_format):
                     ed_res = cursor.fetchall()
                     if output_format == ".xml":
                         ptype.text = "book_chapter"
-                        bc = ElementTree.SubElement(d, 'published_in')
+                        bc = ElementTree.SubElement(d, 'publishedIn')
                         i = ElementTree.SubElement(bc, 'ISBN')
                         i.text = c_row[1]
                         ed_list = ElementTree.SubElement(bc, 'editors')
@@ -195,7 +195,7 @@ def get_publications(query_dict, cursor, doi, output_format):
             if j_row is not None:
                 if output_format == ".xml":
                     ptype.text = "journal_article"
-                    j = ElementTree.SubElement(d, 'published_in')
+                    j = ElementTree.SubElement(d, 'publishedIn')
                     t = ElementTree.SubElement(j, 'title')
                     t.text = j_row[0]
                     v = ElementTree.SubElement(j, 'volume')
@@ -217,7 +217,7 @@ def get_publications(query_dict, cursor, doi, output_format):
             if p_row is not None:
                 if output_format == ".xml":
                     ptype.text = "conference_paper"
-                    p = ElementTree.SubElement(d, 'published_in')
+                    p = ElementTree.SubElement(d, 'publishedIn')
                     t = ElementTree.SubElement(p, 'title')
                     t.text = p_row[0]
                     v = ElementTree.SubElement(p, 'volume')
