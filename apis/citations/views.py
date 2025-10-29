@@ -10,6 +10,10 @@ from lxml import etree as ElementTree
 metadb_config = settings.RDADB['metadata_config_pg']
 
 
+def swagger(request, output_format=None):
+    return render(request, "citations/swagger.html", {})
+
+
 def citations(request, output_format=None):
     parts = request.META['HTTP_HOST'].split(".")
     if parts[0] != "api":
