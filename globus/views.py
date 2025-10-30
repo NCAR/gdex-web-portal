@@ -213,7 +213,7 @@ def submit_transfer(request):
 
     locflag = get_dataset_location(dsid)
     if locflag == 'O':
-        source_endpoint_id = settings.GLOBUS_STRATUS_ENDPOINT_ID
+        source_endpoint_id = settings.GLOBUS_S3_ENDPOINT_ID
     elif locflag == 'C':
         source_endpoint_id = settings.GLOBUS_CGD_ENDPOINT_ID
     else:
@@ -404,7 +404,7 @@ def get_guest_collection_url(dsid=None, locflag=None, rindex=None):
         if locflag == 'C':
             origin_id = settings.GLOBUS_CGD_ENDPOINT_ID
         elif locflag == 'O' or locflag == 'B':
-            origin_id = settings.GLOBUS_STRATUS_ENDPOINT_ID
+            origin_id = settings.GLOBUS_S3_ENDPOINT_ID
         else:
             origin_id = settings.GLOBUS_DATA_ENDPOINT_ID
         origin_path = get_guest_collection_origin_path(dsid)
