@@ -1,3 +1,4 @@
+{{ if not .Values.enableTest }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -10,3 +11,4 @@ spec:
   - port: {{ .Values.webapp.container.port }}
   selector:
     app: {{ .Values.webapp.name }}
+{{ end }}

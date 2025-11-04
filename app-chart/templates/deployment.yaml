@@ -1,3 +1,4 @@
+{{ if not .Values.enableTest }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -36,3 +37,4 @@ spec:
       - name: {{ .Values.volume.fs.name }}
         persistentVolumeClaim:
           claimName: {{ .Values.volume.fs.name }}
+{{ end }}
