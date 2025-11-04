@@ -5,6 +5,10 @@ metadata:
   name: dattore-{{ .Values.webapp.name }}
   namespace: {{ .Release.Namespace }}
   labels:
+    helm.sh/chart: {{ .Chart.name }}-{{ .Chart.version }}
+    app.kubernetes.io/name: {{ .Release.Name }}-gdex-web-portal
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app: dattore-{{ .Values.webapp.name }}
     group: {{ .Values.webapp.group }}
 spec:
