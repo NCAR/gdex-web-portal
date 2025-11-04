@@ -1,13 +1,13 @@
 replicaCount: 1
 
 webapp:
-  name: dattore-gdex-webserver
+  name: gdex-webserver
   group: gdex-web
   path: /
   tls:
-    fqdn: dattore-gdex-webserver.k8s.ucar.edu
-    fqdnGDEX: dattore-gdex-webserver.ucar.edu
-    fqdnAPI: dattore-gdex-webserver-api.gdex.ucar.edu
+    fqdn: dattore.k8s.ucar.edu
+    fqdnGDEX: dattore.ucar.edu
+    fqdnAPI: dattore-api.gdex.ucar.edu
     secretName: incommon-cert-dattore-gdex-webserver
   container: 
     image: docker.io/dattore/gdex-web-portal:v289
