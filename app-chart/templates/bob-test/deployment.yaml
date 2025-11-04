@@ -1,0 +1,42 @@
+{{ if .Values.enableTest }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dattore-{{ .Values.webapp.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: dattore-{{ .Values.webapp.name }}
+    group: {{ .Values.webapp.group }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: dattore-{{ .Values.webapp.name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: dattore-{{ .Values.webapp.name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: dattore-{{ .Values.webapp.name }}
+        image: {{ .Values.webapp.container.image }}
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: {{ .Values.webapp.container.requests.memory }}
+            cpu: {{ .Values.webapp.container.requests.cpu }}
+          limits:
+            memory: {{ .Values.webapp.container.limits.memory }}
+            cpu: {{ .Values.webapp.container.limits.cpu }}
+        ports:
+        - containerPort: {{ .Values.webapp.container.port }}
+        volumeMounts:
+        - mountPath: {{ .Values.volume.fs.mountPath }}
+          name: {{ .Values.volume.fs.name }}
+      volumes:
+      - name: {{ .Values.volume.fs.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.volume.fs.name }}
+{{ end }}

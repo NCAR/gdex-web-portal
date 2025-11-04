@@ -1,0 +1,52 @@
+{{ if .Values.enableTest }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.webapp.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    group: {{ .Values.webapp.group }}
+  annotations:
+    cert-manager.io/cluster-issuer: "incommon"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "{{ .Values.webapp.container.responseTimeout }}"
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.webapp.container.maxUploadSize }}
+spec:
+  ingressClassName: nginx-external
+  tls:
+    - hosts:
+      - {{ .Values.webapp.tls.fqdn }}
+      - {{ .Values.webapp.tls.fqdnAPI }}
+      - {{ .Values.webapp.tls.fqdnGDEX }}
+      secretName: {{ .Values.webapp.tls.secretName }}
+  rules:
+  - host: {{ .Values.webapp.tls.fqdn }}
+    http:
+      paths:
+      - path: {{ .Values.webapp.path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.webapp.name }}
+            port:
+              number: {{ .Values.webapp.container.port }}
+  - host: {{ .Values.webapp.tls.fqdnAPI }}
+    http:
+      paths:
+      - path: {{ .Values.webapp.path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.webapp.name }}
+            port:
+              number: {{ .Values.webapp.container.port }}
+  - host: {{ .Values.webapp.tls.fqdnGDEX }}
+    http:
+      paths:
+      - path: {{ .Values.webapp.path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.webapp.name }}
+            port:
+              number: {{ .Values.webapp.container.port }}
+{{ end }}
