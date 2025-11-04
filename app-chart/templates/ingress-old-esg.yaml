@@ -17,7 +17,7 @@ spec:
       - esg.k8s.ucar.edu
       - earthsystemgrid.org
       - www.earthsystemgrid.org
-      secretName: letsencrypt-cert.esg.k8s.ucar.edu
+      secretName: letsencrypt-cert-2.esg.k8s.ucar.edu
   rules:
   - host: esg.k8s.ucar.edu
     http:

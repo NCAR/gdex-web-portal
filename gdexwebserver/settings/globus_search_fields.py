@@ -21,7 +21,11 @@ def search_highlights(result: List[Mapping[str, Any]]) -> List[Mapping[str, dict
         {
             "field_name": "format",
             "title": "Data Format"
-        }
+        },
+        {
+            "field_name": "tags",
+            "title": "Tags"
+        },
     ]
 
     search_highlights = list()
@@ -32,13 +36,12 @@ def search_highlights(result: List[Mapping[str, Any]]) -> List[Mapping[str, dict
         name = field['field_name']
         value = result[0].get(name)
         value_type = "str"
+        query_key = f"filter-match-all.{name}"
 
         # Parse a date if it's a date. All dates expected isoformat
         if name == "temporal_range_start":
             value = datetime.datetime.strptime(value, date_fmt)
             value_type = "date"
-        elif name == "tags":
-            value = ", ".join(value)
 
         # Add the value to the list
         search_highlights.append(
@@ -47,6 +50,7 @@ def search_highlights(result: List[Mapping[str, Any]]) -> List[Mapping[str, dict
                 "title": field['title'],
                 "value": value,
                 "type": value_type,
+                "search_filter_query_key": query_key,
             }
         )
     return search_highlights

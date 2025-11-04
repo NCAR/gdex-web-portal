@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+<div id="swagger-ui"></div>
+<script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js" crossorigin></script>
+<script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js" crossorigin></script>
+<script>
+    window.onload = () => {
+      window.ui = SwaggerUIBundle({
+        url: 'https://api.gdex.ucar.edu/static/apis/citations/openapi.json',
+        dom_id: '#swagger-ui',
+      });
+    };
+</script>
+{% endblock %}

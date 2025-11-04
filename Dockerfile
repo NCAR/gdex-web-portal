@@ -51,6 +51,7 @@ cp -r /usr/local/gdexweb/apache2/* /etc/apache2/
 # link django settings files
 ln -s /data/local/gdexweb/gdexwebserver/settings/local_settings.py /usr/local/gdexweb/gdexwebserver/settings/local_settings.py
 ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/local_settings.py
+ln -s /data/local/gdexweb/gdexwebserver/settings/domain_settings.py /usr/local/gdexweb/gdexwebserver/settings/domain_settings.py
 #
 chown -R www-data:www-data /data
 #

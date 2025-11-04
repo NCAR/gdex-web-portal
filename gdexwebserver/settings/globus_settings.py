@@ -15,14 +15,10 @@ GLOBUS_APP_TRANSFER_REFRESH_TOKEN = local_settings.globus_transfer_refresh_token
 GLOBUS_APP_AUTH_REFRESH_TOKEN = local_settings.globus_auth_refresh_token
 
 GLOBUS_DATA_ENDPOINT_ID = "c4e40965-a024-43d7-bef4-6010f3731b61"
-GLOBUS_REQUEST_ENDPOINT_ID = "0104eacd-94b4-4202-9966-817247f0ca8c"
-GLOBUS_STRATUS_ENDPOINT_ID = "be4aa6a8-9e35-11eb-8a8e-d70d98a40c8d"
+GLOBUS_REQUEST_ENDPOINT_ID = "e6cd9f43-935c-42e3-8d19-764d03241719"
+GLOBUS_S3_ENDPOINT_ID = "558ad782-80dd-4656-a64a-2245f38a7c9e"
+GLOBUS_STRATUS_ENDPOINT_ID = GLOBUS_S3_ENDPOINT_ID
 GLOBUS_CGD_ENDPOINT_ID = "11651c26-80c2-4dac-a236-7755530731ac"
-
-GLOBUS_DATA_DOMAIN = 'data.gdex.ucar.edu'
-GLOBUS_STRATUS_DOMAIN = 'stratus.gdex.ucar.edu'
-GLOBUS_REQUEST_DOMAIN = 'request.gdex.ucar.edu'
-CGD_HTTPS_DOMAIN = 'g-09c647.7a577b.6fbd.data.globus.org'
 
 GLOBUS_RDA_DATA_BASE_PATH = '/glade/campaign/collections/gdex/data/'
 GLOBUS_REQUEST_BASE_PATH = '/glade/campaign/collections/gdex/transfer/'
