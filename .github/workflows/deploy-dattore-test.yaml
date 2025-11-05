@@ -18,8 +18,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Pull latest web portal image
-        run: docker pull dattore/gdex-web-portal:latest
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
@@ -29,6 +27,6 @@ jobs:
           docker build --platform linux/amd64
           --build-arg VERSION_NUMBER=dattore-test
           -t dattore/gdex-web-portal:dattore-test
-          --no-cache .
+          --no-cache -f Dockerfile.bob .
       - name: Push the new image to Docker Hub
         run: docker push dattore/gdex-web-portal:dattore-test
