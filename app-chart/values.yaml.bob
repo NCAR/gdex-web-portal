@@ -20,14 +20,8 @@ webapp:
     maxUploadSize: 60m
   ingress:
     ingressClassName: nginx-internal
-    oldrdaRedirect: false
-    oldesgRedirect: false
-    oldrdaRedirect: false
-    oldtdsRedirect: false
 
 volume:
-  enabled: true
-  readonly: true
   fs:
     existingClaim: gdexdata
     name: gdexdata
