@@ -144,3 +144,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# test instances
+app-chart/templates/bob-test/
+app-chart/values.yaml.bob
