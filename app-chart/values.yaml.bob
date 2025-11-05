@@ -27,5 +27,4 @@ volume:
     name: gdexdata
     mountPath: /data
 
-enableTest: true
 testName: dattore

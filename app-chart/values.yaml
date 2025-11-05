@@ -26,5 +26,3 @@ volume:
     name: gdexdata
     size: 2Ti
     mountPath: /data
-
-enableTest: false

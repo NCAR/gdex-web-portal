@@ -1,4 +1,4 @@
-{{ if not .Values.enableTest }}
+{{ if not .Values.testName }}
 apiVersion: v1
 kind: Service
 metadata:
