@@ -1,24 +1,30 @@
-{{ if not .Values.enableTest }}
+{{ if .Values.enableTest }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.webapp.name }}
+  name: dattore-{{ .Values.webapp.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Values.webapp.name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ .Release.Name }}-gdex-web-portal
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app: dattore-{{ .Values.webapp.name }}
     group: {{ .Values.webapp.group }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Values.webapp.name }}
+      app: dattore-{{ .Values.webapp.name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.webapp.name }}
+        app: dattore-{{ .Values.webapp.name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
-      - name: {{ .Values.webapp.name }}
+      - name: dattore-{{ .Values.webapp.name }}
         image: {{ .Values.webapp.container.image }}
         imagePullPolicy: Always
         resources:
@@ -33,6 +39,7 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.volume.fs.mountPath }}
           name: {{ .Values.volume.fs.name }}
+          readOnly: true
 
       volumes:
       - name: {{ .Values.volume.fs.name }}

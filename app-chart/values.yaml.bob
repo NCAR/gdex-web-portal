@@ -5,10 +5,8 @@ webapp:
   group: gdex-web
   path: /
   tls:
-    fqdn: gdex.k8s.ucar.edu
-    fqdnGDEX: gdex.ucar.edu
-    fqdnAPI: api.gdex.ucar.edu
-    secretName: incommon-cert-gdex-webserver
+    fqdn: dattore.k8s.ucar.edu
+    secretName: incommon-cert-dattore-gdex-webserver
   container: 
     image: docker.io/dattore/gdex-web-portal:v289
     port: 8080
@@ -20,11 +18,19 @@ webapp:
       cpu: 6
     responseTimeout: 180
     maxUploadSize: 60m
+  ingress:
+    ingressClassName: nginx-internal
+    oldrdaRedirect: false
+    oldesgRedirect: false
+    oldrdaRedirect: false
+    oldtdsRedirect: false
 
 volume:
+  enabled: true
+  readonly: true
   fs:
+    existingClaim: gdexdata
     name: gdexdata
-    size: 2Ti
     mountPath: /data
 
-enableTest: false
+enableTest: true
