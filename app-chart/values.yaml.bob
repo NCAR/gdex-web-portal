@@ -34,3 +34,4 @@ volume:
     mountPath: /data
 
 enableTest: true
+testName: dattore
