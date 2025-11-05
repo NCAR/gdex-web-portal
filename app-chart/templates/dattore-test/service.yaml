@@ -1,4 +1,4 @@
-{{ if .Values.enableTest }}
+{{- if and (.Values.enableTest) (eq .Values.testName "dattore") }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -16,4 +16,4 @@ spec:
   selector:
     app: {{ .Release.Name }}-{{ .Values.webapp.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-{{ end }}
+{{- end }}
