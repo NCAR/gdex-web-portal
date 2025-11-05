@@ -1,4 +1,4 @@
-{{- if and (.Values.enableTest) (eq .Values.testName "dattore") }}
+{{- if eq .Values.testName "dattore" }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

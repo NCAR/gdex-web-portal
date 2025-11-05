@@ -1,4 +1,4 @@
-{{ if not .Values.enableTest }}
+{{ if not .Values.testName }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
