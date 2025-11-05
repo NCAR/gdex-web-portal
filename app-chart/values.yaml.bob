@@ -6,6 +6,7 @@ webapp:
   path: /
   tls:
     fqdn: dattore.k8s.ucar.edu
+    fqdnAPI: api.dattore.k8s.ucar.edu
     secretName: incommon-cert-dattore-gdex-webserver
   container: 
     image: docker.io/dattore/gdex-web-portal:v290
