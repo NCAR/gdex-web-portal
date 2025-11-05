@@ -39,6 +39,8 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.volume.fs.mountPath }}
           name: {{ .Values.volume.fs.name }}
+          readOnly: true
+
       volumes:
       - name: {{ .Values.volume.fs.name }}
         persistentVolumeClaim:
