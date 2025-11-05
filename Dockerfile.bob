@@ -1,0 +1,83 @@
+# syntax=docker/dockerfile:1
+
+FROM dattore/gdex-web-portal:web AS intermediate
+
+# set the version number
+ARG VERSION_NUMBER=
+RUN if [ -z "$VERSION_NUMBER"]; then \
+echo "'VERSION_NUMBER' environment variable is missing"; \
+exit 1; \
+fi
+RUN <<EOF
+cat <<EOFCAT > /tmp/version_number
+$VERSION_NUMBER
+EOFCAT
+cat <<EOFCAT > /tmp/get_version_number
+#! /bin/bash
+cat /usr/local/gdexweb/static/version
+EOFCAT
+chmod 755 /tmp/get_version_number
+EOF
+
+# install git
+RUN <<EOF
+apt-get update -y
+apt-get install -y git
+mkdir /tmp/gdexweb
+git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
+cd /tmp/gdexweb
+git checkout dattore-test
+EOF
+
+
+FROM dattore/gdex-web-portal:web
+
+# copy from the intermediate
+COPY --from=intermediate /tmp/version_number /usr/local/gdexweb/static/version
+COPY --from=intermediate /tmp/get_version_number /usr/local/bin/
+COPY --from=intermediate /tmp/gdexweb /usr/local/gdexweb
+
+RUN pip install -r /usr/local/gdexweb/requirements.txt
+
+# set permissions
+RUN <<EOF
+chown -R www-data:www-data /usr/local/gdexweb
+touch /var/log/django.log
+chown www-data:www-data /var/log/django.log
+EOF
+
+RUN <<EOF
+cat <<'EOFCAT' > /usr/local/bin/start_container
+#! /bin/bash
+#
+# replace apache2 configuration files from repository
+cp -r /usr/local/gdexweb/apache2/* /etc/apache2/
+#
+# link django settings files
+ln -s /data/local/gdexweb/gdexwebserver/settings/local_settings.py /usr/local/gdexweb/gdexwebserver/settings/local_settings.py
+ln -s /data/local/gdexweb/metaman/local_settings.py /usr/local/gdexweb/metaman/local_settings.py
+ln -s /data/local/gdexweb/gdexwebserver/settings/domain_settings.py /usr/local/gdexweb/gdexwebserver/settings/domain_settings.py
+#
+chown -R www-data:www-data /data
+#
+python /usr/local/gdexweb/manage.py collectstatic --noinput
+dsspellchecker_manage build_db &
+auth_key=`grep doi_manager_auth_key /data/local/gdexweb/metaman/local_settings.py |awk -F\" '{print $2}'`
+doi_manage $auth_key configure /data/local/doi_manager/settings.txt
+#
+/etc/init.d/sendmail start &
+#
+# need cron and ssh keys for dset_waf
+cp -r /data/root/ /
+crontab -l > /dev/null; cat /root/crontab.install |crontab -
+/etc/init.d/cron start &
+#
+# start apache web server
+apache2ctl -D FOREGROUND
+EOFCAT
+EOF
+RUN chmod 755 /usr/local/bin/start_container
+
+# start the web server
+ENV PYTHONPATH=/usr/local/gdexweb
+CMD ["/usr/local/bin/start_container"]
