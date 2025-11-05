@@ -1,22 +1,33 @@
-{{ if not .Values.testName }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  {{ if .Values.testName }}
+  name: {{ .Values.testName }}-{{ .Values.webapp.name }}
+  {{ else }}
   name: {{ .Values.webapp.name }}
+  {{ end }}
   namespace: {{ .Release.Namespace }}
   labels:
+    {{ if .Values.testName }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ .Release.Name }}-gdex-web-portal
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{ end }}
     group: {{ .Values.webapp.group }}
   annotations:
     cert-manager.io/cluster-issuer: "incommon"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "{{ .Values.webapp.container.responseTimeout }}"
     nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.webapp.container.maxUploadSize }}
 spec:
-  ingressClassName: nginx-external
+  ingressClassName: nginx-{{ if .Values.testName }}internal{{ else }}external{{ end }}
   tls:
     - hosts:
       - {{ .Values.webapp.tls.fqdn }}
       - {{ .Values.webapp.tls.fqdnAPI }}
+      {{ if not .Values.testName }}
       - {{ .Values.webapp.tls.fqdnGDEX }}
+      {{ end }}
       secretName: {{ .Values.webapp.tls.secretName }}
   rules:
   - host: {{ .Values.webapp.tls.fqdn }}
@@ -39,6 +50,7 @@ spec:
             name: {{ .Values.webapp.name }}
             port:
               number: {{ .Values.webapp.container.port }}
+  {{ if not .Values.testName }}
   - host: {{ .Values.webapp.tls.fqdnGDEX }}
     http:
       paths:
@@ -46,7 +58,11 @@ spec:
         pathType: Prefix
         backend:
           service:
+            {{ if .Values.testName }}
+            name: {{ .Values.testName }}-{{ .Values.webapp.name }}
+            {{ else }}
             name: {{ .Values.webapp.name }}
+            {{ end }}
             port:
               number: {{ .Values.webapp.container.port }}
-{{ end }}
+  {{ end }}
