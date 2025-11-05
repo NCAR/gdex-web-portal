@@ -1,0 +1,19 @@
+{{ if .Values.enableTest }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.webapp.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ .Release.Name }}-gdex-web-portal
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    group: {{ .Values.webapp.group }}
+spec:
+  ports:
+  - port: {{ .Values.webapp.container.port }}
+  selector:
+    app: {{ .Release.Name }}-{{ .Values.webapp.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ end }}
