@@ -10,8 +10,8 @@ metadata:
   labels:
     {{ if .Values.testName }}
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    app.kubernetes.io/name: {{ .Release.Name }}-gdex-web-portal
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ .Values.testName }}-gdex-web-portal
+    app.kubernetes.io/instance: {{ .Values.testName }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     {{ end }}
     group: {{ .Values.webapp.group }}
