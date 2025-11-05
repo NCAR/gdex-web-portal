@@ -1,0 +1,34 @@
+on:
+  push:
+    branches:
+      - dattore-test
+    paths-ignore:
+      - ".github/**"
+      - ".gitignore"
+      - "app-chart/**"
+      - "README.md"
+      - "LICENSE"
+
+jobs:
+  test-container-rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Pull latest web portal image
+        run: docker pull dattore/gdex-web-portal:latest
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          ref: dattore-test
+      - name: Build a new version of container
+        run: >
+          docker build --platform linux/amd64
+          --build-arg VERSION_NUMBER=dattore-test
+          -t dattore/gdex-web-portal:dattore-test
+          --no-cache .
+      - name: Push the new image to Docker Hub
+        run: docker push dattore/gdex-web-portal:dattore-test
