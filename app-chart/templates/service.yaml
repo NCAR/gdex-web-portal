@@ -19,7 +19,7 @@ spec:
   ports:
   - port: {{ .Values.webapp.container.port }}
   selector:
-    {{ .Values.testName }}
+    {{ if .Values.testName }}
     app: {{ .Values.testName }}-{{ .Values.webapp.name }}
     app.kubernetes.io/instance: {{ .Values.testName }}
     {{ else }}
