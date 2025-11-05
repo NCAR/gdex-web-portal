@@ -80,7 +80,7 @@
     <body class="ncar{% block body_class %}{% endblock %}">
         {% include "unity/header_decs.html" %}
         {% alerts %}
-        {% if request.get_host|slice:"0:4" != "gdex" %}
+        {% if request.get_host|slice:"0:4" != "gdex" and request.get_host|slice:"0:8" != "api.gdex" %}
         <font color="red">TEST INSTANCE!</font> {{ request.get_host }}
         {% endif %}
         <main class="container-lg py-3 pt-md-4">
