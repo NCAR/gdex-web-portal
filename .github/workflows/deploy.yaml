@@ -10,6 +10,7 @@ on:
       - "app-chart/**"
       - "README.md"
       - "LICENSE"
+      - "Dockerfile.bob"
 
 jobs:
   container-rebuild:
