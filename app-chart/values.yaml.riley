@@ -9,7 +9,7 @@ webapp:
     fqdnAPI: api.riley.k8s.ucar.edu
     secretName: incommon-cert-riley-gdex-webserver
   container: 
-    image: docker.io/dattore/gdex-web-portal:v290
+    image: hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:latest
     port: 8080
     requests:
       memory: 2Gi
