@@ -17,12 +17,12 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
-          ref: inputs.branch_name
+          ref: ${{ github.event.inputs.branch_name }}
       - name: Build a new version of container
         run: >
           docker build --platform linux/amd64
-          --build-arg VERSION_NUMBER=inputs.branch_name
-          -t dattore/gdex-web-portal:inputs.branch_name
+          --build-arg VERSION_NUMBER=${{ github.event.inputs.branch_name }}
+          -t dattore/gdex-web-portal:${{ github.event.inputs.branch_name }}
           --no-cache -f Dockerfile.bob .
       - name: Push the new image to Docker Hub
-        run: docker push dattore/gdex-web-portal:inputs.branch_name
+        run: docker push dattore/gdex-web-portal:${{ github.event.inputs.branch_name }}
