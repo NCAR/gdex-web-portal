@@ -26,7 +26,7 @@ apt-get install -y git
 mkdir /tmp/gdexweb
 git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
 cd /tmp/gdexweb
-git checkout dattore-test
+git checkout $BRANCH_NAME
 EOF
 
 
