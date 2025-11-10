@@ -1816,6 +1816,7 @@ class Group(object):
     def __len__(self):
         return len(rows)
 
+
 def get_abstract(dsid):
     """Get the abstract for a given dataset with additional parsing
     Args:
@@ -1901,6 +1902,7 @@ def get_abstract(dsid):
     result['abstract'] = clean_abstract
 
     return result
+
 
 def get_acknowledgement(dsid):
     """Get the acknowledgement for a given dataset
