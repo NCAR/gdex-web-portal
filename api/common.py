@@ -1815,3 +1815,725 @@ class Group(object):
 
     def __len__(self):
         return len(rows)
+
+
+def get_abstract(dsid):
+    """Get the abstract for a given dataset with additional parsing
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        dict: Dictionary containing:
+            - abstract (str): Cleaned abstract text
+            - note (str): Any note/warning text found
+            - urls (list): List of URLs found in the abstract
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select abstract from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    raw_data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    result = {
+        'abstract': '',
+        'note': '',
+        'urls': []
+    }
+
+    unicode_escapes = {
+        '\\u003C': '<',
+        '\\u003E': '>',
+        '\\u0026': '&',
+        '\\u0022': '"',
+        '\\u0027': "'",
+        '\\u002F': '/',
+        '\\u003D': '='
+    }
+
+    decoded_text = raw_data
+    for escape, char in unicode_escapes.items():
+        decoded_text = decoded_text.replace(escape, char)
+
+    url_pattern = r'https?://[^\s<>"{}|\\^\[\]]+[^\s<>"{}|\\^\[\].,;:!?]'
+    remaining_urls = re.findall(url_pattern, decoded_text)
+    result['urls'].extend(remaining_urls)
+    result['urls'] = list(set(result['urls']))
+
+    # look for font tags with color="red" or similar note patterns
+    note_section_pattern = r'(<font[^>]*color\s*=\s*["\']red["\'][^>]*>.*?</font>)'
+    note_match = re.search(note_section_pattern, decoded_text, re.IGNORECASE | re.DOTALL)
+
+    if note_match:
+        full_note_html = note_match.group(1)
+
+        clean_note = full_note_html
+        clean_note = re.sub(r'<[^>]+>', '', clean_note)
+        clean_note = re.sub(r'\s+', ' ', clean_note).strip()
+        clean_note = re.sub(r'^PLEASE NOTE[.:\s]*', '', clean_note, flags=re.IGNORECASE)
+        result['note'] = clean_note
+
+        clean_abstract = decoded_text.replace(note_match.group(0), '')
+    else:
+        # look for other note patterns if font tag not found
+        note_patterns = [
+            r'(PLEASE NOTE[^.]*\.)',  # PLEASE NOTE with everything until first period
+            r'(NOTE[.:][^.]*\.)'      # NOTE: with everything until first period
+        ]
+
+        clean_abstract = decoded_text
+        for pattern in note_patterns:
+            matches = re.findall(pattern, decoded_text, re.IGNORECASE | re.DOTALL)
+            if matches:
+                full_note_section = matches[0].strip()
+                clean_note = re.sub(r'<[^>]+>', '', full_note_section)
+                clean_note = re.sub(r'^PLEASE NOTE[.:\s]*', '', clean_note, flags=re.IGNORECASE)
+                clean_note = re.sub(r'^NOTE[.:\s]*', '', clean_note, flags=re.IGNORECASE)
+                clean_note = re.sub(r'\s+', ' ', clean_note).strip()
+                result['note'] = clean_note
+                clean_abstract = decoded_text.replace(full_note_section, '')
+                break
+
+    clean_abstract = re.sub(r'<[^>]+>', '', clean_abstract)
+    clean_abstract = re.sub(r'\s+', ' ', clean_abstract)
+    clean_abstract = clean_abstract.strip()
+
+    clean_abstract = re.sub(r'\s+[,;:]\s*$', '', clean_abstract)
+    clean_abstract = re.sub(r'^\s*[,;:]\s+', '', clean_abstract)
+
+    result['abstract'] = clean_abstract
+
+    return result
+
+def get_acknowledgement(dsid):
+    """Get the acknowledgement for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        str: The acknowledgement text for the dataset, or None if not found
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select acknowledgement from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    result = cur.fetchone()
+    close_connection(con, cur)
+
+    if result is None or result[0] is None:
+        return None
+
+    data = result[0]
+    clean_text = re.sub(r'</?p>', '', data)
+    clean_text = clean_text.strip()
+
+    if not clean_text:
+        return None
+
+    return clean_text
+
+def get_temporal_range(dsid):
+    """Get the temporal range for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        dict: Dictionary containing temporal range information
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select temporal from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    full_range = data['full']
+    start_date_str, end_date_str = full_range.split(' to ')
+    start_date_clean = start_date_str.strip()
+    end_date_clean = end_date_str.strip()
+
+    result = {
+        'start_date': start_date_clean,
+        'end_date': end_date_clean,
+        'data_groups': []
+    }
+
+    for group in data['groups']:
+        if '(' in group and ')' in group:
+            date_part = group.split(' (')[0]
+            description_part = group.split(' (')[1].rstrip(')')
+
+            if ' to ' in date_part:
+                group_start, group_end = date_part.split(' to ')
+                group_start_clean = group_start.strip()
+                group_end_clean = group_end.strip()
+            else:
+                group_start_clean = date_part.strip()
+                group_end_clean = date_part.strip()
+
+            result['data_groups'].append({
+                'description': description_part,
+                'start_date': group_start_clean,
+                'end_date': group_end_clean
+            })
+
+    return result
+
+def categorize_variables_manual(variables):
+    categories = {
+        'temperature': [],
+        'precipitation': [],
+        'wind': [],
+        'pressure': [],
+        'humidity': [],
+        'cloud': [],
+        'radiation': [],
+        'other': []
+    }
+
+    for var in variables:
+        var_lower = var.lower()
+        if 'temperature' in var_lower or 'heat' in var_lower:
+            categories['temperature'].append(var)
+        elif 'precipitation' in var_lower or 'rain' in var_lower or 'snow' in var_lower:
+            categories['precipitation'].append(var)
+        elif 'wind' in var_lower:
+            categories['wind'].append(var)
+        elif 'pressure' in var_lower:
+            categories['pressure'].append(var)
+        elif 'humidity' in var_lower:
+            categories['humidity'].append(var)
+        elif 'cloud' in var_lower:
+            categories['cloud'].append(var)
+        elif 'radiative' in var_lower or 'flux' in var_lower:
+            categories['radiation'].append(var)
+        else:
+            categories['other'].append(var)
+
+    return {k: v for k, v in categories.items() if v}
+
+@lru_cache(maxsize=128)
+def fetch_gcmd_concepts():
+    """Fetch GCMD science keywords concepts and cache the result"""
+    try:
+        url = "https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords/?format=json&page_num=1&page_size=2000"
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        concepts = data.get('concepts', [])
+        return concepts
+    except requests.RequestException as e:
+        return []
+
+@lru_cache(maxsize=256)
+def get_concept_category(uuid):
+    """Get the broader category for a given concept UUID"""
+    try:
+        url = f"https://gcmd.earthdata.nasa.gov/kms/concept/{uuid}?format=json"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        broader = data.get('broader', [])
+
+        if broader and len(broader) > 0 and 'prefLabel' in broader[0]:
+            category = broader[0]['prefLabel'].lower()
+            return category
+        else:
+            return 'other'
+    except requests.RequestException as e:
+        return 'other'
+
+def categorize_variables(variables):
+    """Categorize variables using GCMD API"""
+    concepts = fetch_gcmd_concepts()
+    if not concepts:
+        return categorize_variables_manual(variables)
+
+    variable_to_uuid = {}
+
+    for var in variables:
+        var_lower = var.lower()
+
+        found_exact = False
+        for concept in concepts:
+            pref_label = concept.get('prefLabel', '').lower()
+            if pref_label and var_lower == pref_label:
+                variable_to_uuid[var] = concept.get('uuid')
+                found_exact = True
+                break
+
+        if not found_exact:
+            for concept in concepts:
+                pref_label = concept.get('prefLabel', '').lower()
+                if pref_label and (var_lower in pref_label or pref_label in var_lower):
+                    variable_to_uuid[var] = concept.get('uuid')
+                    break
+
+    categories = {}
+
+    for var in variables:
+        if var in variable_to_uuid:
+            uuid = variable_to_uuid[var]
+            category = get_concept_category(uuid).title()
+        if category not in categories:
+            categories[category] = []
+        categories[category].append(var)
+
+    return {k: v for k, v in categories.items() if v}
+
+def get_variables(dsid):
+    """Get the variables for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        dict: Dictionary containing variables information
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select variables from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    variables_list = data.get('gcmd', [])
+    variables_sorted = sorted(variables_list)
+
+    result = {
+        'count': len(variables_sorted),
+        'variables': variables_sorted,
+        'categories': categorize_variables(variables_sorted),
+        'message': "The variables represented in this API include but are not limited to those available in the dataset. Additional variables may be present in the actual data files."
+    }
+
+    return result
+
+def parse_authors(authors_string):
+    """
+    Parse authors string into a clean array of author names
+
+    Args:
+        authors_string (str): Raw authors string from publication data
+
+    Returns:
+        list: List of cleaned author names
+    """
+    if not authors_string:
+        return []
+
+    authors_string = re.sub(r'<[^>]+>', '', authors_string)
+
+    authors = []
+    raw_authors = authors_string.split(',')
+
+    for author in raw_authors:
+        author = author.strip()
+
+        if not author:
+            continue
+
+        author = re.sub(r'[.;]+$', '', author)
+        author = re.sub(r'^(and|&)\s+', '', author, flags=re.IGNORECASE)
+        if author.strip():
+            authors.append(author.strip())
+
+    return authors
+
+def clean_publication(pub_text):
+    """Clean publications data with author parsing"""
+    if not pub_text:
+        return None
+
+    pub_text = pub_text.replace('&amp;amp;', '&')
+    pub_text = pub_text.replace('&amp;', '&')
+
+    url_match = re.search(r'<a href="([^"]+)"[^>]*>([^<]+)</a>', pub_text)
+    url = url_match.group(1) if url_match else None
+    link_text = url_match.group(2) if url_match else None
+
+    clean_text = re.sub(r'<[^>]+>', '', pub_text)
+
+    year_match = re.search(r'(\d{4}):', clean_text)
+    year = year_match.group(1) if year_match else None
+
+    # journal name
+    journal_match = re.search(r'<i>([^<]+)</i>', pub_text)
+    journal = journal_match.group(1) if journal_match else None
+
+    # DOI
+    doi_match = re.search(r'DOI:\s*([^)]+)', clean_text)
+    doi = doi_match.group(1).strip() if doi_match else None
+
+    # volume and pages
+    volume_match = re.search(r'<b>([^<]+)</b>', pub_text)
+    volume_pages = volume_match.group(1) if volume_match else None
+
+    # authors
+    authors_string = None
+    if year:
+        authors_match = re.search(r'^([^:]+)' + year, clean_text)
+        authors_string = authors_match.group(1).strip().rstrip(',') if authors_match else None
+
+    authors_array = parse_authors(authors_string)
+    authors_array = [author for author in authors_array if any(len(word.strip('.,')) >= 3 for word in author.split())]
+
+    # title
+    title = link_text if link_text else None
+    if not title and year:
+        title_match = re.search(year + r':\s*([^.]+)', clean_text)
+        title = title_match.group(1).strip() if title_match else None
+
+    return {
+        'authors': authors_array,
+        'authors_text': authors_string,
+        'year': year,
+        'title': title,
+        'journal': journal,
+        'volume_pages': volume_pages,
+        'doi': doi,
+        'url': url
+    }
+
+def get_publications(dsid):
+    """Get the publications for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        dict: Dictionary containing publications information
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select publications from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    publications_list = data if isinstance(data, list) else []
+    cleaned_publications = []
+
+    for pub in publications_list:
+        cleaned_pub = clean_publication(pub)
+        if cleaned_pub:
+            cleaned_publications.append(cleaned_pub)
+
+    result = {
+        'count': len(cleaned_publications),
+        'publications': cleaned_publications
+    }
+
+    return result
+
+def get_data_license(dsid):
+    """Get the data license for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        dict: Dictionary containing information regarding the data license (name and url)
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select data_license from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    result = {
+        'name': data['name'],
+        'url': data['url']
+    }
+
+    return result
+
+def get_data_types(dsid):
+    """Get the data types for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        str: The data types text for the dataset
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select data_types from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    return data
+
+def get_data_formats(dsid):
+    """Get the data formats for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        str: Dictionary containing information regarding the data formats (description and url)
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select data_formats from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    formats_list = data if isinstance(data, list) else []
+    processed_formats = []
+
+    for format_item in formats_list:
+        processed_format = {
+            'description': format_item.get('description', 'Unknown format'),
+            'url': format_item.get('url', None),
+            'has_documentation': format_item.get('url') is not None
+        }
+        processed_formats.append(processed_format)
+
+    result = {
+        'count': len(processed_formats),
+        'data_formats': processed_formats
+    }
+
+    return result
+
+def clean_spatial_details(details_list):
+    cleaned_details = []
+    for detail in details_list:
+        if detail:
+            clean_detail = detail.replace('&deg;', '°')
+            clean_detail = clean_detail.replace('&times;', '×')
+            clean_detail = re.sub(r'<small>([^<]+)</small>', r'(\1)', clean_detail)
+            clean_detail = re.sub(r'<[^>]+>', '', clean_detail)
+            cleaned_details.append(clean_detail.strip())
+
+    return cleaned_details
+
+def parse_spatial_details(details):
+    """Parse spatial details to extract resolution and grid information"""
+    parsed_info = {}
+
+    for detail in details:
+        # Extract resolution ("0.703° x ~0.702°")
+        resolution_match = re.search(r'([\d.]+)°?\s*x\s*~?([\d.]+)°?', detail)
+        if resolution_match:
+            parsed_info['resolution'] = {
+                'longitude': float(resolution_match.group(1)),
+                'latitude': float(resolution_match.group(2)),
+                'units': 'degrees'
+            }
+
+        # Extract coordinate ranges
+        coord_match = re.search(r'from\s+([\d.]+[EW])\s+to\s+([\d.]+[EW])\s+and\s+([\d.]+[NS])\s+to\s+([\d.]+[NS])', detail)
+        if coord_match:
+            parsed_info['coordinate_range'] = {
+                'longitude_start': coord_match.group(1),
+                'longitude_end': coord_match.group(2),
+                'latitude_start': coord_match.group(3),
+                'latitude_end': coord_match.group(4)
+            }
+
+        # Extract grid dimensions ("512 x 256")
+        grid_match = re.search(r'\((\d+)\s*x\s*(\d+)', detail)
+        if grid_match:
+            parsed_info['grid_dimensions'] = {
+                'longitude_points': int(grid_match.group(1)),
+                'latitude_points': int(grid_match.group(2))
+            }
+
+        # Extract grid type
+        if 'Gaussian' in detail:
+            parsed_info['grid_type'] = 'Gaussian'
+        elif 'Regular' in detail:
+            parsed_info['grid_type'] = 'Regular'
+
+    return parsed_info
+
+def get_spatial_coverage(dsid):
+    """Get the spatial coverage for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        dict: Dictionary containing spatial coverage information
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select spatial_coverage from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    details = clean_spatial_details(data.get('details', []))
+
+    def process_bound(value):
+        """Process a bound value according to directional rules"""
+        if value is None:
+            return None
+
+        value_str = str(value).strip()
+
+        if value_str.endswith('N'):
+            # north - positive value, remove N
+            return float(value_str[:-1])
+        elif value_str.endswith('S'):
+            # south - make negative, remove S
+            return -float(value_str[:-1])
+        elif value_str.endswith('W'):
+            # west - make negative, remove W
+            return -float(value_str[:-1])
+        elif value_str.endswith('E'):
+            # east - make sure positive, remove E
+            return abs(float(value_str[:-1]))
+
+    result = {
+        'bounds': {
+            'north': process_bound(data.get('north')),
+            'south': process_bound(data.get('south')),
+            'east': process_bound(data.get('east')),
+            'west': process_bound(data.get('west')),
+            'lat_units': 'degrees north',
+            'lon_units': 'degrees east'
+        }
+    }
+
+    # Add parsed details if available
+    if details:
+        parsed_details = parse_spatial_details(details)
+        result.update(parsed_details)
+
+    return result
+
+def categorize_contributors(contributors):
+    """Add category field to each contributor based on organization type"""
+    categorized_contributors = []
+
+    for contributor in contributors:
+        # Create a copy of the contributor to avoid modifying the original
+        contributor_with_category = contributor.copy()
+
+        org_id = contributor.get('id', '').upper()
+        org_name = contributor.get('name', '').upper()
+
+        # Categorize based on ID patterns and keywords
+        if any(keyword in org_id for keyword in ['DOC', 'NOAA', 'DOE', 'NASA', 'USGS', 'EPA']) or 'U.S.' in org_name:
+            contributor_with_category['category'] = 'government'
+        elif 'UCAR' in org_id:
+            contributor_with_category['category'] = 'ucar'
+        elif 'UNIVERSITY' in org_name or 'INSTITUTE' in org_name:
+            contributor_with_category['category'] = 'academic'
+        else:
+            contributor_with_category['category'] = 'other'
+
+        categorized_contributors.append(contributor_with_category)
+
+    return categorized_contributors
+
+def get_contributors(dsid):
+    """Get the data contributors for a given dataset
+
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+
+    Returns:
+        dict: Dictionary containing data contributors information
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select contributors from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    contributors_list = data if isinstance(data, list) else []
+
+    categorized_contributors = categorize_contributors(contributors_list)
+
+    result = {
+        'count': len(categorized_contributors),
+        'contributors': categorized_contributors
+    }
+
+    return result
+
+def get_total_volume(dsid):
+    """Get the total volume for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        dict: Dictionary containing information regarding the total volume and volume groups
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select volume from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    result = {
+        'total_volume': data['full'],
+        'volume_groups': data['groups']
+    }
+
+    return result
+
+def get_related_resources(dsid):
+    """Get the related resources list for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        str: Dictionary containing information regarding the related resources list
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select related_rsrc_list from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    rsrc_list = data if isinstance(data, list) else []
+    processed_resources = []
+
+    for resource in rsrc_list:
+        rsrc = {
+            'description': resource.get('description'),
+            'url': resource.get('url', None)
+        }
+        processed_resources.append(rsrc)
+
+    result = {
+        'count': len(processed_resources),
+        'resources_list': processed_resources
+    }
+
+    return result
+
+def get_related_datasets(dsid):
+    """Get the related datasets list for a given dataset
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+    Returns:
+        str: Dictionary containing information regarding the related datasets list
+    """
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'select related_dslist from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con, cur)
+
+    datasets_list = data if isinstance(data, list) else []
+    processed_ds = []
+
+    for ds in datasets_list:
+        dataset = {
+            'dsid': ds.get('dsid'),
+            'title': ds.get('title')
+        }
+        processed_ds.append(dataset)
+
+    result = {
+        'count': len(processed_ds),
+        'resources_list': processed_ds
+    }
+
+    return result
+
+def get_all_datasets():
+    con, cur = init_connection_new(get_wagtail_config())
+    query = 'SELECT DISTINCT dsid, dstitle FROM dataset_description_datasetdescriptionpage ORDER BY dsid'
+    cur.execute(query)
+    results = cur.fetchall()
+    close_connection(con, cur)
+
+    datasets_list = []
+    for row in results:
+        datasets_list.append({
+            'id': row[0],
+            'title': row[1]
+        })
+
+    response = {
+        'count': len(datasets_list),
+        'datasets': datasets_list
+    }
+
+    return response
