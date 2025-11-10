@@ -1,13 +1,9 @@
 on:
-  push:
-    branches:
-      - dattore-test
-    paths-ignore:
-      - ".github/**"
-      - ".gitignore"
-      - "app-chart/**"
-      - "README.md"
-      - "LICENSE"
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "Name of test branch"
+        required: true
 
 jobs:
   test-container-rebuild:
@@ -21,12 +17,12 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
-          ref: dattore-test
+          ref: ${{ github.ref_name }}
       - name: Build a new version of container
         run: >
           docker build --platform linux/amd64
-          --build-arg VERSION_NUMBER=dattore-test
-          -t dattore/gdex-web-portal:dattore-test
+          --build-arg VERSION_NUMBER=${{ github.ref_name }}
+          -t dattore/gdex-web-portal:${{ github.ref_name }}
           --no-cache -f Dockerfile.bob .
       - name: Push the new image to Docker Hub
-        run: docker push dattore/gdex-web-portal:dattore-test
+        run: docker push dattore/gdex-web-portal:${{ github.ref_name }}
