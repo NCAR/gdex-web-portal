@@ -32,7 +32,7 @@ FROM dattore/gdex-web-portal:web
 # copy from the intermediate
 COPY --from=intermediate /tmp/version_number /usr/local/gdexweb/static/version
 COPY --from=intermediate /tmp/get_version_number /usr/local/bin/
-COPY --from=intermediate . /usr/local/gdexweb
+COPY ./ /usr/local/gdexweb/
 
 RUN pip install -r /usr/local/gdexweb/requirements.txt
 
