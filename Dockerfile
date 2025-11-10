@@ -23,8 +23,8 @@ RUN chmod 755 /tmp/get_version_number
 
 RUN apt-get update -y
 RUN apt-get install -y git
-RUN mkdir /tmp/gdexweb
-RUN git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
+#RUN mkdir /tmp/gdexweb
+#RUN git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
 
 
 FROM dattore/gdex-web-portal:web
