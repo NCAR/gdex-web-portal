@@ -29,7 +29,6 @@ cd /tmp/gdexweb
 git checkout tcram-test
 EOF
 
-
 FROM dattore/gdex-web-portal:web
 
 # copy from the intermediate
