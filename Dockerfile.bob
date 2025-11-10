@@ -20,13 +20,12 @@ chmod 755 /tmp/get_version_number
 EOF
 
 # install git
+ARG BRANCH_NAME
 RUN <<EOF
 apt-get update -y
 apt-get install -y git
 mkdir /tmp/gdexweb
-git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
-cd /tmp/gdexweb
-git checkout $BRANCH_NAME
+git clone -b $BRANCH_NAME --single-branch https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
 EOF
 
 
