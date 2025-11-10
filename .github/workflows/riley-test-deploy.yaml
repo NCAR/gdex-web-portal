@@ -29,7 +29,7 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
-          ref: riley-test
+          ref: ${{ github.head_ref || github.ref_name }} 
           ssh-key: ${{ secrets.ACTIONS_PUSH_KEY }}
       - name: Build a new version of container
         run: >
@@ -46,6 +46,7 @@ jobs:
         run: |
           git config user.email "${{ secrets.GIT_CONFIG_USER_EMAIL_RILEY }}"
           git config user.name "${{ secrets.GIT_CONFIG_USER_NAME_RILEY }}"
+          git branch
           sed -E "/image/s/gdex-web-portal:(.){1,}/gdex-web-portal:v${{ github.run_id }}/" app-chart/values.yaml.riley > app-chart/riley-values.yaml.new
           mv app-chart/riley-values.yaml.new app-chart/values.yaml.riley
           git add app-chart/values.yaml.riley

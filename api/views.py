@@ -10,6 +10,12 @@ from . import rdams
 from . import common
 from . import RDA_Response as rda_r
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -30,6 +36,28 @@ def get_staff(request):
     response = rda_r.RDA_Response()
     response.add_data(json)
     return JsonResponse(response.get_json())
+
+ def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
+     """Helper function to handle common dataset response pattern
+     Args:
+         dsid: Dataset ID
+         data: The data returned from common function
+         error_message_template: Template for error message with {dsid} placeholder
+         wrap_key: Optional key to wrap data in (e.g., 'temporal', 'data_types')
+     """
+     response = rda_r.RDA_Response()
+
+     if data is None or not data:
+         response.add_error_message(error_message_template.format(dsid=dsid))
+         response.add_data('')
+         return JsonResponse(response.get_json(), status=400)
+     else:
+         # wrap data in a key if specified, otherwise use data directly
+         json_data = {wrap_key: data} if wrap_key else data
+         response.add_data(json_data)
+         return JsonResponse(response.get_json())
+
+
 
 def get_root_groups(request, dsid):
     dsid = common.format_dataset_id(dsid)
