@@ -90,6 +90,9 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.globus',
     'globus_portal_framework',
     'social_django',
+
+    'rest_framework',
+    'drf_spectacular',
 ]
 
 
