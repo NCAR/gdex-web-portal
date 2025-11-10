@@ -37,7 +37,11 @@ spec:
         pathType: Prefix
         backend:
           service:
+            {{ if .Values.testName }}
+            name: {{ .Values.testName }}-{{ .Values.webapp.name }}
+            {{ else }}
             name: {{ .Values.webapp.name }}
+            {{ end }}
             port:
               number: {{ .Values.webapp.container.port }}
   - host: {{ .Values.webapp.tls.fqdnAPI }}
@@ -47,7 +51,11 @@ spec:
         pathType: Prefix
         backend:
           service:
+            {{ if .Values.testName }}
+            name: {{ .Values.testName }}-{{ .Values.webapp.name }}
+            {{ else }}
             name: {{ .Values.webapp.name }}
+            {{ end }}
             port:
               number: {{ .Values.webapp.container.port }}
   {{ if not .Values.testName }}
