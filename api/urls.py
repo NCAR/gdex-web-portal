@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from dataaccess.views import DataAccessAPIView
 
 urlpatterns = [
     path('paramsummary/<dsid>/', views.param_summary, name='paramsummary'),
