@@ -26,7 +26,7 @@
             {% with filter.type as ft %}
             {% for value in filter.values %}
                 {% if forloop.first and fn != 'temporal_range_start' and fn != 'temporal_range_end' %}
-                  <br>{{fn}}:
+                  <br>{{filter.display_name}}:
                 {% endif %}
 
                 {% if fn == 'temporal_range_start' %}
