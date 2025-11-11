@@ -2007,7 +2007,7 @@ def categorize_variables_manual(variables):
 
     return {k: v for k, v in categories.items() if v}
 
-@lru_cache(maxsize=128)
+#@lru_cache(maxsize=128)
 def fetch_gcmd_concepts():
     """Fetch GCMD science keywords concepts and cache the result"""
     try:
@@ -2020,7 +2020,7 @@ def fetch_gcmd_concepts():
     except requests.RequestException as e:
         return []
 
-@lru_cache(maxsize=256)
+#@lru_cache(maxsize=256)
 def get_concept_category(uuid):
     """Get the broader category for a given concept UUID"""
     try:

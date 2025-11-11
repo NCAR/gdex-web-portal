@@ -465,3 +465,18 @@ ICOOKIE = local_settings.ICOOKIE
 CSRF_TRUSTED_ORIGINS = ["https://gdex.k8s.ucar.edu", "https://*.ucar.edu"]
 
 LOCAL_API_KEYS = local_settings.LOCAL_API_KEYS
+
+REST_FRAMEWORK = {
+    # YOUR SETTINGS
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'RDA Datasets API',
+    'DESCRIPTION': 'Research Data Archive API for accessing and discovering scientific datasets.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
+}
+
+
