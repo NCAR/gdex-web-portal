@@ -20,7 +20,7 @@
     </h4>
 
     {% if request.session.search.filters and request.session.search.filters|length > 0 %}
-        <br>Applied filters:
+        Applied filters:
         {% for filter in request.session.search.filters %}
             {% with filter.field_name as fn %}
             {% with filter.type as ft %}
