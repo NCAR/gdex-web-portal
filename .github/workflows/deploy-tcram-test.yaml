@@ -1,0 +1,43 @@
+on:
+  workflow_dispatch:
+    inputs:
+      branch-name:
+        description: 'Name of test branch to deploy'
+        required: true
+
+jobs:
+  test-container-rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Harbor container registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.TCRAM_HARBOR_USERNAME }}
+          password: ${{ secrets.TCRAM_HARBOR_CLI_SECRET }}
+          registry: hub.k8s.ucar.edu/tcram-gdex
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs['branch-name'] }}
+          ssh-key: ${{ secrets.ACTIONS_PUSH_KEY }}
+      - name: Build a new version of container
+        run: >
+          docker build --platform linux/amd64 \
+          --build-arg VERSION_NUMBER=tcram-test-v${{ github.run_id }} \
+          --build-arg BRANCH_NAME=${{ github.event.inputs['branch-name'] }} \
+          -t hub.k8s.ucar.edu/tcram-gdex/gdex-web-portal:v${{ github.run_id }} \
+          --no-cache -f Dockerfile.tcram .
+      - name: Push the new image to Harbor
+        run: |
+          docker push hub.k8s.ucar.edu/tcram-gdex/gdex-web-portal:v${{ github.run_id }}
+          docker tag hub.k8s.ucar.edu/tcram-gdex/gdex-web-portal:v${{ github.run_id }} hub.k8s.ucar.edu/tcram-gdex/gdex-web-portal:latest
+          docker push hub.k8s.ucar.edu/tcram-gdex/gdex-web-portal:latest
+      - name: Update the Helm chart
+        run: |
+          git config user.email "${{ secrets.GIT_CONFIG_USER_EMAIL_TCRAM }}"
+          git config user.name "${{ secrets.GIT_CONFIG_USER_NAME_TCRAM }}"
+          sed -E "/image/s/gdex-web-portal:(.){1,}/gdex-web-portal:v${{ github.run_id }}/" app-chart/values.yaml.tcram > app-chart/values.yaml.tcram.new
+          mv app-chart/values.yaml.tcram.new app-chart/values.yaml.tcram
+          git add app-chart/values.yaml.tcram
+          git commit -m "update tcram-test image version"
+          git push
