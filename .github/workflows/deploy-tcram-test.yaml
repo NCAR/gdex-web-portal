@@ -18,7 +18,7 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
-          ref: tcram-test
+          ref: ${{ github.event.inputs['branch-name'] }}
           ssh-key: ${{ secrets.ACTIONS_PUSH_KEY }}
       - name: Build a new version of container
         run: >

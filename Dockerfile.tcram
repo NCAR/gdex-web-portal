@@ -4,7 +4,7 @@ FROM dattore/gdex-web-portal:web AS intermediate
 
 # set the version number
 ARG VERSION_NUMBER=
-RUN if [ -z "$VERSION_NUMBER"]; then \
+RUN if [ -z "$VERSION_NUMBER" ]; then \
 echo "'VERSION_NUMBER' environment variable is missing"; \
 exit 1; \
 fi
