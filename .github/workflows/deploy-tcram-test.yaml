@@ -26,7 +26,7 @@ jobs:
           --build-arg VERSION_NUMBER=tcram-test-v${{ github.run_id }} \
           --build-arg BRANCH_NAME=${{ github.event.inputs['branch-name'] }} \
           -t hub.k8s.ucar.edu/tcram-gdex/gdex-web-portal:v${{ github.run_id }} \
-          --no-cache -f Dockerfile.tcram tests/dev
+          --no-cache -f tests/dev/Dockerfile.tcram .
       - name: Push the new image to Harbor
         run: |
           docker push hub.k8s.ucar.edu/tcram-gdex/gdex-web-portal:v${{ github.run_id }}
