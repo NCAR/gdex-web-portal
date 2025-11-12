@@ -28,4 +28,5 @@ volume:
     name: gdexdata
     mountPath: /data
 
+# testName should match the release name used in the 'helm install' command
 testName: tcram
