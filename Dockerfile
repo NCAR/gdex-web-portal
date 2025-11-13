@@ -23,8 +23,8 @@ RUN chmod 755 /tmp/get_version_number
 
 RUN apt-get update -y
 RUN apt-get install -y git
-#RUN mkdir /tmp/gdexweb
-#RUN git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
+RUN mkdir /tmp/gdexweb
+RUN git clone https://github.com/NCAR/gdex-web-portal.git /tmp/gdexweb
 
 
 FROM dattore/gdex-web-portal:web
@@ -32,7 +32,7 @@ FROM dattore/gdex-web-portal:web
 # copy from the intermediate
 COPY --from=intermediate /tmp/version_number /usr/local/gdexweb/static/version
 COPY --from=intermediate /tmp/get_version_number /usr/local/bin/
-COPY ./ /usr/local/gdexweb/
+COPY --from=intermediate /tmp/gdexweb /usr/local/gdexweb
 
 RUN pip install -r /usr/local/gdexweb/requirements.txt
 
