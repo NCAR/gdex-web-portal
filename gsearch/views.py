@@ -26,6 +26,18 @@ def dataset_search(request, index):
         context['search'] = post_search(
             index, query, filters, request.user, request.GET.get('page', 1)
         )
+        if len(filters) > 0:
+            # get canonical facet name for each applied filter
+            for filter in filters:
+                field_name = filter.get('field_name')
+                for facet in settings.SEARCH_INDEXES[index]['facets']:
+                    if facet['field_name'] == field_name:
+                        filter['display_name'] = facet['name']
+                        break
+                    else:
+                        filter['display_name'] = field_name
+
+        # Store search parameters in session for use in templates
         request.session['search'] = {
             'full_query': urlparse(request.get_full_path()).query,
             'query': query,

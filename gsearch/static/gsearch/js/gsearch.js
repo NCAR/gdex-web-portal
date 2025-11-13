@@ -112,8 +112,19 @@
     }
   });
 
+function removeFilter(filterName, filterType, filterValue) {
+  // Uncheck the checkbox corresponding to the filter
+  var inputName = 'filter-' + filterType.replace('_', '-') + '.' + filterName;
+  $('#facet-form input[name="' + inputName + '"][value="' + filterValue + '"]').prop('checked', false);
+ 
+  // Submit the form to apply changes
+  customSearch(1);
+}
+
 function clearFilters() 
 {
+  // Clear all filters including temporal range and search input
+
   // Clear session storage
   sessionStorage.removeItem('temporal_start_input');
   sessionStorage.removeItem('temporal_end_input');
@@ -135,6 +146,32 @@ function clearFilters()
   $('#facet-form').submit();
 }
 
+function clearTemporalStart() {
+  // Clear only the temporal start input without affecting other filters
+  $('#temporal_start_input').val('');
+  // Remove the temporal start from the session storage
+  sessionStorage.removeItem('temporal_start_input');
+
+  // Remove from url query parameters
+  removeUrlParameter('filter-range.temporal_range_end');
+
+  // Submit the form to apply changes
+  customSearch(1);
+}
+
+function clearTemporalEnd() {
+  // Clear only the temporal end input without affecting other filters
+  $('#temporal_end_input').val('');
+  // Remove the temporal end from the session storage
+  sessionStorage.removeItem('temporal_end_input');
+
+  // Remove from url query parameters
+  removeUrlParameter('filter-range.temporal_range_start');
+
+  // Submit the form to apply changes
+  customSearch(1);
+}
+
 function clearTemporalRange() {
   // Clear the temporal range inputs
   $('#temporal_start_input').val('');
@@ -144,12 +181,23 @@ function clearTemporalRange() {
   sessionStorage.removeItem('temporal_start_input');
   sessionStorage.removeItem('temporal_end_input');
 
+  // Remove from url query parameters
+  removeUrlParameter('filter-range.temporal_range_start');
+  removeUrlParameter('filter-range.temporal_range_end');
+
   // Submit the form to apply changes
-  $('#facet-form').submit();
+  customSearch(1);
 }
 
 function clearBuckets(facetName) {
   // Clear all checkboxes in the facet container
   $('#facet-' + facetName + ' input[type="checkbox"]').prop('checked', false);
   $('#facet-form').submit();
+}
+
+function removeUrlParameter(param) {
+  const url = new URL(window.location.href);
+  const params = url.searchParams;
+  params.delete(param);
+  window.history.replaceState({}, document.title, url.pathname + '?' + params.toString());
 }

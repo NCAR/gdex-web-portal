@@ -1,0 +1,64 @@
+<div class="m-3" id="search-summary">
+    {% block search_summary %}
+    <h4 class="h4">
+
+    {% if request.session.search.query != '*' and request.session.search.query != '' %}
+        You searched for '{{request.session.search.query}}'.
+        <br>
+    {% endif %}
+
+    {% if search.total and search.total > 0 %}
+        {% if request.session.search.filters and request.session.search.filters|length > 0 %}
+            {{search.total}} matching dataset{{search.total|pluralize}} found with applied filters.
+        {% elif request.session.search.query != '*' and request.session.search.query != '' %}
+            {{search.total}} matching dataset{{search.total|pluralize}} found.
+        {% endif %}
+    {% else %}
+        <span class="text-warning">No matching datasets found.</span>
+    {% endif %}
+
+    </h4>
+
+    {% if request.session.search.filters and request.session.search.filters|length > 0 %}
+        Applied filters:
+        {% for filter in request.session.search.filters %}
+            {% with filter.field_name as fn %}
+            {% with filter.type as ft %}
+            {% for value in filter.values %}
+                {% if forloop.first and fn != 'temporal_range_start' and fn != 'temporal_range_end' %}
+                  <br>{{filter.display_name}}:
+                {% endif %}
+
+                {% if fn == 'temporal_range_start' %}
+                  <br>End date:
+                  <span class="badge rounded-pill mr-1" style="background-color: #1A658F; color: #f0f0f0;" id="filter-badge-temporal-start">
+                    {{value.to}}
+                    <a role="button" aria-label="Close" onclick="clearTemporalEnd()">
+                      <i class="fas fa-times"></i>
+                    </a>
+                  </span>
+                {% elif fn == 'temporal_range_end' %}
+                  <br>Start date:
+                  <span class="badge rounded-pill mr-1" style="background-color: #1A658F; color: #f0f0f0;" id="filter-badge-temporal-end">
+                    {{value.from}}
+                    <a role="button" aria-label="Close" onclick="clearTemporalStart()">
+                      <i class="fas fa-times"></i>
+                    </a>
+                  </span>
+                {% else %}
+                  <span class="badge rounded-pill mr-1" style="background-color: #1A658F; color: #f0f0f0;" id="filter-badge-{{fn}}-{{value}}">
+                    {{value}}
+                    <a role="button" aria-label="Close" onclick="removeFilter('{{fn}}', '{{ft}}', '{{value}}')">
+                      <i class="fas fa-times"></i>
+                    </a>
+                  </span>
+                {% endif %}
+
+            {% endfor %}
+            {% endwith %}
+            {% endwith %}
+        {% endfor %}
+    {% endif %}
+
+    {% endblock %}
+</div>

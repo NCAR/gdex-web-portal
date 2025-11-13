@@ -57,28 +57,13 @@
       {% endblock %}
 
       <div id="content" class="col-xs-12 col-sm-8 col-md-8">
-        <div class="m-3" id="search-summary">
-          <h4 class="h4">
-          {% block search_summary %}
-
-          {% if request.session.search.query != '*' and request.session.search.query != '' %}
-            You searched for '{{request.session.search.query}}'.  {{search.total}} matching dataset(s) were found.
-          {% else %}
-            {% if request.session.search.filters|length > 0 %}
-              {{search.total}} matching dataset(s) were found.
-            {% endif %}
-          {% endif %}
-
-          {% if search.count == 0 %}
-             <span class="text-danger">No results found.</span>
-          {% endif %}
-          {% endblock %}
-          </h4>
-        </div>
+        {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-summary.html' as it_search_summary %}
+        {% include it_search_summary %}
 
         <div id="results" style="display: inline;">
           {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-results.html' as it_search_results %}
           {% include it_search_results %}
+          
           {% block search_pagination %}
             {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-pagination.html' as it_search_pagination %}
             {% include it_search_pagination %}
