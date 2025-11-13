@@ -7,7 +7,7 @@ webapp:
   tls:
     fqdn: calie.k8s.ucar.edu
     fqdnAPI: api.calie.k8s.ucar.edu
-    secretName: incommon-cert-dattore-gdex-webserver
+    secretName: incommon-cert-calie-gdex-webserver
   container: 
     image: hub.k8s.ucar.edu/calie-gdex/gdex-web-portal:latest
     port: 8080
