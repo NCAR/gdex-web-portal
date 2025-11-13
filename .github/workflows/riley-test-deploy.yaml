@@ -36,7 +36,7 @@ jobs:
           docker build --platform linux/amd64
           --build-arg VERSION_NUMBER=$VERSION_NUMBER
           -t hub.k8s.ucar.edu/riley_gdex_test/gdex-web-portal:v${{ github.run_id }}
-          --no-cache .
+          --no-cache -f Dockerfile.riley . 
       - name: Push the new image to Harbor
         run: |
           git branch
