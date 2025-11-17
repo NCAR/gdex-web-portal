@@ -17,6 +17,8 @@ from . import redeploys, views
 from search import views as search_views
 from home import views as home_views
 
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 urlpatterns = [
 #    path('django-admin/', admin.site.urls),
     path('admin/', include(wagtailadmin_urls)),
@@ -43,6 +45,9 @@ urlpatterns = [
     path('unlink/', views.unlink),
     path('upload/', views.upload),
     path('dataset/<old_gdex_path>/', views.do_redirect),
+    path('api/schema/', SpectacularAPIView.as_view(patterns=[path('api/', include('api.urls'))]), name='schema'),
+    path('api/schema/documentation/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     re_path(r'^accounts/profile/$', login_required(TemplateView.as_view(template_name='account/profile.html')), name='user_profile'),
     path('test-home/', home_views.test_home, name='test_home'), # New test home view
 ]

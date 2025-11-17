@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from dataaccess.views import DataAccessAPIView
 
 urlpatterns = [
     path('paramsummary/<dsid>/', views.param_summary, name='paramsummary'),
@@ -37,6 +38,22 @@ urlpatterns = [
     path(r'datasets/<dsid>/webfiles/<gindex>/<filter_wfile>/', views.get_web_files ),
     path(r'datasets/<dsid>/filelist/<gindex>/', views.get_assembled_groups ),
     path(r'datasets/<dsid>/filelist/', views.get_assembled_groups ),
+    path(r'datasets/<dsid>/abstract/', views.get_abstract),
+    path(r'datasets/<dsid>/acknowledgment/', views.get_acknowledgement ),
+    path(r'datasets/<dsid>/temporal/', views.get_temporal ),
+    path(r'datasets/<dsid>/variables/', views.get_variables ),
+    path(r'datasets/<dsid>/publications/', views.get_publications ),
+    path(r'datasets/<dsid>/data_license/', views.get_data_license ),
+    path(r'datasets/<dsid>/data_types/', views.get_data_types ),
+    path(r'datasets/<dsid>/data_formats/', views.get_data_formats ),
+    path(r'datasets/<dsid>/spatial_coverage/', views.get_spatial_coverage ),
+    path(r'datasets/<dsid>/contributors/', views.get_contributors ),
+    path(r'datasets/<dsid>/volume/', views.get_total_volume ),
+    path(r'datasets/<dsid>/resources/', views.get_related_resources ),
+    path(r'datasets/<dsid>/related_datasets/', views.get_related_datasets ),
+    path(r'datasets/', views.get_all_datasets ),
+    path(r'datasets/<dsid>/data_access/root', DataAccessAPIView.as_view(), name='data-access-api' )
+
 
     #path(r'accept/', views.accept),
     #path(r'reject/', views.reject)

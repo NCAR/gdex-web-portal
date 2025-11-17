@@ -10,6 +10,12 @@ from . import rdams
 from . import common
 from . import RDA_Response as rda_r
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -30,6 +36,28 @@ def get_staff(request):
     response = rda_r.RDA_Response()
     response.add_data(json)
     return JsonResponse(response.get_json())
+
+def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
+    """Helper function to handle common dataset response pattern
+    Args:
+        dsid: Dataset ID
+        data: The data returned from common function
+        error_message_template: Template for error message with {dsid} placeholder
+        wrap_key: Optional key to wrap data in (e.g., 'temporal', 'data_types')
+    """
+    response = rda_r.RDA_Response()
+
+    if data is None or not data:
+        response.add_error_message(error_message_template.format(dsid=dsid))
+        response.add_data('')
+        return JsonResponse(response.get_json(), status=400)
+    else:
+        # wrap data in a key if specified, otherwise use data directly
+        json_data = {wrap_key: data} if wrap_key else data
+        response.add_data(json_data)
+        return JsonResponse(response.get_json())
+
+
 
 def get_root_groups(request, dsid):
     dsid = common.format_dataset_id(dsid)
@@ -270,3 +298,1291 @@ def get_email_from_token(request):
     email = common.get_email_from_token(token)
     print(email)
     return email
+
+@extend_schema(
+    operation_id='get_dataset_abstract',
+    summary='Get dataset abstract',
+    description='''
+    Retrieves the abstract text for a specific dataset along with additional parsed notes.
+
+    This endpoint performs comprehensive text processing including:
+    - Unicode escape sequence decoding
+    - URL extraction from the abstract text
+    - Note/warning text identification and separation
+    - HTML tag removal and text cleaning
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'description': 'Successfully retrieved abstract with parsed metadata',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'abstract': {
+                            'type': 'string',
+                            'description': 'Cleaned abstract text with HTML tags removed',
+                            'example': "ECMWF has announced that the Copernicus Climate Change Service (C3S) has begun the release of the ERA5 back extension data covering the period 1950-1978 on the Climate Data Store (CDS). Although in many other respects the quality of this dataset is quite satisfactory, the current back extension appears to suffer from tropical cyclones that are sometimes unrealistically intense. This is in contrast with the ERA5 product from 1979 onwards (also available from the CDS and RDA ds633.0). For this reason the current release of the back extension is preliminary. It is therefore available from separate CDS catalogue entries (hourly, monthly, single level and pressure levels), and this RDA dataset. Around the end of 2021 an updated version of the back extension is to be made available which will be added to the ERA5 catalogue entries that currently reach back to 1979. After an overlap period (the duration of which is not yet decided), the preliminary back extension will be deprecated. The full back extension preliminary dataset is expected to be made available near the end of 2020/early 2021. After many years of research and technical preparation, the production of a new ECMWF climate reanalysis to replace ERA-Interim is in progress. ERA5 is the fifth generation of ECMWF atmospheric reanalyses of the global climate, which started with the FGGE reanalyses produced in the 1980s, followed by ERA-15, ERA-40 and most recently ERA-Interim. ERA5 will cover the period January 1950 to near real time. ERA5 is produced using high-resolution forecasts (HRES) at 31 kilometer resolution (one fourth the spatial resolution of the operational model) and a 62 kilometer resolution ten member 4D-Var ensemble of data assimilation (EDA) in CY41r2 of ECMWF's Integrated Forecast System (IFS) with 137 hybrid sigma-pressure (model) levels in the vertical, up to a top level of 0.01 hPa. Atmospheric data on these levels are interpolated to 37 pressure levels (the same levels as in ERA-Interim). Surface or single level data are also available, containing 2D parameters such as precipitation, 2 meter temperature, top of atmosphere radiation and vertical integrals over the entire atmosphere. The IFS is coupled to a soil model, the parameters of which are also designated as surface parameters, and an ocean wave model. Generally, the data is available at an hourly frequency and consists of analyses and short (12 hour) forecasts, initialized twice daily from analyses at 06 and 18 UTC. Most analyses parameters are also available from the forecasts. There are a number of forecast parameters, e.g. mean rates and accumulations, that are not available from the analyses. Improvements to ERA5, compared to ERA-Interim, include use of HadISST.2, reprocessed ECMWF climate data records (CDR), and implementation of RTTOV11 radiative transfer. Variational bias corrections have not only been applied to satellite radiances, but also ozone retrievals, aircraft observations, surface pressure, and radiosonde profiles. DECS produces a CF 1.6 compliant netCDF-4/HDF5 version of ERA5 for the CISL RDA at NCAR. The netCDF-4/HDF5 version is the de facto RDA ERA5 online data format. The GRIB1 data format is also available online. There is a one-to-one correspondence between the netCDF-4/HDF5 and GRIB1 files, with as much GRIB1 metadata as possible incorporated into the attributes of the netCDF-4/HDF5 counterpart."
+                        },
+                        'note': {
+                            'type': 'string',
+                            'description': 'Any warning or note text found in the abstract',
+                            'example': "It is advised to use ds633.0, ERA5 Reanalysis (0.25 Degree Latitude-Longitude Grid)."
+                        },
+                        'urls': {
+                            'type': 'array',
+                            'items': {'type': 'string'},
+                            'description': 'List of unique URLs found in the abstract text',
+                            'example': ["https://rda.ucar.edu/datasets/ds633-0/"]
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'description': 'Dataset not found',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Abstract not found for dataset d123456']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['abstract']
+)
+@api_view(['GET'])
+def get_abstract(request, dsid):
+    """Get abstract text for a given dataset"""
+    dsid = common.format_dataset_id(dsid)
+    abstract_text = common.get_abstract(dsid)
+
+    return _handle_dataset_response(
+        dsid,
+        abstract_text,
+        "Abstract not found for dataset {dsid}"
+    )
+
+@extend_schema(
+    operation_id='get_dataset_acknowledgement',
+    summary='Get dataset acknowledgement text',
+    description='''
+    Retrieves the acknowledgement text for a specific dataset.
+    HTML paragraph tags (`<p>`, `</p>`) are automatically stripped from the response
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'acknowledgement': {
+                            'type': 'string',
+                            'example': "Papers using the NOAA-CIRES-DOE Twentieth Century Reanalysis Project version 3 dataset are requested to include the following text in their acknowledgements: \"Support for the Twentieth Century Reanalysis Project version 3 dataset is provided by the U.S. Department of Energy, Office of Science Biological and Environmental Research (BER), by the National Oceanic and Atmospheric Administration Climate Program Office, and by the NOAA Physical Sciences Laboratory.\""
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Acknowledgement not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['acknowledgment']
+)
+@api_view(['GET'])
+def get_acknowledgement(request, dsid):
+    """Get acknowledgement information for a given dataset"""
+    dsid = common.format_dataset_id(dsid)
+    acknowledgement_text = common.get_acknowledgement(dsid)
+
+    data = {'acknowledgement': acknowledgement_text} if acknowledgement_text else None
+    return _handle_dataset_response(
+        dsid,
+        data,
+        "Acknowledgement not found for dataset {dsid}"
+    )
+
+@extend_schema(
+    operation_id='get_dataset_temporal_coverage',
+    summary='Get dataset temporal coverage',
+    description='''
+        Retrieves the temporal coverage information for a specific dataset.
+        Returns start date, end date, and data groups with their respective time ranges.
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'temporal': {
+                            'type': 'object',
+                            'properties': {
+                                'start_date': {
+                                    'type': 'string',
+                                    'example': '1805-12-31 18:00 +0000'
+                                },
+                                'end_date': {
+                                    'type': 'string',
+                                    'example': '2016-01-01 00:00 +0000'
+                                },
+                                'data_groups': {
+                                    'type': 'array',
+                                    'items': {
+                                        'type': 'object',
+                                        'properties': {
+                                            'description': {
+                                                'type': 'string',
+                                                'example': 'Yearly Time Series 3-Hourly Analysis Fields'
+                                            },
+                                            'start_date': {
+                                                'type': 'string',
+                                                'example': '1805-12-31 18:00 +0000'
+                                            },
+                                            'end_date': {
+                                                'type': 'string',
+                                                'example': '2016-01-01 00:00 +0000'
+                                            }
+                                        }
+                                    },
+                                    'example': [
+                                        {
+                                            'description': 'Yearly Time Series 3-Hourly Analysis Fields',
+                                            'start_date': '1805-12-31 18:00 +0000',
+                                            'end_date': '2016-01-01 00:00 +0000'
+                                        },
+                                        {
+                                            'description': 'Yearly Time Series 3-Hourly First Guess Forecast Fields',
+                                            'start_date': '1806-12-31 18:00 +0000',
+                                            'end_date': '2015-12-31 12:00 +0000'
+                                        },
+                                        {
+                                            'description': 'Yearly Time Series 6-Hourly Analysis Fields',
+                                            'start_date': '1806-12-31 21:00 +0000',
+                                            'end_date': '2015-12-31 15:00 +0000'
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Temporal coverage not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['temporal']
+)
+@api_view(['GET'])
+def get_temporal(request, dsid):
+    """Get temporal coverage information including start date, end date, and time range for a given dataset"""
+    dsid = common.format_dataset_id(dsid)
+    temporal_data = common.get_temporal_range(dsid)
+    return _handle_dataset_response(
+        dsid,
+        temporal_data,
+        "Temporal coverage not found for dataset {dsid}",
+        wrap_key='temporal'
+    )
+
+@extend_schema(
+    operation_id='get_dataset_variables',
+    summary='Get dataset variables',
+    description='''
+        Retrieves the list of variables for a specific dataset.
+        Returns a count of variables, a list of all variables, and variables organized by categories.
+        Note: Variables represented in this API include but are not limited to those available in the dataset.
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'count': {
+                            'type': 'integer',
+                            'example': 40,
+                            'description': 'Total number of variables'
+                        },
+                        'variables': {
+                            'type': 'array',
+                            'items': {'type': 'string'},
+                            'example': [
+                                'Accumulative Convective Precipitation',
+                                'Air Temperature',
+                                'Atmospheric Ozone',
+                                'Cloud Base Height',
+                                'Cloud Fraction'
+                            ],
+                            'description': 'List of all variables in the dataset'
+                        },
+                        'categories': {
+                            'type': 'object',
+                            'additionalProperties': {
+                                'type': 'array',
+                                'items': {'type': 'string'}
+                            },
+                            'example': {
+                                'Atmosphere': [
+                                    'Accumulative Convective Precipitation'
+                                ],
+                                'Surface Temperature': [
+                                    'Air Temperature',
+                                    'Maximum/Minimum Temperature'
+                                ],
+                                'Oxygen Compounds': [
+                                    'Atmospheric Ozone'
+                                ],
+                                'Cloud Properties': [
+                                    'Cloud Base Height'
+                                ],
+                                'Cloud Indicators': [
+                                    'Cloud Fraction'
+                                ]
+                            },
+                            'description': 'Variables organized by category'
+                        },
+                        'message': {
+                            'type': 'string',
+                            'example': 'The variables represented in this API include but are not limited to those available in the dataset. Additional variables may be present in the actual data files.',
+                            'description': 'Additional information about variable availability'
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Variables not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['variables']
+)
+@api_view(['GET'])
+def get_variables(request, dsid):
+    """Get list of variables in a given dataset"""
+    dsid = common.format_dataset_id(dsid)
+    variables_data = common.get_variables(dsid)
+    return _handle_dataset_response(
+        dsid,
+        variables_data,
+        "Variables not found for dataset {dsid}"
+    )
+
+@extend_schema(
+    operation_id='get_dataset_publications',
+    summary='Get dataset publications',
+    description='''
+        Retrieves the list of publications related to a specific dataset.
+        Returns a count of publications and detailed information about each publication including authors, title, journal, and DOI.
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'count': {
+                            'type': 'integer',
+                            'example': 2,
+                            'description': 'Total number of publications'
+                        },
+                        'publications': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'object',
+                                'properties': {
+                                    'authors': {
+                                        'type': 'array',
+                                        'items': {'type': 'string'},
+                                        'example': ['Slivinski', 'Compo', 'Sardeshmukh', 'Whitaker', 'McColl'],
+                                        'description': 'List of author surnames or full names'
+                                    },
+                                    'authors_text': {
+                                        'type': 'string',
+                                        'example': 'Slivinski, L. C., Compo, G. P., Sardeshmukh, P. D., Whitaker, J. S., McColl, C., Allan, R. J., Brohan, P., Yin, X., Smith, C. A., Spencer, L. J., Vose, R. S., Rohrer, M., Conroy, R. P., Schuster, D. C., Kennedy, J. J., Ashcroft, L., Brönnimann, S., Brunet, M., Camuffo, D., Cornes, R., Cram, T. A., Domínguez-Castro, F., Freeman, J. E., Gergis, J., Hawkins, E., Jones, P. D., Kubota, H., Lee, T. C., Lorrey, A. M., Luterbacher, J., Mock, C. J., Przybylak, R. K., Pudmenzky, C., Slonosky, V. C., Tinz, B., Trewin, B., Wang, X. L., Wilkinson, C., Wood, K., & Wyszyński, P.',
+                                        'description': 'Formatted author names as citation text'
+                                    },
+                                    'year': {
+                                        'type': 'string',
+                                        'example': '2021',
+                                        'description': 'Publication year'
+                                    },
+                                    'title': {
+                                        'type': 'string',
+                                        'example': 'An Evaluation of the Performance of the Twentieth Century Reanalysis Version 3',
+                                        'description': 'Publication title'
+                                    },
+                                    'journal': {
+                                        'type': 'string',
+                                        'example': 'Journal of Climate',
+                                        'description': 'Journal name'
+                                    },
+                                    'volume_pages': {
+                                        'type': 'string',
+                                        'example': '34(4)',
+                                        'description': 'Volume and issue information'
+                                    },
+                                    'doi': {
+                                        'type': 'string',
+                                        'example': '10.1002/qj.3598',
+                                        'description': 'Digital Object Identifier'
+                                    },
+                                    'url': {
+                                        'type': 'string',
+                                        'example': 'https://rmets.onlinelibrary.wiley.com/doi/10.1002/qj.3598',
+                                        'description': 'Publication URL'
+                                    }
+                                }
+                            },
+                            'description': 'List of publications with detailed information'
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Publications not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['publications']
+)
+@api_view(['GET'])
+def get_publications(request, dsid):
+    """Get publications information for a given dataset"""
+    dsid = common.format_dataset_id(dsid)
+    publications_data = common.get_publications(dsid)
+    return _handle_dataset_response(
+        dsid,
+        publications_data,
+        "Publications not found for dataset {dsid}"
+    )
+
+@extend_schema(
+    operation_id='get_dataset_license',
+    summary='Get dataset license information',
+    description='''
+        Retrieves the licensing information for a specific dataset.
+        Returns the license name and URL with legal details.
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'name': {
+                            'type': 'string',
+                            'example': 'Creative Commons Attribution 4.0 International License',
+                            'description': 'Full name of the data license'
+                        },
+                        'url': {
+                            'type': 'string',
+                            'example': 'https://creativecommons.org/licenses/by/4.0/legalcode',
+                            'description': 'URL to the license legal text'
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Data license not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['data_license']
+)
+@api_view(['GET'])
+def get_data_license(request, dsid):
+    """Get licensing information for a given dataset"""
+    dsid = common.format_dataset_id(dsid)
+    data_license = common.get_data_license(dsid)
+    return _handle_dataset_response(
+        dsid,
+        data_license,
+        "Data license not found for dataset {dsid}"
+    )
+
+@extend_schema(
+    operation_id='get_dataset_data_types',
+    summary='Get dataset data types',
+    description='''
+        Retrieves the types of data contained in a specific dataset.
+        Returns a list of data type categories (e.g., Grid, Point, Station).
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'data_types': {
+                            'type': 'array',
+                            'items': {'type': 'string'},
+                            'example': ['Grid'],
+                            'description': 'List of data types contained in the dataset'
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Data types not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['data_types']
+)
+@api_view(['GET'])
+def get_data_types(request, dsid):
+    """Get types of data contained in a given dataset"""
+    dsid = common.format_dataset_id(dsid)
+    data_types = common.get_data_types(dsid)
+    return _handle_dataset_response(
+        dsid,
+        data_types,
+        "Data types not found for dataset {dsid}",
+        wrap_key='data_types'
+    )
+
+@extend_schema(
+    operation_id='get_dataset_data_formats',
+    summary='Get dataset data formats',
+    description='''
+        Retrieves the available file formats and data structure information for a specific dataset.
+        Returns a count of formats and detailed information about each format including description, URL, and documentation availability.
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'count': {
+                            'type': 'integer',
+                            'example': 1,
+                            'description': 'Total number of data formats'
+                        },
+                        'data_formats': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'object',
+                                'properties': {
+                                    'description': {
+                                        'type': 'string',
+                                        'example': 'netCDF4',
+                                        'description': 'Format name or description'
+                                    },
+                                    'url': {
+                                        'type': 'string',
+                                        'example': 'http://www.unidata.ucar.edu/software/netcdf/',
+                                        'description': 'URL with information about the format'
+                                    },
+                                    'has_documentation': {
+                                        'type': 'boolean',
+                                        'example': 'true',
+                                        'description': 'Whether documentation is available for this format'
+                                    }
+                                }
+                            },
+                            'description': 'List of available data formats with details'
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Data formats not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['data_formats']
+)
+@api_view(['GET'])
+def get_data_formats(request, dsid):
+    """Get available file formats and data structure information for a given dataset"""
+    dsid = common.format_dataset_id(dsid)
+    data_formats = common.get_data_formats(dsid)
+    return _handle_dataset_response(
+        dsid,
+        data_formats,
+        "Data formats not found for dataset {dsid}"
+    )
+
+@extend_schema(
+    operation_id='get_dataset_spatial_coverage',
+    summary='Get dataset spatial coverage',
+    description='''
+        Retrieves the spatial coverage information for a specific dataset.
+        Returns geographic bounds, resolution, coordinate ranges, and grid dimensions.
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'spatial_coverage': {
+                            'type': 'object',
+                            'properties': {
+                                'bounds': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'north': {
+                                            'type': 'number',
+                                            'example': 89.463,
+                                            'description': 'Northern boundary'
+                                        },
+                                        'south': {
+                                            'type': 'number',
+                                            'example': -89.463,
+                                            'description': 'Southern boundary'
+                                        },
+                                        'east': {
+                                            'type': 'number',
+                                            'example': 180,
+                                            'description': 'Eastern boundary'
+                                        },
+                                        'west': {
+                                            'type': 'number',
+                                            'example': -180,
+                                            'description': 'Western boundary'
+                                        },
+                                        'lat_units': {
+                                            'type': 'string',
+                                            'example': 'degrees north',
+                                            'description': 'Latitude units'
+                                        },
+                                        'lon_units': {
+                                            'type': 'string',
+                                            'example': 'degrees east',
+                                            'description': 'Longitude units'
+                                        }
+                                    },
+                                    'description': 'Geographic boundaries of the dataset'
+                                },
+                                'resolution': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'longitude': {
+                                            'type': 'number',
+                                            'example': 0.703,
+                                            'description': 'Longitude resolution'
+                                        },
+                                        'latitude': {
+                                            'type': 'number',
+                                            'example': 0.702,
+                                            'description': 'Latitude resolution'
+                                        },
+                                        'units': {
+                                            'type': 'string',
+                                            'example': 'degrees',
+                                            'description': 'Resolution units'
+                                        }
+                                    },
+                                    'description': 'Spatial resolution of the dataset'
+                                },
+                                'coordinate_range': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'longitude_start': {
+                                            'type': 'string',
+                                            'example': '0E',
+                                            'description': 'Starting longitude coordinate'
+                                        },
+                                        'longitude_end': {
+                                            'type': 'string',
+                                            'example': '359.297E',
+                                            'description': 'Ending longitude coordinate'
+                                        },
+                                        'latitude_start': {
+                                            'type': 'string',
+                                            'example': '89.463N',
+                                            'description': 'Starting latitude coordinate'
+                                        },
+                                        'latitude_end': {
+                                            'type': 'string',
+                                            'example': '89.463S',
+                                            'description': 'Ending latitude coordinate'
+                                        }
+                                    },
+                                    'description': 'Coordinate range with directional indicators'
+                                },
+                                'grid_dimensions': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'longitude_points': {
+                                            'type': 'integer',
+                                            'example': 512,
+                                            'description': 'Number of longitude grid points'
+                                        },
+                                        'latitude_points': {
+                                            'type': 'integer',
+                                            'example': 256,
+                                            'description': 'Number of latitude grid points'
+                                        }
+                                    },
+                                    'description': 'Grid dimensions in number of points'
+                                }
+                            },
+                            'description': 'Complete spatial coverage information'
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Spatial coverage not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['spatial']
+)
+@api_view(['GET'])
+def get_spatial_coverage(request, dsid):
+    """Get spatial coverage for a given dataset"""
+    dsid = common.format_dataset_id(dsid)
+    spatial_data = common.get_spatial_coverage(dsid)
+    return _handle_dataset_response(
+        dsid,
+        spatial_data,
+        "Spatial coverage not found for dataset {dsid}",
+        wrap_key='spatial_coverage'
+    )
+
+@extend_schema(
+    operation_id='get_dataset_contributors',
+    summary='Get dataset contributors',
+    description='''
+        Retrieves information about contributors for a specific dataset.
+        Returns contributor details including names, IDs, and categories.
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'count': {
+                            'type': 'integer',
+                            'example': 1,
+                            'description': 'Number of contributors'
+                        },
+                        'contributors': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'object',
+                                'properties': {
+                                    'id': {
+                                        'type': 'string',
+                                        'example': 'UCO/CIRES',
+                                        'description': 'Contributor identifier'
+                                    },
+                                    'name': {
+                                        'type': 'string',
+                                        'example': 'Cooperative Institute for Research in Environmental Sciences, University of Colorado',
+                                        'description': 'Full contributor name'
+                                    },
+                                    'category': {
+                                        'type': 'string',
+                                        'example': 'academic',
+                                        'description': 'Contributor category (e.g., academic, government)'
+                                    }
+                                },
+                                'description': 'Individual contributor information'
+                            },
+                            'description': 'List of dataset contributors'
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Contributors not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['contributors']
+)
+@api_view(['GET'])
+def get_contributors(request, dsid):
+    """Get information about dataset contributors"""
+    dsid = common.format_dataset_id(dsid)
+    contributors_data = common.get_contributors(dsid)
+    return _handle_dataset_response(
+        dsid,
+        contributors_data,
+        "Contributors not found for dataset {dsid}"
+    )
+
+@extend_schema(
+    operation_id='get_dataset_total_volume',
+    summary='Get dataset total volume',
+    description='''
+        Retrieves the total volume information for a specific dataset.
+        Returns overall dataset size and breakdown by volume groups.
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'total_volume': {
+                            'type': 'string',
+                            'example': '105.26 TB',
+                            'description': 'Total dataset volume with units'
+                        },
+                        'volume_groups': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'object',
+                                'properties': {
+                                    'group': {
+                                        'type': 'string',
+                                        'example': 'Yearly Time Series 3-Hourly Analysis Fields (Gaussian T-254)',
+                                        'description': 'Volume group name or category'
+                                    },
+                                    'volume': {
+                                        'type': 'string',
+                                        'example': '68.52 TB',
+                                        'description': 'Volume size for this group with units'
+                                    }
+                                },
+                                'description': 'Individual volume group information'
+                            },
+                            'description': 'Breakdown of dataset volume by groups'
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Total volume not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['volume']
+)
+@api_view(['GET'])
+def get_total_volume(request, dsid):
+    """Get dataset size information including total volume"""
+    dsid = common.format_dataset_id(dsid)
+    volume = common.get_total_volume(dsid)
+    return _handle_dataset_response(
+        dsid,
+        volume,
+        "Total volume not found for dataset {dsid}"
+    )
+
+@extend_schema(
+    operation_id='get_dataset_related_resources',
+    summary='Get related resources',
+    description='''
+        Retrieves related resources for a specific dataset.
+        Returns external tools, software, documentation, and other resources related to the dataset.
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'count': {
+                            'type': 'integer',
+                            'example': 1,
+                            'description': 'Number of related resources'
+                        },
+                        'resources_list': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'object',
+                                'properties': {
+                                    'description': {
+                                        'type': 'string',
+                                        'example': 'Software that converts NetCDF files into WRF intermediate files',
+                                        'description': 'Description of the related resource'
+                                    },
+                                    'url': {
+                                        'type': 'string',
+                                        'example': 'https://pywinter.readthedocs.io/en/latest/',
+                                        'description': 'URL link to the related resource'
+                                    }
+                                },
+                                'description': 'Individual related resource information'
+                            },
+                            'description': 'List of related resources'
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Related resources not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['resources']
+)
+@api_view(['GET'])
+def get_related_resources(request, dsid):
+    """Get related resources for a given dataset"""
+    dsid = common.format_dataset_id(dsid)
+    resources_list = common.get_related_resources(dsid)
+    return _handle_dataset_response(
+        dsid,
+        resources_list,
+        "Related resources not found for dataset {dsid}"
+    )
+
+@extend_schema(
+    operation_id='get_dataset_related_datasets',
+    summary='Get related datasets',
+    description='''
+        Retrieves datasets that are related to or derived from the specified dataset.
+        Returns a list of related datasets with their identifiers and titles.
+    ''',
+    parameters=[
+        OpenApiParameter(
+            name='dsid',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description='Dataset identifier in 6-digit format (e.g., d123456)',
+            required=True,
+            pattern=r'd\d{6}'
+        )
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'count': {
+                            'type': 'integer',
+                            'example': 1,
+                            'description': 'Number of related datasets'
+                        },
+                        'resources_list': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'object',
+                                'properties': {
+                                    'dsid': {
+                                        'type': 'string',
+                                        'example': 'd093000',
+                                        'description': 'Related dataset identifier'
+                                    },
+                                    'title': {
+                                        'type': 'string',
+                                        'example': 'NCEP Climate Forecast System Reanalysis (CFSR) 6-hourly Products, January 1979 to December 2010',
+                                        'description': 'Related dataset title'
+                                    }
+                                },
+                                'description': 'Individual related dataset information'
+                            },
+                            'description': 'List of related datasets'
+                        }
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        },
+        400: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'error'},
+                'http_response': {'type': 'integer', 'example': 400},
+                'error_messages': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'example': ['Related datasets not found for dataset d633004']
+                },
+                'data': {'type': 'object', 'example': {}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['related_datasets']
+)
+@api_view(['GET'])
+def get_related_datasets(request, dsid):
+    """Get other datasets that are related to or derived from this dataset"""
+    dsid = common.format_dataset_id(dsid)
+    datasets_list = common.get_related_datasets(dsid)
+    return _handle_dataset_response(
+        dsid,
+        datasets_list,
+        "Related datasets not found for dataset {dsid}"
+    )
+
+@extend_schema(
+    operation_id='get_all_datasets',
+    summary='List all available datasets',
+    description='''
+    Retrieves a complete list of all available datasets in the system.
+
+    Returns basic information for each dataset including:
+    - Dataset ID (dsid)
+    - Dataset title (dstitle)
+
+    **Response Details:**
+    - Results are ordered by dataset ID
+    - Includes count of total datasets
+    - Provides clean list for dataset discovery and browsing
+    ''',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'description': 'Successfully retrieved list of all datasets',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'count': {
+                            'type': 'integer',
+                            'description': 'Total number of datasets available'
+                        },
+                        'datasets': {
+                            'type': 'array',
+                            'description': 'List of all datasets with basic information',
+                            'items': {
+                                'type': 'object',
+                                'properties': {
+                                    'id': {
+                                        'type': 'string',
+                                        'description': 'Dataset identifier in 6-digit format'
+                                    },
+                                    'title': {
+                                        'type': 'string',
+                                        'description': 'Dataset title'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []}
+            }
+        }
+    },
+    tags=['all_datasets']
+)
+@api_view(['GET'])
+def get_all_datasets(request):
+    """Get a complete list of all available datasets in the Research Data Archive"""
+    all_datasets = common.get_all_datasets()
+    json = all_datasets
+    response = rda_r.RDA_Response()
+    response.add_data(json)
+    return JsonResponse(response.get_json())
+
