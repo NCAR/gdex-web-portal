@@ -29,7 +29,7 @@ urlpatterns = [
     path('search/', search_views.search, name='search'),
     #path('resources/gcmd_viewer/', resources_views.gcmd_viewer),
     path('resources/', include('daas.urls')),
-    #path('resources/', include('submit.urls')),
+    path('resources/', include('submit.urls')),
     path('api/', include('api.urls')),
     path('metrics/', include('home.urls')),
     path('dashboard/', include('dashboard.urls')),
