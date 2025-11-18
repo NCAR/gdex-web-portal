@@ -9,7 +9,7 @@ webapp:
     fqdnAPI: api.calie.k8s.ucar.edu
     secretName: incommon-cert-calie-gdex-webserver
   container: 
-    image: hub.k8s.ucar.edu/calie-gdex/gdex-web-portal:v19377569949
+    image: hub.k8s.ucar.edu/calie-gdex/gdex-web-portal:latest
     port: 8080
     requests:
       memory: 4Gi
