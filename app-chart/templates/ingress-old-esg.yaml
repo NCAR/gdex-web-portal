@@ -24,9 +24,9 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: service-dummy
+            name: gdex-webserver
             port:
-              number: 80
+              number: 8080
   - host: www.earthsystemgrid.org
     http:
       paths:
@@ -34,7 +34,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: service-dummy
+            name: gdex-webserver
             port:
-              number: 80
+              number: 8080
 {{ end }}
