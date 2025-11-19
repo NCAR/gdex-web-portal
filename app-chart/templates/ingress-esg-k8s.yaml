@@ -1,0 +1,29 @@
+{{ if not .Values.testName }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-esg-k8s
+  namespace: {{ .Release.Namespace }}
+  labels:
+    group: {{ .Values.webapp.group }}
+  annotations:
+    cert-manager.io/cluster-issuer: "incommon"
+    nginx.ingress.kubernetes.io/permanent-redirect: "https://gdex.ucar.edu"
+spec:
+  ingressClassName: nginx-external
+  tls:
+    - hosts:
+      - esg.k8s.ucar.edu
+      secretName: incommon-cert.esg.k8s.ucar.edu
+  rules:
+  - host: esg.k8s.ucar.edu
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: service-dummy
+            port:
+              number: 80
+{{ end }}
