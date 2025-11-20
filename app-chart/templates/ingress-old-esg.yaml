@@ -8,6 +8,7 @@ metadata:
     group: {{ .Values.webapp.group }}
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt"
+    acme.cert-manager.io/http01-ingress-class: "nginx-internal"
 #    nginx.ingress.kubernetes.io/permanent-redirect: "https://esg.k8s.ucar.edu"
 spec:
   ingressClassName: nginx-internal
