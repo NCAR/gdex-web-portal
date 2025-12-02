@@ -6,25 +6,8 @@
 
 {% block content %}
 
-<ul class='nav nav-tabs'>
-    <li class='nav-item'>
-	<a class='nav-link {% if request.path == "/resources/daas/" %}active{% endif %}' href='/resources/daas/'>Submission Home</a>
-    </li>
-    <li class='nav-item'>
-	<a class='nav-link' href='/resources/daas/instructions-for-submission'>Form Instructions</a>
-    </li>
-    <li class='nav-item'>
-	<a class='nav-link' href='/resources/daas/decision-workflow'>Decision Workflow</a>
-    </li>
-    <li class='nav-item'>
-	<a class='nav-link' href='/resources/daas/terms-and-conditions'>Terms & Conditions</a>
-    </li>
-    <li class='nav-item'>
-	<a class='nav-link' href='/resources/daas/help'>Help</a>
-    </li>
-</ul>
 
-<div class="bg-white p-3">
+<!-- <div class="bg-white p-3"> -->
     <div class="d-grid d-print-flex">
         <article class="main-content-wrapper">
             <h2>{{ page.title }}</h2>
@@ -32,16 +15,17 @@
                 <div>
                     {{ page.body|richtext }}
 	        </div>
-                <hr>
+
                 <div>
-	            <h3>THIS IS THE DATASUBMISSION PAGE. GITHUB PUSH.</h3> 
+	            <h3>THIS IS THE DATASUBMISSION PAGE</h3> 
                     <div class="col-12 mt2 mt-md4">
-                        <a class="btn btn-primary" href='https://submit-data.ucar.edu/'/>Start New Dataset Submission Form</a>
+                        <a class="btn btn-primary" href='https://submit-data.ucar.edu/'/>Submit Data</a>
                     </div>
                 </div>
-                <hr>
+
                 <div>
-                    {{ page.additional_information|richtext }}
+                 <hr>
+                    <h3>Need Help?</h3>
                 </div>
             </div>
         </article>
