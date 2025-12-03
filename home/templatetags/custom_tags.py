@@ -13,7 +13,7 @@ def format_dsid(dsid, remove_ds=None):
         ds = 'ds'
     else:
         ds = ''
-    
+
     # check for format 'dnnnnnn'
     ms = re.match(r'^([a-z]{1})(\d{3})(\d{3})$', dsid)
     if ms:
@@ -21,7 +21,7 @@ def format_dsid(dsid, remove_ds=None):
             return dsid
         else:
             return '{}{:03d}.{}'.format(ds, int(ms.group(2)), int(ms.group(3)))
-    
+
     # check for legacy format 'dsnnn.n', 'dsnnn-n', 'nnn.n', and
     # 'nnn-n'.  Change dash '-' to dot '.' if necessary.
     ms = re.match(r'^(ds)?(\d{3})(-|\.)(\d{1})$', dsid)
@@ -97,7 +97,7 @@ def convert_bytes(bytes):
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
     return "%s %s" % (s, size_name[i])
-        
+
 @register.simple_tag
 def has_alt_index(data):
     for i in data:
@@ -122,7 +122,7 @@ def get_extension(value):
 
 @register.filter
 def get_data_format_from_row(row):
-    """ 
+    """
     Given a static filelist row entry, return the data format.
     The row is a list of dictionaries with 'name' and 'value' keys.
     """
@@ -136,7 +136,7 @@ def get_data_format_from_row(row):
 
 @register.inclusion_tag('datasets/filelist-zarr-catalogs.html', takes_context=True)
 def show_arco_catalogs(context):
-    """ 
+    """
     Takes the context from filelist.html and returns a list of dicts with ARCO file information
     (data format, size, date archived, file path, file name, file url, file note).
     """
@@ -154,7 +154,14 @@ def show_arco_catalogs(context):
             elif 'data_path' in item:
                 file_info['file_path'] = item.get('data_path', '')
                 file_info['file_name'] = item.get('value', '')
-                file_info['file_url'] = item.get('url', '')
+                url = item.get('url', '')
+                if '-posix' in url:
+                    url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
+                elif '-https' in url:
+                    url = settings.GLOBUS_DATA_DOMAIN.strip('/') + file_info['file_path']
+                elif '-osdf' not in url # Some assets don't have posix
+                    url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
+                file_info['file_url'] = url
                 file_info['file_note'] = item.get('note', None)
 
         file_rows.append(file_info)

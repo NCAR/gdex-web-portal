@@ -87,12 +87,11 @@ def getORCID(extra_data_dict):
         return "No ORCID Found"
 
 @register.simple_tag
-def get_copy_path(path):
+def get_copy_path(basepath, dsid, webpath):
     """Given a catalog/kerchunk relative path, return full URL/PATH"""
-    return path
+    return basepath.strip('/') + '/' + dsid + '/' + webpath
 
-def get_copy_path_title(path):
+@register.simple_tag
+def get_copy_path_title(basepath, dsid, webpath):
     """Given a catalog/kerchunk relative path, return full title. e.g. 'Copy Full Path' """
-    return path
-
-
+    return "Copy Full URL"
