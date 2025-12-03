@@ -4,70 +4,84 @@
     .grid-card-group {
         border: 2px solid #236892;      /* blue border */
         border-radius: 20px;             /* 20px corners */
-        background-color: transparent;   /* transparent background */
+        background-color:  rgba(255,255,255,.7); /* transparent background */
+        box-shadow: 0px 0px 10px lightgray;
+        /*outline: 3px solid #236892;     /* blue outline */
     }
+
     .grid-card-group .card-title,
     .grid-card-group .card-text {
         color: black;                    /* black text */
+        text-decoration: none;           /* remove underline */
+        cursor: default;                 /* normal arrow */
+    }
+
+    .grid-card-group .card-title:hover,
+    .grid-card-group .card-text:hover {
+        text-decoration: none;
+        cursor: default;
     }
 </style>
 
+
 <div class="component featured-work container-lg pt-md-4">
     <div class="row gx-0 justify-content-center">
-        <div class="col-10 mx-auto">
+        <div class="col-10">
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-2 g-md-4">
 
                 <!-- Card 1 -->
                 <div class="col">
                     <div class="card h-100 grid-card-group">
-                        <a href="/gsearch/dataset-search/" class="stretched-link"></a>
                         <div class="card-body text-center">
                             <div class="icon py-2">
                                 <!-- Round inactive button with icon -->
-                                <button class="btn btn-outline-primary rounded-circle disabled d-flex align-items-center justify-content-center mx-auto" 
-                                        style="width: 50px; height: 50px;">
-                                    <i class="fa-solid fa-1"></i>
-                                </button>
+                                <button class="btn btn-primary rounded-circle disabled d-flex align-items-center justify-content-center mx-auto mb-2" 
+        style="width: 70px; height: 70px;">
+    <i class="fa-solid fa-1" style="font-size: 30px; font-weight: bold; color: white;"></i>
+</button>
+
                             </div>
-                            <h4 class="card-title">Submit Data</h4>
-                            <p class="card-text pt-2">
+                            <h4 class="my-card-title text-black" style="font-size: 28px; font-weight: 700;">Submit Data</h4>
+                            <p class="card-text pt-2" style = "font-size: 22px;">
                                 Share basic details about your dataset using a short online form.
                             </p>
                         </div>
                     </div>
                 </div>
 
-
                 <!-- Card 2 -->
-                <div class="col">
-                    <div class="card h-100 grid-card-group">
-                        <a href="https://github.com/NCAR/rda-apps-clients" class="stretched-link" target="_blank"></a>
-                        <div class="card-body text-center">
-                            <div class="icon py-2">
-                                <i class="fa-solid fa-2"></i>
-                            </div>
-                            <h4 class="card-title">
-                                Review Process <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i>
-                            </h4>
-                            <p class="card-text pt-2">
-                                NCAR employee reviews take about 30 minutes; external reviews may take up to one week.
-                            </p>
+<div class="col">
+    <div class="card h-100 grid-card-group">
+        <div class="card-body text-center">
+            <div class="icon py-2">
+                <!-- Round inactive button with icon -->
+                <button class="btn btn-primary rounded-circle disabled d-flex align-items-center justify-content-center mx-auto mb-2"
+                    style="width: 70px; height: 70px;">
+                    <i class="fa-solid fa-2" style="font-size: 30px; font-weight: bold; color: white;"></i>
+                </button>
+            </div>
+            <h4 class="my-card-title text-black" style="font-size: 28px; font-weight: 700;">Review Process</h4>
+            <p class="card-text pt-2" style = "font-size:22px;">
+                NCAR employee reviews take about 30 minutes; external reviews may take up to one week.
+            </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Card 2 -->
+                <!-- Card 3 -->
                 <div class="col">
                     <div class="card h-100 grid-card-group">
-                        <a href="https://github.com/NCAR/rda-apps-clients" class="stretched-link" target="_blank"></a>
                         <div class="card-body text-center">
                             <div class="icon py-2">
-                                <i class="fa-solid fa-3"></i>
+                                <!-- Round inactive button with icon -->
+                                <button class="btn btn-primary rounded-circle disabled d-flex align-items-center justify-content-center mx-auto mb-2" 
+        style="width: 70px; height: 70px;">
+    <i class="fa-solid fa-3" style="font-size: 30px; font-weight: bold; color: white;"></i>
+</button>
                             </div>
-                            <h4 class="card-title">
-                                Final Decision <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i>
-                            </h4>
-                            <p class="card-text pt-2">
+                            <h4 class="my-card-title text-black" style = "font-size: 28px; font-weight: bold;" >
+                                Final Decision </h4>
+                            <p class="card-text pt-2" style = "font-size: 22px;">
                                 You'll get an email once your submission is approved or rejected.
                             </p>
                         </div>
@@ -77,3 +91,7 @@
         </div>
     </div>
 </div>
+
+~                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+~                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+~              
