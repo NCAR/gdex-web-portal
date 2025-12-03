@@ -1,29 +1,46 @@
 {% load wagtailcore_tags %}
 
 <style>
-    .grid-card-group {
-        border: 2px solid #236892;      /* blue border */
-        border-radius: 20px;             /* 20px corners */
-        background-color:  rgba(255,255,255,.7); /* transparent background */
-        box-shadow: 0px 0px 10px lightgray;
-        /*outline: 3px solid #236892;     /* blue outline */
-    }
+.grid-card-group {
+    border: 2px solid #236892;           /* blue border */
+    border-radius: 20px;                 /* 20px corners */
+    background-color: rgba(255,255,255,.7); /* slightly transparent white */
+    box-shadow: 0px 0px 10px lightgray;
+    position: relative;                  /* required for stretched-link */
+    transition: background-color .2s ease, box-shadow .2s ease;
+}
 
-    .grid-card-group .card-title,
-    .grid-card-group .card-text {
-        color: black;                    /* black text */
-        text-decoration: none;           /* remove underline */
-        cursor: default;                 /* normal arrow */
-    }
+/* Hover effect for entire card */
+.grid-card-group:hover {
+    background-color: rgba(255,255,255,.9); /* slightly brighter on hover */
+    cursor: pointer;                        /* entire card looks clickable */
+    box-shadow: 0px 0px 14px #b3c9d6;
+}
 
-    .grid-card-group .card-title:hover,
-    .grid-card-group .card-text:hover {
-        text-decoration: none;
-        cursor: default;
-    }
+/* Remove cursor override on card text */
+.grid-card-group .card-title,
+.grid-card-group .card-text {
+    color: black;
+    text-decoration: none;
+}
+
+/* Remove underline on hover, keep clickable feel */
+.grid-card-group .card-title:hover,
+.grid-card-group .card-text:hover {
+    text-decoration: none;
+}
+/* Disable hover + click for a specific card */
+.no-click {
+    pointer-events: none;            /* nothing inside is clickable */
+    cursor: default !important;      /* arrow cursor */
+}
+
+.no-click:hover {
+    background-color: rgba(255,255,255,.7) !important;  /* no hover change */
+    box-shadow: 0px 0px 10px lightgray !important;       /* no hover shadow */
+}
+
 </style>
-
-
 <div class="component featured-work container-lg pt-md-4">
     <div class="row gx-0 justify-content-center">
         <div class="col-10">
@@ -32,6 +49,7 @@
                 <!-- Card 1 -->
                 <div class="col">
                     <div class="card h-100 grid-card-group">
+                        <a href="https://ithelp.ucar.edu/plugins/servlet/desk/site/datahelp" class="stretched-link"></a>
                         <div class="card-body text-center">
                             <div class="icon py-2">
                                 <!-- Round inactive button with icon -->
@@ -52,6 +70,7 @@
                 <!-- Card 2 -->
 <div class="col">
     <div class="card h-100 grid-card-group">
+        <a href="https://gdex.ucar.edu/resources/daas/decision-workflow/" class="stretched-link"></a>
         <div class="card-body text-center">
             <div class="icon py-2">
                 <!-- Round inactive button with icon -->
@@ -70,7 +89,7 @@
 
                 <!-- Card 3 -->
                 <div class="col">
-                    <div class="card h-100 grid-card-group">
+                    <div class="card h-100 grid-card-group no-click">
                         <div class="card-body text-center">
                             <div class="icon py-2">
                                 <!-- Round inactive button with icon -->
@@ -91,7 +110,3 @@
         </div>
     </div>
 </div>
-
-~                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-~                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-~              
