@@ -1,46 +1,59 @@
 {% load wagtailcore_tags %}
 
+<style>
+    .grid-card-group {
+        border: 2px solid #236892;      /* blue border */
+        border-radius: 20px;             /* 20px corners */
+        background-color: transparent;   /* transparent background */
+    }
+    .grid-card-group .card-title,
+    .grid-card-group .card-text {
+        color: black;                    /* black text */
+    }
+</style>
+
 <div class="component featured-work container-lg pt-md-4">
     <div class="row gx-0 justify-content-center">
-        <div class="col-10 primary">
+        <div class="col-10 mx-auto">
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-2 g-md-4">
+
+                <!-- Card 1 -->
                 <div class="col">
                     <div class="card h-100 grid-card-group">
                         <a href="/gsearch/dataset-search/" class="stretched-link"></a>
-                        <div class="card-body">
-                            <div class="icon py-2 text-center">
+                        <div class="card-body text-center">
+                            <div class="icon py-2">
                                 <i class="fa-solid fa-magnifying-glass fa-2x"></i>
                             </div>
-                            <h4 class="card-title text-center text-white">Submit Data</h4>
-                            <p class="card-text text-center pt-2">Share basic details about your dataset using a short online form.</p>
+                            <h4 class="card-title">Submit Data</h4>
+                            <p class="card-text pt-2">
+                                Share basic details about your dataset using a short online form.
+                            </p>
                         </div>
                     </div>
                 </div>
+
+                <!-- Card 2 -->
                 <div class="col">
                     <div class="card h-100 grid-card-group">
-                        <div class="card-body">
-                            <a href="https://github.com/NCAR/rda-apps-clients" class="stretched-link" target="_blank"></a>
-                            <div class="icon py-2 text-center">
+                        <a href="https://github.com/NCAR/rda-apps-clients" class="stretched-link" target="_blank"></a>
+                        <div class="card-body text-center">
+                            <div class="icon py-2">
                                 <i class="fa-solid fa-laptop-code fa-2x"></i>
                             </div>
-                            <h4 class="card-title text-center text-white">Review Process<i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></h4>
-                            <p class="card-text text-center pt-2">NCAR employee reviews take about 30 minutes; external reviews may take up to one week.</p>
+                            <h4 class="card-title">
+                                Review Process <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i>
+                            </h4>
+                            <p class="card-text pt-2">
+                                NCAR employee reviews take about 30 minutes; external reviews may take up to one week.
+                            </p>
                         </div>
                     </div>
                 </div>
+
+                <!-- Card 3 -->
                 <div class="col">
                     <div class="card h-100 grid-card-group">
-                        <div class="card-body">
-                            <a href="/resources/daas/" class="stretched-link"></a>
-                            <div class="icon py-2 text-center">
-                                <i class="fa-solid fa-cloud-arrow-up fa-2x"></i>
-                            </div>
-                            <h4 class="card-title text-center text-white">Final Decision</h4>
-                            <p class="card-text text-center pt-2">You'll get an email once your submission is approved or rejected.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                        <a href="/resources/daas/" class="stretched-link"></a>
+                        <div class="card-body text-center">
+                            <div
