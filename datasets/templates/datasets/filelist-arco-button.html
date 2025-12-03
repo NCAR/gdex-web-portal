@@ -5,8 +5,8 @@
             type='button' 
             style='transition:all 0.2s ease; font-size:1rem;' 
             onclick="copyFullLink(this, 
-                    '{% if is_glade %}{{gdex_base_path}}{% else %}{{rda_base_url}}/datasets{% endif %}/{{data.dsid}}/{{ col.webpath }}',
-                    'Copy Full {% if is_glade %}Path{% else %}URL{% endif %}'
+                    '{{ rda_base_url|get_copy_path }}',
+                    '{{ rda_base_url|get_copy_path_title }}'
                     )">
         <i class="fa-solid fa-copy pe-1"></i>Copy Full {% if is_glade %}Path{% else %}URL{% endif %}
     </button>

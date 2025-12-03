@@ -68,7 +68,7 @@ def include_strip(value):
 def dictKeyLookup(the_dict, key, subkey=None):
     # Try to fetch from the dict, and if it's not found return an empty string.
     if subkey is None:
-        return the_dict.get(key, '') 
+        return the_dict.get(key, '')
     else:
         return the_dict.get(key).get(subkey)
 
@@ -85,4 +85,14 @@ def getORCID(extra_data_dict):
                     return identity['username']
     except:
         return "No ORCID Found"
+
+@register.simple_tag
+def get_copy_path(path):
+    """Given a catalog/kerchunk relative path, return full URL/PATH"""
+    return path
+
+def get_copy_path_title(path):
+    """Given a catalog/kerchunk relative path, return full title. e.g. 'Copy Full Path' """
+    return path
+
 
