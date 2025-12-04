@@ -1430,6 +1430,15 @@ def get_dataset_webhome(dsid):
 
     return response[0]
 
+def has_arco(dsid):
+    con,cur = init_connection_new()
+    query = "select * from dsgroup where dsid=%s and gindex < 0"
+    cur.execute(query, dsid)
+    data = cursor.fetchall()
+    return data is not None
+
+
+
 def get_staff():
     """Get DECS employee information."""
     init_connection()

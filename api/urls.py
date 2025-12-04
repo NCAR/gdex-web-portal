@@ -20,6 +20,7 @@ urlpatterns = [
     path(r'get_status/', views.get_status ),
     path(r'get_req_files/<rindex>/', views.get_req_files ),
     path(r'get_req_files_old/<rindex>/', views.get_req_files_old ),
+    path(r'has_arco/<dsid>/', views.has_arco),
     path(r'globus_download/<rindex>/<endpoint>', views.globus_download ),
     path(r'purge/<rindex>/', views.purge ),
 
