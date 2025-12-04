@@ -84,5 +84,5 @@ def get_user(request):
 
     sys.stderr.write(str(cookies))
 
-def my_raw_page(request):
+def new_data_submit_page(request):
     return render(request, "daas/data_submission.html", {'display':True})
