@@ -90,11 +90,12 @@ def get_assembled_groups(request, dsid, gindex=None):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
-def has_arco(dsid):
+def has_arco(request, dsid):
     """Return true if arco datasets available"""
     result = common.has_arco(dsid)
     response = rda_r.RDA_Response()
     response.add_data({'has_arco':result})
+    return JsonResponse(response.get_json())
 
 def get_child_groups(request, dsid, gindex):
     dsid = common.format_dataset_id(dsid)
