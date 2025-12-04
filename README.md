@@ -6,3 +6,9 @@ This project contains the Python Django framework supporting the [NSF NCAR Geosc
 
 
 
+
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 2618758 (new line)
