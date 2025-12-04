@@ -7,7 +7,7 @@
             style='transition:all 0.2s ease; font-size:1rem;' 
             onclick="copyFullLink(this, 
                     {% if is_glade %}
-                    '{% get_copy_path gdex_base_path data.dsid col.webpath %}',
+                    '/{% get_copy_path gdex_base_path data.dsid col.webpath %}',
                     '{% get_copy_path_title gdex_base_path data.dsid col.webpath %}'
                     {% else %}
                     '{% get_copy_path rda_base_url data.dsid col.webpath %}',
