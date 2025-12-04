@@ -7,5 +7,5 @@ urlpatterns = [
     path(r'daas/get_full_submission/', views.full_submission),
     path(r'daas/accept/', views.accept),
     path(r'daas/reject/', views.reject),
-    path('daas/submit-data/', views.new_data_submit_page),
+    path('submit-data/', views.new_data_submit_page),
 ]
