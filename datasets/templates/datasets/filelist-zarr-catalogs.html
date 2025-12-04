@@ -17,9 +17,10 @@
                             <button class="btn btn-primary px-2 py-1 rounded" 
                                 type="button" 
                                 style="transition: all 0.2s ease; font-size: 1rem;" 
-                                onClick="copyFullLink(this, '{{ arco_file.file_url }}', 'Copy Full URL')">
+                                onClick="copyFullLink(this, '{{ arco_file.file_url }}', 'Copy Full {% if 'http' in arco_file.file_url %} URL {% else %} Path {% endif %}')">
                                 <i class="fa-solid fa-copy pe-1"></i>
-                                Copy Full URL
+                                Copy Full {% if 'http' in arco_file.file_url %} URL {% else %} Path {% endif %}
+
                             </button>
                         </td>
                         <td>{% if arco_file.file_note %}<i class="fa-solid fa-circle-info pe-1"></i>{{ arco_file.file_note }}{% endif %}</td>
