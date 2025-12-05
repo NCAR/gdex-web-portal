@@ -7,20 +7,29 @@
 {% block content %}
 
 <!-- <div class="bg-white p-3"> -->
-<figure class="figure full-width">
-    <picture>
-        <img src="/media/images/GDEX_banner_image.original.jpg" alt="banner" class="figure-img img-fluid">
-    </picture>
-</figure>
+<div class="position-relative">
+    <img src="/media/images/GDEX_banner_image.original.jpg"
+         alt="banner"
+         class="img-fluid w-100"
+         style="object-fit: cover;">
 
-<div class="w-100 py-2 px-1 text-center text-white mb-2" 
-     style="background: rgba(35, 104, 146, .85); margin-top:-200px; margin-bottom:1rem; position:relative; z-index:2;">
-    <h2 class="fw-bold mb-2" style="font-size:3.5rem;">Ready to Share Your Data?</h2>
-    <p style="font-size:1.6rem; margin:0;">Help advance geoscience by making your data discoverable.</p>
+    <!-- Full-width overlay bar -->
+    <div class="position-absolute text-center text-white py-3 px-2"
+         style="
+            background: rgba(35, 104, 146, .85);
+            bottom: 50px;
+            left: 0;
+            right: 0;
+            width: 100%;
+         ">
+        <h2 class="fw-bold mb-2" style="font-size:3rem;">Ready to Share Your Data?</h2>
+        <p style="font-size:1.4rem; margin:0;">Help advance geoscience by making your data discoverable.</p>
+    </div>
 </div>
 
 
-    <div class="d-grid d-print-flex">
+
+<div class="d-grid d-print-flex">
         <article class="main-content-wrapper">
             <h2>{{ page.title }}</h2>
             <div class="main-content clearfix">
