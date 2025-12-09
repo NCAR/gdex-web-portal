@@ -461,35 +461,18 @@ function getTypes()
   return true;  
 }
 
-/**
- * open a help window
- */
-
-function openHelpWindow(helpkey)
+function regionSelectChange()
 {
-   var notewin = window.open("", "DescWin", "width=500,height=400,scrollbars=yes,resizable=yes");
+   var selectMenu = document.getElementById("regionSelectMenu");
+   var selectedValue = selectMenu.options[selectMenu.selectedIndex].value;
 
-   notewin.document.write("<html><head><title>Help Document</title></head>\n" +
-                          "<body style=\"font-size: 100%; font-family: helvetica,arial,verdana,sans-serif;\">\n");
-   if(helpkey == "temp") { // temporal range help
-      notewin.document.write("<table width=\"100%\">\n" +
-                "<tr style=\"background-color: #336699\">\n" +
-                "<th style=\"color: #ffffff; text-align:center; padding: 5px;\">\n" +
-                "Usage of Temporal Range Selection</th></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "Choose the starting and ending dates that define the bounding dates for\n" +
-                "your request, using the format YYYY-MM-DD. The bounding dates and all dates\n" +
-                "in between will be included in the output data set.  The ending date must \n" + 
-                "be later than or equal to the starting date.\n" + 
-                "</td></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "Click 'Reset Range' to re-select the full period of record.\n" +
-                "</td></tr></table>\n");
+   if(selectedValue == "1") {
+      displayGoogleMap(1);
+   } else if(selectedValue == "2") {
+      displayStationSelection(1);
+   } else if(selectedValue == "3") {
+      displayLocationSelection(1);
    }
-   notewin.document.write("<br /><form><center><input type=\"button\" value=\"Close This Window\" " +
-           "onClick=\"self.close()\"></center></form>\n</body></html>\n");
-   notewin.document.close();
-   notewin.focus();
 }
 
 /**
@@ -799,4 +782,3 @@ function selectNoTypes()
 	document.form.obstype[i].checked = false;
 	}
 }
-

@@ -21,7 +21,7 @@ from wagtail.models import Page
 from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
                                 iso_19139, json_ld)
 
-from .utils import get_hostname, ng_gdex_id
+from .utils import get_custom_subset_context, get_hostname, ng_gdex_id
 from api.common import (format_dataset_id, get_request_info,
                         get_request_files, get_request_status,
                         get_request_index_from_rqstid,
@@ -621,3 +621,51 @@ def get_native(request, dsid):
         return HttpResponse(xml, content_type="application/xml")
     finally:
         remove_tempdir(tdir_name)
+
+def custom_subset(request, dsid):
+    """ 
+    View to render a custom subset form page
+
+    Templates:
+       Depending on the dataset ID, a specific custom subset page template
+       may be used. If no specific template exists for the dataset, a generic
+       custom subset page template is used.
+
+       default template: datasets/custom-subset-page.html
+       specific template: datasets/custom-subset-page-<dsid>.html
+    
+    Context:
+       This view generates the following context:
+         - dsid: dataset ID (d132002, etc.)
+         - gindex: group index (if provided in request GET parameters)
+         - dataset description page context (dsid, dsdoi, dstitle, etc.)
+         - dataset period context (date_start, time_start, date_end, time_end)
+
+    """
+    d = None
+    if "HTTP_X_REQUESTED_WITH" in request.META:
+        if dsid in ['d132002']:
+            template = f"datasets/custom-subset-page-{dsid}.html"
+        else:
+            template = "datasets/custom-subset-page.html"
+        logger.info("Rendering AJAX custom subset page for dataset {}".format(dsid))
+    else:
+        d = get_dataset_description_context(dsid)
+        if d is None:
+            return render(request, "404.html")
+        template = "datasets/custom-subset-page-base.html"
+        logger.info("Rendering full custom subset page for dataset {}".format(dsid))
+
+    subset_context = {
+        'dsid': dsid,
+        'title': "NSF NCAR GDEX | Dataset {} Custom Subset".format(dsid),
+    }
+    if 'gindex' in request.GET:
+        subset_context.update({'gindex': request.GET['gindex']})
+
+    subset_context.update(get_custom_subset_context(dsid))
+
+    ctx = {'page': d, 'subset': subset_context}
+    ctx.update({'gmap_api_key': settings.GMAP_API_KEY, 'gmap_api_url': settings.GMAP_API_URL})
+    
+    return render(request, template, ctx)

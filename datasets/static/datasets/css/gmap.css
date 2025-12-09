@@ -1,0 +1,12 @@
+.tick {
+  position: absolute;
+  width: 3px;
+  height: 18px;
+  top: 0px;
+}
+.scale {
+  background-color: #c3d7ee;
+}
+.marker {
+  background-color: #ffb931;
+}

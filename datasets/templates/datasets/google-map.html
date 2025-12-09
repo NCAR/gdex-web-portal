@@ -1,0 +1,109 @@
+<div class="mt-2">
+    <span class="text-uppercase me-2 fw-bold">Spatial Selection:</span>
+    <div id="interactive_map">
+        <div id="drawboxmap_container" class="map_containers" style="display: block; padding: 10px">
+            <div class="component two-column container-lg mb-0">
+                <div class="row gx-0">
+                    <div class="col-12 col-md-6">
+                        <div id="drawboxmap" class="ms-4" style="width: 500px; height: 400px; border: thick solid #30658b">
+                            Waiting for the map to load ...
+                        </div>
+                        <div class="ms-4" style="width: 500px">
+                            <div class="pe-1" style="float: left; margin-top: 3px">
+                                <span class="text-uppercase fw-bold">Zoom:</span>
+                            </div>
+                            <div style="float: left; margin-top: 3px; margin-right: 3px">
+                                <a href="javascript:void(0)" onclick="zoomOut(map.handles.drawbox, 1, 'mark')">
+                                    <i class="fas fa-minus-square"></i>
+                                </a>
+                            </div>
+                            <div style="position: relative; float: left; height: 18px; width: 60px; margin-top: 6px">
+                                <div class="tick scale" style="left: 0px"></div>
+                                <div class="tick scale" style="left: 6px"></div>
+                                <div class="tick scale" style="left: 12px"></div>
+                                <div class="tick scale" style="left: 18px"></div>
+                                <div class="tick scale" style="left: 24px"></div>
+                                <div class="tick scale" style="left: 30px"></div>
+                                <div class="tick scale" style="left: 36px"></div>
+                                <div class="tick scale" style="left: 42px"></div>
+                                <div class="tick scale" style="left: 48px"></div>
+                                <div class="tick scale" style="left: 54px"></div>
+                                <div id="mark" class="tick marker" style="left: 0px"></div>
+                            </div>
+                            <div style="float: left; margin-top: 3px">
+                                <a href="javascript:void(0)" onclick="zoomIn(map.handles.drawbox, 10, 'mark')"><i class="fas fa-plus-square"></i></a>
+                            </div>
+                            <div style="float: right">
+                                <input name="gdrawboxmap_mode" id="pan" class="me-1" type="radio" onClick="defineDrag()" checked>
+                                <span class="text-uppercase">Pan Map</span>
+                                <input name="gdrawboxmap_mode" id="draw" class="ms-2 me-1" type="radio" onClick="defineDrag()">
+                                <span class="text-uppercase">Draw Box</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="row gx-0">
+                            <div class="col-12 col-md-12">
+                                <span class="text-uppercase fw-bold">Interactive Map Instructions:</span>
+                                <br>
+                                <ul class="mt-0">
+                                    <li>
+                                        Use the '<span class="text-uppercase">Pan Map</span>' option to drag and center the map on your area of interest
+                                    </li>
+                                    <li>
+                                        Use the '<span class="text-uppercase">Draw Box</span>' option to drag a box around your area of interest. You can also manually enter bounding latitudes and longitudes in the text boxes below:
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="row gx-0 mt-2">
+                            <div class="col-12 col-md-4"></div>
+                            <div class="col-12 col-md-4 text-center">
+                                <span class="text-uppercase fw-bold" style="white-space: nowrap;"><sup>&dagger;</sup>&nbsp;North: 
+                                <input class="font-monospace" type="text" id="gdrawboxmap_nlat" size="3" value="" onBlur="checkInput(this)">
+                                </span>
+                            </div>
+                            <div class="col-12 col-md-4"></div>
+                        </div>
+                        <div class="row gx-0 mt-2">
+                            <div class="col-12 col-md-4 text-end">
+                                <nobr>
+                                    <span class="text-uppercase"><sup>&dagger;</sup>&nbsp;West:</span> 
+                                    <input class="font-monospace" type="text" id="gdrawboxmap_wlon" size="4" value="" onBlur="checkInput(this)">
+                                </nobr>
+                            </div>
+                            <div class="col-12 col-md-4 text-center">
+                                <a href="javascript:void(0)" class="btn btn-pill btn-primary px-2 py-1 border-1" onclick="resetToFullGlobalSelection(); showChangedSelections()">
+                                    Reset
+                                </a>
+                            </div>
+                            <div class="col-12 col-md-4 text-start">
+                                <nobr>
+                                    <span class="text-uppercase"><sup>&dagger;</sup>&nbsp;East:</span> 
+                                    <input class="font-monospace" type="text" id="gdrawboxmap_elon" size="4" value="" onBlur="checkInput(this)">
+                                </nobr>
+                            </div>
+                        </div>
+                        <div class="row gx-0 mt-2">
+                            <div class="col-12 col-md-4"></div>
+                            <div class="col-12 col-md-4 text-center">
+                                <nobr>
+                                    <span class="text-uppercase"><sup>&dagger;</sup>&nbsp;South:</span> 
+                                    <input class="font-monospace" type="text" id="gdrawboxmap_slat" size="3" value="" onBlur="checkInput(this)">
+                                </nobr>
+                            </div>
+                            <div class="col-12 col-md-4"></div>
+                        </div>
+                        <div class="row gx-0 mt-2">
+                            <div class="col-12 col-md-12">
+                                <ul class="mt-0">
+                                    <span><sup>&dagger;</sup></span>&nbsp;Latitudes and longitudes must be specified in whole degrees
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
