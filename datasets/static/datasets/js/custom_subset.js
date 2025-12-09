@@ -63,3 +63,10 @@ function clearTemporalRange() {
   $('#endDate').datepicker('option', 'minDate', new Date($('#minDate').val()));
   $('#endDate').datepicker('option', 'maxDate', new Date($('#maxDate').val()));
 }
+
+changed_selection = false;
+function showChangedSelections() {
+  if (!changed_selection) {
+    changed_selection = true;
+  }
+}
