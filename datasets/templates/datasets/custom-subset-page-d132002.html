@@ -94,9 +94,7 @@ Select spatial region for your data request.
 <!-- Spatial range selection via Google map -->
 
 <div class="py-1" style="display: none" id="mapselect">
-   <input type="button" value="Select location by station ID" onClick="displayStationSelection(1)">
-   <input type="button" value="Select by location name" onClick="displayLocationSelection(1)">
-{% include "datasets/google-map.html" %}
+   {% include "datasets/google-map.html" %}
 </div>
 
 <!-- Select location by station ID -->
