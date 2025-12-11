@@ -140,30 +140,33 @@ def show_arco_catalogs(context):
     Takes the context from filelist.html and returns a list of dicts with ARCO file information
     (data format, size, date archived, file path, file name, file url, file note).
     """
-    file_rows = []
-    for row in context['data']['groups'][0]['rows']:
-        file_info = { 'data_format': '', 'size': None, 'date_archived': '', 'file_path': '', 'file_name': '', 'file_url': '', 'file_note': None }
-        for item in row:
-            name = item.get('name', '').lower()
-            if name == 'data format':
-                file_info['data_format'] = item.get('value', '').lower()
-            elif name == 'size':
-                file_info['size'] = item.get('value', '')
-            elif name == 'date archived':
-                file_info['date_archived'] = item.get('value', '')
-            elif 'data_path' in item:
-                file_info['file_path'] = item.get('data_path', '')
-                file_info['file_name'] = item.get('value', '')
-                url = item.get('url', '')
-                if '-posix' in url:
-                    url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
-                elif '-https' in url:
-                    url = settings.GLOBUS_DATA_DOMAIN.strip('/') + file_info['file_path']
-                elif '-osdf' not in url: # Some assets don't have posix
-                    url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
-                file_info['file_url'] = url
-                file_info['file_note'] = item.get('note', None)
+    groups = []
+    for i, group in enumerate(context['data']['groups']):
+        file_rows = []
+        for row in context['data']['groups'][i]['rows']:
+            file_info = { 'data_format': '', 'size': None, 'date_archived': '', 'file_path': '', 'file_name': '', 'file_url': '', 'file_note': None }
+            for item in row:
+                name = item.get('name', '').lower()
+                if name == 'data format':
+                    file_info['data_format'] = item.get('value', '').lower()
+                elif name == 'size':
+                    file_info['size'] = item.get('value', '')
+                elif name == 'date archived':
+                    file_info['date_archived'] = item.get('value', '')
+                elif 'data_path' in item:
+                    file_info['file_path'] = item.get('data_path', '')
+                    file_info['file_name'] = item.get('value', '')
+                    url = item.get('url', '')
+                    if '-posix' in url:
+                        url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
+                    elif '-https' in url:
+                        url = settings.GLOBUS_DATA_DOMAIN.strip('/') + file_info['file_path']
+                    elif '-osdf' not in url: # Some assets don't have posix
+                        url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
+                    file_info['file_url'] = url
+                    file_info['file_note'] = item.get('note', None)
 
-        file_rows.append(file_info)
+            file_rows.append(file_info)
+        groups.append({'files':file_rows, 'group_name': group['group_id']})
 
-    return { 'arco_files': file_rows }
+    return { 'groups': groups }

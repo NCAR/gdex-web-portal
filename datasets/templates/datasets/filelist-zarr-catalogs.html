@@ -1,5 +1,13 @@
 <input type='hidden' id=clipboard></input>
 <div id='arco-container' class='container mt-4 mb-4'>
+
+        {% for group in groups %}
+         {% if group.group_name and groups|length > 1 %}
+             {# Show group title if more than one group on the page #}
+             <h3 id='{{group.group_name|slugify}}'>
+                 {{group.group_name}}
+             </h3>
+         {% endif %}
     <table id="zarr-catalogs-table" class="table table-striped table-bordered">
         <thead>
             <tr>
@@ -9,7 +17,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for arco_file in arco_files %}
+            {% for arco_file in group.files %}
                 {% if arco_file.data_format != 'csv' %}
                     <tr>
                         <td class="roboto-regular" style="font-family: Roboto Mono;">{{ arco_file.file_name }}</td>
@@ -29,4 +37,5 @@
             {% endfor %}
         </tbody>
     </table>
+         {% endfor %}
 </div>
