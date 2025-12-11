@@ -1,9 +1,12 @@
    <h2> Subgroup Summary </h2>
    <div>
-      {% if data.is_glade %}
-         {% include "datasets/glade_buttons.html" %}
-      {% else %}
-         {% include "datasets/download_buttons.html" %}
+
+      {% if not data.groups.0.gindex|add:"0" < 0  %} 
+         {% if data.is_glade %}
+            {% include "datasets/glade_buttons.html" %}
+         {% else %}
+            {% include "datasets/download_buttons.html" %}
+         {% endif %}
       {% endif %}
       <table class='table table-striped'>
         <thead>
@@ -17,7 +20,9 @@
             {% for group in data.groups %}
             <tr>
                 <td>
-                    <input type='checkbox' class='parent_group' id='{{group.group_id|slugify}}_parent'></input>
+                    {% if not data.groups.0.gindex|add:"0" < 0  %} 
+                      <input type='checkbox' class='parent_group' id='{{group.group_id|slugify}}_parent'></input>
+                    {% endif %}
                     <a href='#{{group.group_id|slugify}}' onclick="$event.preventDefault()">{{ group.group_id }}</a>
                 </td>
                 <td>
