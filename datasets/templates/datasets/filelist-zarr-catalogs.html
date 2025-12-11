@@ -9,7 +9,14 @@
             </tr>
         </thead>
         <tbody>
-            {% for arco_file in arco_files %}
+        {% for group in groups %}
+         {% if group.title and groups|length > 1 %}
+             {# Show group title if more than one group on the page #}
+             <h3 id='{{group.title|slugify}}'>
+                 {{group.title}}
+             </h3>
+         {% endif %}
+            {% for arco_file in group.files %}
                 {% if arco_file.data_format != 'csv' %}
                     <tr>
                         <td class="roboto-regular" style="font-family: Roboto Mono;">{{ arco_file.file_name }}</td>
@@ -27,6 +34,7 @@
                     </tr>
                 {% endif %}
             {% endfor %}
+         {% endfor %}
         </tbody>
     </table>
 </div>
