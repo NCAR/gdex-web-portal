@@ -167,6 +167,6 @@ def show_arco_catalogs(context):
                     file_info['file_note'] = item.get('note', None)
 
             file_rows.append(file_info)
-        groups.append({'files':file_rows, 'group_name': group['title']}
+        groups.append({'files':file_rows, 'group_name': group['group_id']})
 
     return { 'groups': groups }
