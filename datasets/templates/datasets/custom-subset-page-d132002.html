@@ -161,31 +161,31 @@
    <br />
 
    <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="RADIOSONDE" id="rsonde">
+      <input class="form-check-input" type="checkbox" name="obstype" value="RADIOSONDE" id="rsonde">
       <label class="form-check-label" for="rsonde">
          Radiosonde observations
       </label>
    </div>
    <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="DROPSONDE" id="dsonde">
+      <input class="form-check-input" type="checkbox" name="obstype" value="DROPSONDE" id="dsonde">
       <label class="form-check-label" for="dsonde">
          Dropsonde observations
       </label>
    </div>
    <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="MARINE" id="marine">
+      <input class="form-check-input" type="checkbox" name="obstype" value="MARINE" id="marine">
       <label class="form-check-label" for="marine">
          Marine observations
       </label>
    </div>
    <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="SFC_STATION" id="station">
+      <input class="form-check-input" type="checkbox" name="obstype" value="SFC_STATION" id="station">
       <label class="form-check-label" for="station">
          Surface station observations
       </label>
    </div>
    <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="TC_BEST_TRACK" id="besttrack">
+      <input class="form-check-input" type="checkbox" name="obstype" value="TC_BEST_TRACK" id="besttrack">
       <label class="form-check-label" for="besttrack">
          Tropical cyclone best track data
       </label>
@@ -223,8 +223,8 @@
 <hr />
 
 <div class="py-2" id="review-button">
-   <button type="button" class="btn btn-primary mx-1 p-1" style="font-size:1rem" onClick="reviewRequest()"><b>Review selections</b></button>
-   <button type="reset" class="btn btn-outline-primary mx-1 p-1" style="font-size:1rem">Reset Form</button>
+   <button type="button" class="btn btn-primary mx-1 p-1 rounded" style="font-size:1rem" onClick="reviewRequest()"><b>Review selections</b></button>
+   <button type="reset" class="btn btn-outline-primary mx-1 p-1 rounded" style="font-size:1rem">Reset Form</button>
 </div>
 
 </form>

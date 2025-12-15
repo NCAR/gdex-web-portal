@@ -795,10 +795,9 @@ function addStation()
  */
 function selectAllTypes()
 {
-  for (var i=0; i<document.form.obstype.length; i++) {
-	if(!document.form.obstype[i].disabled)
-	  document.form.obstype[i].checked = true;
-  }
+   $('input[name="obstype"]').prop('disabled', false).each(function() {
+       $(this).prop('checked', true);
+   });
 }
 
 /**
@@ -806,7 +805,7 @@ function selectAllTypes()
  */
 function selectNoTypes()
 {
-  for (var i=0; i<document.form.obstype.length; i++) {
-	document.form.obstype[i].checked = false;
-	}
+   $('input[name="obstype"]').prop('disabled', false).each(function() {
+       $(this).prop('checked', false);
+   });
 }
