@@ -160,7 +160,7 @@ def show_arco_catalogs(context):
                     if '-posix' in url:
                         url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
                     elif '-https' in url:
-                        url = settings.GLOBUS_DATA_DOMAIN.strip('/') + file_info['file_path']
+                        url = 'https://' + settings.GLOBUS_DATA_DOMAIN.strip('/') + file_info['file_path']
                     elif '-osdf' not in url: # Some assets don't have posix
                         url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
                     file_info['file_url'] = url
