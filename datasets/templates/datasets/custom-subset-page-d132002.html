@@ -149,6 +149,7 @@
 <!-- NCEP observation type selection-->
 
 <div id="typeSelect" class="py-2 border">
+   <i class="fa-solid fa-list-check"></i>
    <strong>Observation types</strong>
    <br />
    Select observation types to retain in your data request.  All will be retained if none are selected.
@@ -190,24 +191,24 @@
 
 <!-- Select file compression-->
 
-<div id="compressionSelect" class="py-2">
-<strong>File compression</strong>
-<br />
-File compression is recommended to minimize the network transfer time required to move your data files to your host computer.
-<br />
-
-<div class="form-check">
-  <input class="form-check-input" type="radio" name="comp" id="gzinput" value="gz" checked>
-  <label class="form-check-label" for="gzinput">
-    .gz
-  </label>
-</div>
-<div class="form-check">
-  <input class="form-check-input" type="radio" name="comp" id="nocompinput" value="no">
-  <label class="form-check-label" for="nocompinput">
-    No compression
-  </label>
-</div>
+<div id="compressionSelect" class="py-2 border">
+   <i class="fa-solid fa-file-zipper"></i>
+   <strong>File compression</strong>
+   <br />
+   File compression is recommended to minimize the network transfer time required to move your data files to your host computer.
+   <br />
+   <div class="form-check">
+      <input class="form-check-input" type="radio" name="comp" id="gzinput" value="gz" checked>
+      <label class="form-check-label" for="gzinput">
+         .gz
+      </label>
+   </div>
+   <div class="form-check">
+      <input class="form-check-input" type="radio" name="comp" id="nocompinput" value="no">
+      <label class="form-check-label" for="nocompinput">
+         No compression
+      </label>
+   </div>
 </div>
 
 <!-- 
