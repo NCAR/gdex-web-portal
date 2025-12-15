@@ -1,5 +1,6 @@
 {% load wagtailcore_tags static %}
 
+<link rel="stylesheet" href="{% static 'datasets/css/subset.css' %}">
 <link rel="stylesheet" href="{% static 'datasets/css/gmap.css' %}">
 
 {{ gmap_api_key|safe|json_script:"gmap_api_key" }}
@@ -73,7 +74,7 @@
             (Format: YYYY-MM-DD)
          </small>
       </div>
-      <input type="button" class="btn btn-outline-primary mt-1 p-1 rounded" value="Clear dates" id="cleardates" onClick="clearTemporalRange()">
+      <input type="button" class="btn btn-outline-primary button-small mt-1 p-1 rounded" value="Clear dates" id="cleardates" onClick="clearTemporalRange()">
    </fieldset>
 </div>
 
@@ -185,8 +186,8 @@
          Tropical cyclone best track data
       </label>
    </div>
-   <input type="button" class="btn btn-primary mt-1 p-1 rounded" value="Select all" id="alltypes" onClick="selectAllTypes()">or
-   <input type="button" class="btn btn-outline-primary mt-1 p-1 rounded" value="Clear" id="cleartypes" onClick="selectNoTypes()">
+   <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" id="alltypes" onClick="selectAllTypes()">
+   <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" id="cleartypes" onClick="selectNoTypes()">
 </div>
 
 <!-- Select file compression-->
