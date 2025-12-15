@@ -466,7 +466,9 @@ function regionSelectChange()
    var selectMenu = document.getElementById("regionSelectMenu");
    var selectedValue = selectMenu.options[selectMenu.selectedIndex].value;
 
-   if(selectedValue == "1") {
+   if (selectedValue == "0") {
+      displayGoogleMap(0);
+   } else if(selectedValue == "1") {
       displayGoogleMap(1);
    } else if(selectedValue == "2") {
       displayStationSelection(1);
@@ -480,12 +482,17 @@ function regionSelectChange()
  */
 function displayGoogleMap(act)
 {
-   var mapdisp = document.getElementById("mapselect");
-   var mandisp = document.getElementById("manselect");
+   var mapdisp = $("#mapselect");
+   var mandisp = $("#manselect");
+   var stationdisp = $("#stationSelect");
+   var locationdisp = $("#locationSelect");
 
    if(act == 1) {
-      mapdisp.style.display="block";
-      mandisp.style.display="none";
+      mapdisp.show();
+      mandisp.hide();
+      stationdisp.hide();
+      locationdisp.hide();
+
       document.form.mapdisplayed.value = 1;
       document.form.mandisplayed.value = 0;
       document.form.latlondisplayed.value = 1;
@@ -493,11 +500,14 @@ function displayGoogleMap(act)
       document.form.locationdisplayed.value = 0;
    } else {
       setSpaceValues();
-      mapdisp.style.display="none";
-      mandisp.style.display="block";
+      mapdisp.hide();
+      mandisp.hide();
+      stationdisp.hide();
+      locationdisp.hide();
+
       document.form.mapdisplayed.value = 0;
-      document.form.mandisplayed.value = 1;
-      document.form.latlondisplayed.value = 1;
+      document.form.mandisplayed.value = 0;
+      document.form.latlondisplayed.value = 0;
       document.form.stationdisplayed.value = 0;
       document.form.locationdisplayed.value = 0;
    }
@@ -508,24 +518,33 @@ function displayGoogleMap(act)
  */
 function displayStationSelection(action)
 {
-   var stationdisp = document.getElementById("stationSelect");
-   var locationdisp = document.getElementById("locationSelect");
-   var mapdisp     = document.getElementById("mapselect");
-   var mandisp     = document.getElementById("manselect");
+   var stationdisp = $("#stationSelect");
+   var locationdisp = $("#locationSelect");
+   var mapdisp     = $("#mapselect");
+   var mandisp     = $("#manselect");
    
    if(action == 1) {
-      stationdisp.style.display="block";
-      mapdisp.style.display="none";
-      mandisp.style.display="none";
-      locationdisp.style.display="none";
+      stationdisp.show();
+      mapdisp.hide();
+      mandisp.hide();
+      locationdisp.hide();
+
       document.form.latlondisplayed.value = 0;
       document.form.mapdisplayed.value = 0;
       document.form.mandisplayed.value = 0;
       document.form.stationdisplayed.value = 1;
       document.form.locationdisplayed.value = 0;
    } else {
-      displayGoogleMap(1);
-      stationdisp.style.display="none";
+      stationdisp.hide();
+      mapdisp.hide();
+      mandisp.hide();
+      locationdisp.hide();
+      
+      document.form.latlondisplayed.value = 0;
+      document.form.mapdisplayed.value = 0;
+      document.form.mandisplayed.value = 0;
+      document.form.stationdisplayed.value = 0;
+      document.form.locationdisplayed.value = 0;
    }
 }
 
@@ -534,24 +553,33 @@ function displayStationSelection(action)
  */
 function displayLocationSelection(action)
 {
-   var stationdisp = document.getElementById("stationSelect");
-   var locationdisp = document.getElementById("locationSelect");
-   var mapdisp     = document.getElementById("mapselect");
-   var mandisp     = document.getElementById("manselect");
+   var stationdisp = $("#stationSelect");
+   var locationdisp = $("#locationSelect");
+   var mapdisp     = $("#mapselect");
+   var mandisp     = $("#manselect");
    
    if(action == 1) {
-      locationdisp.style.display="block";
-      mapdisp.style.display="none";
-      mandisp.style.display="none";
-      stationdisp.style.display="none";
+      locationdisp.show();
+      mapdisp.hide();
+      mandisp.hide();
+      stationdisp.hide();
+
       document.form.latlondisplayed.value = 0;
       document.form.mapdisplayed.value = 0;
       document.form.mandisplayed.value = 0;
       document.form.stationdisplayed.value = 0;
       document.form.locationdisplayed.value = 1;
    } else {
-      displayGoogleMap(1);
-      locationdisp.style.display="none";
+      locationdisp.hide();
+      mapdisp.hide();
+      mandisp.hide();
+      stationdisp.hide();
+      
+      document.form.latlondisplayed.value = 0;
+      document.form.mapdisplayed.value = 0;
+      document.form.mandisplayed.value = 0;
+      document.form.stationdisplayed.value = 0;
+      document.form.locationdisplayed.value = 0;
    }
 }
 
