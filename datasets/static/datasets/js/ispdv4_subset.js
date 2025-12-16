@@ -463,8 +463,7 @@ function getTypes()
 
 function regionSelectChange()
 {
-   var selectMenu = document.getElementById("regionSelectMenu");
-   var selectedValue = selectMenu.options[selectMenu.selectedIndex].value;
+   var selectedValue = $('#regionSelectMenu').val();
 
    if (selectedValue == "0") {
       displayGoogleMap(0);
