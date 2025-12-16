@@ -51,11 +51,15 @@
 
 <!-- Temporal range selection -->
 <div class="py-2" id="dateSelect">
+   <h4 class="py-1">
+      <i class="fa-solid fa-calendar-days"></i>
+      Temporal Range Selection
+   </h4>
+   <div class="mb-1">
+      Select the start and end dates for your data request.
+   </div>
+
    <fieldset class="py-2">
-      <legend class="border-bottom">
-         <i class="fa-solid fa-calendar"></i>
-         <strong>Temporal Range</strong>
-      </legend>
       <div class="form-group row py-1">
          <label class="form-label" for="startDate">
             Start Date
@@ -85,17 +89,20 @@
 <!-- Spatial range selection -->
 
 <div class="py-2" id="regionSelect">
-   <i class="fa-solid fa-globe"></i>
-   <strong>Spatial Range Selection</strong>
-   <br />
-   Select spatial region for your data request.
-   <br />
+   <h4 class="py-1">
+      <i class="fa-solid fa-globe"></i>
+      Spatial Range Selection
+   </h4>
+   <div class="mb-1">
+      Select spatial region for your data request.
+   </div>
    <select class="custom-select" id="regionSelectMenu" onchange="regionSelectChange()">
       <option value="" id="nullOption" selected>Choose an option</option>
       <option value="1" id="mapOption">Select latitude/longitude region</option>
       <option value="2" id="stationOption">Select location by station ID</option>
       <option value="3" id="locationOption">Select by location name</option>
    </select>
+</div>
 
 <!-- Spatial range selection via Google map -->
 
@@ -117,10 +124,8 @@
       look up station IDs in the ISPD version 4 inventory 
       <a href="https://osdata.gdex.ucar.edu/web/datasets/d132002/docs/ispd_history_v4.00.txt">here</a>.
    </div>
-
-<label for="station0">Station IDs (comma separated): </label>
-<textarea class="form-control" name="station0" id="station0" rows="4"></textarea>
-
+   <label for="station0">Station IDs (comma separated): </label>
+   <textarea class="form-control" name="station0" id="station0" rows="4"></textarea>
 </div>
 
 <!-- Select location by location name -->
@@ -143,24 +148,22 @@
       for London Heathrow Airport, London Gatwick Airport, and other observation
       records with "London" in the station name field.
    </div>
-
    <label for="location0">Enter locations (comma separated): </label>
    <textarea class="form-control" name="location0" id="location0" rows="1" cols="50"></textarea>
-
 </div>
-
-</div>   <!-- Close regionSelect div -->
 
 <hr class="my-1">
 
 <!-- NCEP observation type selection-->
 
 <div id="typeSelect" class="py-2">
-   <i class="fa-solid fa-list-check"></i>
-   <strong>Observation types</strong>
-   <br />
-   Select observation types to retain in your data request.  All will be retained if none are selected.
-   <br />
+   <h4 class="py-1">
+      <i class="fa-solid fa-list-check"></i>
+      Observation Type Selection
+   </h4>
+   <div class="mb-1">
+      Select observation types to retain in your data request.  All will be retained if none are selected.
+   </div>
 
    <div class="form-check">
       <input class="form-check-input" type="checkbox" name="obstype" value="RADIOSONDE" id="rsonde">
@@ -203,11 +206,14 @@
 <!-- Select file compression-->
 
 <div id="compressionSelect" class="py-2">
-   <i class="fa-solid fa-file-zipper"></i>
-   <strong>File compression</strong>
-   <br />
-   File compression is recommended to minimize the network transfer time required to move your data files to your host computer.
-   <br />
+   <h4 class="py-1">
+      <i class="fa-solid fa-file-zipper"></i>
+      File Compression
+   </h4>
+   <div class="mb-1">
+      File compression is recommended to minimize the network transfer time required to move your data files to your host computer.
+   </div>
+
    <div class="form-check">
       <input class="form-check-input" type="radio" name="comp" id="gzinput" value="gz" checked>
       <label class="form-check-label" for="gzinput">
