@@ -466,7 +466,7 @@ function regionSelectChange()
    var selectedValue = $('#regionSelectMenu').val();
 
    if (selectedValue === "") {
-      displayGoogleMap(0);
+      hideRegionSelection();
    } else if(selectedValue == "1") {
       displayGoogleMap(1);
    } else if(selectedValue == "2") {
@@ -474,6 +474,21 @@ function regionSelectChange()
    } else if(selectedValue == "3") {
       displayLocationSelection(1);
    }
+}
+
+/** Hide all region selection sections */
+function hideRegionSelection()
+{
+   $("#mapselect").hide();
+   $("#manselect").hide();
+   $("#stationSelect").hide();
+   $("#locationSelect").hide();
+
+   $("form input[name='mapdisplayed']").val(0);
+   $("form input[name='mandisplayed']").val(0);
+   $("form input[name='latlondisplayed']").val(0);
+   $("form input[name='stationdisplayed']").val(0);
+   $("form input[name='locationdisplayed']").val(0);
 }
 
 /**
