@@ -465,7 +465,7 @@ function regionSelectChange()
 {
    var selectedValue = $('#regionSelectMenu').val();
 
-   if (selectedValue == "0") {
+   if (selectedValue === "") {
       displayGoogleMap(0);
    } else if(selectedValue == "1") {
       displayGoogleMap(1);
