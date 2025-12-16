@@ -12,6 +12,10 @@
 
        const startDateString = $('#minDate').val();
        const endDateString = $('#maxDate').val();
+       minDate = new Date(startDateString);
+       maxDate = new Date(endDateString);
+       startYear = minDate.getFullYear();
+       endYear = maxDate.getFullYear(); 
 
        var from = $( "#startDate" )
         .datepicker({
@@ -20,11 +24,14 @@
           numberOfMonths: 1,
           dateFormat: dateFormat,
           showButtonPanel: true,
-          minDate: new Date(startDateString),
-          maxDate: new Date(endDateString),
+          minDate: minDate,
+          maxDate: maxDate,
+          yearRange: startYear + ":" + endYear,
         })
         .on( "change", function() {
           to.datepicker( "option", "minDate", getDate( this ) );
+          endYear = to.datepicker("option", "maxDate").getFullYear();
+          to.datepicker("option", "yearRange", getDate( this ).getFullYear() + ":" + endYear);
         });
 
       var to = $( "#endDate" ).datepicker({
@@ -33,11 +40,14 @@
         numberOfMonths: 1,
         dateFormat: dateFormat,
         showButtonPanel: true,
-        minDate: new Date(startDateString),
-        maxDate: new Date(endDateString),
+        minDate: minDate,
+        maxDate: maxDate,
+        yearRange: startYear + ":" + endYear,
       })
       .on( "change", function() {
         from.datepicker( "option", "maxDate", getDate( this ) );
+        startYear = from.datepicker("option", "minDate").getFullYear();
+        from.datepicker("option", "yearRange", startYear + ":" + getDate( this ).getFullYear());
       });
 
     function getDate( element ) {
@@ -57,11 +67,17 @@ function clearTemporalRange() {
   $('#startDate').val('');
   $('#endDate').val('');
 
-  // Reset the datepickers' min and max dates
+  // Reset the datepickers' min and max dates and year ranges
   $('#startDate').datepicker('option', 'minDate', new Date($('#minDate').val()));
   $('#startDate').datepicker('option', 'maxDate', new Date($('#maxDate').val()));
   $('#endDate').datepicker('option', 'minDate', new Date($('#minDate').val()));
   $('#endDate').datepicker('option', 'maxDate', new Date($('#maxDate').val()));
+  const minDate = new Date($('#minDate').val());
+  const maxDate = new Date($('#maxDate').val());
+  const startYear = minDate.getFullYear();
+  const endYear = maxDate.getFullYear();
+  $('#startDate').datepicker('option', 'yearRange', startYear + ':' + endYear);
+  $('#endDate').datepicker('option', 'yearRange', startYear + ':' + endYear);
 }
 
 changed_selection = false;

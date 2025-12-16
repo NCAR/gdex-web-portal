@@ -74,11 +74,13 @@
             (Format: YYYY-MM-DD)
          </small>
       </div>
-      <input type="button" class="btn btn-outline-primary button-small mt-1 p-1 rounded" value="Clear dates" id="cleardates" onClick="clearTemporalRange()">
+      <div class="mt-2">
+         <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear dates" id="cleardates" onClick="clearTemporalRange()">
+      </div>
    </fieldset>
 </div>
 
-<hr />
+<hr class="my-1">
 
 <!-- Spatial range selection -->
 
@@ -149,7 +151,7 @@
 
 </div>   <!-- Close regionSelect div -->
 
-<hr />
+<hr class="my-1">
 
 <!-- NCEP observation type selection-->
 
@@ -190,13 +192,13 @@
          Tropical cyclone best track data
       </label>
    </div>
-   <div class="mt-1">
+   <div class="mt-2">
       <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" id="alltypes" onClick="selectAllTypes()">
       <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" id="cleartypes" onClick="selectNoTypes()">
    </div>
 </div>
 
-<hr />
+<hr class="my-1">
 
 <!-- Select file compression-->
 
@@ -220,7 +222,7 @@
    </div>
 </div>
 
-<hr />
+<hr class="my-1">
 
 <div class="py-2" id="review-button">
    <button type="button" class="btn btn-primary mx-1 p-1 rounded" style="font-size:1rem" onClick="reviewRequest()"><b>Review selections</b></button>
