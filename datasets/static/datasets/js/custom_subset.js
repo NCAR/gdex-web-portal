@@ -86,3 +86,11 @@ function showChangedSelections() {
     changed_selection = true;
   }
 }
+
+var head=document.getElementsByTagName('head').item(0);
+var scr=document.createElement('script');
+scr.setAttribute('type','text/javascript');
+scr.setAttribute('src','/static/js/gdrawboxmap3.js');
+scr.onload=initializeTheDrawBoxMap;
+scr.onreadystatechange=initializeTheDrawBoxMap;
+head.appendChild(scr);

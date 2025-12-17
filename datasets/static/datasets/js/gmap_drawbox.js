@@ -1,3 +1,5 @@
+ival_d = 0;
+
 function doTheDrawBoxLoad() {
   if (typeof loadDrawBoxMapJS == "function") {
     clearInterval(ival_d);
