@@ -1,0 +1,9 @@
+{% extends "dataset_description/dataset_description_page.html" %}
+{% load wagtailcore_tags static %}
+
+{% block ds_content %}
+{% with dataset=page.dsid %}
+{% include "datasets/custom-subset-page-"|add:dataset|add:".html" %}
+{% endwith %}
+<img src="/images/transpace.gif" onload="ajaxCallback()">
+{% endblock ds_content %}
