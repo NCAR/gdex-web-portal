@@ -39,7 +39,7 @@
 
    <form id="subset-form" name="form">
    <input type="hidden" name="dsid" value="{{ subset.dsid }}">
-   <input type="hidden" name="gindex" value="{{ subset.gindex|default:'' }}">
+   <input type="hidden" name="gindex" value="{{ subset.gindex|default:'1' }}">
    <input type="hidden" name="rtype" value="T">
    <input type="hidden" id="minDate" value="{{ subset.date_start }}">
    <input type="hidden" id="maxDate" value="{{ subset.date_end }}">
