@@ -19,11 +19,11 @@
    Summary description of the subset request form
    {% endcomment %}
 
-   <h2>Dataset {{ page.dsid }} - Submit a Subset Data Request</h2>
+   <h2>Dataset {{ subset.dsid }} - Submit a Subset Data Request</h2>
    <div class="p-2 bg-light">
       <p class="mb-0">This form allows a user to request a temporal and spatial subset from the following dataset:
          <ul>
-            <li>{{ page.dstitle }}</li>
+            <li>{{ subset.dstitle }}</li>
             <li>Valid date range: <span class="fw-bold">{{ subset.date_start }}</span>&nbsp;to&nbsp;<span class="fw-bold">{{ subset.date_end }}</span></li>
          </ul>
          Once this form is completed and submitted you will be notified via email when the 
@@ -268,3 +268,5 @@
       Loading...
    </button>
 </div>
+
+<img src="/images/transpace.gif" onload="ajaxCallback()">

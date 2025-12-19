@@ -659,6 +659,7 @@ def custom_subset(request, dsid):
     subset_context = {
         'dsid': dsid,
         'title': "NSF NCAR GDEX | Dataset {} Custom Subset".format(dsid),
+        'dstitle': d['dstitle'] if d else get_dataset_description_context(dsid)['dstitle'],
     }
     if 'gindex' in request.GET:
         subset_context.update({'gindex': request.GET['gindex']})
