@@ -647,7 +647,7 @@ def custom_subset(request, dsid):
         if dsid in ['d132002']:
             template = f"datasets/custom-subset-page-{dsid}.html"
         else:
-            template = "datasets/custom-subset-page.html"
+            template = "datasets/custom-subset-page-base.html"
         logger.info("Rendering AJAX custom subset page for dataset {}".format(dsid))
     else:
         d = get_dataset_description_context(dsid)
@@ -665,7 +665,13 @@ def custom_subset(request, dsid):
 
     subset_context.update(get_custom_subset_context(dsid, subset_context.get('gindex', None)))
 
-    ctx = {'page': d, 'subset': subset_context}
-    ctx.update({'gmap_api_key': settings.GMAP_API_KEY, 'gmap_api_url': settings.GMAP_API_URL})
-    
+    ctx = {
+        'subset': subset_context, 
+        'gmap_api_key': settings.GMAP_API_KEY, 
+        'gmap_api_url': settings.GMAP_API_URL
+        }
+
+    if d:
+        ctx.update({'page': d})
+
     return render(request, template, ctx)
