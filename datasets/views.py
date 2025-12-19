@@ -663,7 +663,7 @@ def custom_subset(request, dsid):
     if 'gindex' in request.GET:
         subset_context.update({'gindex': request.GET['gindex']})
 
-    subset_context.update(get_custom_subset_context(dsid))
+    subset_context.update(get_custom_subset_context(dsid, subset_context.get('gindex', None)))
 
     ctx = {'page': d, 'subset': subset_context}
     ctx.update({'gmap_api_key': settings.GMAP_API_KEY, 'gmap_api_url': settings.GMAP_API_URL})
