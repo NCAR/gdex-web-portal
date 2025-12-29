@@ -146,7 +146,7 @@ def get_metadata_record(dsid, metadata_prefix, mconfig, wconfig):
     elif metadata_prefix == "dif":
         mrec = gcmd_dif.export(dsid, mconfig, wconfig)
     elif metadata_prefix == "datacite":
-        mrec = datacite_4.export(dsid, mconfig, wconfig)
+        mrec, warn = datacite_4.export(dsid, mconfig, wconfig)
     elif metadata_prefix == "fgdc":
         mrec = fgdc.export(dsid, mconfig, wconfig)
     elif metadata_prefix == "iso19115-3":
