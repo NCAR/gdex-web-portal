@@ -1302,22 +1302,24 @@ def change_history(request, dsid):
 
 
 def delete(request, dsid):
-    # verify that this dataset has never been published
-    try:
-        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
-        cursor = conn.cursor()
-        cursor.execute(("select case when dsid < 'd999000' then type else 'W' "
-                        "end, pub_date from search.datasets where dsid = %s"),
-                       (dsid, ))
-        res = cursor.fetchone()
-    except psycopg2.Error as err:
-        log_error(err, source="delete")
-        return render(request, "metaman/datasets/delete.html",
-                      {'database_error': "{}".format(err)})
+    # verify that this dataset has never been published if it is a non-test
+    #  dataset
+    if dsid < 'd999000':
+        try:
+            conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+            cursor = conn.cursor()
+            cursor.execute((
+                    "select type, pub_date from search.datasets where dsid = "
+                    "%s"), (dsid, ))
+            res = cursor.fetchone()
+        except psycopg2.Error as err:
+            log_error(err, source="delete")
+            return render(request, "metaman/datasets/delete.html",
+                          {'database_error': "{}".format(err)})
 
-    if res[0] != "W" or (res[1].year > 1900 and res[1].year < 2100):
-        return render(request, "metaman/datasets/delete.html",
-                      {'published': True})
+        if res[0] != "W" or (res[1].year > 1900 and res[1].year < 2100):
+            return render(request, "metaman/datasets/delete.html",
+                          {'published': True})
 
     messages = []
     # remove the public web directory
