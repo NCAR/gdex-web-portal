@@ -1302,12 +1302,18 @@ def change_history(request, dsid):
 
 
 def delete(request, dsid):
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+    except psycopg2.Error as err:
+        log_error(err, source="delete")
+        return render(request, "metaman/datasets/delete.html",
+                      {'database_error': "{}".format(err)})
+
     # verify that this dataset has never been published if it is a non-test
     #  dataset
     if dsid < 'd999000':
         try:
-            conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
-            cursor = conn.cursor()
             cursor.execute((
                     "select type, pub_date from search.datasets where dsid = "
                     "%s"), (dsid, ))
