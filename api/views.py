@@ -97,7 +97,11 @@ def get_child_groups(request, dsid, gindex):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
-def get_web_files(request,dsid, gindex, filter_wfile=None):
+def dynamic_key_prefix(request):
+    return f"section:{request.resolver_match.url_name}"
+
+@cache_page(60 * 15, key_prefix=dynamic_key_prefix)
+def get_web_files(request, dsid, gindex, filter_wfile=None):
     dsid = common.format_dataset_id(dsid)
     json = common.get_web_files_from_gindex(dsid, gindex, filter_wfile=filter_wfile)
     response = rda_r.RDA_Response()
