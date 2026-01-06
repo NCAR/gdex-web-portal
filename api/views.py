@@ -275,6 +275,11 @@ def volume_downloaded(request):
     volume = common.get_volume_downloaded_db()
     return JsonResponse({'volume':volume})
 
+@cache_page(4 * 24 * 60 * 60) # cache for 4 days
+def unique_users(request):
+    ips = common.get_number_of_unique_users_db()
+    return JsonResponse({'ips':ips})
+
 def globus_download(request, rindex, endpoint):
     json = rdams.main("-globus_download", rindex, endpoint)
     return JsonResponse(json)
