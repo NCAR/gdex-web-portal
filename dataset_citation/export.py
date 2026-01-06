@@ -55,7 +55,7 @@ def create_bibtex(dsid):
                 yield " {{{name}}}".format(name=author[1])
             else:
                 parts = author[1].split(" > ")
-                yield " {{{name}}}".format(name=parts.back())
+                yield " {{{name}}}".format(name=parts[-1])
 
         yield '",\n'
         yield "  title = {{{{{title}}}}},\n".format(title=ds_data[0])
@@ -105,7 +105,7 @@ def create_ris(dsid):
                 yield "AU  - {}\r\n".format(author[1])
             else:
                 parts = author[1].split(" > ")
-                yield "AU  - {}\r\n".format(parts.back())
+                yield "AU  - {}\r\n".format(parts[-1])
 
         yield "T1  - {}\r\n".format(ds_data[0])
         yield "AB  - {}\r\n".format(abstract)
