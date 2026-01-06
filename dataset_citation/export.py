@@ -66,7 +66,7 @@ def create_bibtex(dsid):
             yield '  doi = "{}"\n'.format(ds_data[3].replace("_", "\\{_}"))
         else:
             yield '  url = "{}"\n'.format(
-                    os.path.join(metaformat_settings.ARCHIVE['datasets_url'],
+                    os.path.join(metaformat_settings.ARCHIVE['datasets_path'],
                                  dsid))
 
         yield "}\n"
@@ -116,7 +116,7 @@ def create_ris(dsid):
                     os.path.join(metaformat_settings.DOI_DOMAIN, ds_data[3]))
         else:
             yield "UR  - {}\r\n".format(
-                    os.path.join(metaformat_settings.ARCHIVE['datasets_url'],
+                    os.path.join(metaformat_settings.ARCHIVE['datasets_path'],
                                  dsid))
 
         yield "PB  - {}\r\n".format(get_publisher(ds_data[0]))
