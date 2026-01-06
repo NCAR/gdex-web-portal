@@ -64,10 +64,15 @@ def create_bibtex(dsid):
         yield "  year = {},\n".format(ds_data[2].year)
         if ds_data[3] is not None and len(ds_data[3]) > 0:
             yield '  doi = "{}"\n'.format(ds_data[3].replace("_", "\\{_}"))
+            yield '  url = "{}"\n'.format(
+                    os.path.join("https://",
+                                 metaformat_settings.DOI_DOMAIN, ds_data[3]))
         else:
             yield '  url = "{}"\n'.format(
-                    os.path.join(metaformat_settings.ARCHIVE['datasets_path'],
-                                 dsid))
+                    os.path.join("https://",
+                                 metaformat_settings.ARCHIVE['domain'],
+                                 metaformat_settings.ARCHIVE['datasets_path'],
+                                 dsid, ""))
 
         yield "}\n"
     except Exception:
@@ -113,11 +118,14 @@ def create_ris(dsid):
         if ds_data[3] is not None and len(ds_data[3]) > 0:
             yield "DO  - {}\r\n".format(ds_data[3])
             yield "UR  - {}\r\n".format(
-                    os.path.join(metaformat_settings.DOI_DOMAIN, ds_data[3]))
+                    os.path.join("https://",
+                                 metaformat_settings.DOI_DOMAIN, ds_data[3]))
         else:
             yield "UR  - {}\r\n".format(
-                    os.path.join(metaformat_settings.ARCHIVE['datasets_path'],
-                                 dsid))
+                    os.path.join("https://",
+                                 metaformat_settings.ARCHIVE['domain'],
+                                 metaformat_settings.ARCHIVE['datasets_path'],
+                                 dsid, ""))
 
         yield "PB  - {}\r\n".format(get_publisher(ds_data[0]))
         yield "CY  - Boulder, CO\r\n"
