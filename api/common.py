@@ -1562,7 +1562,7 @@ def get_top_datasets(top=6):
         print(e)
         return 'Unknown'
 
-def get_AI_datasets(limit=8):
+def get_AI_datasets(limit=50):
     con,cur = init_connection_new(config=get_WGrML_config())
     query = f"select dsid,title from search.datasets where ai_ready = 'Y' limit {limit};"
     cur.execute(query)
