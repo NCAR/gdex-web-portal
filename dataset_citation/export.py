@@ -62,7 +62,7 @@ def create_bibtex(dsid):
         yield '  publisher = "{}",\n'.format(get_publisher(ds_data[0]))
         yield '  address = "Boulder, CO",\n'
         yield "  year = {},\n".format(ds_data[2].year)
-        if len(ds_data[3]) > 0:
+        if ds_data[3] is not None and len(ds_data[3]) > 0:
             yield '  doi = "{}"\n'.format(ds_data[3].replace("_", "\\{_}"))
         else:
             yield '  url = "{}"\n'.format(
@@ -110,7 +110,7 @@ def create_ris(dsid):
         yield "T1  - {}\r\n".format(ds_data[0])
         yield "AB  - {}\r\n".format(abstract)
         yield "PY  - {}\r\n".format(ds_data[2].year)
-        if len(ds_data[3]) > 0:
+        if ds_data[3] is not None and len(ds_data[3]) > 0:
             yield "DO  - {}\r\n".format(ds_data[3])
             yield "UR  - {}\r\n".format(
                     os.path.join(metaformat_settings.DOI_DOMAIN, ds_data[3]))
