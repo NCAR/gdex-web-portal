@@ -146,7 +146,7 @@ def generate_notebook(request):
 
     b.add_markdown_block(" # Notebook for Downloading GDEX Data.")
     b.add_code_block(
-        "import sys, os",
+        "import os",
         "import requests")
 
     # Add quotes to element so each file will have it's own line
