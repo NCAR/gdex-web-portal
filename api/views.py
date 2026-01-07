@@ -84,9 +84,9 @@ def get_assembled_groups(request, dsid, gindex=None):
         page = 0
     logger.debug("dsid: {}, page: {}, fl_source: {}, filter_wfile: {}".format(dsid, page, fl_source, filter_wfile))
     if gindex is None:
-    	json = common.assemble_root_group_filelist(dsid, page, fl_source)
+        json = common.assemble_root_group_filelist(dsid, page, fl_source)
     else:
-    	json = common.assemble_filelist(dsid, gindex, page, fl_source, filter_wfile)
+        json = common.assemble_filelist(dsid, gindex, page, fl_source, filter_wfile)
     response.add_data(json)
     return JsonResponse(response.get_json())
 
