@@ -19,6 +19,13 @@ from wagtail.snippets.models import register_snippet
 class GDEXPage(Page):
     """ Subclass of wagtail.models.Page for GDEX pages to share common fields """
 
+    # explicitly define the reverse relation name so this page can be inherited
+    page_ptr = models.OneToOneField(
+        Page,
+        on_delete=models.CASCADE,
+        parent_link=True,
+        related_name='%(app_label)s_%(class)s_related',
+    )
     menu_title = models.CharField(max_length=50, blank=True, default="",
         help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
 
