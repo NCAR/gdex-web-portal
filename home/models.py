@@ -87,7 +87,7 @@ class DecsStaff(models.Model):
         help_text='DECS staff member full name',
     )
     email = models.EmailField(
-        max_length=100, 
+        max_length=100,
         default='rdahelp@ucar.edu',
     )
     image = models.ForeignKey(
@@ -184,8 +184,14 @@ class AlertMessage(models.Model):
         choices=LEVEL_CHOICES,
         default=INFO,
     )
+    action_label = models.CharField(
+        max_length=100,
+        default='Learn More',
+        blank=True,
+        help_text='Specify label for related link or URL'
+    )
     related_url = models.URLField(
-        blank=True, 
+        blank=True,
         null=True,
         help_text='Optional.  Related page takes precedence over related URL.',
     )
@@ -205,7 +211,7 @@ class AlertMessage(models.Model):
             [
                 FieldPanel("name"),
                 FieldPanel("message"),
-                FieldPanel("level"),         
+                FieldPanel("level"),
             ],
             heading="Alert name, message, and level",
         ),
@@ -213,6 +219,7 @@ class AlertMessage(models.Model):
             [
                 PageChooserPanel("related_page"),
                 FieldPanel("related_url"),
+                FieldPanel("action_label"),
             ],
             heading="Related URL or page",
         ),
@@ -236,9 +243,9 @@ class AlertMessage(models.Model):
 class HomePage(Page):
     tagline = models.CharField(max_length=100, blank=False, default="")
     welcome = RichTextField(blank=False, default="")
-    search_box_title = models.CharField(max_length=255, blank=False, default="", 
+    search_box_title = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Search Box Title")
-    search_box_placeholder = models.CharField(max_length=255, blank=False, default="", 
+    search_box_placeholder = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Search Box Placeholder")
     card_1_title = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Title")
@@ -338,16 +345,16 @@ class Card(Orderable, ClusterableModel):
         related_name='+'
     )
     link = models.URLField(
-        blank=True, 
+        blank=True,
         null=True,
         verbose_name="External link",
         help_text="Choose either Related Page, External Link, or Internal link",
     )
     internal_link = models.CharField(
-        verbose_name="internal link", 
+        verbose_name="internal link",
         max_length=100,
-        null=True, 
-        blank=True, 
+        null=True,
+        blank=True,
         default="",
         help_text="Choose either Related Page, External Link, or Internal link.  Internal link can include a #hash or querystring appended to the URL.",
     )
@@ -367,7 +374,7 @@ class Card(Orderable, ClusterableModel):
     )
     text = RichTextField(
         features=['h2', 'h3', 'h4', 'bold', 'italic', 'ol', 'ul', 'hr', 'link', 'document-link', 'image', 'embed', 'code', 'blockquote'],
-        blank=False, 
+        blank=False,
         default="",
         verbose_name="Body Text")
 
@@ -385,7 +392,7 @@ class Card(Orderable, ClusterableModel):
         FieldPanel('text'),
         InlinePanel('taxonomyterm', label="Taxonomy Terms")
     ]
-    
+
 class GenericPage(Page):
     intro = RichTextField(blank=True, default="")
     sidebar = models.BooleanField(default=True)
@@ -403,7 +410,7 @@ class GenericPage(Page):
         FieldPanel('table_of_contents'),
         FieldPanel('intro'),
     	InlinePanel('cards', label='Cards'),
-       
+
     ]
 
 class StaffPage(Page):
@@ -412,7 +419,7 @@ class StaffPage(Page):
     mission = RichTextField(blank=True)
     cts_text = RichTextField(blank=True)
     additional_information = RichTextField(blank=True)
- 
+
     # Editor panels configuration
     content_panels = Page.content_panels + [
         FieldPanel('body', classname='full'),
@@ -427,7 +434,7 @@ class StaffPage(Page):
         ),
         FieldPanel('additional_information', classname='full'),
     ]
-    
+
 class DocumentationPage(Page):
     header = models.CharField(max_length=100, blank=False, default="")
     sidebar = models.BooleanField(default=True)
@@ -568,7 +575,7 @@ class NewsPage(Page):
                     return None
                 else:
                     return siblings[(i+1)]
-        
+
     def get_prev_sibling(self):
         siblings = list(self.get_siblings().live().specific())
         siblings.sort(key=lambda k: k.post_date)
@@ -588,7 +595,7 @@ class NewsHome(Page):
     content_panels = Page.content_panels + [
         FieldPanel('title_description'),
     ]
-    
+
     def get_recent_posts(self, num=6):
         """ Returns the most recent news posts (default 6)"""
 
@@ -597,11 +604,11 @@ class NewsHome(Page):
         return recent_posts
 
     def get_older_posts(self, num=6):
-        """ Returns news posts older than the most num recent posts 
+        """ Returns news posts older than the most num recent posts
             (default num=6)
         """
 
-        older_posts = NewsPage.objects.live().order_by('post_date').reverse()[num:] 
+        older_posts = NewsPage.objects.live().order_by('post_date').reverse()[num:]
 
         year_sorted_posts = {}
         for post in older_posts:
