@@ -16,6 +16,16 @@ from wagtail.admin.panels import (
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
+class GDEXPage(Page):
+    """ Subclass of wagtail.models.Page for GDEX pages to share common fields """
+
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
+
+    content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
+    ]
+
 class NewsAuthorOrderable(Orderable):
     """ This allows us to select one or more news authors from snippets """
     page = ParentalKey("NewsPage", related_name="news_authors")
