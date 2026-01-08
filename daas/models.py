@@ -13,7 +13,6 @@ from wagtail.contrib.forms.models import (
     AbstractFormField,
     AbstractForm,
 )
-from home.models import GDEXPage
 
 #logger = logging.getLogger(__name__)
 # Create your models here.
@@ -51,7 +50,7 @@ class DaasForm(AbstractForm):
         return form
 
 
-class DaasHome(GDEXPage):
+class DaasHome(Page):
     # Database fields
     body = RichTextField(blank=True)
     additional_information = RichTextField(blank=True)
