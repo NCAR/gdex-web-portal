@@ -21,9 +21,9 @@
                     <div class="d-flex flex-wrap">
                         <span class="pe-3">{{ alert.message|richtext }}</span>
                         {% if alert.related_page %}
-                            <a class="alert-url i-angle-right--after" href="{{ alert.related_page.url }}">Learn More</a>
+                            <a class="alert-url i-angle-right--after" href="{{ alert.related_page.url }}">{{alert.action_label|default }}</a>
                         {% elif alert.related_url %}
-                            <a class="alert-url i-angle-right--after" href="{{ alert.related_url }}">Learn More</a>
+                            <a class="alert-url i-angle-right--after" href="{{ alert.related_url }}">{{alert.action_label|default }}</a>
                         {% endif %}
                     </div>
                 </div>
