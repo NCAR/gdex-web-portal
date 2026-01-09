@@ -51,7 +51,7 @@ class DaasForm(AbstractForm):
         return form
 
 
-class DaasHome(Page):
+class DaasHome(GDEXPage):
     # Database fields
     body = RichTextField(blank=True)
     additional_information = RichTextField(blank=True)
