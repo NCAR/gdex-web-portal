@@ -56,7 +56,7 @@ class DaasHome(Page):
     additional_information = RichTextField(blank=True)
  
     # Editor panels configuration
-    content_panels = Page.content_panels + [
+    content_panels = GDEXPage.content_panels + [
         FieldPanel('body', classname='full'),
         FieldPanel('additional_information', classname='full')
     ]
