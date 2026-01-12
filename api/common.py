@@ -1440,6 +1440,16 @@ def get_staff():
         i['email'] = i['email']+'@ucar.edu'
     return data_dict
 
+def get_staff_dsid(dsid):
+    """Get DECS employee information for a specific dataset."""
+    init_connection()
+    cursor.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp inner join dsowner on dssgrp.logname=dsowner.specialist where dsowner.dsid=%s",(dsid,))
+    data = cursor.fetchall()
+    data_dict = to_dict(('first_name','last_name','officeno','phoneno','email'),data)
+    for i in data_dict:
+        i['email'] = i['email']+'@ucar.edu'
+    return data_dict
+
 def check_user_exists(email):
     email.strip()
     init_connection()

@@ -37,6 +37,13 @@ def get_staff(request):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
+def get_staff_dsid(request, dsid):
+    dsid = common.format_dataset_id(dsid)
+    json = common.get_staff_dsid(dsid)
+    response = rda_r.RDA_Response()
+    response.add_data(json)
+    return JsonResponse(response.get_json())
+
 def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
     """Helper function to handle common dataset response pattern
     Args:
