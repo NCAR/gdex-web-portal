@@ -26,6 +26,7 @@ urlpatterns = [
 
     # Metrics
     path(r'metrics/volume_downloaded/', views.volume_downloaded ),
+    path(r'metrics/unique_users/', views.unique_users ),
 
     # Notebook script
     path(r'generate_notebook', views.generate_notebook),

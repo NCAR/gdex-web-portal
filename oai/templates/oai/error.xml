@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
   <responseDate>{% now "Y-m-d\TH:i:s\Z" %}</responseDate>
-  <request{% if verb %} verb="{{ verb }}"{% endif %}>https://rda.ucar.edu/oai/</request>
+  <request{% if verb %} verb="{{ verb }}"{% endif %}>http{% if request.is_secure %}s{% endif %}://{{ request.META.SERVER_NAME }}/oai/</request>
   {% for error in errors %}
   <error code="{{ error.code }}">{{ error.message }}</error>
   {% endfor %}

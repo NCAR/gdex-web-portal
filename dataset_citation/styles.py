@@ -113,7 +113,7 @@ def export_citation(request, dsid, **kwargs):
                     "ed desc"), (dsid, ))
             dois = cursor.fetchall()
             if len(dois) > 0:
-                url = os.path.join(metaformat_settings.DOI_DOMAIN,
+                url = os.path.join("https://", metaformat_settings.DOI_DOMAIN,
                                    dois[0][0])
             else:
                 url = os.path.join(

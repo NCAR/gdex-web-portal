@@ -250,7 +250,9 @@ def dsids_never_published():
     dsids = []
     conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
     cursor = conn.cursor()
-    cursor.execute("select dsid from search.datasets where type = 'W'")
+    cursor.execute((
+            "select dsid from search.datasets where type = 'W' or dsid >= "
+            "'d999000'"))
     res = cursor.fetchall()
     cursor.close()
     for e in res:

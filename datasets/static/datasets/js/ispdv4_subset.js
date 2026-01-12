@@ -461,35 +461,34 @@ function getTypes()
   return true;  
 }
 
-/**
- * open a help window
- */
-
-function openHelpWindow(helpkey)
+function regionSelectChange()
 {
-   var notewin = window.open("", "DescWin", "width=500,height=400,scrollbars=yes,resizable=yes");
+   var selectedValue = $('#regionSelectMenu').val();
 
-   notewin.document.write("<html><head><title>Help Document</title></head>\n" +
-                          "<body style=\"font-size: 100%; font-family: helvetica,arial,verdana,sans-serif;\">\n");
-   if(helpkey == "temp") { // temporal range help
-      notewin.document.write("<table width=\"100%\">\n" +
-                "<tr style=\"background-color: #336699\">\n" +
-                "<th style=\"color: #ffffff; text-align:center; padding: 5px;\">\n" +
-                "Usage of Temporal Range Selection</th></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "Choose the starting and ending dates that define the bounding dates for\n" +
-                "your request, using the format YYYY-MM-DD. The bounding dates and all dates\n" +
-                "in between will be included in the output data set.  The ending date must \n" + 
-                "be later than or equal to the starting date.\n" + 
-                "</td></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "Click 'Reset Range' to re-select the full period of record.\n" +
-                "</td></tr></table>\n");
+   if (selectedValue === "") {
+      hideRegionSelection();
+   } else if(selectedValue == "1") {
+      displayGoogleMap(1);
+   } else if(selectedValue == "2") {
+      displayStationSelection(1);
+   } else if(selectedValue == "3") {
+      displayLocationSelection(1);
    }
-   notewin.document.write("<br /><form><center><input type=\"button\" value=\"Close This Window\" " +
-           "onClick=\"self.close()\"></center></form>\n</body></html>\n");
-   notewin.document.close();
-   notewin.focus();
+}
+
+/** Hide all region selection sections */
+function hideRegionSelection()
+{
+   $("#mapselect").hide();
+   $("#manselect").hide();
+   $("#stationSelect").hide();
+   $("#locationSelect").hide();
+
+   $("form input[name='mapdisplayed']").val(0);
+   $("form input[name='mandisplayed']").val(0);
+   $("form input[name='latlondisplayed']").val(0);
+   $("form input[name='stationdisplayed']").val(0);
+   $("form input[name='locationdisplayed']").val(0);
 }
 
 /**
@@ -497,12 +496,17 @@ function openHelpWindow(helpkey)
  */
 function displayGoogleMap(act)
 {
-   var mapdisp = document.getElementById("mapselect");
-   var mandisp = document.getElementById("manselect");
+   var mapdisp = $("#mapselect");
+   var mandisp = $("#manselect");
+   var stationdisp = $("#stationSelect");
+   var locationdisp = $("#locationSelect");
 
    if(act == 1) {
-      mapdisp.style.display="block";
-      mandisp.style.display="none";
+      mapdisp.show();
+      mandisp.hide();
+      stationdisp.hide();
+      locationdisp.hide();
+
       document.form.mapdisplayed.value = 1;
       document.form.mandisplayed.value = 0;
       document.form.latlondisplayed.value = 1;
@@ -510,11 +514,14 @@ function displayGoogleMap(act)
       document.form.locationdisplayed.value = 0;
    } else {
       setSpaceValues();
-      mapdisp.style.display="none";
-      mandisp.style.display="block";
+      mapdisp.hide();
+      mandisp.hide();
+      stationdisp.hide();
+      locationdisp.hide();
+
       document.form.mapdisplayed.value = 0;
-      document.form.mandisplayed.value = 1;
-      document.form.latlondisplayed.value = 1;
+      document.form.mandisplayed.value = 0;
+      document.form.latlondisplayed.value = 0;
       document.form.stationdisplayed.value = 0;
       document.form.locationdisplayed.value = 0;
    }
@@ -525,24 +532,33 @@ function displayGoogleMap(act)
  */
 function displayStationSelection(action)
 {
-   var stationdisp = document.getElementById("stationSelect");
-   var locationdisp = document.getElementById("locationSelect");
-   var mapdisp     = document.getElementById("mapselect");
-   var mandisp     = document.getElementById("manselect");
+   var stationdisp = $("#stationSelect");
+   var locationdisp = $("#locationSelect");
+   var mapdisp     = $("#mapselect");
+   var mandisp     = $("#manselect");
    
    if(action == 1) {
-      stationdisp.style.display="block";
-      mapdisp.style.display="none";
-      mandisp.style.display="none";
-      locationdisp.style.display="none";
+      stationdisp.show();
+      mapdisp.hide();
+      mandisp.hide();
+      locationdisp.hide();
+
       document.form.latlondisplayed.value = 0;
       document.form.mapdisplayed.value = 0;
       document.form.mandisplayed.value = 0;
       document.form.stationdisplayed.value = 1;
       document.form.locationdisplayed.value = 0;
    } else {
-      displayGoogleMap(1);
-      stationdisp.style.display="none";
+      stationdisp.hide();
+      mapdisp.hide();
+      mandisp.hide();
+      locationdisp.hide();
+      
+      document.form.latlondisplayed.value = 0;
+      document.form.mapdisplayed.value = 0;
+      document.form.mandisplayed.value = 0;
+      document.form.stationdisplayed.value = 0;
+      document.form.locationdisplayed.value = 0;
    }
 }
 
@@ -551,24 +567,33 @@ function displayStationSelection(action)
  */
 function displayLocationSelection(action)
 {
-   var stationdisp = document.getElementById("stationSelect");
-   var locationdisp = document.getElementById("locationSelect");
-   var mapdisp     = document.getElementById("mapselect");
-   var mandisp     = document.getElementById("manselect");
+   var stationdisp = $("#stationSelect");
+   var locationdisp = $("#locationSelect");
+   var mapdisp     = $("#mapselect");
+   var mandisp     = $("#manselect");
    
    if(action == 1) {
-      locationdisp.style.display="block";
-      mapdisp.style.display="none";
-      mandisp.style.display="none";
-      stationdisp.style.display="none";
+      locationdisp.show();
+      mapdisp.hide();
+      mandisp.hide();
+      stationdisp.hide();
+
       document.form.latlondisplayed.value = 0;
       document.form.mapdisplayed.value = 0;
       document.form.mandisplayed.value = 0;
       document.form.stationdisplayed.value = 0;
       document.form.locationdisplayed.value = 1;
    } else {
-      displayGoogleMap(1);
-      locationdisp.style.display="none";
+      locationdisp.hide();
+      mapdisp.hide();
+      mandisp.hide();
+      stationdisp.hide();
+      
+      document.form.latlondisplayed.value = 0;
+      document.form.mapdisplayed.value = 0;
+      document.form.mandisplayed.value = 0;
+      document.form.stationdisplayed.value = 0;
+      document.form.locationdisplayed.value = 0;
    }
 }
 
@@ -784,10 +809,9 @@ function addStation()
  */
 function selectAllTypes()
 {
-  for (var i=0; i<document.form.obstype.length; i++) {
-	if(!document.form.obstype[i].disabled)
-	  document.form.obstype[i].checked = true;
-  }
+   $('input[name="obstype"]').prop('disabled', false).each(function() {
+       $(this).prop('checked', true);
+   });
 }
 
 /**
@@ -795,8 +819,7 @@ function selectAllTypes()
  */
 function selectNoTypes()
 {
-  for (var i=0; i<document.form.obstype.length; i++) {
-	document.form.obstype[i].checked = false;
-	}
+   $('input[name="obstype"]').prop('disabled', false).each(function() {
+       $(this).prop('checked', false);
+   });
 }
-

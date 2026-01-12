@@ -457,6 +457,9 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 # Google Maps API settings
 ########################################################################
 
+# check if original request to Nginx proxy was secure
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 GMAP_API_URL = "https://maps.googleapis.com/maps/api/js"
 GMAP_API_KEY = local_settings.gmap_api_key
 

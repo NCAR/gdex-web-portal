@@ -1,0 +1,281 @@
+{% load wagtailcore_tags static %}
+
+<link rel="stylesheet" href="{% static 'datasets/css/subset.css' %}">
+<link rel="stylesheet" href="{% static 'datasets/css/gmap.css' %}">
+
+{{ gmap_api_key|safe|json_script:"gmap_api_key" }}
+{{ gmap_api_url|safe|json_script:"gmap_api_url" }}
+
+<script id="gmaps3_script" type="text/javascript" src="{% static 'datasets/js/gmaps3.js' %}"></script>
+<script id="gmapkey3_script" type="text/javascript" src="{% static 'datasets/js/gmapkey3.js' %}"></script>
+<script id="drawboxmap_script" type="text/javascript" src="{% static 'js/gmap_drawbox.js' %}"></script>
+
+<script id="ispd_subset_script" type="text/javascript" src="{% static 'datasets/js/ispdv4_subset.js' %}"></script>
+<script id="custom_subset_script" type="text/javascript" src="{% static 'datasets/js/custom_subset.js' %}"></script>
+
+<div id="subset-form-div">
+
+   {% comment %}
+   Summary description of the subset request form
+   {% endcomment %}
+
+   <h2>Dataset {{ subset.dsid }} - Submit a Subset Data Request</h2>
+   <div class="p-2 bg-light">
+      <p class="mb-0">This form allows a user to request a temporal and spatial subset from the following dataset:
+         <ul>
+            <li>{{ subset.dstitle }}</li>
+            <li>Valid date range: <span class="fw-bold">{{ subset.date_start }}</span>&nbsp;to&nbsp;<span class="fw-bold">{{ subset.date_end }}</span></li>
+         </ul>
+         Once this form is completed and submitted you will be notified via email when the 
+         data are ready for download. The output data files are provided in formatted ASCII.
+      </p>
+   </div>
+
+   {% comment %}
+   Begin subset request form
+   {% endcomment %}
+
+   <div id="request-form" class="component webform yellow-orange-border p-2 mb-4">
+
+   <form id="subset-form" name="form">
+   <input type="hidden" name="dsid" value="{{ subset.dsid }}">
+   <input type="hidden" name="gindex" value="{{ subset.gindex|default:'1' }}">
+   <input type="hidden" name="rtype" value="T">
+   <input type="hidden" id="minDate" value="{{ subset.date_start }}">
+   <input type="hidden" id="maxDate" value="{{ subset.date_end }}">
+   <input type="hidden" name="mapdisplayed" value=0>
+   <input type="hidden" name="mandisplayed" value=0>
+   <input type="hidden" name="latlondisplayed" value=0>
+   <input type="hidden" name="stationdisplayed" value=0>
+   <input type="hidden" name="locationdisplayed" value=0>
+   <input type="hidden" name="tlat" type="text" value="">
+   <input type="hidden" name="blat" type="text" value="">
+   <input type="hidden" name="llon" type="text" value="">
+   <input type="hidden" name="rlon" type="text" value="">
+
+<!-- Temporal range selection -->
+<div class="py-2" id="dateSelect">
+   <h4 class="py-1">
+      <i class="fa-solid fa-calendar-days"></i>
+      Temporal Range
+   </h4>
+   <div class="mb-1">
+      Select the start and end dates for your data request.
+   </div>
+
+   <fieldset class="py-2">
+      <div class="form-group row py-1">
+         <label class="form-label" for="startDate">
+            Start Date
+         </label>
+         <input type="text" value="{{subset.date_start}}" id="startDate" name="startDate" size="10" maxlength="10" placeholder="YYYY-MM-DD" aria-describedby="startDateHelp">
+         <small class="form-text text-muted" id="startDateHelp">
+            (Format: YYYY-MM-DD)
+         </small>
+      </div>
+      <div class="form-group row py-1">
+         <label class="form-label" for="endDate">
+            End Date
+         </label>
+         <input type="text" value="{{subset.date_end}}" id="endDate" name="endDate" size="10" maxlength="10" placeholder="YYYY-MM-DD" aria-describedby="endDateHelp">
+         <small class="form-text text-muted" id="endDateHelp">
+            (Format: YYYY-MM-DD)
+         </small>
+      </div>
+      <div class="mt-2">
+         <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear dates" id="cleardates" onClick="clearTemporalRange()">
+      </div>
+   </fieldset>
+</div>
+
+<hr class="my-1">
+
+<!-- Spatial range selection -->
+
+<div class="py-2" id="regionSelect">
+   <h4 class="py-1">
+      <i class="fa-solid fa-globe"></i>
+      Spatial Range
+   </h4>
+   <div class="mb-1">
+      Select spatial region for your data request.
+   </div>
+   <select class="custom-select" id="regionSelectMenu" onchange="regionSelectChange()">
+      <option value="" id="nullOption" selected>Choose an option</option>
+      <option value="1" id="mapOption">Select latitude/longitude region</option>
+      <option value="2" id="stationOption">Select location by station ID</option>
+      <option value="3" id="locationOption">Select by location name</option>
+   </select>
+</div>
+
+<!-- Spatial range selection via Google map -->
+
+<div class="py-1" style="display: none" id="mapselect">
+   {% include "datasets/google-map.html" %}
+</div>
+
+<!-- Select location by station ID -->
+
+<div class="py-2" style="display: none" id="stationSelect">
+   <div class="pb-2">
+      Please enter one or more station identifiers to extract from the ISPD dataset, 
+      given as a comma-separated list. Station identifiers should be entered as the 
+      5- or 6-digit WMO international synoptic identifier. For example, enter 
+      "72565, 72469, 72530" to request Denver International Airport, Denver Stapleton 
+      Airport, and Chicago O'Hare Airport.  A blank entry will retain all stations in 
+      the ISPD database. Click <a href="https://oscar.wmo.int/surface/" target="_blank">here</a>
+      to search for station information in the WMO Oscar/Surface repository, or you may 
+      look up station IDs in the ISPD version 4 inventory 
+      <a href="https://osdata.gdex.ucar.edu/web/datasets/d132002/docs/ispd_history_v4.00.txt">here</a>.
+   </div>
+   <label for="station0">Station IDs (comma separated): </label>
+   <textarea class="form-control" name="station0" id="station0" rows="4"></textarea>
+</div>
+
+<!-- Select location by location name -->
+
+<div class="py-2" style="display: none" id="locationSelect">
+   <div class="pb-2">
+      Please enter one or more location or station names to extract from
+      the ISPD dataset, given as a comma-separated list.  For example, 
+      "Denver, Chicago, New York". 
+
+      This service searches for matches in the 30-character ship or station name
+      field stored in the ISPD Tracking Table described on page 21 of the ISPD 
+      version 4 documentation (see 
+      <a href="https://osdata.gdex.ucar.edu/web/datasets/d132002/docs/International_Surface_Pressure_Data_Bank_format_v11.A2.pdf#page=21">
+      here for a description</a>).  For a complete listing of station names in the ISPD version 4, please consult the inventory of ISPD stations 
+      <a href="https://osdata.gdex.ucar.edu/web/datasets/d132002/docs/ispd_history_v4.00.txt">here</a>. 
+
+      Note that partial location names may be entered and will return all observations
+      matching the given station name.  For example, "London" will return observations
+      for London Heathrow Airport, London Gatwick Airport, and other observation
+      records with "London" in the station name field.
+   </div>
+   <label for="location0">Enter locations (comma separated): </label>
+   <textarea class="form-control" name="location0" id="location0" rows="1" cols="50"></textarea>
+</div>
+
+<hr class="my-1">
+
+<!-- NCEP observation type selection-->
+
+<div id="typeSelect" class="py-2">
+   <h4 class="py-1">
+      <i class="fa-solid fa-list-check"></i>
+      Observation Types
+   </h4>
+   <div class="mb-1">
+      Select observation types to retain in your data request.  All will be retained if none are selected.
+   </div>
+
+   <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="obstype" value="RADIOSONDE" id="rsonde">
+      <label class="form-check-label" for="rsonde">
+         Radiosonde observations
+      </label>
+   </div>
+   <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="obstype" value="DROPSONDE" id="dsonde">
+      <label class="form-check-label" for="dsonde">
+         Dropsonde observations
+      </label>
+   </div>
+   <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="obstype" value="MARINE" id="marine">
+      <label class="form-check-label" for="marine">
+         Marine observations
+      </label>
+   </div>
+   <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="obstype" value="SFC_STATION" id="station">
+      <label class="form-check-label" for="station">
+         Surface station observations
+      </label>
+   </div>
+   <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="obstype" value="TC_BEST_TRACK" id="besttrack">
+      <label class="form-check-label" for="besttrack">
+         Tropical cyclone best track data
+      </label>
+   </div>
+   <div class="mt-2">
+      <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" id="alltypes" onClick="selectAllTypes()">
+      <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" id="cleartypes" onClick="selectNoTypes()">
+   </div>
+</div>
+
+<hr class="my-1">
+
+<!-- Select file compression-->
+
+<div id="compressionSelect" class="py-2">
+   <h4 class="py-1">
+      <i class="fa-solid fa-file-zipper"></i>
+      File Compression
+   </h4>
+   <div class="mb-1">
+      File compression is recommended to minimize the network transfer time required to move your data files to your host computer.
+   </div>
+
+   <div class="form-check">
+      <input class="form-check-input" type="radio" name="comp" id="gzinput" value="gz" checked>
+      <label class="form-check-label" for="gzinput">
+         .gz
+      </label>
+   </div>
+   <div class="form-check">
+      <input class="form-check-input" type="radio" name="comp" id="nocompinput" value="no">
+      <label class="form-check-label" for="nocompinput">
+         No compression
+      </label>
+   </div>
+</div>
+
+<hr class="my-1">
+
+<div class="py-2" id="review-button">
+   <h4 class="py-1">
+      <i class="fa-solid fa-file-circle-check"></i>
+      Review and Submit
+   </h4>
+   <div class="mb-2">
+      Click the 'Review selections' button to review your subset request options before submitting the request.
+   </div>
+   <div>
+      <button type="button" class="btn btn-primary mx-1 p-1 rounded" style="font-size:1rem" onClick="reviewRequest()"><b>Review selections</b></button>
+      <button type="reset" class="btn btn-outline-primary mx-1 p-1 rounded" style="font-size:1rem">Reset Form</button>
+   </div>
+</div>
+
+</form>
+</div>
+</div>
+
+<div id="subset-review-div" class="d-none">
+   <h2 class="py-2">ISPD Version 4 Data Request</h2>
+   <div>
+      Following is a summary of your data request options.  Click the 'Submit Request' button below 
+      if the information is <span class="font-weight-bold">correct</span>, otherwise select 
+      'Cancel' to modify your selections or start over.
+   </div>
+   <div class="py-2">
+      <pre><code id="rnote-text"></code></pre>
+   </div>
+   <div id="submit-form-container">
+      <form action="{% url 'submit_web_data_request' subset.dsid %}" id="submit-form" method="post">
+         <div id="submit-buttons" class="mt-1">
+            <button class="btn btn-primary mt-1 p-1 rounded" type="submit" style="font-size:1rem" id="submit_request">Submit request</button>
+            <button class="btn btn-outline-primary mt-1 p-1 rounded" type="button" style="font-size:1rem" id="cancel_request" onclick="cancelRequest();">Cancel</button>
+         </div>
+      </form>
+   </div>
+</div>
+<div id="loading-button" class="d-none">
+   <button class="btn btn-primary mt-1 p-1" type="button" disabled>
+      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      Loading...
+   </button>
+</div>
+
+<img src="/images/transpace.gif" onload="ajaxCallback()">

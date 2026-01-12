@@ -25,7 +25,10 @@ def by_the_numbers(request):
     ctx = {
             'datasets': common.get_number_of_datasets(),
             'citations': common.get_total_citations(),
-            'users' : common.get_number_of_unique_users(),
+            #'users' : common.get_number_of_unique_users(),
+            'users' : json.loads( # doing this to take advantage of cacheing
+                                         http_request.get(utils.get_hostname()+'/api/metrics/unique_users/').content
+                )['ips'],
             'downloaded' : common.get_volume_downloaded(),
             'downloaded_db' : json.loads( # doing this to take advantage of cacheing
                                          http_request.get(utils.get_hostname()+'/api/metrics/volume_downloaded/').content

@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.conf import settings
 import psycopg2
+from datetime import datetime
 
 from logging import getLogger
 logger = getLogger(__name__)
@@ -43,3 +44,45 @@ def bookmark(request, dsid):
 
 def get_hostname():
     return 'http://127.0.0.1:8080'
+
+def get_custom_subset_context(dsid, gindex=None):
+    # Get dataset context needed for custom subset page
+    context = {}
+    dsperiod = get_dataset_period(dsid, gindex)
+    if dsperiod:
+        context.update(dsperiod)
+
+    return context
+
+def get_dataset_period(dsid, gindex=None):
+    # Get the dataset period from the database
+    query = "SELECT MIN(CONCAT(date_start, ' ', time_start)) as datetime_start, MAX(CONCAT(date_end, ' ', time_end)) as datetime_end FROM dsperiod WHERE dsid = %s"
+    if gindex is not None:
+        query += " AND gindex = %s"
+        cond = (dsid, gindex)
+    else:
+        cond = (dsid,)
+
+    conn = psycopg2.connect(**settings.RDADB['dssdb_config_pg'])
+    cursor = conn.cursor()
+    cursor.execute(query, cond)
+    result = cursor.fetchone()
+    conn.close()
+
+    format_str = "%Y-%m-%d %H:%M:%S"  # The format
+    datetime_start = datetime.strptime(result[0], format_str) if result[0] else None
+    datetime_end = datetime.strptime(result[1], format_str) if result[1] else None
+
+    date_start = datetime_start.date().strftime("%Y-%m-%d") if datetime_start else None
+    date_end = datetime_end.date().strftime("%Y-%m-%d") if datetime_end else None
+    time_start = datetime_start.time().strftime("%H:%M:%S") if datetime_start else None
+    time_end = datetime_end.time().strftime("%H:%M:%S") if datetime_end else None
+
+    if result:
+        return {
+            'date_start': date_start,
+            'date_end': date_end,
+            'time_start': time_start,
+            'time_end': time_end
+        }
+    return None

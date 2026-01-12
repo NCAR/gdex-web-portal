@@ -1302,39 +1302,46 @@ def change_history(request, dsid):
 
 
 def delete(request, dsid):
-    # verify that this dataset has never been published
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
-        cursor.execute(("select type, pub_date from search.datasets where "
-                        "dsid = %s"), (dsid, ))
-        res = cursor.fetchone()
     except psycopg2.Error as err:
         log_error(err, source="delete")
         return render(request, "metaman/datasets/delete.html",
                       {'database_error': "{}".format(err)})
 
-    if res[0] != "W" or (res[1].year > 1900 and res[1].year < 2100):
-        return render(request, "metaman/datasets/delete.html",
-                      {'published': True})
+    # verify that this dataset has never been published if it is a non-test
+    #  dataset
+    if dsid < 'd999000':
+        try:
+            cursor.execute((
+                    "select type, pub_date from search.datasets where dsid = "
+                    "%s"), (dsid, ))
+            res = cursor.fetchone()
+        except psycopg2.Error as err:
+            log_error(err, source="delete")
+            return render(request, "metaman/datasets/delete.html",
+                          {'database_error': "{}".format(err)})
+
+        if res[0] != "W" or (res[1].year > 1900 and res[1].year < 2100):
+            return render(request, "metaman/datasets/delete.html",
+                          {'published': True})
 
     messages = []
-    hosts = ["rda-web-prod01", "rda-web-test01"]
-    for host in hosts:
-        # remove the public and internal web directories
-        o = subprocess.check_output(
-                "rm -rf " + root_dirs['web'] + "/datasets/" + dsid,
-                shell=True, stderr=subprocess.STDOUT).decode("utf-8")
-        if len(o) == 0:
-            messages.append({'success': True,
-                             'value': "Public web directory was deleted"})
-        else:
-            messages.append({
-                    'success': False,
-                    'value': ("Deletion of public web directory failed with "
-                              "error '{}'").format(o)})
-            return render(request, "metaman/datasets/delete.html",
-                          {'message_list': messages})
+    # remove the public web directory
+    o = subprocess.check_output(
+            "rm -rf " + root_dirs['web'] + "/datasets/" + dsid, shell=True,
+            stderr=subprocess.STDOUT).decode("utf-8")
+    if len(o) == 0:
+        messages.append({'success': True,
+                         'value': "Public web directory was deleted"})
+    else:
+        messages.append({
+                'success': False,
+                'value': ("Deletion of public web directory failed with "
+                          "error '{}'").format(o)})
+        return render(request, "metaman/datasets/delete.html",
+                      {'message_list': messages})
 
     # unpublish the dataset pages
     unpub_cmd = ("python /usr/local/gdexweb/manage.py unpublish_dataset " +

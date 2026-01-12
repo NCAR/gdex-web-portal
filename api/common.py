@@ -1560,7 +1560,7 @@ def get_total_requests(since=None):
     return response[0]
 
 
-def get_top_datasets(top=6):
+def get_top_datasets(top=15):
     rankings_file = '/data/local/gdexweb/media/metrics/rankings/rankingsYear.json'
     try:
         rankings = json.load(open(rankings_file))
@@ -1570,7 +1570,7 @@ def get_top_datasets(top=6):
         print(e)
         return 'Unknown'
 
-def get_AI_datasets(limit=8):
+def get_AI_datasets(limit=50):
     con,cur = init_connection_new(config=get_WGrML_config())
     query = f"select dsid,title from search.datasets where ai_ready = 'Y' limit {limit};"
     cur.execute(query)
@@ -1609,6 +1609,30 @@ def get_number_of_unique_users(since=None):
             total_unique_users += year_month['Total Number of Unique Users']
 
     return total_unique_users
+
+def get_number_of_unique_users_db(since=None):
+    """Get total number of unique IPs from the database"""
+    if since is None:
+        since = datetime.now() - timedelta(days=366) # One year ago
+    assert isinstance(since, datetime)
+
+    cur_year = datetime.now().year
+    last_year = since.year
+    last_month = since.month
+    last_day = since.day
+    last_ymd = f'{last_year}-{last_month}-{last_day}'
+
+    con,cur =  init_connection_new()
+
+    query = f"select count(distinct(ip)) from allusage_{last_year} where date > '{last_ymd}'" + \
+    f" union all select count(distinct(ip)) from allusage_{cur_year}"
+    cur.execute(query)
+    res = cur.fetchall()
+    close_connection(con,cur)
+    total_IPs = 0
+    for i in res:
+        total_IPs += int(i[0])
+    return total_IPs
 
 
 def get_volume_downloaded_db(since=None):

@@ -11,7 +11,7 @@ def respond(o):
     o = (
             o.stdout.decode("utf-8").replace("\n", "<br>") + "<br>" +
             o.stderr.decode("utf-8").replace("\n", "<br>"))
-    subprocess.run("touch /data/local/gdexweb/gdexwebserver/wsgi.py",
+    subprocess.run("touch /usr/local/gdexweb/gdexwebserver/wsgi.py",
                    shell=True)
     return HttpResponse(o)
 
