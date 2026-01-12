@@ -13,7 +13,6 @@ from wagtail.contrib.forms.models import (
     AbstractFormField,
     AbstractForm,
 )
-from home.models import GDEXPage
 
 #logger = logging.getLogger(__name__)
 # Create your models here.
@@ -51,13 +50,13 @@ class DaasForm(AbstractForm):
         return form
 
 
-class DaasHome(GDEXPage):
+class DaasHome(Page):
     # Database fields
     body = RichTextField(blank=True)
     additional_information = RichTextField(blank=True)
  
     # Editor panels configuration
-    content_panels = GDEXPage.content_panels + [
+    content_panels = Page.content_panels + [
         FieldPanel('body', classname='full'),
         FieldPanel('additional_information', classname='full')
     ]
