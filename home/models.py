@@ -387,6 +387,8 @@ class Card(Orderable, ClusterableModel):
     ]
     
 class GenericPage(Page):
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
     intro = RichTextField(blank=True, default="")
     sidebar = models.BooleanField(default=True)
     table_of_contents = models.BooleanField(default=False)
@@ -399,11 +401,11 @@ class GenericPage(Page):
 
     content_panels = Page.content_panels + [
     #    StreamFieldPanel('page_options'),
+        FieldPanel('menu_title'),
         FieldPanel('sidebar'),
         FieldPanel('table_of_contents'),
         FieldPanel('intro'),
     	InlinePanel('cards', label='Cards'),
-       
     ]
 
 class StaffPage(Page):
@@ -434,8 +436,11 @@ class StaffPage(Page):
 class DocumentationPage(Page):
     header = models.CharField(max_length=100, blank=False, default="")
     sidebar = models.BooleanField(default=True)
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
 
     content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
         FieldPanel('sidebar'),
         InlinePanel(
             'links',
@@ -588,7 +593,10 @@ class NewsPage(Page):
 class NewsHome(Page):
     subpage_types = [ 'home.NewsPage' ]
     title_description = RichTextField(blank=True)
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
     content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
         FieldPanel('title_description'),
     ]
     
@@ -616,18 +624,24 @@ class NewsHome(Page):
         return year_sorted_posts
 
 class MetricsPage(Page):
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
     body = RichTextField(blank=True)
     content_panels = Page.content_panels + [
-    FieldPanel('body', classname='full'),
+        FieldPanel('menu_title'),
+        FieldPanel('body', classname='full'),
     ]
 
 class RedirectPage(Page):
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
     redirect_url = models.URLField(
         blank=False,
         null=False,
         verbose_name="Redirect URL",
     )
     content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
         FieldPanel('redirect_url'),
     ]
 
