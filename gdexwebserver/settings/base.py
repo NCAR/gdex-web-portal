@@ -256,7 +256,7 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/4.1/topics/cache/
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'BACKEND': 'api.gdex_cache.GDEX_FileBasedCache',
         'LOCATION': '/usr/local/gdexweb/cache',
     }
 }

@@ -22,6 +22,7 @@ urlpatterns = [
     path(r'get_req_files_old/<rindex>/', views.get_req_files_old ),
     path(r'globus_download/<rindex>/<endpoint>', views.globus_download ),
     path(r'purge/<rindex>/', views.purge ),
+    path(r'clear_cache/<dsid>/', views.clear_cache),
 
     # Metrics
     path(r'metrics/volume_downloaded/', views.volume_downloaded ),

@@ -1,4 +1,6 @@
 import json
+import os
+import re
 from django.shortcuts import render
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -18,6 +20,28 @@ from drf_spectacular.types import OpenApiTypes
 
 import logging
 logger = logging.getLogger(__name__)
+
+def dynamic_prefix_cache_page(timeout, prefix_func, *, cache=None, key_prefix=None):
+    """This decorator is exactly like cache_page, but with the option to skip
+    the caching entirely.
+
+    The second argument is a callable, ``condition``. It's given the
+    request and all further arguments, and if it evaluates to a true-ish
+    value, the cache is used.
+    """
+
+    def decorator(func):
+        def wrapper(request, *args, **kwargs):
+            custom_prefix = prefix_func(request, *args, **kwargs)
+            return cache_page(timeout=timeout, cache=cache, key_prefix=custom_prefix)(
+                    func
+                )(request, *args, **kwargs)
+
+        return wrapper
+    return decorator
+
+def get_path(request, *args, **kwargs):
+    return request.path
 
 def verify_login(request):
     cookies = request.COOKIES
@@ -57,7 +81,17 @@ def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
         response.add_data(json_data)
         return JsonResponse(response.get_json())
 
-
+def clear_cache(request, dsid):
+    """Clear cache that matches dsid"""
+    assert re.match('d\d\d\d\d\d\d', dsid)
+    import glob
+    cache_dir = '/usr/local/gdexweb/cache/'
+    matched_files = glob.glob(f'{cache_dir}*{dsid}*')
+    if not matched_files:
+        return JsonResponse({"success": False})
+    for file in matched_files:
+        os.remove(file)
+    return JsonResponse({"success": True})
 
 def get_root_groups(request, dsid):
     dsid = common.format_dataset_id(dsid)
@@ -66,7 +100,9 @@ def get_root_groups(request, dsid):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
-#@cache_page(4 * 24 * 60 * 60) # cache for 4 days
+
+
+@dynamic_prefix_cache_page(60*15, get_path)
 def get_assembled_groups(request, dsid, gindex=None):
     """ Creates table like representation of webfile data """
     dsid = common.format_dataset_id(dsid)
