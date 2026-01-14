@@ -415,6 +415,8 @@ class GenericPage(Page):
 
 class StaffPage(Page):
     # Database fields
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
     body = RichTextField(blank=True)
     mission = RichTextField(blank=True)
     cts_text = RichTextField(blank=True)
@@ -422,6 +424,7 @@ class StaffPage(Page):
 
     # Editor panels configuration
     content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
         FieldPanel('body', classname='full'),
         FieldPanel(
             'mission',
