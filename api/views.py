@@ -87,6 +87,9 @@ def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
 def clear_cache(request, dsid):
     """Clear cache that matches dsid"""
     assert re.match('d\d\d\d\d\d\d', dsid)
+    token = request.GET.get('token', 'default')
+    if not common.is_superuser(token):
+        return JsonResponse({"success": False, 'message': 'Not a super user'})
     import glob
     cache_dir = '/usr/local/gdexweb/cache/'
     matched_files = glob.glob(f'{cache_dir}*{dsid}*')
