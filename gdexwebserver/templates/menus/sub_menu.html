@@ -4,7 +4,7 @@
     <ul class="dropdown-menu" aria-labelledby="{{ menu.title | slugify }}">
         {% for item in menu_items %}
             <li class="{{ item.active_class }}{% if item.has_children_in_menu %} dropdown{% endif %}">
-                <a class="dropdown-item" href="{{ item.href }}">{{ item.link_page.specific.menu_title|default:item.text }}</a>
+                <a class="dropdown-item" href="{{ item.href }}">{{ item.specific.menu_title|default:item.text }}</a>
                 {% if item.has_children_in_menu %}
                     {% sub_menu item template=current_template use_specific=True %}
 	            {% endif %}
