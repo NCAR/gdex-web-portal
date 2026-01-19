@@ -20,7 +20,7 @@
             <a class="nav-link {{ item.active_class }}" aria-current="page" href="{{ item.href }}">{{ item.specific.menu_title|default:item.text }}</a>
             {% if item.has_children_in_menu %}
                 <button aria-expanded="false" aria-label="Expand/Collapse" class="btn dropdown-toggle px-3 px-md-0 mx-md-1" data-bs-toggle="dropdown" id="{{ item.text | slugify }}" role="button" href="#"></button>
-                {% sub_menu item template="menus/sub_menu.html" use_specific=True %}
+                {% sub_menu item template="menus/sub_menu.html" %}
             {% endif %}
         </li>
     {% endfor %}
