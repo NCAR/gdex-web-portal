@@ -1530,11 +1530,13 @@ def get_all_datasets():
     cursor.execute('select dsid,title from dataset')
     data = cursor.fetchall()
     return data
+
 def get_number_of_datasets():
     """Get the total number of datasets in the GDEX
     """
-    con,cur =  init_connection_new()
-    query = "select count(dsid) from dataset"
+    con,cur =  init_connection_new(config=get_search_config())
+    cond = "(d.type = 'P' or d.type = 'H') and d.dsid < 'd999000'"
+    query = "select count(distinct dsid) from search.datasets as d where " + cond
     cur.execute(query)
     response = cur.fetchone()
     close_connection(con,cur)
@@ -1545,11 +1547,12 @@ def get_gdex_volume():
     Returns value in PB
     """
     con,cur =  init_connection_new()
-    query = "select sum(dweb_size) from dataset"
+    cond = "(s.type = 'P' or s.type = 'H') and s.dsid < 'd999000'"
+    query = "select sum(d.dweb_size)/1.e15 from dataset as d left join search.datasets as s on d.dsid = s.dsid where " + cond
     cur.execute(query)
     response = cur.fetchone()
     close_connection(con,cur)
-    return math.floor(response[0]/1000/1000/1000/1000/1000)
+    return float(round(response[0], 2))
 
 def get_total_requests(since=None):
     if since is None:
