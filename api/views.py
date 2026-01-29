@@ -12,6 +12,7 @@ from . import RDA_Response as rda_r
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIVIEW
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
@@ -43,6 +44,15 @@ def get_staff_dsid(request, dsid):
     response = rda_r.RDA_Response()
     response.add_data(json)
     return JsonResponse(response.get_json())
+
+class JiraPayloadReceiver(APIVIEW):
+    def post(self,request):
+        payload = request.data
+        print("Received payload:", payload)
+        return Response({
+            "status": "Payload received successfully",
+            "payload": payload
+        }, status=status.HTTP_200_OK)
 
 def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
     """Helper function to handle common dataset response pattern

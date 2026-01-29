@@ -1,3 +1,9 @@
-from django.test import TestCase
+#from django.test import TestCase
+import requests
 
-# Create your tests here.
+url = "https://gdex.ucar.edu/api/jira-payload/"
+payload = {"message": "Hello Django!", "test": True}
+
+response = requests.post(url, json=payload)
+print(response.json())
+

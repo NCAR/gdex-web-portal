@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import JiraPayloadReceiver
 from dataaccess.views import DataAccessAPIView
 
 urlpatterns = [
@@ -30,6 +31,9 @@ urlpatterns = [
 
     # Notebook script
     path(r'generate_notebook', views.generate_notebook),
+
+    # Jira Webhook
+    path(r'jira-payload/', JiraPayloadReceiver.as_view(), name = 'jira-payload-receiver')
 
     # Dataset calls
     path(r'datasets/<dsid>/documentation/', views.get_dataset_documentation ),
