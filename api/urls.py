@@ -31,7 +31,7 @@ urlpatterns = [
     # Notebook script
     path(r'generate_notebook', views.generate_notebook),
 
-    # Jira Webhook
+    # Jira Webhook 
     path(r'jira-event/', views.JiraEventReceiver.as_view(), name = 'jira-event-receiver'),
 
     # Dataset calls
