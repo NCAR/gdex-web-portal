@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseBadRequest
 from django.http import JsonResponse
+from django.config import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 from . import rdams
@@ -12,7 +13,7 @@ from . import RDA_Response as rda_r
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.views import APIVIEW
+from rest_framework.views import APIView
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
@@ -45,14 +46,49 @@ def get_staff_dsid(request, dsid):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
-class JiraPayloadReceiver(APIVIEW):
+def _trigger_github():
+    """
+    Triggers the Github Actions workflow via repository_dispatch
+    """
+    github_token = settings.GITHUB_TOKEN
+    repo = settings.GITHUB_REPO
+
+    if not github_token or not repo:
+        raise ValueError("GITHUB_TOKEN or GITHUB_REPO are not in settings.py")
+    
+    url =f"https://api.github.com/repos/{repo}/dispatches"
+
+    headers = {
+    "Authorization": f"token {github_token}",
+    "Accept": "application/vnd.github.v3+json",
+    }
+
+    data = {
+        "event_type": "jira-event"
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+    return response.status_code, response.text
+
+@method_decorator(csrf_exempt, name='dispatch')
+class JiraEventReceiver(APIView):
     def post(self,request):
         payload = request.data
-        print("Received payload:", payload)
+        print("Received Jira Webhook")
+
+        try:
+            status_code, text = _trigger_github()
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": str(e)
+            }, status=500)
+
         return Response({
-            "status": "Payload received successfully",
-            "payload": payload
-        }, status=status.HTTP_200_OK)
+            "status": "Worflow triggered",
+            "github_response_code": status_code,
+            "github_response_text": text
+        })
 
 def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
     """Helper function to handle common dataset response pattern
