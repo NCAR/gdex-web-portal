@@ -19,6 +19,17 @@ webapp:
       cpu: 6
     responseTimeout: 180
     maxUploadSize: 60m
+    env:
+      - name: GITHUB_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: cp-github-token
+            key: GITHUB_TOKEN
+      - name: GITHUB_REPO
+        valueFrom:
+          secretKeyRef:
+            name: cp-github-repo
+            key: GITHUB_REPO
   ingress:
     ingressClassName: nginx-internal
 
