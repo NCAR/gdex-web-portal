@@ -23,12 +23,12 @@ webapp:
       - name: GITHUB_TOKEN
         valueFrom:
           secretKeyRef:
-            name: cp-github-token
+            name: calie-github-token
             key: GITHUB_TOKEN
       - name: GITHUB_REPO
         valueFrom:
           secretKeyRef:
-            name: cp-github-repo
+            name: calie-github-repo
             key: GITHUB_REPO
   ingress:
     ingressClassName: nginx-internal
