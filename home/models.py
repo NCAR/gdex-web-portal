@@ -423,10 +423,12 @@ class StaffPage(Page):
     mission = RichTextField(blank=True)
     cts_text = RichTextField(blank=True)
     additional_information = RichTextField(blank=True)
+    sidebar = models.BooleanField(default=True)
 
     # Editor panels configuration
     content_panels = Page.content_panels + [
         FieldPanel('menu_title'),
+        FieldPanel('sidebar'),
         FieldPanel('body', classname='full'),
         FieldPanel(
             'mission',
