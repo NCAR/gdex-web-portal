@@ -61,8 +61,20 @@ spec:
           {{ if .Values.testName }}
           readOnly: true
           {{ end }}
+        
+        env:
+        {{- range .Values.webapp.container.env }}
+          - name: {{ .name }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .secret.name }}
+                key: {{ .secret.key }}
+        {{- end }}
 
       volumes:
       - name: {{ .Values.volume.fs.name }}
         persistentVolumeClaim:
           claimName: {{ .Values.volume.fs.name }}
+      
+
+

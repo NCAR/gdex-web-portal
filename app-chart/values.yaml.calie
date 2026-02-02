@@ -21,13 +21,11 @@ webapp:
     maxUploadSize: 60m
     env:
       - name: GITHUB_TOKEN
-        valueFrom:
-          secretKeyRef:
+          secret:
             name: calie-github-token
             key: GITHUB_TOKEN
       - name: GITHUB_REPO
-        valueFrom:
-          secretKeyRef:
+          secret:
             name: calie-github-repo
             key: GITHUB_REPO
   ingress:
