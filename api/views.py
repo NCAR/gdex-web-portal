@@ -49,7 +49,7 @@ def get_staff_dsid(request, dsid):
 
 def _trigger_github():
     """
-    Triggers the Github Actions workflow via repository_dispatch
+    Triggers the Github Actions workflow via github repository_dispatch
     """
     github_token = os.environ.get("GITHUB_TOKEN")
     repo = os.environ.get("GITHUB_REPO")
