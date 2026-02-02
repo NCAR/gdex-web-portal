@@ -49,10 +49,10 @@
             </div>
         </div>
     </article>
+    {% if page.sidebar %} 
+    {% include "unity/sidebar.html" %}
+    {% endif %}
 </div>
-{% if page.sidebar %} 
-{% include "unity/sidebar.html" %}
-{% endif %}
 </div>
 
 {% endblock %}
