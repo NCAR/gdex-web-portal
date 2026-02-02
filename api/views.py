@@ -111,8 +111,6 @@ def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
         response.add_data(json_data)
         return JsonResponse(response.get_json())
 
-
-
 def get_root_groups(request, dsid):
     dsid = common.format_dataset_id(dsid)
     json = common.get_root_groups(dsid)
