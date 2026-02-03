@@ -129,7 +129,7 @@ def export_citation(request, dsid, **kwargs):
                             update_frequency=update_frequency,
                             title=ds_data[0],
                             publisher=metaformat_settings.ARCHIVE[
-                                    'pub_name']['default'],
+                                    'pub_name']['default']['name'],
                             url=url, dagger=dagger))
         except Exception as err:
             print("CITATION EXPORT ERROR: '" + str(err) + "'")
