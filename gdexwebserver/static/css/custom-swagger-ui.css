@@ -2,3 +2,14 @@ code {
   background: #333333 !important;
   color: #ffffff !important;
 }
+
+table td,
+table th,
+.table td,
+.table th {
+  border: 0px !important;
+}
+
+.col-header td {
+    border-bottom: 1px solid #bbbcbc !important; 
+}
