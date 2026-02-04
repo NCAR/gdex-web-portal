@@ -1473,6 +1473,17 @@ def add_new_user(email, first_name, last_name):
     conn.commit()
     return True
 
+def is_superuser(token):
+    """Returns whether a given token is associated with a superuser."""
+    con,cur = init_connection_new(get_wagtail_config())
+    query = 'select is_superuser from auth_user left join login_usertoken on auth_user.id = login_usertoken.user_id where value=%s'
+    cur.execute(query, (token,))
+    data = cur.fetchall()
+    close_connection(con,cur)
+    if len(data) == 0:
+        return False
+    return data[0][0]
+
 def get_email_from_token(token):
     """Returns email given token."""
     con,cur = init_connection_new(get_wagtail_config())
