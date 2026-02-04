@@ -14,3 +14,7 @@ table th,
 .ncar thead th {
   background-color: transparent !important;
 }
+.col-header td,
+.col-header th {
+  border-bottom: 1px solid #3b4151 !important;
+}
