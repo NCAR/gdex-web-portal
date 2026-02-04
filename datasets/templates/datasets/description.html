@@ -10,6 +10,18 @@
 </p>
 {% endif %}
 
+{% if has_arco %}
+ <div class="row gx-0 mb-2 mb-md-1">
+     <div class="col-12 col-md-2 dataset-label">Quick Start:</div>
+     <div class="col-12 col-md-10"><code>
+             import xarray
+             ds = open_dataset('filename', engine='kerchunk')
+             ds[varname]
+         </code></div>
+ </div>
+{% endif %}
+
+
 <div class="row gx-0 mb-2 mb-md-1">
     <div class="col-12 col-md-2 dataset-label">Abstract:</div>
     <div class="col-12 col-md-10">{{ page.abstract|richtext }}</div>
