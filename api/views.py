@@ -47,17 +47,17 @@ def verify_login(request):
     cookies = request.COOKIES
     return None
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def param_summary(request, dsid):
     json = rdams.main("-get_param_summary",dsid)
     return JsonResponse(json)
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_metadata(request, dsid):
     json = rdams.main("-get_metadata",dsid)
     return JsonResponse(json)
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_staff(request):
     json = common.get_staff()
     response = rda_r.RDA_Response()
@@ -106,7 +106,7 @@ def clear_cache(request, dsid):
         os.remove(file)
     return JsonResponse({"success": True})
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_root_groups(request, dsid):
     dsid = common.format_dataset_id(dsid)
     json = common.get_root_groups(dsid)
@@ -116,7 +116,7 @@ def get_root_groups(request, dsid):
 
 
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_assembled_groups(request, dsid, gindex=None):
     """ Creates table like representation of webfile data """
     dsid = common.format_dataset_id(dsid)
@@ -150,7 +150,7 @@ def get_child_groups(request, dsid, gindex):
 def dynamic_key_prefix(request):
     return f"section:{request.resolver_match.url_name}"
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_web_files(request, dsid, gindex, filter_wfile=None):
     dsid = common.format_dataset_id(dsid)
     json = common.get_web_files_from_gindex(dsid, gindex, filter_wfile=filter_wfile)
@@ -160,12 +160,12 @@ def get_web_files(request, dsid, gindex, filter_wfile=None):
     #print(response_json)
     return JsonResponse(response_json)
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def assemble_filelist(request, dsid):
     root_groups = common.get_root_groups()
 
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_dataset_documentation(request, dsid):
     dsid = common.format_dataset_id(dsid)
     json = common.get_dataset_documentation(dsid)
@@ -173,7 +173,7 @@ def get_dataset_documentation(request, dsid):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_dataset_software(request, dsid):
     dsid = common.format_dataset_id(dsid)
     json = common.get_dataset_software(dsid)
@@ -267,7 +267,7 @@ def get_datasets(request):
     json = common.get_all_datasets()
     return JsonResponse({'data':json})
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_summary(request, dsid):
     json = rdams.main("-get_summary",dsid)
     return JsonResponse(json)
@@ -303,12 +303,12 @@ def print_help(request):
     json = rdams.main("-print_help")
     return JsonResponse(json)
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_control_file_template(request, dsid):
     json = rdams.main("-get_control_file_template", dsid)
     return JsonResponse(json)
 
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_control_file_template_old(request, dsid):
     json = rdams.main("-get_control_file_template_old", dsid)
     return JsonResponse(json)
@@ -436,7 +436,7 @@ def get_email_from_token(request):
     tags=['abstract']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_abstract(request, dsid):
     """Get abstract text for a given dataset"""
     dsid = common.format_dataset_id(dsid)
@@ -502,7 +502,7 @@ def get_abstract(request, dsid):
     tags=['acknowledgment']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_acknowledgement(request, dsid):
     """Get acknowledgement information for a given dataset"""
     dsid = common.format_dataset_id(dsid)
@@ -615,7 +615,7 @@ def get_acknowledgement(request, dsid):
     tags=['temporal']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_temporal(request, dsid):
     """Get temporal coverage information including start date, end date, and time range for a given dataset"""
     dsid = common.format_dataset_id(dsid)
@@ -841,7 +841,7 @@ def get_variables(request, dsid):
     tags=['publications']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_publications(request, dsid):
     """Get publications information for a given dataset"""
     dsid = common.format_dataset_id(dsid)
@@ -912,7 +912,7 @@ def get_publications(request, dsid):
     tags=['data_license']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_data_license(request, dsid):
     """Get licensing information for a given dataset"""
     dsid = common.format_dataset_id(dsid)
@@ -979,7 +979,7 @@ def get_data_license(request, dsid):
     tags=['data_types']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_data_types(request, dsid):
     """Get types of data contained in a given dataset"""
     dsid = common.format_dataset_id(dsid)
@@ -1070,7 +1070,7 @@ def get_data_types(request, dsid):
     tags=['data_formats']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_data_formats(request, dsid):
     """Get available file formats and data structure information for a given dataset"""
     dsid = common.format_dataset_id(dsid)
@@ -1236,7 +1236,7 @@ def get_data_formats(request, dsid):
     tags=['spatial']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_spatial_coverage(request, dsid):
     """Get spatial coverage for a given dataset"""
     dsid = common.format_dataset_id(dsid)
@@ -1328,7 +1328,7 @@ def get_spatial_coverage(request, dsid):
     tags=['contributors']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_contributors(request, dsid):
     """Get information about dataset contributors"""
     dsid = common.format_dataset_id(dsid)
@@ -1414,7 +1414,7 @@ def get_contributors(request, dsid):
     tags=['volume']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_total_volume(request, dsid):
     """Get dataset size information including total volume"""
     dsid = common.format_dataset_id(dsid)
@@ -1500,7 +1500,7 @@ def get_total_volume(request, dsid):
     tags=['resources']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_related_resources(request, dsid):
     """Get related resources for a given dataset"""
     dsid = common.format_dataset_id(dsid)
@@ -1586,7 +1586,7 @@ def get_related_resources(request, dsid):
     tags=['related_datasets']
 )
 @api_view(['GET'])
-@dynamic_prefix_cache_page(60*60*24*7, get_path)
+#@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_related_datasets(request, dsid):
     """Get other datasets that are related to or derived from this dataset"""
     dsid = common.format_dataset_id(dsid)
