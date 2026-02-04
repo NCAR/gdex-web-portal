@@ -12,7 +12,7 @@ register = template.Library()
 @register.inclusion_tag('unity/decs_staff.html', takes_context=True)
 def decs_staff(context):
     return {
-        'decs_staff': DecsStaff.objects.all(),
+        'decs_staff': DecsStaff.objects.all().order_by('name'),
         'request': context['request'],
     }
 

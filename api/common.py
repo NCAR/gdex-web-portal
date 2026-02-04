@@ -1440,6 +1440,16 @@ def get_staff():
         i['email'] = i['email']+'@ucar.edu'
     return data_dict
 
+def get_staff_dsid(dsid):
+    """Get DECS employee information for a specific dataset."""
+    init_connection()
+    cursor.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp inner join dsowner on dssgrp.logname=dsowner.specialist where dsowner.dsid=%s",(dsid,))
+    data = cursor.fetchall()
+    data_dict = to_dict(('first_name','last_name','officeno','phoneno','email'),data)
+    for i in data_dict:
+        i['email'] = i['email']+'@ucar.edu'
+    return data_dict
+
 def check_user_exists(email):
     email.strip()
     init_connection()
@@ -1531,11 +1541,13 @@ def get_all_datasets():
     cursor.execute('select dsid,title from dataset')
     data = cursor.fetchall()
     return data
+
 def get_number_of_datasets():
     """Get the total number of datasets in the GDEX
     """
-    con,cur =  init_connection_new()
-    query = "select count(dsid) from dataset"
+    con,cur =  init_connection_new(config=get_search_config())
+    cond = "(d.type = 'P' or d.type = 'H') and d.dsid < 'd999000'"
+    query = "select count(distinct dsid) from search.datasets as d where " + cond
     cur.execute(query)
     response = cur.fetchone()
     close_connection(con,cur)
@@ -1546,11 +1558,12 @@ def get_gdex_volume():
     Returns value in PB
     """
     con,cur =  init_connection_new()
-    query = "select sum(dweb_size) from dataset"
+    cond = "(s.type = 'P' or s.type = 'H') and s.dsid < 'd999000'"
+    query = "select sum(d.dweb_size)/1.e15 from dataset as d left join search.datasets as s on d.dsid = s.dsid where " + cond
     cur.execute(query)
     response = cur.fetchone()
     close_connection(con,cur)
-    return math.floor(response[0]/1000/1000/1000/1000/1000)
+    return float(round(response[0], 2))
 
 def get_total_requests(since=None):
     if since is None:
@@ -1563,7 +1576,7 @@ def get_total_requests(since=None):
     return response[0]
 
 
-def get_top_datasets(top=6):
+def get_top_datasets(top=15):
     rankings_file = '/data/local/gdexweb/media/metrics/rankings/rankingsYear.json'
     try:
         rankings = json.load(open(rankings_file))
@@ -1573,7 +1586,7 @@ def get_top_datasets(top=6):
         print(e)
         return 'Unknown'
 
-def get_AI_datasets(limit=8):
+def get_AI_datasets(limit=50):
     con,cur = init_connection_new(config=get_WGrML_config())
     query = f"select dsid,title from search.datasets where ai_ready = 'Y' limit {limit};"
     cur.execute(query)
@@ -1612,6 +1625,30 @@ def get_number_of_unique_users(since=None):
             total_unique_users += year_month['Total Number of Unique Users']
 
     return total_unique_users
+
+def get_number_of_unique_users_db(since=None):
+    """Get total number of unique IPs from the database"""
+    if since is None:
+        since = datetime.now() - timedelta(days=366) # One year ago
+    assert isinstance(since, datetime)
+
+    cur_year = datetime.now().year
+    last_year = since.year
+    last_month = since.month
+    last_day = since.day
+    last_ymd = f'{last_year}-{last_month}-{last_day}'
+
+    con,cur =  init_connection_new()
+
+    query = f"select count(distinct(ip)) from allusage_{last_year} where date > '{last_ymd}'" + \
+    f" union all select count(distinct(ip)) from allusage_{cur_year}"
+    cur.execute(query)
+    res = cur.fetchall()
+    close_connection(con,cur)
+    total_IPs = 0
+    for i in res:
+        total_IPs += int(i[0])
+    return total_IPs
 
 
 def get_volume_downloaded_db(since=None):

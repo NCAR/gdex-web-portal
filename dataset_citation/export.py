@@ -29,9 +29,9 @@ def get_ds_data(dsid):
 
 def get_publisher(ds_title):
     if ds_title[0:26] == "ICARUS Chamber Experiment:":
-        return metaformat_settings.ARCHIVE['pub_name']['icarus']
+        return metaformat_settings.ARCHIVE['pub_name']['icarus']['name']
 
-    return metaformat_settings.ARCHIVE['pub_name']['default']
+    return metaformat_settings.ARCHIVE['pub_name']['default']['name']
 
 
 def create_bibtex(dsid):
@@ -55,19 +55,24 @@ def create_bibtex(dsid):
                 yield " {{{name}}}".format(name=author[1])
             else:
                 parts = author[1].split(" > ")
-                yield " {{{name}}}".format(name=parts.back())
+                yield " {{{name}}}".format(name=parts[-1])
 
         yield '",\n'
         yield "  title = {{{{{title}}}}},\n".format(title=ds_data[0])
         yield '  publisher = "{}",\n'.format(get_publisher(ds_data[0]))
         yield '  address = "Boulder, CO",\n'
         yield "  year = {},\n".format(ds_data[2].year)
-        if len(ds_data[3]) > 0:
+        if ds_data[3] is not None and len(ds_data[3]) > 0:
             yield '  doi = "{}"\n'.format(ds_data[3].replace("_", "\\{_}"))
+            yield '  url = "{}"\n'.format(
+                    os.path.join("https://",
+                                 metaformat_settings.DOI_DOMAIN, ds_data[3]))
         else:
             yield '  url = "{}"\n'.format(
-                    os.path.join(metaformat_settings.ARCHIVE['datasets_url'],
-                                 dsid))
+                    os.path.join("https://",
+                                 metaformat_settings.ARCHIVE['domain'],
+                                 metaformat_settings.ARCHIVE['datasets_path'],
+                                 dsid, ""))
 
         yield "}\n"
     except Exception:
@@ -90,7 +95,7 @@ def create_ris(dsid):
                 "<summary>" + ds_data[1] + "</summary>",
                 wrapLength=80, indentLength=6).replace("\n", "\r\n").lstrip()
         yield "Provider: {}\r\n".format(
-                metaformat_settings.ARCHIVE['pub_name']['default'])
+                metaformat_settings.ARCHIVE['pub_name']['default']['name'])
         yield "Tagformat: ris\r\n"
         yield "\r\n"
         yield "TY  - DATA\r\n"
@@ -105,19 +110,22 @@ def create_ris(dsid):
                 yield "AU  - {}\r\n".format(author[1])
             else:
                 parts = author[1].split(" > ")
-                yield "AU  - {}\r\n".format(parts.back())
+                yield "AU  - {}\r\n".format(parts[-1])
 
         yield "T1  - {}\r\n".format(ds_data[0])
         yield "AB  - {}\r\n".format(abstract)
         yield "PY  - {}\r\n".format(ds_data[2].year)
-        if len(ds_data[3]) > 0:
+        if ds_data[3] is not None and len(ds_data[3]) > 0:
             yield "DO  - {}\r\n".format(ds_data[3])
             yield "UR  - {}\r\n".format(
-                    os.path.join(metaformat_settings.DOI_DOMAIN, ds_data[3]))
+                    os.path.join("https://",
+                                 metaformat_settings.DOI_DOMAIN, ds_data[3]))
         else:
             yield "UR  - {}\r\n".format(
-                    os.path.join(metaformat_settings.ARCHIVE['datasets_url'],
-                                 dsid))
+                    os.path.join("https://",
+                                 metaformat_settings.ARCHIVE['domain'],
+                                 metaformat_settings.ARCHIVE['datasets_path'],
+                                 dsid, ""))
 
         yield "PB  - {}\r\n".format(get_publisher(ds_data[0]))
         yield "CY  - Boulder, CO\r\n"

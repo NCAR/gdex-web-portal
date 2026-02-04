@@ -330,6 +330,7 @@ def format_as_bibliography(list, **kwargs):
         markup = kwargs['markup']
 
     for item in list:
+        item = item['doi']
         authors = authors_from_list(item['authors'])
         if len(authors) > 0:
             bib_entry = (
@@ -342,7 +343,7 @@ def format_as_bibliography(list, **kwargs):
                         " (Eds.), " + do_title_markup(bc['title'],
                                                       markup=markup) +
                         " (pp. " + bc['pages'] + "). " + bc['publisher'] +
-                        ". https://doi.org/" + item['doi'])
+                        ". https://doi.org/" + item['ID'])
             elif 'journal' in item:
                 j = item['journal']
                 bib_entry += do_title_markup(j['title'], markup=markup)
@@ -354,7 +355,7 @@ def format_as_bibliography(list, **kwargs):
                 if len(j['pages']) > 0:
                     bib_entry += ", " + j['pages']
 
-                bib_entry += ". https://doi.org/" + item['doi']
+                bib_entry += ". https://doi.org/" + item['ID']
             elif 'publication' in item:
                 p = item['publication']
                 bib_entry += do_title_markup(p['title'], markup=markup)
@@ -366,7 +367,7 @@ def format_as_bibliography(list, **kwargs):
                 if len(p['pages']) > 0:
                     bib_entry += ", " + p['pages']
 
-                bib_entry += ". https://doi.org/" + item['doi']
+                bib_entry += ". https://doi.org/" + item['ID']
 
             bib_list.append(bib_entry)
 

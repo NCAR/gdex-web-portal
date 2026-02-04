@@ -64,6 +64,13 @@ def get_staff(request):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
+def get_staff_dsid(request, dsid):
+    dsid = common.format_dataset_id(dsid)
+    json = common.get_staff_dsid(dsid)
+    response = rda_r.RDA_Response()
+    response.add_data(json)
+    return JsonResponse(response.get_json())
+
 def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
     """Helper function to handle common dataset response pattern
     Args:
@@ -127,9 +134,9 @@ def get_assembled_groups(request, dsid, gindex=None):
         page = 0
     logger.debug("dsid: {}, page: {}, fl_source: {}, filter_wfile: {}".format(dsid, page, fl_source, filter_wfile))
     if gindex is None:
-    	json = common.assemble_root_group_filelist(dsid, page, fl_source)
+        json = common.assemble_root_group_filelist(dsid, page, fl_source)
     else:
-    	json = common.assemble_filelist(dsid, gindex, page, fl_source, filter_wfile)
+        json = common.assemble_filelist(dsid, gindex, page, fl_source, filter_wfile)
     response.add_data(json)
     return JsonResponse(response.get_json())
 
@@ -195,7 +202,7 @@ def generate_notebook(request):
 
     b.add_markdown_block(" # Notebook for Downloading GDEX Data.")
     b.add_code_block(
-        "import sys, os",
+        "import os",
         "import requests")
 
     # Add quotes to element so each file will have it's own line
@@ -209,10 +216,10 @@ def generate_notebook(request):
     b.add_markdown_block(" ## Now to download the files")
 
     b.add_code_block("for file in filelist:",
-                     "    filename = (save_dir + file).strip()",
+                     "    filename = (os.path.join(save_dir, os.path.basename(file))).strip()",
                      "    print('Downloading', file)",
-                     "    req = requests.get(filename, allow_redirects=True)",
-                     "    open(os.path.basename(filename), 'wb').write(req.content)")
+                     "    req = requests.get(file, allow_redirects=True)",
+                     "    open(filename, 'wb').write(req.content)")
 
     b.add_markdown_block("### Once you have downloaded the data, the next part can help you plot it.")
     b.add_markdown_block("In order to plot this data, you may need to install some libraries. The easiest way to do this is to use conda or pip, however any method of getting the following libraries will work.")
@@ -326,6 +333,11 @@ def get_req_files_old(request, rindex):
 def volume_downloaded(request):
     volume = common.get_volume_downloaded_db()
     return JsonResponse({'volume':volume})
+
+@cache_page(4 * 24 * 60 * 60) # cache for 4 days
+def unique_users(request):
+    ips = common.get_number_of_unique_users_db()
+    return JsonResponse({'ips':ips})
 
 def globus_download(request, rindex, endpoint):
     json = rdams.main("-globus_download", rindex, endpoint)

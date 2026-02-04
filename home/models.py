@@ -16,6 +16,23 @@ from wagtail.admin.panels import (
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
+class GDEXPage(Page):
+    """ Subclass of wagtail.models.Page for GDEX pages to share common fields """
+
+    # explicitly define the reverse relation name so this page can be inherited
+    page_ptr = models.OneToOneField(
+        Page,
+        on_delete=models.CASCADE,
+        parent_link=True,
+        related_name='%(app_label)s_%(class)s_related',
+    )
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
+
+    content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
+    ]
+
 class NewsAuthorOrderable(Orderable):
     """ This allows us to select one or more news authors from snippets """
     page = ParentalKey("NewsPage", related_name="news_authors")
@@ -70,7 +87,7 @@ class DecsStaff(models.Model):
         help_text='DECS staff member full name',
     )
     email = models.EmailField(
-        max_length=100, 
+        max_length=100,
         default='rdahelp@ucar.edu',
     )
     image = models.ForeignKey(
@@ -167,8 +184,14 @@ class AlertMessage(models.Model):
         choices=LEVEL_CHOICES,
         default=INFO,
     )
+    action_label = models.CharField(
+        max_length=100,
+        default='Learn More',
+        blank=True,
+        help_text='Specify label for related link or URL'
+    )
     related_url = models.URLField(
-        blank=True, 
+        blank=True,
         null=True,
         help_text='Optional.  Related page takes precedence over related URL.',
     )
@@ -188,7 +211,7 @@ class AlertMessage(models.Model):
             [
                 FieldPanel("name"),
                 FieldPanel("message"),
-                FieldPanel("level"),         
+                FieldPanel("level"),
             ],
             heading="Alert name, message, and level",
         ),
@@ -196,6 +219,7 @@ class AlertMessage(models.Model):
             [
                 PageChooserPanel("related_page"),
                 FieldPanel("related_url"),
+                FieldPanel("action_label"),
             ],
             heading="Related URL or page",
         ),
@@ -219,9 +243,9 @@ class AlertMessage(models.Model):
 class HomePage(Page):
     tagline = models.CharField(max_length=100, blank=False, default="")
     welcome = RichTextField(blank=False, default="")
-    search_box_title = models.CharField(max_length=255, blank=False, default="", 
+    search_box_title = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Search Box Title")
-    search_box_placeholder = models.CharField(max_length=255, blank=False, default="", 
+    search_box_placeholder = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Search Box Placeholder")
     card_1_title = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Title")
@@ -321,16 +345,16 @@ class Card(Orderable, ClusterableModel):
         related_name='+'
     )
     link = models.URLField(
-        blank=True, 
+        blank=True,
         null=True,
         verbose_name="External link",
         help_text="Choose either Related Page, External Link, or Internal link",
     )
     internal_link = models.CharField(
-        verbose_name="internal link", 
+        verbose_name="internal link",
         max_length=100,
-        null=True, 
-        blank=True, 
+        null=True,
+        blank=True,
         default="",
         help_text="Choose either Related Page, External Link, or Internal link.  Internal link can include a #hash or querystring appended to the URL.",
     )
@@ -350,7 +374,7 @@ class Card(Orderable, ClusterableModel):
     )
     text = RichTextField(
         features=['h2', 'h3', 'h4', 'bold', 'italic', 'ol', 'ul', 'hr', 'link', 'document-link', 'image', 'embed', 'code', 'blockquote'],
-        blank=False, 
+        blank=False,
         default="",
         verbose_name="Body Text")
 
@@ -368,8 +392,10 @@ class Card(Orderable, ClusterableModel):
         FieldPanel('text'),
         InlinePanel('taxonomyterm', label="Taxonomy Terms")
     ]
-    
+
 class GenericPage(Page):
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
     intro = RichTextField(blank=True, default="")
     sidebar = models.BooleanField(default=True)
     table_of_contents = models.BooleanField(default=False)
@@ -382,22 +408,25 @@ class GenericPage(Page):
 
     content_panels = Page.content_panels + [
     #    StreamFieldPanel('page_options'),
+        FieldPanel('menu_title'),
         FieldPanel('sidebar'),
         FieldPanel('table_of_contents'),
         FieldPanel('intro'),
     	InlinePanel('cards', label='Cards'),
-       
     ]
 
 class StaffPage(Page):
     # Database fields
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
     body = RichTextField(blank=True)
     mission = RichTextField(blank=True)
     cts_text = RichTextField(blank=True)
     additional_information = RichTextField(blank=True)
- 
+
     # Editor panels configuration
     content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
         FieldPanel('body', classname='full'),
         FieldPanel(
             'mission',
@@ -410,12 +439,15 @@ class StaffPage(Page):
         ),
         FieldPanel('additional_information', classname='full'),
     ]
-    
+
 class DocumentationPage(Page):
     header = models.CharField(max_length=100, blank=False, default="")
     sidebar = models.BooleanField(default=True)
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
 
     content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
         FieldPanel('sidebar'),
         InlinePanel(
             'links',
@@ -551,7 +583,7 @@ class NewsPage(Page):
                     return None
                 else:
                     return siblings[(i+1)]
-        
+
     def get_prev_sibling(self):
         siblings = list(self.get_siblings().live().specific())
         siblings.sort(key=lambda k: k.post_date)
@@ -568,10 +600,13 @@ class NewsPage(Page):
 class NewsHome(Page):
     subpage_types = [ 'home.NewsPage' ]
     title_description = RichTextField(blank=True)
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
     content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
         FieldPanel('title_description'),
     ]
-    
+
     def get_recent_posts(self, num=6):
         """ Returns the most recent news posts (default 6)"""
 
@@ -580,11 +615,11 @@ class NewsHome(Page):
         return recent_posts
 
     def get_older_posts(self, num=6):
-        """ Returns news posts older than the most num recent posts 
+        """ Returns news posts older than the most num recent posts
             (default num=6)
         """
 
-        older_posts = NewsPage.objects.live().order_by('post_date').reverse()[num:] 
+        older_posts = NewsPage.objects.live().order_by('post_date').reverse()[num:]
 
         year_sorted_posts = {}
         for post in older_posts:
@@ -596,18 +631,24 @@ class NewsHome(Page):
         return year_sorted_posts
 
 class MetricsPage(Page):
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
     body = RichTextField(blank=True)
     content_panels = Page.content_panels + [
-    FieldPanel('body', classname='full'),
+        FieldPanel('menu_title'),
+        FieldPanel('body', classname='full'),
     ]
 
 class RedirectPage(Page):
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+        help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
     redirect_url = models.URLField(
         blank=False,
         null=False,
         verbose_name="Redirect URL",
     )
     content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
         FieldPanel('redirect_url'),
     ]
 

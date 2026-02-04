@@ -5,6 +5,7 @@ from dataaccess.views import DataAccessAPIView
 urlpatterns = [
     path('paramsummary/<dsid>/', views.param_summary, name='paramsummary'),
     path(r'get_staff/', views.get_staff),
+    path(r'get_staff/<dsid>/', views.get_staff_dsid),
     path(r'get_datasets/', views.get_datasets),
     path(r'metadata/<dsid>/', views.get_metadata ),
     path(r'summary/<dsid>/', views.get_summary ),
@@ -26,6 +27,7 @@ urlpatterns = [
 
     # Metrics
     path(r'metrics/volume_downloaded/', views.volume_downloaded ),
+    path(r'metrics/unique_users/', views.unique_users ),
 
     # Notebook script
     path(r'generate_notebook', views.generate_notebook),

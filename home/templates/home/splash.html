@@ -97,27 +97,30 @@
 <hr>
 <div id="list" class="component list mt-3">
     <h2 class='text-center'><i class="fa-solid fa-robot pe-1"></i>AI-Ready Datasets</h2>
-
+    <div style='height:34em; overflow:auto'>
     {% for i in ai_datasets %}
-    <div class="list-item p-3">
-            <a href=/datasets/{{i.0}}>
-            <div>{{i.1}}</div>
-            </a>
-    </div>
+       <div class="list-item p-3">
+               <a href=/datasets/{{i.0}}>
+               <div>{{i.1}}</div>
+               </a>
+       </div>
     {% endfor %}
+    </div>
 </div>
 <hr>
 <div id="list" class="component list mt-3">
     <h2 class='text-center'><i class="fa-solid fa-thumbs-up pe-1"></i>Popular Datasets</h2>
 
+    <div style='height:34em; overflow:auto'>
     {% for i in top_datasets %}
 
-    <div class="list-item p-3">
-            <a href=/datasets/{{i.dataset}}>
-            <div>#{{ forloop.counter }}.  {{i.OName}}</div>
-            </a>
-    </div>
+      <div class="list-item p-3">
+              <a href=/datasets/{{i.dataset}}>
+              <div>#{{ forloop.counter }}.  {{i.OName}}</div>
+              </a>
+      </div>
     {% endfor %}
+    </div>
 </div>
 
     <!-- 
