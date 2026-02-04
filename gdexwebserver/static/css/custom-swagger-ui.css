@@ -2,3 +2,15 @@ code {
   background: #333333 !important;
   color: #ffffff !important;
 }
+.ncar code {
+  border: none !important;
+}
+table td,
+table th,
+.table td,
+.table th {
+  border: none !important;
+}
+.ncar thead th {
+  background-color: transparent !important;
+}
