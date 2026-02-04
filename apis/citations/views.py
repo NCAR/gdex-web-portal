@@ -219,7 +219,7 @@ def minter(minter, query_dict, **kwargs):
 
     else:
         query = ("select distinct d.publisher, d.asset_type from "
-                 "citation.data_citations_ucar as c left join "
+                 "citation.data_citations" + minter + " as c left join "
                  "citation.doi_data as d on d.DOI_data = c.DOI_data")
         cursor.execute(query)
         res = cursor.fetchall()

@@ -122,14 +122,18 @@ def export_citation(request, dsid, **kwargs):
                         "")
 
             dagger = '<font color="red">&dagger;</font>'
+            if ds_data[0][0:26] == "ICARUS Chamber Experiment:":
+                publisher = metaformat_settings.ARCHIVE['pub_name']['icarus']
+            else:
+                publisher = metaformat_settings.ARCHIVE['pub_name']['default']
+
             return HttpResponse(
                     e['template'].substitute(
                             authors=authors,
                             pub_year=ds_data[1].year,
                             update_frequency=update_frequency,
                             title=ds_data[0],
-                            publisher=metaformat_settings.ARCHIVE[
-                                    'pub_name']['default'],
+                            publisher=publisher['name'],
                             url=url, dagger=dagger))
         except Exception as err:
             print("CITATION EXPORT ERROR: '" + str(err) + "'")

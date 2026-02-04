@@ -1448,6 +1448,16 @@ def get_staff():
         i['email'] = i['email']+'@ucar.edu'
     return data_dict
 
+def get_staff_dsid(dsid):
+    """Get DECS employee information for a specific dataset."""
+    init_connection()
+    cursor.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp inner join dsowner on dssgrp.logname=dsowner.specialist where dsowner.dsid=%s",(dsid,))
+    data = cursor.fetchall()
+    data_dict = to_dict(('first_name','last_name','officeno','phoneno','email'),data)
+    for i in data_dict:
+        i['email'] = i['email']+'@ucar.edu'
+    return data_dict
+
 def check_user_exists(email):
     email.strip()
     init_connection()
@@ -1470,6 +1480,17 @@ def add_new_user(email, first_name, last_name):
             ('','','1',email,'0','orcid', '', email, first_name, last_name))
     conn.commit()
     return True
+
+def is_superuser(token):
+    """Returns whether a given token is associated with a superuser."""
+    con,cur = init_connection_new(get_wagtail_config())
+    query = 'select is_superuser from auth_user left join login_usertoken on auth_user.id = login_usertoken.user_id where value=%s'
+    cur.execute(query, (token,))
+    data = cur.fetchall()
+    close_connection(con,cur)
+    if len(data) == 0:
+        return False
+    return data[0][0]
 
 def get_email_from_token(token):
     """Returns email given token."""
@@ -1528,11 +1549,13 @@ def get_all_datasets():
     cursor.execute('select dsid,title from dataset')
     data = cursor.fetchall()
     return data
+
 def get_number_of_datasets():
     """Get the total number of datasets in the GDEX
     """
-    con,cur =  init_connection_new()
-    query = "select count(dsid) from dataset"
+    con,cur =  init_connection_new(config=get_search_config())
+    cond = "(d.type = 'P' or d.type = 'H') and d.dsid < 'd999000'"
+    query = "select count(distinct dsid) from search.datasets as d where " + cond
     cur.execute(query)
     response = cur.fetchone()
     close_connection(con,cur)
@@ -1543,11 +1566,12 @@ def get_gdex_volume():
     Returns value in PB
     """
     con,cur =  init_connection_new()
-    query = "select sum(dweb_size) from dataset"
+    cond = "(s.type = 'P' or s.type = 'H') and s.dsid < 'd999000'"
+    query = "select sum(d.dweb_size)/1.e15 from dataset as d left join search.datasets as s on d.dsid = s.dsid where " + cond
     cur.execute(query)
     response = cur.fetchone()
     close_connection(con,cur)
-    return math.floor(response[0]/1000/1000/1000/1000/1000)
+    return float(round(response[0], 2))
 
 def get_total_requests(since=None):
     if since is None:

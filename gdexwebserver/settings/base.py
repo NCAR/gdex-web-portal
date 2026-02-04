@@ -256,7 +256,7 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/4.1/topics/cache/
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'BACKEND': 'api.gdex_cache.GDEX_FileBasedCache',
         'LOCATION': '/usr/local/gdexweb/cache',
     }
 }
@@ -445,7 +445,7 @@ ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '[rda.ucar.edu] '
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
