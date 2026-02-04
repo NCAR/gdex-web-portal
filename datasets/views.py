@@ -22,6 +22,7 @@ from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
                                 iso_19139, json_ld)
 
 from .utils import get_custom_subset_context, get_hostname, ng_gdex_id
+from .CodeExample import CodeExample
 from api.common import (format_dataset_id, get_request_info,
                         get_request_files, get_request_status,
                         get_request_index_from_rqstid,
@@ -678,3 +679,26 @@ def custom_subset(request, dsid):
         ctx.update({'page': d})
 
     return render(request, template, ctx)
+
+def example_view(request, dsid):
+    """Displays page to get code examples."""
+    if request.GET:
+        param = request.GET.get('param', None)
+        example_type = request.GET.get('type', None)
+        start = request.GET.get('start', None)
+        end = request.GET.get('end', None)
+        is_remote = request.GET.get('is_remote', None)
+        if is_remote:
+            is_remote = is_remote.lower() == 'true'
+        else:
+            is_remote = False
+        example_type = request.GET.get('exampletype', 'image')
+        nlat = request.GET.get('nlat', 90)
+        slat = request.GET.get('slat', -90)
+        wlon = request.GET.get('wlon', -180)
+        elon = request.GET.get('elon', 180)
+        example_obj = CodeExample(dsid, start=start, end=end, is_remote=is_remote, selected_var=param,
+                elon=elon,wlon=wlon,slat=slat,nlat=nlat, selected_type=example_type)
+        return HttpResponse(example_obj.get_code())
+    example_obj = CodeExample(dsid)
+    return render(request, "datasets/code_example.html", {'ctx':example_obj})

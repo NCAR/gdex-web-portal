@@ -772,6 +772,62 @@ def get_unique_tindex(request_index):
     tindexes = cursor.fetchall()
     return tindexes
 
+ def get_random_webfile(dsid, parameter_code=None, start_date=None, end_date=None):
+     """Gets a random webfile from dataset. optionally limit by parameter and date."""
+     init_connection(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
+     conditions = []
+     conditions_vars = []
+     grids_table = f'{dsid}_grids2'
+     webfiles_table = f'{dsid}_webfiles2'
+
+     if not parameter_code and not start_date and not end_date:
+         query = f'select id from {grids_table} left join {webfiles_table} on code=file_code order by RANDOM() limit 1;'
+         cursor.execute(query, ())
+         return cursor.fetchall()[0][0] # should only return 1 entry, so take first
+
+     if parameter_code:
+         conditions.append('parameter=%s')
+         conditions_vars.append(parameter_code)
+     if start_date:
+         conditions.append(f'{webfiles_table}.start_date>%s ')
+         conditions_vars.append(start_date)
+     if end_date:
+         conditions.append(f'{webfiles_table}.end_date<%s')
+         conditions_vars.append(end_date)
+
+     conditions_str = " AND ".join(conditions)
+
+     query = f'select id from {grids_table} left join {webfiles_table} on code=file_code WHERE {conditions_str} order by RANDOM() limit 1;'
+     print(query)
+     print(conditions_vars)
+     cursor.execute(query, tuple(conditions_vars))
+     result = cursor.fetchall()
+     print(result)
+     if len(result) > 0:
+         return result[0] # should only return 1 entry, so take first
+     return None
+
+def get_time_range(dsid):
+    """Get the temporal range for a given dataset
+
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+
+    Returns (tuple):
+        [0]: start date in datetime format
+        [1]: end date in datetime format
+    """
+    con,cur = init_connection_new(get_wagtail_config())
+    query = 'select temporal from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con,cur)
+    start_date = data['full'].split(' to ')[0]
+    start_date = datetime.strptime(start_date.split('+')[0], '%Y-%m-%d %H:%M ')
+    end_date = data['full'].split(' to ')[1]
+    end_date = datetime.strptime(end_date.split('+')[0], '%Y-%m-%d %H:%M ')
+    return (start_date, end_date)
+
 def get_tindex_from_webfile(wfile, dsid):
     """Get the tindex of a webfile"""
     dsid = format_dataset_id(dsid)
