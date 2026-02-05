@@ -807,6 +807,30 @@ def get_random_webfile(dsid, parameter_code=None, start_date=None, end_date=None
         return result[0] # should only return 1 entry, so take first
     return None
 
+def get_arco_variables(dsid):
+    """Get Arco Variables"""
+    import csv
+    from io import StringIO
+    con,cur = init_connection_new()
+    wfile_table=f'wfile_{dsid}'
+    assert len(wfile_table) == 13
+    match_str = '%.csv'
+    query = f'select wfile from {wfile_table} where gindex=-2 and wfile like %s'
+    cur.execute(query, (match_str,))
+    result = cur.fetchall()
+    close_connection(con,cur)
+    csv_files = [i[0] for i in result]
+    for _file in csv_files:
+        if 'posix' in _file:
+
+            url = f'https://{settings.GLOBUS_DATA_DOMAIN}/{dsid}/{_file}'
+            content = requests.get(url).content
+            reader = csv.reader(StringIO(content.decode()))
+            res = []
+            for row in reader:
+                res.append(row)
+    return res
+
 def get_time_range(dsid):
     """Get the temporal range for a given dataset
 

@@ -11,13 +11,19 @@
 {% endif %}
 
 {% if has_arco %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
  <div class="row gx-0 mb-2 mb-md-1">
      <div class="col-12 col-md-2 dataset-label">Quick Start:</div>
-     <div class="col-12 col-md-10"><code>
+     <div class="col-12 col-md-10">
+         <pre>
+         <code>
              import xarray
              ds = open_dataset('filename', engine='kerchunk')
              ds[varname]
-         </code></div>
+         </code>
+         </pre></div>
  </div>
 {% endif %}
 
