@@ -17,7 +17,38 @@
  <div class="row gx-0 mb-2 mb-md-1">
      <div class="col-12 col-md-2 dataset-label">Quick Start:</div>
      <div class="col-12 col-md-10">
-         <pre>
+        <pre style='position:relative'>
+         <div id='search_container' style='position:absolute; right:100px'>
+         <!-- Search Bar Input -->
+         <input type="text" id="searchBar" placeholder="Search for items...">
+
+         <script>
+             const searchInput = document.getElementById('searchBar');
+             searchInput.addEventListener('input', (event) => {
+                 const query = event.target.value;
+
+                 // Logic to execute on keystroke
+                 console.log("Searching for:", query);
+                 $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+query, { }, function(data) {
+                     // 'data' is already a parsed JS object/array
+                     console.log("Parsed Response:", data);
+
+                     // Example: Iterate through a results array
+                     $.each(data.results, function(index, item) {
+                         console.log("Result Item:", item.title);
+                     });
+                 })
+                     .fail(function() {
+                         console.error("Error fetching data");
+                     });
+
+
+             });
+         </script>
+         test123
+
+         </div>
+
          <code>
              import xarray
              ds = open_dataset('filename', engine='kerchunk')

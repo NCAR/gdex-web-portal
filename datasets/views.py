@@ -93,6 +93,10 @@ def description(request, dsid):
             ctx['page'].acknowledgement.encode("latin-1")
                                        .decode("unicode-escape"))
     ctx['has_arco'] = api.common.has_arco(ctx['page'].dsid)
+    if ctx['has_arco']:
+        tmp_vars = api.common.get_arco_variables(ctx['page'].dsid)
+        ctx['arco_assets'] = tmp_vars[1:]
+        ctx['arco_headers'] = tmp_vars[0]
     return render(request, template, ctx)
 
 

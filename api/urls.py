@@ -22,6 +22,8 @@ urlpatterns = [
     path(r'get_req_files/<rindex>/', views.get_req_files ),
     path(r'get_req_files_old/<rindex>/', views.get_req_files_old ),
     path(r'has_arco/<dsid>/', views.has_arco),
+    path(r'arco_vars/<dsid>/', views.get_arco_variables),
+    path(r'search_arco_vars/<dsid>/<search_text>', views.search_arco_variables),
     path(r'globus_download/<rindex>/<endpoint>', views.globus_download ),
     path(r'purge/<rindex>/', views.purge ),
     path(r'clear_cache/<dsid>/', views.clear_cache),

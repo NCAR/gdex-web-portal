@@ -11,12 +11,14 @@ from django.views.decorators.csrf import csrf_exempt
 from . import rdams
 from . import common
 from . import RDA_Response as rda_r
+import requests
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -140,11 +142,33 @@ def get_assembled_groups(request, dsid, gindex=None):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
+@cache_page(4 * 24 * 60 * 60) # cache for 4 days
 def has_arco(request, dsid):
     """Return true if arco datasets available"""
     result = common.has_arco(dsid)
     response = rda_r.RDA_Response()
     response.add_data({'has_arco':result})
+    return JsonResponse(response.get_json())
+
+@cache_page(4 * 24 * 60 * 60) # cache for 4 days
+def get_arco_variables(request, dsid)
+    result = common.get_arco_variables(dsid)
+    response = rda_r.RDA_Response()
+    response.add_data({result})
+    return JsonResponse(response.get_json())
+
+def search_arco_variables(request, dsid, search_text):
+    data = common.get_arco_variables(dsid)
+    header = data['data'][0]
+    _vars = data['data'][1:]
+    matches = []
+    for i in _vars:
+        for j in i:
+            if search_text.lower() in j.lower():
+                matches.apend(i)
+                break
+    response = rda_r.RDA_Response()
+    response.add_data(matches)
     return JsonResponse(response.get_json())
 
 def get_child_groups(request, dsid, gindex):

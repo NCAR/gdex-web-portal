@@ -811,6 +811,9 @@ def get_arco_variables(dsid):
     """Get Arco Variables"""
     import csv
     from io import StringIO
+    csv_info = check_cache('arco_vars', dsid )
+    if csv_info is not None:
+        return csv_info
     con,cur = init_connection_new()
     wfile_table=f'wfile_{dsid}'
     assert len(wfile_table) == 13
@@ -829,6 +832,7 @@ def get_arco_variables(dsid):
             res = []
             for row in reader:
                 res.append(row)
+    add_to_cache('arco_vars', dsid, res)
     return res
 
 def get_time_range(dsid):
