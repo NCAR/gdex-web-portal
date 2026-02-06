@@ -21,8 +21,21 @@
          <div id='search_container' style='position:absolute; right:100px'>
          <!-- Search Bar Input -->
          <input type="text" id="searchBar" placeholder="Search for items...">
+         <div id='suggestions'>
+
+         </div>
 
          <script>
+                 function update_quickstart_code(filename, engine, varname)
+                 {
+                                          code_str = `
+import xarray
+ds = xarray.open_dataset('${filename}', engine='${engine}')
+ds['${varname}']
+                `
+                 $('#quickstart').html(hljs.highlight(code_str,  { language: 'python' }).value);
+
+                                  }
              const searchInput = document.getElementById('searchBar');
              searchInput.addEventListener('input', (event) => {
                  const query = event.target.value;
@@ -32,11 +45,13 @@
                  $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+query, { }, function(data) {
                      // 'data' is already a parsed JS object/array
                      console.log("Parsed Response:", data);
+                     console.log("number of results:", data.data.length);
+                update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1])
 
                      // Example: Iterate through a results array
-                     $.each(data.results, function(index, item) {
-                         console.log("Result Item:", item.title);
-                     });
+                     //$.each(data.data, function(index, item) {
+                      //   console.log("Result Item:", item.title);
+                     //});
                  })
                      .fail(function() {
                          console.error("Error fetching data");
@@ -45,14 +60,13 @@
 
              });
          </script>
-         test123
 
          </div>
 
-         <code>
-             import xarray
-             ds = open_dataset('filename', engine='kerchunk')
-             ds[varname]
+         <code id='quickstart'>
+import xarray
+ds = xarray.open_dataset('filename', engine='kerchunk')
+ds[varname]
          </code>
          </pre></div>
  </div>

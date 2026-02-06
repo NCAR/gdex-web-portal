@@ -151,7 +151,7 @@ def has_arco(request, dsid):
     return JsonResponse(response.get_json())
 
 @cache_page(4 * 24 * 60 * 60) # cache for 4 days
-def get_arco_variables(request, dsid)
+def get_arco_variables(request, dsid):
     result = common.get_arco_variables(dsid)
     response = rda_r.RDA_Response()
     response.add_data({result})
@@ -159,13 +159,13 @@ def get_arco_variables(request, dsid)
 
 def search_arco_variables(request, dsid, search_text):
     data = common.get_arco_variables(dsid)
-    header = data['data'][0]
-    _vars = data['data'][1:]
+    header = data[0]
+    _vars = data[1:]
     matches = []
     for i in _vars:
         for j in i:
             if search_text.lower() in j.lower():
-                matches.apend(i)
+                matches.append(i)
                 break
     response = rda_r.RDA_Response()
     response.add_data(matches)
