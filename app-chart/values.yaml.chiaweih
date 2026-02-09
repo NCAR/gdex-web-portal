@@ -1,0 +1,31 @@
+replicaCount: 1
+
+webapp:
+  name: gdex-webserver
+  group: gdex-web
+  path: /
+  tls:
+    fqdn: chiaweih.k8s.ucar.edu
+    fqdnAPI: api.chiaweih.k8s.ucar.edu
+    secretName: incommon-cert-chiaweih-gdex-webserver
+  container: 
+    image: hub.k8s.ucar.edu/chiaweih-gdex-web-portal-test/gdex-web-portal:latest
+    port: 8080
+    requests:
+      memory: 2Gi
+      cpu: 1
+    limits:
+      memory: 4Gi
+      cpu: 6
+    responseTimeout: 180
+    maxUploadSize: 60m
+  ingress:
+    ingressClassName: nginx-internal
+
+volume:
+  fs:
+    existingClaim: gdexdata
+    name: gdexdata
+    mountPath: /data
+
+testName: riley
