@@ -9,7 +9,6 @@
     <i class="fas fa-exclamation-triangle fa-lg pe-1"></i>This dataset has been removed from the archive and is no longer accessible. It has likely been superseded by a newer, improved dataset. See the abstract for more information.
 </p>
 {% endif %}
-
 {% if has_arco %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -17,52 +16,137 @@
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 <script>hljs.highlightAll();</script>
  <div class="row gx-0 mb-2 mb-md-1">
-     <div class="col-12 col-md-2 dataset-label">Quick Start:</div>
+     <div class="col-12 col-md-2 dataset-label">Quick Access:</div>
      <div class="col-12 col-md-10">
-        <pre style='position:relative'>
-         <div id='search_container' style='position:absolute; right:100px'>
-         <!-- Search Bar Input -->
-         <input type="text" id="searchBar" placeholder="Search for Variables...">
-         <div id='suggestions'>
+     <div id='search_container' class='d-flex justify-content-end'>
+      <div class='me-2' style='position:relative'>
+            <input type="text" id="searchBar" placeholder="Search for Variables...">
+     <div id="dropdown" style='postition:absolute'></div>
+      </div>
+      <div class="form-check">
+       <input class="form-check-input" type="checkbox" value="" id="onHPC">
+       <label class="form-check-label" for="onHPC">On NCAR HPC?</label>
+           </div>
+<style>
+#searchBar {
+ width:200px;
+}
+    #dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      border: 1px solid #ccc;
+      background: #fff;
+      max-height: 150px;
+      overflow-y: auto;
+      display: none;
+      z-index: 100;
+    }
+     .dropdown_option {
+      padding: 8px;
+      cursor: pointer;
+    }
 
-         </div>
+    .dropdown_option:hover {
+      background: #f0f0f0;
+</style>
 
-         <script>
-                 function update_quickstart_code(filename, engine, varname)
-                 {
-                                          code_str = `
-import xarray
-ds = xarray.open_dataset('${filename}', engine='${engine}')
-ds['${varname}']
-                `
-                 $('#quickstart').html(hljs.highlight(code_str,  { language: 'python' }).value);
+     <script>
+      function update_quickstart_code(filename, engine, varname, extras, onHPC)
+      {
 
-                                  }
-             const searchInput = document.getElementById('searchBar');
-             searchInput.addEventListener('input', (event) => {
-                 const query = event.target.value;
+          if(filename.endsWith('zarr')){
+              engine = 'zarr';
+             }
+          if(!onHPC) {
+              filename = filename.replace('/glade/campaign/collections/gdex/data/', 'https://data.gdex.ucar.edu/');
 
-                 // Logic to execute on keystroke
-                 console.log("Searching for:", query);
-                 $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+query, { }, function(data) {
-                     // 'data' is already a parsed JS object/array
-                     console.log("Parsed Response:", data);
-                     console.log("number of results:", data.data.length);
-                update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1])
+             }
+          code_str = `import xarray
+filename = '${filename}'
+ds = xarray.open_dataset(filename, engine='${engine}')
+ds['${varname}'] # ${extras}`
+          $('#quickstart').html(hljs.highlight(code_str,  { language: 'python' }).value);
 
-                     // Example: Iterate through a results array
-                     //$.each(data.data, function(index, item) {
-                      //   console.log("Result Item:", item.title);
-                     //});
-                 })
-                     .fail(function() {
-                         console.error("Error fetching data");
-                     });
-
-
+         }
+      $(document).ready(function(){
+          $('#onHPC').change(function(){
+                  var query = $('#searchBar').val();
+                  $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+query, { }, function(data) {
+                      update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'))
+                     })
              });
-         </script>
+         });
+      const searchInput = document.getElementById('searchBar');
+      searchInput.addEventListener('input', (event) => {
+          const query = event.target.value;
 
+          // Logic to execute on keystroke
+          console.log("Searching for:", query);
+          $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+query, { }, function(data) {
+              // 'data' is already a parsed JS object/array
+              console.log("Parsed Response:", data);
+              console.log("number of results:", data.data.length);
+              update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'));
+              renderOptions(data);
+             })
+
+           .fail(function() {
+               console.error("Error fetching data");
+              });
+
+
+         });
+
+
+
+
+      function renderOptions(filtered) {
+      $("#dropdown").empty();
+      console.log('creating selections');
+
+      console.log('length is' + filtered.data.length);
+      if( filtered.data.length > 0){
+             $("#dropdown").show();
+            }
+      else {
+             $("#dropdown").hide();
+            }
+      $.each(filtered.data, function (_, value) {
+             console.log(value);
+             value = value[4];
+             console.log(value);
+
+             $("<div>")
+              .addClass("dropdown_option")
+              .text(value)
+              .appendTo("#dropdown")
+          .on("click", function () {
+            $("#searchBar").val(value);
+     $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+value, { }, function(data) {
+        // 'data' is already a parsed JS object/array
+         console.log("Parsed Response:", data);
+        console.log("number of results:", data.data.length);
+           update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'));
+             })
+          });
+      });
+    }
+
+    $("#searchBar")
+      .on("focus", function () {
+       $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+query, { }, function(data) {
+        renderOptions(data);
+                    });
+      })
+
+    $(document).on("click", function (e) {
+      if (!$(e.target).closest(".container").length) {
+        $("#dropdown").hide();
+      }
+    });
+     </script>
          </div>
 
          <code id='quickstart'>
