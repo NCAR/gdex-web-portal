@@ -31,6 +31,7 @@ urlpatterns = [
     path('resources/', include('daas.urls')),
     #path('resources/submission/', include('submit.urls')),
     path('api/', include('api.urls')),
+    path('doi/', include('doi.urls')),
     path('metrics/', include('home.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('datasets/', include('datasets.urls')),
