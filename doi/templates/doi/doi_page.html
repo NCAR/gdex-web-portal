@@ -2,9 +2,26 @@
 
 {% block content %}
 <h2>GDEX DOI Resolver</h2>
-{% if not_gdex %}
+{% if error %}
 <p>
-    The DOI that you specified, <i>{{ doi }}</i> is not a GDEX DOI.
+    <font color="red">An error occurred. Please try your request again later.</font>
 </p>
+{% elif not_gdex %}
+<p>
+    The DOI that you specified, <i>{{ doi }}</i>, is not a GDEX DOI.
+</p>
+{% elif superseded %}
+<p>
+    The DOI that you specified, <i>{{ doi }}</i>, has been superseded by a new version of the data. Your options are:
+    <ul>
+        <li>Go to the <a href="/datasets/{{ dsid }}/">new version</a> of the data</li>
+        <li>Contact datahelp@ucar.edu to find out how you can get access to the <i>{{ doi }}</i> version of the data</li>
+    </ul>
+</p>
+{% elif terminated %}
+<p>
+    The DOI that you specified, <i>{{ doi }}</i>, is no longer supported by GDEX. If you have questions, please contact datahelp@ucar.edu.
+</p>
+{% else %}
 {% endif %}
 {% endblock %}
