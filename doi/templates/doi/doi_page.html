@@ -2,4 +2,9 @@
 
 {% block content %}
 <h2>GDEX DOI Resolver</h2>
+{% if not_gdex %}
+<p>
+    The DOI that you specified, <i>{{ doi }}</i> is not a GDEX DOI.
+</p>
+{% endif %}
 {% endblock %}
