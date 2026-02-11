@@ -1,7 +1,7 @@
 import psycopg2
 
 from django.conf import settings as django_settings
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 
 def resolve(request, doi):
@@ -15,6 +15,9 @@ def resolve(request, doi):
         if res is None:
             return render(request, "doi/doi_page.html",
                           {'doi': doi, 'not_gdex': True})
+
+        if res[1] == "A":
+            return redirect("/datasets/{dsid}/".format(dsid=res[0]))
 
     except Exception as err:
         return render(request, "doi/doi_page.html", {'error': str(err)})
