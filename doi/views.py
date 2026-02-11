@@ -16,13 +16,26 @@ def resolve(request, doi):
             return render(request, "doi/doi_page.html",
                           {'doi': doi, 'not_gdex': True})
 
-        if res[1] == "A":
-            return redirect("/datasets/{dsid}/".format(dsid=res[0]))
+        dsid, status = res
+        if status == "A":
+            return redirect("/datasets/{dsid}/".format(dsid=dsid))
 
-    except Exception as err:
-        return render(request, "doi/doi_page.html", {'error': str(err)})
+        if status == "H":
+            cursor.execute((
+                    "select doi from dssdb.dsvrsn where dsid = %s and status "
+                    "= 'A'"), (dsid, ))
+            res = cursor.fetchall()
+            if len(res) == 0:
+                return render(request, "doi/doi_page.html",
+                              {'doi': doi, 'terminated': True})
+
+            if len(res) > 1:
+                return render(request, "doi/doi_page.html", {'error': True})
+
+        return render(request, "doi/doi_page.html",
+                      {'doi': doi, 'dsid': dsid, 'superseded': True})
+    except Exception:
+        return render(request, "doi/doi_page.html", {'error': True})
     finally:
         if 'conn' in locals():
             conn.close()
-
-    return render(request, "doi/doi_page.html")
