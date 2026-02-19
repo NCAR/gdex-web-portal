@@ -23,5 +23,5 @@ GLOBUS_CGD_ENDPOINT_ID = "11651c26-80c2-4dac-a236-7755530731ac"
 GLOBUS_RDA_DATA_BASE_PATH = '/glade/campaign/collections/gdex/data/'
 GLOBUS_REQUEST_BASE_PATH = '/glade/campaign/collections/gdex/transfer/'
 
-GLOBUS_STRATUS_BASE_PATH = '/rda-data'
+GLOBUS_STRATUS_BASE_PATH = '/gdex-data'
 GLOBUS_CGD_BASE_PATH = '/glade/campaign/cgd'
