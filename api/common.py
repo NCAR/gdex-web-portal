@@ -823,9 +823,9 @@ def get_arco_variables(dsid):
     result = cur.fetchall()
     close_connection(con,cur)
     csv_files = [i[0] for i in result]
+    res = [['unknown','error']]
     for _file in csv_files:
-        if 'posix' in _file:
-
+        if 'http' in _file:
             url = f'https://{settings.GLOBUS_DATA_DOMAIN}/{dsid}/{_file}'
             content = requests.get(url).content
             reader = csv.reader(StringIO(content.decode()))
