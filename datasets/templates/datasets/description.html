@@ -93,8 +93,8 @@
                    if(filename.endsWith('zarr')){
                        engine = 'zarr';
                    }
-                   if(!onHPC) {
-                       filename = filename.replace('/glade/campaign/collections/gdex/data/', 'https://data.gdex.ucar.edu/');
+                   if(onHPC) {
+                       filename = filename.replace('https://data.gdex.ucar.edu/','/glade/campaign/collections/gdex/data/');
                    }
                    code_str = `import xarray
 filename = '${filename}'
