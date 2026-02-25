@@ -5,11 +5,9 @@ import os
 import psycopg2
 import re
 import requests
-import shutil
 import smtplib
 import subprocess
 import sys
-import tempfile
 
 from datetime import datetime
 from dateutil import tz
