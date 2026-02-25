@@ -52,15 +52,15 @@ def _trigger_github():
     """
     Triggers the Github Actions workflow via github repository_dispatch
     """
-    github_token = os.environ.get("PERSONAL_GITHUB_TOKEN")
-    repo = os.environ.get("JIRA_AUTO_GITHUB_REPO")
+    github_token = os.getenv("PERSONAL_GITHUB_TOKEN")
 
-    if not github_token or not repo:
-        raise ValueError("PERSONAL_GITHUB_TOKEN or JIRA_AUTO_GITHUB_REPO did not load properly")
+    #TEST
+    if not github_token:
+        raise ValueError("PERSONAL_GITHUB_TOKEN did not load properly")
     else:
-        print("Github token and repo loaded successfully")
+        print("Github token loaded successfully")
         
-    url =f"https://api.github.com/repos/{repo}/dispatches"
+    url = "https://api.github.com/repos/NCAR/gdex-jira-automation/dispatches"
 
     headers = {
     "Authorization": f"token {github_token}",
