@@ -71,7 +71,7 @@ def _trigger_github():
         "event_type": "jira-event"
     }
 
-    response = request.post(url, json=data, headers=headers)
+    response = requests.post(url, json=data, headers=headers)
     return response.status_code, response.text
 
 @method_decorator(csrf_exempt, name='dispatch')
