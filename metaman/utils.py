@@ -670,9 +670,9 @@ def read_cache(dsid, **kwargs):
         except Exception:
             return ret_list
 
-    del line[0]
+    del lines[0]
     if not kwargs['cmd']:
-        del line[0]
+        del lines[0]
 
     for line in lines:
         parts = line.strip().split("<!>")
