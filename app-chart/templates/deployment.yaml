@@ -61,7 +61,17 @@ spec:
           {{ if .Values.testName }}
           readOnly: true
           {{ end }}
-        
+        env:
+        - name: PERSONAL_GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: calie-github-token
+              key: GITHUB_TOKEN
+        - name: JIRA_AUTO_GITHUB_REPO
+          valueFrom:
+            secretKeyRef:
+              name: calie-github-repo
+              key: GITHUB_REPO
 
       volumes:
       - name: {{ .Values.volume.fs.name }}
