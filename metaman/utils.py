@@ -664,7 +664,8 @@ def read_cache(dsid, **kwargs):
     except Exception:
         try:
             with gzip.open((root_dirs['web'] + "/datasets/" + dsid +
-                       "/metadata/getWebList" + s + ".cache.gz"), "rt") as f:
+                            "/metadata/getWebList" + s + ".cache.gz"),
+                           "rt") as f:
                 lines = f.readlines()
         except Exception:
             return ret_list
