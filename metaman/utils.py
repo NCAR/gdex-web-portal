@@ -1,4 +1,5 @@
 import glob
+import gzip
 import json
 import os
 import psycopg2
@@ -14,6 +15,7 @@ from datetime import datetime
 from dateutil import tz
 from email.message import EmailMessage
 from lxml import etree as ElementTree
+from pathlib import Path
 
 from django.conf import settings
 from django.http import HttpResponse
