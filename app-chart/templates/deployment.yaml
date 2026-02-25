@@ -55,23 +55,18 @@ spec:
             cpu: {{ .Values.webapp.container.limits.cpu }}
         ports:
         - containerPort: {{ .Values.webapp.container.port }}
-        volumeMounts:
-        - mountPath: {{ .Values.volume.fs.mountPath }}
-          name: {{ .Values.volume.fs.name }}
-          {{ if .Values.testName }}
-          readOnly: true
-          {{ end }}
         env:
         - name: PERSONAL_GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
               name: calie-github-token
               key: GITHUB_TOKEN
-        - name: JIRA_AUTO_GITHUB_REPO
-          valueFrom:
-            secretKeyRef:
-              name: calie-github-repo
-              key: GITHUB_REPO
+        volumeMounts:
+        - mountPath: {{ .Values.volume.fs.mountPath }}
+          name: {{ .Values.volume.fs.name }}
+          {{ if .Values.testName }}
+          readOnly: true
+          {{ end }}
 
       volumes:
       - name: {{ .Values.volume.fs.name }}
