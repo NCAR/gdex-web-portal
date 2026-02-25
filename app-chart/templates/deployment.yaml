@@ -60,7 +60,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: calie-github-token
-              key: GITHUB_TOKEN
+              key: token
         volumeMounts:
         - mountPath: {{ .Values.volume.fs.mountPath }}
           name: {{ .Values.volume.fs.name }}
