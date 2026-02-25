@@ -1,5 +1,6 @@
 import json
 import os
+import requests
 from django.shortcuts import render
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -51,11 +52,11 @@ def _trigger_github():
     """
     Triggers the Github Actions workflow via github repository_dispatch
     """
-    github_token = os.environ.get("GITHUB_TOKEN")
-    repo = os.environ.get("GITHUB_REPO")
+    github_token = os.environ.get("PERSONAL_GITHUB_TOKEN")
+    repo = os.environ.get("JIRA_AUTO_GITHUB_REPO")
 
     if not github_token or not repo:
-        raise ValueError("GITHUB_TOKEN or GITHUB_REPO did not load properly")
+        raise ValueError("PERSONAL_GITHUB_TOKEN or JIRA_AUTO_GITHUB_REPO did not load properly")
     
     url =f"https://api.github.com/repos/{repo}/dispatches"
 
