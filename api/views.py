@@ -57,7 +57,9 @@ def _trigger_github():
 
     if not github_token or not repo:
         raise ValueError("PERSONAL_GITHUB_TOKEN or JIRA_AUTO_GITHUB_REPO did not load properly")
-    
+    else:
+        print("Github token and repo loaded successfully")
+        
     url =f"https://api.github.com/repos/{repo}/dispatches"
 
     headers = {
