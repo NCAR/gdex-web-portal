@@ -15,7 +15,6 @@ from datetime import datetime
 from dateutil import tz
 from email.message import EmailMessage
 from lxml import etree as ElementTree
-from pathlib import Path
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -663,89 +662,95 @@ def read_cache(dsid, **kwargs):
     try:
         with open((root_dirs['web'] + "/datasets/" + dsid +
                    "/metadata/getWebList" + s + ".cache"), "r") as f:
-            f.readline()
-            if not kwargs['cmd']:
-                f.readline()
-
-            for line in f:
-                parts = line.split("<!>")
-                ret_list[0].append({'name': parts[0],
-                                    'data_format': parts[1],
-                                    'has_cmd': kwargs['cmd']})
-                if kwargs['cmd']:
-                    parts[8] = parts[8].strip()
-                    dt = ""
-                    if parts[8][-4:] == "GrML":
-                        dt = "Grid"
-                    elif parts[8][-4:] == "ObML":
-                        dt = "Platform Observation"
-                    elif parts[8][-5:] == "SatML":
-                        if parts[2].find("Image") > 0:
-                            dt = "Image"
-                        elif parts[2].find("Scan") > 0:
-                            dt = "Swath"
-                    elif parts[8][-5:] == "FixML":
-                        dt = "Cyclone Fix"
-
-                    if len(dt) > 0 and dt not in ret_list[1]:
-                        ret_list[1].append(dt)
-
-                    if parts[1] not in ret_list[2]:
-                        ret_list[2].append(parts[1])
-
-                    sdt = parts[3].strip()
-                    dt_parts = sdt.split()
-                    dparts = dt_parts[0].split("-")
-                    if len(dparts) == 3:
-                        sdt_prec = 10
-                    elif len(dparts) == 2:
-                        sdt_prec = 7
-                        sdt += "-01"
-                    else:
-                        sdt_prec = 4
-                        sdt += "-01-01"
-
-                    if len(dt_parts) > 1:
-                        tparts = dt_parts[1].split(":")
-                        if len(tparts) == 3:
-                            sdt_prec = 19
-                        elif len(tparts) == 2:
-                            sdt_prec = 16
-                            sdt += ":00"
-                        else:
-                            sdt_prec = 13
-                            sdt += ":00:00"
-
-                    ret_list[3] = min(sdt, ret_list[3])
-                    ret_list[4] = max(sdt_prec, ret_list[4])
-                    edt = parts[4].strip()
-                    dt_parts = edt.split()
-                    dparts = dt_parts[0].split("-")
-                    if len(dparts) == 3:
-                        edt_prec = 10
-                    elif len(dparts) == 2:
-                        edt_prec = 7
-                        edt += "-12"
-                    else:
-                        edt_prec = 4
-                        edt += "-12-31"
-
-                    if len(dt_parts) > 1:
-                        tparts = dt_parts[1].split(":")
-                        if len(tparts) == 3:
-                            edt_prec = 19
-                        elif len(tparts) == 2:
-                            edt_prec = 16
-                            edt += ":59"
-                        else:
-                            edt_prec = 13
-                            edt += ":59:59"
-
-                    ret_list[5] = max(edt, ret_list[5])
-                    ret_list[6] = max(edt_prec, ret_list[6])
-
+            lines = f.readlines()
     except Exception:
-        pass
+        try:
+            with gzip.open((root_dirs['web'] + "/datasets/" + dsid +
+                       "/metadata/getWebList" + s + ".cache.gz"), "rt") as f:
+                lines = f.readlines()
+        except Exception:
+            return ret_list
+
+    del line[0]
+    if not kwargs['cmd']:
+        del line[0]
+
+    for line in lines:
+        parts = line.strip().split("<!>")
+        ret_list[0].append({'name': parts[0],
+                            'data_format': parts[1],
+                            'has_cmd': kwargs['cmd']})
+        if kwargs['cmd']:
+            parts[8] = parts[8].strip()
+            dt = ""
+            if parts[8][-4:] == "GrML":
+                dt = "Grid"
+            elif parts[8][-4:] == "ObML":
+                dt = "Platform Observation"
+            elif parts[8][-5:] == "SatML":
+                if parts[2].find("Image") > 0:
+                    dt = "Image"
+                elif parts[2].find("Scan") > 0:
+                    dt = "Swath"
+            elif parts[8][-5:] == "FixML":
+                dt = "Cyclone Fix"
+
+            if len(dt) > 0 and dt not in ret_list[1]:
+                ret_list[1].append(dt)
+
+            if parts[1] not in ret_list[2]:
+                ret_list[2].append(parts[1])
+
+            sdt = parts[3].strip()
+            dt_parts = sdt.split()
+            dparts = dt_parts[0].split("-")
+            if len(dparts) == 3:
+                sdt_prec = 10
+            elif len(dparts) == 2:
+                sdt_prec = 7
+                sdt += "-01"
+            else:
+                sdt_prec = 4
+                sdt += "-01-01"
+
+            if len(dt_parts) > 1:
+                tparts = dt_parts[1].split(":")
+                if len(tparts) == 3:
+                    sdt_prec = 19
+                elif len(tparts) == 2:
+                    sdt_prec = 16
+                    sdt += ":00"
+                else:
+                    sdt_prec = 13
+                    sdt += ":00:00"
+
+            ret_list[3] = min(sdt, ret_list[3])
+            ret_list[4] = max(sdt_prec, ret_list[4])
+            edt = parts[4].strip()
+            dt_parts = edt.split()
+            dparts = dt_parts[0].split("-")
+            if len(dparts) == 3:
+                edt_prec = 10
+            elif len(dparts) == 2:
+                edt_prec = 7
+                edt += "-12"
+            else:
+                edt_prec = 4
+                edt += "-12-31"
+
+            if len(dt_parts) > 1:
+                tparts = dt_parts[1].split(":")
+                if len(tparts) == 3:
+                    edt_prec = 19
+                elif len(tparts) == 2:
+                    edt_prec = 16
+                    edt += ":59"
+                else:
+                    edt_prec = 13
+                    edt += ":59:59"
+
+            ret_list[5] = max(edt, ret_list[5])
+            ret_list[6] = max(edt_prec, ret_list[6])
 
     return ret_list
 
