@@ -61,6 +61,11 @@ spec:
             secretKeyRef:
               name: calie-github-token
               key: token
+        - name: JIRA_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jira-data-center-secret
+              key: secret
         volumeMounts:
         - mountPath: {{ .Values.volume.fs.mountPath }}
           name: {{ .Values.volume.fs.name }}

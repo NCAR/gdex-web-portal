@@ -1,6 +1,8 @@
 import json
 import os
 import requests
+import hmac
+import hashlib
 from django.shortcuts import render
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -82,10 +84,24 @@ class JiraEventReceiver(APIView):
     http_method_names = ['post'] # allow POST only
     
     def post(self,request):
-        payload = request.data
-        print("Received Jira Webhook")
+        payload = request.body 
+        print("Webhook header keys:")
+        for k in request.headers.keys():
+            print(k)
+        #received_signature = request.headers.get("X-Hub-Signature-256")
+        shared_secret = os.getenv("JIRA_WEBHOOK_SECRET")
+        if not shared_secret:
+            print("Warning: JIRA_WEBHOOK_SECRET not set. Webhook signature will not be verified.")
 
-        try:
+        # Verify signature
+        # if not self._verify_signature(payload, received_signature, shared_secret):
+        #     return Response({"status": "error", "message": "Invalid signature"}, status=403)
+
+        try:            
+            data = request.data
+            print(data)
+            print("Received Jira Webhook")
+
             status_code, text = _trigger_github()
         except Exception as e:
             return Response({
@@ -98,6 +114,18 @@ class JiraEventReceiver(APIView):
             "github_response_code": status_code,
             "github_response_text": text
         })
+    
+    def _verify_signature(self, payload, received_signature, secret):
+        if not secret or not received_signature:
+            return False
+        # Jira often uses HMAC SHA256
+        computed_hmac = hmac.new(
+            key=secret.encode("utf-8"),
+            msg=payload,
+            digestmod=hashlib.sha256
+        ).hexdigest()
+        return hmac.compare_digest(computed_hmac, received_signature)
+
 
 def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
     """Helper function to handle common dataset response pattern
