@@ -17,6 +17,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.renderers import JSONRenderer
+from rest_framework.decorators import api_view, renderer_classes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 
@@ -76,6 +78,9 @@ def _trigger_github():
 
 @method_decorator(csrf_exempt, name='dispatch')
 class JiraEventReceiver(APIView):
+    renderer_classes = [JSONRenderer] # disable browsable API
+    http_method_names = ['post'] # allow POST only
+    
     def post(self,request):
         payload = request.data
         print("Received Jira Webhook")
