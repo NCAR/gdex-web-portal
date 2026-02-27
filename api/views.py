@@ -80,7 +80,7 @@ def _trigger_github():
 
 @method_decorator(csrf_exempt, name='dispatch')
 class JiraEventReceiver(APIView):
-    renderer_classes = [JSONRenderer] # disable browsable API
+    renderer_classes = [JSONRenderer] # disable UI rendering, return JSON only
     http_method_names = ['post'] # allow POST only
     
     def post(self,request):
@@ -88,14 +88,14 @@ class JiraEventReceiver(APIView):
         print("Webhook header keys:")
         for k in request.headers.keys():
             print(k)
-        #received_signature = request.headers.get("X-Hub-Signature-256")
+        received_signature = request.headers.get("X-Hub-Signature")
         shared_secret = os.getenv("JIRA_WEBHOOK_SECRET")
         if not shared_secret:
             print("Warning: JIRA_WEBHOOK_SECRET not set. Webhook signature will not be verified.")
 
-        # Verify signature
-        # if not self._verify_signature(payload, received_signature, shared_secret):
-        #     return Response({"status": "error", "message": "Invalid signature"}, status=403)
+        #Verify signature
+        if not self._verify_signature(payload, received_signature, shared_secret):
+            return Response({"status": "error", "message": "Invalid signature"}, status=403)
 
         try:            
             data = request.data
@@ -118,6 +118,8 @@ class JiraEventReceiver(APIView):
     def _verify_signature(self, payload, received_signature, secret):
         if not secret or not received_signature:
             return False
+        if received_signature.startswith("sha256="):
+            received_signature = received_signature.split("=", 1)[1]
         # Jira often uses HMAC SHA256
         computed_hmac = hmac.new(
             key=secret.encode("utf-8"),
