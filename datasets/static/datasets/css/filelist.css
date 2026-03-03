@@ -2,10 +2,16 @@
 
 input.parent_group[type="checkbox"] {
     outline: 1px solid #0057c2;
+    background-color: #fff;
+    cursor: pointer;
 }
 input.table_group[type="checkbox"] {
     outline: 1px solid #f1f0ee;
+    background-color: #fff;
+    cursor: pointer;
 }
 input.file[type="checkbox"] {
     outline: 1px solid #0057c2;
+    background-color: #fff;
+    cursor: pointer;
 }
