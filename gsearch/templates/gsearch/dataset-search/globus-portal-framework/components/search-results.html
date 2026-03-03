@@ -25,7 +25,7 @@
             {% elif item.name == "format" or item.name == "tags" %}
               {% for val in item.value %}
                 <a href="{% url 'search' globus_portal_framework.index %}?q=&{{ item.search_filter_query_key }}={{ val }}" class="text-decoration-none">
-                <span class="badge rounded">{{val}}</span>
+                <span class="badge gsearch-badge rounded">{{val}}</span>
                 </a>
               {% endfor %}
             {% else %}
