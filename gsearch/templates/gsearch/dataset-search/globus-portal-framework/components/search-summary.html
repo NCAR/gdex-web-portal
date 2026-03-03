@@ -31,7 +31,7 @@
 
                 {% if fn == 'temporal_range_start' %}
                   <br>End date:
-                  <span class="badge rounded-pill mr-1" style="background-color: #1A658F; color: #f0f0f0;" id="filter-badge-temporal-start">
+                  <span class="badge gsearch-badge rounded-pill mr-1" id="filter-badge-temporal-start">
                     {{value.to}}
                     <a role="button" aria-label="Close" onclick="clearTemporalEnd()">
                       <i class="fas fa-times"></i>
@@ -39,14 +39,14 @@
                   </span>
                 {% elif fn == 'temporal_range_end' %}
                   <br>Start date:
-                  <span class="badge rounded-pill mr-1" style="background-color: #1A658F; color: #f0f0f0;" id="filter-badge-temporal-end">
+                  <span class="badge gsearch-badge rounded-pill mr-1" id="filter-badge-temporal-end">
                     {{value.from}}
                     <a role="button" aria-label="Close" onclick="clearTemporalStart()">
                       <i class="fas fa-times"></i>
                     </a>
                   </span>
                 {% else %}
-                  <span class="badge rounded-pill mr-1" style="background-color: #1A658F; color: #f0f0f0;" id="filter-badge-{{fn}}-{{value}}">
+                  <span class="badge gsearch-badge rounded-pill mr-1" id="filter-badge-{{fn}}-{{value}}">
                     {{value}}
                     <a role="button" aria-label="Close" onclick="removeFilter('{{fn}}', '{{ft}}', '{{value}}')">
                       <i class="fas fa-times"></i>
