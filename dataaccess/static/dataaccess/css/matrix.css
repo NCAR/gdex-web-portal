@@ -10,10 +10,10 @@
     background-color: #00357a;
 }
 .d-fil a {
-    color: #fff;
+    color: #42c0ff;
 }
 .d-fil a:hover {
-    color: #42c0ff;
+    color: #f1f0ee;
 }
 
 /* Custom data requests column */
@@ -22,10 +22,10 @@
     background-color: #0057c2;
 }
 .c-req a {
-    color: #fff;
+    color: #42c0ff;
 }
 .c-req a:hover {
-    color: #42c0ff;
+    color: #f1f0ee;
 }
 
 /* Other access methods column */
@@ -39,10 +39,10 @@
     background-color: #f1f0ee;
 }
 .othr a {
-    color: #fff;
+    color: #0057c2;
 }
 .othr a:hover {
-    color: #42c0ff;
+    color: #00357a;
 }
 
 /* NCAR access column */
