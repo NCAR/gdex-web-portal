@@ -1,0 +1,11 @@
+/* Custom styles for dataset file list templates */
+
+.file input[type="checkbox"] {
+    outline: 1px solid #0057c2;
+}
+.table_group input[type="checkbox"] {
+    outline: 1px solid #f1f0ee;
+}
+.file input[type="checkbox"] {
+    outline: 1px solid #0057c2;
+}
