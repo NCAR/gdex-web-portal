@@ -8,7 +8,6 @@
 }
 .d-des a:hover {
     color: #f1f0ee;
-    font-weight: bold;
 }
 
 /* Data file downloads column */
@@ -20,7 +19,6 @@
     color: #0057c2;
 }
 .d-fil a:hover {
-    color: #00357a;
     font-weight: bold;
 }
 
@@ -33,7 +31,6 @@
     color: #0057c2;
 }
 .c-req a:hover {
-    color: #00357a;
     font-weight: bold;
 }
 
@@ -51,7 +48,6 @@
     color: #0057c2;
 }
 .othr a:hover {
-    color: #00357a;
     font-weight: bold;
 }
 
@@ -64,7 +60,6 @@
     color: #0057c2;
 }
 .c-fil a:hover {
-    color: #00357a;
     font-weight: bold;
 }
 
