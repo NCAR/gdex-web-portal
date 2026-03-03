@@ -63,6 +63,21 @@
     font-weight: bold;
 }
 
+/* ARCO groups */
+.a-blk {
+    color: #011837;
+    background-color: #f1f0ee;
+}
+.a-blk a {
+    color: #0057c2;
+}
+.a-blk a:hover {
+    font-weight: bold;
+}
+.arco-badge {
+    background-color: #ffdd31;
+    color: #00357a;
+}
 
 /* Products sidebar */
 .prod {
