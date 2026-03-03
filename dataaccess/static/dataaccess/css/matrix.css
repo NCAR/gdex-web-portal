@@ -1,0 +1,85 @@
+/* NCAR access column */
+.c-fil {
+    color: #fff;
+    background-color: #5e6776;
+}
+.c-fil a {
+    color: #42c0ff;
+}
+.c-fil a:hover {
+    color: #86d3fc;
+}
+
+/* Custom data requests column */
+.c-req {
+    color: #00357A;
+    background-color: #42c0ff;
+}
+.c-req a {
+    color: #0057c2;
+}
+.c-req a:hover {
+    color: #00357a;
+}
+
+/* Data description column */
+.d-des {
+    background-color: #5e6776;
+    color: #fff;
+}
+
+/* Data file downloads column */
+.d-fil {
+    color: #fff;
+    background-color: #0057c2;
+}
+.d-fil a {
+    color: #42c0ff;
+}
+.d-fil a:hover {
+    color: #86d3fc;
+}
+
+/* Other access methods column */
+.o-blk {
+    padding: 10px;
+    box-shadow: 0 0 0 1px #bbbcbc;
+    z-index: 0;
+}
+.othr {
+    color: #011837;
+    background-color: #f1f0ee;
+}
+.othr a {
+    color: #0057c2;
+}
+.othr a:hover {
+    color: #00357a;
+}
+
+/* Products sidebar */
+.prod {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  padding: 10px 5px 10px 5px;
+  box-shadow: 0 0 0 1px #bbbcbc;
+  background-color: #faa119;
+  font-weight: bold;
+}
+.tx-c {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+.tx-l {
+  text-align: left;
+}
+.info-hdr {
+  text-decoration: underline dashed;
+  text-underline-offset: 0.375rem;
+  cursor: pointer;
+}
