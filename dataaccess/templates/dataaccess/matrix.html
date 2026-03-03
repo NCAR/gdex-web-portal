@@ -33,46 +33,46 @@
     <div class="d-des o-blk tx-c fw-bold text-uppercase" style="grid-column: 1 / 3; grid-row: 1 / 3">Data Description</div>
     {% endif %}
     {% if matrix.header.dfil_span %}
-    <div class="d-fil o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.dfil_span }}">Data File Downloads</div>
+    <div class="d-des o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.dfil_span }}">Data File Downloads</div>
     {% endif %}
     {% if matrix.columns.subset %}
-    <div class="c-req o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.creq_col }}">Customizable Data Requests</div>
+    <div class="d-des o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.creq_col }}">Customizable Data Requests</div>
     {% endif %}
     {% if matrix.columns.other %}
-    <div class="othr o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.othr_col }}">Other Access Methods</div>
+    <div class="d-des o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.othr_col }}">Other Access Methods</div>
     {% endif %}
     {% if matrix.columns.glade %}
     <div style="grid-column: {{ matrix.header.spc_col }}"></div>
-    <div class="c-fil o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.ncar_col }}">NCAR HPC Data Access</div>
+    <div class="d-des o-blk tx-c fw-bold text-uppercase" style="grid-column: {{ matrix.header.ncar_col }}">NCAR HPC Data Access</div>
     {% endif %}
     {% if matrix.columns.web_files %}
-    <div class="d-fil o-blk tx-c fw-bold" style="grid-row: 2">
+    <div class="d-des o-blk tx-c fw-bold" style="grid-row: 2">
         <h6 class="info-hdr" onmouseover="popInfo(this, 'iweb', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('iweb')">Web Download (HTTPS) &mdash; <a href="https://osg-htc.org/services/osdf" target="_osdf">Supported by OSDF</a></h6>
     </div>
     {% endif %}
     {% if matrix.columns.globus %}
-    <div class="d-fil o-blk tx-c fw-bold" style="grid-row: 2">
+    <div class="d-des o-blk tx-c fw-bold" style="grid-row: 2">
         <h6 class="info-hdr" onmouseover="popInfo(this, 'iglob', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('iglob')">Globus Transfer Service<br>(GridFTP)</h6>
     </div>
     {% endif %}
     {% if matrix.columns.data_format_conversion %}
-    <div class="d-fil o-blk tx-c fw-bold" style="grid-row: 2">
+    <div class="d-des o-blk tx-c fw-bold" style="grid-row: 2">
         <h6 class="info-hdr" onmouseover="popInfo(this, 'ifmt', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('ifmt')">Data Format<br>Conversion</h6>
     </div>
     {% endif %}
     {% if matrix.columns.subset %}
-    <div class="c-req o-blk tx-c fw-bold" style="grid-row: 2">
+    <div class="d-des o-blk tx-c fw-bold" style="grid-row: 2">
         <h6 class="info-hdr" onmouseover="popInfo(this, 'isubs', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('isubs')">Get a Dataset<br>Subset</h6>
     </div>
     {% endif %}
     {% if matrix.columns.other %}
-    <div class="othr o-blk tx-c fw-bold" style="grid-row: 2">
+    <div class="d-des o-blk tx-c fw-bold" style="grid-row: 2">
         <h6 class="info-hdr" onmouseover="popInfo(this, 'idap', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('idap')">{% if 'thredds' in matrix.union_urls.dap %}THREDDS Data<br>Server{% else %}OPeNDAP<br>Access{% endif %}</h6>
     </div>
     {% endif %}
     {% if matrix.columns.glade %}
     <div style="grid-row: 2"></div>
-    <div class="c-fil o-blk tx-c fw-bold" style="grid-row: 2">
+    <div class="d-des o-blk tx-c fw-bold" style="grid-row: 2">
         <h6 class="info-hdr" onmouseover="popInfo(this, 'incar', null, 'center-30', 'bottom+10')" onmouseout="hideInfo('incar')">NCAR Data Storage<br>System Holdings</h6>
     </div>
     {% endif %}

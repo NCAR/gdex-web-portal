@@ -3,17 +3,25 @@
     background-color: #0057c2;
     color: #fff;
 }
+.d-des a {
+    color: #42c0ff;
+}
+.d-des a:hover {
+    color: #f1f0ee;
+    font-weight: bold;
+}
 
 /* Data file downloads column */
 .d-fil {
     color: #011837;
-    background-color: #42c0ff;
+    background-color: #f1f0ee;
 }
 .d-fil a {
     color: #0057c2;
 }
 .d-fil a:hover {
     color: #00357a;
+    font-weight: bold;
 }
 
 /* Custom data requests column */
@@ -26,6 +34,7 @@
 }
 .c-req a:hover {
     color: #00357a;
+    font-weight: bold;
 }
 
 /* Other access methods column */
@@ -36,25 +45,27 @@
 }
 .othr {
     color: #011837;
-    background-color: #ffffff;
+    background-color: #f1f0ee;
 }
 .othr a {
     color: #0057c2;
 }
 .othr a:hover {
     color: #00357a;
+    font-weight: bold;
 }
 
 /* NCAR access column */
 .c-fil {
     color: #011837;
-    background-color: #42c0ff;
+    background-color: #f1f0ee;
 }
 .c-fil a {
     color: #0057c2;
 }
 .c-fil a:hover {
     color: #00357a;
+    font-weight: bold;
 }
 
 
