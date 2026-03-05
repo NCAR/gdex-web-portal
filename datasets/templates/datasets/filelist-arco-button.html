@@ -1,5 +1,6 @@
 {% with data.is_glade as is_glade %}
 {% with settings.RDA_STRATUS_BASE_URL as os_base_url %}
+{% with settings.NCAR_STRATUS_URL as ncar_os_base_url %}
 {% with settings.RDA_DATA_BASE_URL as rda_base_url %}
 {% with settings.GDEX_CANONICAL_DATA_PATH as gdex_base_path %}
 {% load wagtailcore_tags static decs_tags home_tags custom_tags %}
@@ -10,6 +11,9 @@
                 {% if is_glade and data.locflag != 'O' %}
                     '{% get_copy_path gdex_base_path data.dsid col.webpath %}',
                     '{% get_copy_path_title gdex_base_path data.dsid col.webpath %}'
+                {% elif is_glade and data.locflag == 'O' %}
+                    '{% get_copy_path ncar_os_base_url data.dsid col.webpath %}',
+                    '{% get_copy_path_title ncar_os_base_url data.dsid col.webpath %}'
                 {% elif data.locflag == 'O' %}
                     '{% get_copy_path os_base_url data.dsid col.webpath %}',
                     '{% get_copy_path_title os_base_url data.dsid col.webpath %}'
@@ -21,6 +25,7 @@
         <i class="fa-solid fa-copy pe-1"></i>
         {% get_copy_path_title rda_base_url data.dsid col.webpath %}
     </button>
+{% endwith %}
 {% endwith %}
 {% endwith %}
 {% endwith %}
