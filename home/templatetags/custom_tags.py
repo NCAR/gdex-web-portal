@@ -80,8 +80,9 @@ def get_dsid_from_url(url):
 
 @register.filter
 def make_glade_URL(uri):
-    if (uri.find('/',0,1) != -1):
-        uri = uri.replace('/','',1)
+    """ Convert file URL path to a posix path for NCAR HPC access """
+    if uri.startswith('/'):
+        uri = uri.lstrip('/')
     url = os.path.join(settings.RDA_CANONICAL_DATA_PATH, uri)
     if '/OS/' in url:
         return re.sub('.*/OS/', settings.NCAR_STRATUS_URL, url)
