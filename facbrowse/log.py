@@ -4,6 +4,9 @@ from datetime import datetime
 
 
 def add_to_log(message):
-    with open("/data/logs/facbrowse_log." +
-              socket.gethostname().split(".")[0], "a") as f:
+    host_parts = socket.gethostname().split(".")
+    if host_parts[0].find("gdex-webserver") != 0:
+        return
+
+    with open("/data/logs/facbrowse_log." + host_parts[0], "a") as f:
         f.write(str(datetime.now()) + " " + message + "\n")
