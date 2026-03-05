@@ -1,7 +1,5 @@
 import socket
-
 from datetime import datetime
-
 
 def add_to_log(message):
     host_parts = socket.gethostname().split(".")
