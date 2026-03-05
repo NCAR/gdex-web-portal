@@ -1,5 +1,11 @@
 /* Custom styles for dataset file list templates */
 
+input[type="checkbox"] {
+    outline: 1px solid #0057c2;
+    background-color: #fff;
+    cursor: pointer;
+}
+
 input.parent_group[type="checkbox"] {
     outline: 1px solid #0057c2;
     background-color: #fff;
