@@ -1052,8 +1052,8 @@ def create_filelist_table(dsid, gindex, page=0, filter_wfile=None):
     for _file in files:
         file_url = get_webfile_url(dsid, _file['wfile'], base_url, origin_path=origin_path, locflag=locflag)
         data_path = os.path.join('/',dsid,_file['wfile'])
-        if _file['locflag'] == 'O':
-            data_path = os.path.join('/OS',dsid,_file['wfile'])
+        #if _file['locflag'] == 'O':
+        #    data_path = os.path.join('/OS',dsid,_file['wfile'])
         filename = {
             'is_file' : True,
             'name' : long_name('wfile'),

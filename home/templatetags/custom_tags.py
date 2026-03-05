@@ -80,8 +80,9 @@ def get_dsid_from_url(url):
 
 @register.filter
 def make_glade_URL(uri):
-    if (uri.find('/',0,1) != -1):
-        uri = uri.replace('/','',1)
+    """ Convert file URL path to a posix path for NCAR HPC access """
+    if uri.startswith('/'):
+        uri = uri.lstrip('/')
     url = os.path.join(settings.RDA_CANONICAL_DATA_PATH, uri)
     if '/OS/' in url:
         return re.sub('.*/OS/', settings.NCAR_STRATUS_URL, url)
@@ -160,7 +161,7 @@ def show_arco_catalogs(context):
                     if '-posix' in url:
                         url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
                     elif '-http' in url:
-                        url = 'https://' + settings.GLOBUS_DATA_DOMAIN.strip('/') + file_info['file_path']
+                        url = url
                     elif '-osdf' not in url: # Some assets don't have posix
                         url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
                     file_info['file_url'] = url

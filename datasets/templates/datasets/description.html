@@ -96,6 +96,9 @@
                    if(onHPC) {
                        filename = filename.replace('https://data.gdex.ucar.edu/','/glade/campaign/collections/gdex/data/');
                    }
+                   else {
+                       filename = filename.replace('/glade/campaign/collections/gdex/data/','https://data.gdex.ucar.edu/');
+                   }
                    code_str = `import xarray
 filename = '${filename}'
 ds = xarray.open_dataset(filename, engine='${engine}')
@@ -167,7 +170,8 @@ ds['${varname}'] # ${extras}`
                        </div>
                        <div style='position:relative'>
                            <button class="copy-btn">Copy</button>
-       <pre><code id='quickstart'>import xarray
+       <pre><code id='quickstart'># Search for a variable above to get a specific filename
+import xarray
 ds = xarray.open_dataset('filename', engine='kerchunk')
 ds[varname]</code></pre></div></div>
  </div>
