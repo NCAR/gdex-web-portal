@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 {% load static wagtailcore_tags custom_tags login_tags %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'datasets/css/filelist.css' %}">
-
 {% block title %}
 NSF NCAR GDEX Dataset {{ page.dsid }}
 {% endblock %}
 
 {% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'datasets/css/filelist.css' %}">
 
     {% with page.dsid|add:".jsonld" as jsonld %}
       {% if jsonld|template_exists %}
