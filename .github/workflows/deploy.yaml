@@ -12,6 +12,7 @@ on:
       - "LICENSE"
       - "Dockerfile.bob"
       - "tests/**"
+      - "gdexwebserver/static/img/**"
 
 jobs:
   container-rebuild:
