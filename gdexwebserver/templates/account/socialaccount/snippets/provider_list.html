@@ -22,7 +22,7 @@
     <a title="{{ provider.name }}" 
        href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}"
        class="socialaccount_provider {{ provider.id }}">
-        <button class="btn btn-light btn-block btn-sm">
+        <button class="btn btn-outline-primary btn-block btn-sm">
             <picture>
                 {% if provider.name|lower == "orcid" %}
                     <source type="image/svg+xml" srcset="/media/images/logos/{{ provider.name|lower }}.svg">
