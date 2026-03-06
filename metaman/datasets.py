@@ -2732,7 +2732,8 @@ def check_related_sites(site_list):
 
         try:
             response = requests.get(
-                    url, headers=config.linkcheck_headers, timeout=10)
+                    url, headers=config.linkcheck_headers, verify=False,
+                    timeout=10)
             if response.status_code != 403:
                 response.raise_for_status()
 

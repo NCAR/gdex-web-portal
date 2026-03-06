@@ -772,6 +772,90 @@ def get_unique_tindex(request_index):
     tindexes = cursor.fetchall()
     return tindexes
 
+def get_random_webfile(dsid, parameter_code=None, start_date=None, end_date=None):
+    """Gets a random webfile from dataset. optionally limit by parameter and date."""
+    init_connection(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
+    conditions = []
+    conditions_vars = []
+    grids_table = f'{dsid}_grids2'
+    webfiles_table = f'{dsid}_webfiles2'
+
+    if not parameter_code and not start_date and not end_date:
+        query = f'select id from {grids_table} left join {webfiles_table} on code=file_code order by RANDOM() limit 1;'
+        cursor.execute(query, ())
+        return cursor.fetchall()[0][0] # should only return 1 entry, so take first
+
+    if parameter_code:
+        conditions.append('parameter=%s')
+        conditions_vars.append(parameter_code)
+    if start_date:
+        conditions.append(f'{webfiles_table}.start_date>%s ')
+        conditions_vars.append(start_date)
+    if end_date:
+        conditions.append(f'{webfiles_table}.end_date<%s')
+        conditions_vars.append(end_date)
+
+    conditions_str = " AND ".join(conditions)
+
+    query = f'select id from {grids_table} left join {webfiles_table} on code=file_code WHERE {conditions_str} order by RANDOM() limit 1;'
+    print(query)
+    print(conditions_vars)
+    cursor.execute(query, tuple(conditions_vars))
+    result = cursor.fetchall()
+    print(result)
+    if len(result) > 0:
+        return result[0] # should only return 1 entry, so take first
+    return None
+
+def get_arco_variables(dsid):
+    """Get Arco Variables"""
+    import csv
+    from io import StringIO
+    csv_info = check_cache('arco_vars', dsid )
+    if csv_info is not None:
+        return csv_info
+    con,cur = init_connection_new()
+    wfile_table=f'wfile_{dsid}'
+    assert len(wfile_table) == 13
+    match_str = '%.csv'
+    query = f'select wfile from {wfile_table} where gindex=-2 and wfile like %s'
+    cur.execute(query, (match_str,))
+    result = cur.fetchall()
+    close_connection(con,cur)
+    csv_files = [i[0] for i in result]
+    res = [['unknown','error']]
+    for _file in csv_files:
+        if 'http' in _file:
+            url = f'https://{settings.GLOBUS_DATA_DOMAIN}/{dsid}/{_file}'
+            content = requests.get(url).content
+            reader = csv.reader(StringIO(content.decode()))
+            res = []
+            for row in reader:
+                res.append(row)
+    add_to_cache('arco_vars', dsid, res)
+    return res
+
+def get_time_range(dsid):
+    """Get the temporal range for a given dataset
+
+    Args:
+        dsid (str): six digit id for dataset (dxxxxxx)
+
+    Returns (tuple):
+        [0]: start date in datetime format
+        [1]: end date in datetime format
+    """
+    con,cur = init_connection_new(get_wagtail_config())
+    query = 'select temporal from dataset_description_datasetdescriptionpage where dsid=%s'
+    cur.execute(query, (dsid,))
+    data = cur.fetchone()[0]
+    close_connection(con,cur)
+    start_date = data['full'].split(' to ')[0]
+    start_date = datetime.strptime(start_date.split('+')[0], '%Y-%m-%d %H:%M ')
+    end_date = data['full'].split(' to ')[1]
+    end_date = datetime.strptime(end_date.split('+')[0], '%Y-%m-%d %H:%M ')
+    return (start_date, end_date)
+
 def get_tindex_from_webfile(wfile, dsid):
     """Get the tindex of a webfile"""
     dsid = format_dataset_id(dsid)
@@ -968,8 +1052,8 @@ def create_filelist_table(dsid, gindex, page=0, filter_wfile=None):
     for _file in files:
         file_url = get_webfile_url(dsid, _file['wfile'], base_url, origin_path=origin_path, locflag=locflag)
         data_path = os.path.join('/',dsid,_file['wfile'])
-        if _file['locflag'] == 'O':
-            data_path = os.path.join('/OS',dsid,_file['wfile'])
+        #if _file['locflag'] == 'O':
+        #    data_path = os.path.join('/OS',dsid,_file['wfile'])
         filename = {
             'is_file' : True,
             'name' : long_name('wfile'),
@@ -1430,6 +1514,14 @@ def get_dataset_webhome(dsid):
 
     return response[0]
 
+def has_arco(dsid):
+    con,cur = init_connection_new()
+    dsid = format_dataset_id(dsid)
+    query = "select * from dsgroup where dsid=%s and gindex < 0"
+    cur.execute(query, (dsid,))
+    data = cur.fetchall()
+    return len(data) != 0
+
 def get_staff():
     """Get DECS employee information."""
     init_connection()
@@ -1472,6 +1564,17 @@ def add_new_user(email, first_name, last_name):
             ('','','1',email,'0','orcid', '', email, first_name, last_name))
     conn.commit()
     return True
+
+def is_superuser(token):
+    """Returns whether a given token is associated with a superuser."""
+    con,cur = init_connection_new(get_wagtail_config())
+    query = 'select is_superuser from auth_user left join login_usertoken on auth_user.id = login_usertoken.user_id where value=%s'
+    cur.execute(query, (token,))
+    data = cur.fetchall()
+    close_connection(con,cur)
+    if len(data) == 0:
+        return False
+    return data[0][0]
 
 def get_email_from_token(token):
     """Returns email given token."""

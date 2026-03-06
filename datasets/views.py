@@ -22,11 +22,13 @@ from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
                                 iso_19139, json_ld)
 
 from .utils import get_custom_subset_context, get_hostname, ng_gdex_id
+from .CodeExample import CodeExample
 from api.common import (format_dataset_id, get_request_info,
                         get_request_files, get_request_status,
                         get_request_index_from_rqstid,
                         request_type, get_dataset_info,
                         request_column_headers)
+import api.common
 
 from dataaccess.matrix import Matrix
 from dataset_description.models import DatasetDescriptionPage
@@ -90,6 +92,11 @@ def description(request, dsid):
     ctx['page'].acknowledgement = (
             ctx['page'].acknowledgement.encode("latin-1")
                                        .decode("unicode-escape"))
+    ctx['has_arco'] = api.common.has_arco(ctx['page'].dsid)
+    if ctx['has_arco']:
+        tmp_vars = api.common.get_arco_variables(ctx['page'].dsid)
+        ctx['arco_assets'] = tmp_vars[1:]
+        ctx['arco_headers'] = tmp_vars[0]
     return render(request, template, ctx)
 
 
@@ -508,7 +515,7 @@ def submit_web_data_request(request, dsid):
         # get user email if not provided
         if not mutable_post.get('email', None):
             mutable_post['email'] = get_user_email(request)
-        
+
         # instantiate a form instance and populate it with data from the request:
         form = DatasetRequestForm(mutable_post, initial={'dsid': dsid})
 
@@ -524,7 +531,7 @@ def submit_web_data_request(request, dsid):
                 template = error_template
                 logger.info("Missing email error after validation: {}".format(response))
                 return render(request, template, context)
-            
+
             # process the data in form.cleaned_data as required
             try:
                 response = rda_request(form.cleaned_data)
@@ -576,17 +583,17 @@ def submit_web_data_request(request, dsid):
             return redirect(f'/datasets/{dsid}/dataaccess/')
 
 def blank_request_form(request, dsid):
-    """ 
-    View to display a blank subset request form and manually 
+    """
+    View to display a blank subset request form and manually
     submit a subset data request. This view is only accessible
     to internal DECS staff. External users are redirected to the
-    data access page. 
+    data access page.
     """
     if not is_internal_user(request):
         return render(request, "403.html")
-    
+
     d = None
-    
+
     if "HTTP_X_REQUESTED_WITH" in request.META:
         form_template = 'datasets/request-submit-form.html'
         logger.info("Rendering AJAX request form for dataset {}".format(dsid))
@@ -623,7 +630,7 @@ def get_native(request, dsid):
         remove_tempdir(tdir_name)
 
 def custom_subset(request, dsid):
-    """ 
+    """
     View to render a custom subset form page
 
     Templates:
@@ -633,7 +640,7 @@ def custom_subset(request, dsid):
 
        default template: datasets/custom-subset-page.html
        specific template: datasets/custom-subset-page-<dsid>.html
-    
+
     Context:
        This view generates the following context:
          - dsid: dataset ID (d132002, etc.)
@@ -667,8 +674,8 @@ def custom_subset(request, dsid):
     subset_context.update(get_custom_subset_context(dsid, subset_context.get('gindex', None)))
 
     ctx = {
-        'subset': subset_context, 
-        'gmap_api_key': settings.GMAP_API_KEY, 
+        'subset': subset_context,
+        'gmap_api_key': settings.GMAP_API_KEY,
         'gmap_api_url': settings.GMAP_API_URL
         }
 
@@ -676,3 +683,26 @@ def custom_subset(request, dsid):
         ctx.update({'page': d})
 
     return render(request, template, ctx)
+
+def example_view(request, dsid):
+    """Displays page to get code examples."""
+    if request.GET:
+        param = request.GET.get('param', None)
+        example_type = request.GET.get('type', None)
+        start = request.GET.get('start', None)
+        end = request.GET.get('end', None)
+        is_remote = request.GET.get('is_remote', None)
+        if is_remote:
+            is_remote = is_remote.lower() == 'true'
+        else:
+            is_remote = False
+        example_type = request.GET.get('exampletype', 'image')
+        nlat = request.GET.get('nlat', 90)
+        slat = request.GET.get('slat', -90)
+        wlon = request.GET.get('wlon', -180)
+        elon = request.GET.get('elon', 180)
+        example_obj = CodeExample(dsid, start=start, end=end, is_remote=is_remote, selected_var=param,
+                elon=elon,wlon=wlon,slat=slat,nlat=nlat, selected_type=example_type)
+        return HttpResponse(example_obj.get_code())
+    example_obj = CodeExample(dsid)
+    return render(request, "datasets/code_example.html", {'ctx':example_obj})
