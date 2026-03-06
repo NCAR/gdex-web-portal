@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% load wagtailcore_tags static home_tags %}
-{% block body_class %}{% endblock %}
+
+{% block body_class %}{% if page.sidebar %} with-sidebar{% endif %}{% endblock %}
 {% block content %}
 
-<div class='bg-white p-3'>
 <div class="d-grid d-print-flex">
+<div class='bg-white p-3'>
     <article class="main-content-wrapper">
         <div class="main-content clearfix"> 
             <div class="bg-white p-3">
@@ -48,6 +49,9 @@
             </div>
         </div>
     </article>
+    {% if page.sidebar %} 
+    {% include "unity/sidebar.html" %}
+    {% endif %}
 </div>
 </div>
 

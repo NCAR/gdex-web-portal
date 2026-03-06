@@ -4,9 +4,9 @@
         <div class="d-flex justify-content-between" id="sidebarHeader">
             <h2 class="px-2 px-md-3 py-md-2">
             {% if page.get_parent.url == '/' %} 
-                <a class="i-angle-left--before text-light" href="{{ page.url }}">{{ page.slug }}</a>
+                <a class="i-angle-left--before text-light" href="{{ page.url }}">{{ page.specific.menu_title|default:page.slug }}</a>
             {% else %}
-                <a class="i-angle-left--before text-light" href="{{ page.get_parent.url }}">{{ page.get_parent.slug }}</a>
+                <a class="i-angle-left--before text-light" href="{{ page.get_parent.url }}">{{ page.get_parent.specific.menu_title|default:page.get_parent.slug }}</a>
             {% endif %}
             </h2>
             <button class="btn text-light px-2 d-md-none disabled" href="#sidebarMenu" id="sidebarCollapseButton" aria-label="Content Types" role="button" aria-expanded="false" aria-controls="sidebarMenu">
@@ -17,30 +17,30 @@
                 {% comment "Special case when the page's parent is the root" %} {% endcomment %}
                 {% if page.get_parent.url == '/' %} 
                     {% for i in page.get_children %} 
-		     {% if i.show_in_menus and i.live %}
+                    {% if i.show_in_menus and i.live %}
                         <li class="nav-item">
-                            <a class="nav-link {% if i.url == page.url %}active{% endif %}" href="{{ i.url }}">{{ i.title }}</a>
+                            <a class="nav-link {% if i.url == page.url %}active{% endif %}" href="{{ i.url }}">{{ i.specific.menu_title|default:i.title }}</a>
                         </li>
-		     {% endif %}
+		            {% endif %}
                     {% endfor %}          
                 {% else %}
                     {% for i in page.get_siblings %} 
-		      {% if i.show_in_menus and i.live %}
+		            {% if i.show_in_menus and i.live %}
                         <li class="nav-item">
-                            <a class="nav-link {% if i.url == page.url %}active{% endif %}" href="{{ i.url }}">{{ i.title }}</a>
+                            <a class="nav-link {% if i.url == page.url %}active{% endif %}" href="{{ i.url }}">{{ i.specific.menu_title|default:i.title }}</a>
                             {% if i.url == page.url and page.get_children %}
                                 <ul class='nav flex-column ms-2'>
                                 {% for c in page.get_children %} 
-		                  {% if c.show_in_menus and c.live %}
+		                        {% if c.show_in_menus and c.live %}
                                     <li class="nav-item">
-                                        <a class="nav-link" href="{{ c.url }}">{{ c.title }}</a>
+                                        <a class="nav-link" href="{{ c.url }}">{{ c.specific.menu_title|default:c.title }}</a>
                                     </li>
-				    {% endif %}
+				                {% endif %}
                                 {% endfor %}
                                 </ul>
                             {% endif %}
                         </li>
-                      {% endif %}
+                    {% endif %}
                     {% endfor %}          
                 {% endif %}
             </ul>
