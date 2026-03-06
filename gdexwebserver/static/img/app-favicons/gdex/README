@@ -8,14 +8,19 @@
 
 2. Download your package
 
-3. Extract this package in <web site>/img/app-favicons/gdex/. If your site is http://www.example.com, you should be able to access a file named http://www.example.com/img/app-favicons/gdex/favicon.ico.
+3. Extract this package in /gdexwebserver/static/img/app-favicons/gdex/. This should create the following files in that directory:
+- apple-touch-icon.png
+- favicon-96x96.png
+- favicon.ico
+- favicon.svg
+- site.webmanifest
 
-4. Insert the following code in the <head> section of your pages:
+4. Insert the following code in /gdexwebserver/templates/unity/icons.html, replacing the existing code that references the old favicon files.  This should be placed after the line {% load static %} and before any other code in that file.  The code to insert is as follows:
 
-<link rel="icon" type="image/png" href="/img/app-favicons/gdex/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/img/app-favicons/gdex/favicon.svg" />
-<link rel="shortcut icon" href="/img/app-favicons/gdex/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/img/app-favicons/gdex/apple-touch-icon.png" />
+<link rel="icon" type="image/png" href="{% static 'img/app-favicons/gdex/favicon-96x96.png' %}" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="{% static 'img/app-favicons/gdex/favicon.svg' %}" />
+<link rel="shortcut icon" href="{% static 'img/app-favicons/gdex/favicon.ico' %}" />
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/app-favicons/gdex/apple-touch-icon.png' %}" />
 <meta name="apple-mobile-web-app-title" content="GDEX" />
-<link rel="manifest" href="/img/app-favicons/gdex/site.webmanifest" />
+<link rel="manifest" href="{% static 'img/app-favicons/gdex/site.webmanifest' %}" />
 
