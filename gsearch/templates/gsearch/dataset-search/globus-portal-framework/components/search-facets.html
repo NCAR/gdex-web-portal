@@ -14,7 +14,7 @@
   <div class="d-flex flex-column fieldset-container mb-4 overflow-auto" style="max-height: 300px;" id="facet-{{facet.name}}">
     {% if facet.buckets %}
     {% for field in facet.buckets %}
-    <div class="facet-field mr-3">
+    <div class="facet-field mr-3 ps-1">
       <input type="checkbox" class="facet-checkbox gsearch-checkbox mr-1" name="{{field.search_filter_query_key}}"
         value="{{field.value}}" {# Reset page to 1 if user facets on a paginated search #} onchange="customSearch(1);"
         autocomplete="off" {% if field.checked %} checked {% endif %}>
