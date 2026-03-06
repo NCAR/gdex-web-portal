@@ -1,0 +1,21 @@
+1. Go to https://realfavicongenerator.net and upload the standard (blue) GDEX icon (SVG or PNG format).  
+
+2. Configuration:
+- Dark icon: Select 'Use another icon' and choose the white GDEX icon.
+- Apple Touch Icon: Select 'Add a plain background and margins.  Set color to white (#ffffff) and set image size to largest setting.  Set App name = 'GDEX'
+- Web app manifest: set Name = 'NCAR GDEX' and Short name = 'GDEX'. Select 'Add a plain background and margins.  Set image size to largest setting. Set background and theme color to white (#ffffff).
+- Favicon path: set favicon path = /media/images/favicon/
+
+2. Download your package
+
+3. Extract this package in <web site>/media/images/favicon/. If your site is http://www.example.com, you should be able to access a file named http://www.example.com/media/images/favicon/favicon.ico.
+
+4. Insert the following code in the <head> section of your pages:
+
+<link rel="icon" type="image/png" href="/media/images/favicon/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="/media/images/favicon/favicon.svg" />
+<link rel="shortcut icon" href="/media/images/favicon/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/media/images/favicon/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="GDEX" />
+<link rel="manifest" href="/media/images/favicon/site.webmanifest" />
+
