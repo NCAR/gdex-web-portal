@@ -14,8 +14,8 @@
   <div class="d-flex flex-column fieldset-container mb-4 overflow-auto" style="max-height: 300px;" id="facet-{{facet.name}}">
     {% if facet.buckets %}
     {% for field in facet.buckets %}
-    <div class="facet-field mr-3">
-      <input type="checkbox" class="facet-checkbox mr-1" name="{{field.search_filter_query_key}}"
+    <div class="facet-field mr-3 ps-1">
+      <input type="checkbox" class="facet-checkbox gsearch-checkbox mr-1" name="{{field.search_filter_query_key}}"
         value="{{field.value}}" {# Reset page to 1 if user facets on a paginated search #} onchange="customSearch(1);"
         autocomplete="off" {% if field.checked %} checked {% endif %}>
       {% if field.filter_type == 'year' %}
@@ -33,7 +33,7 @@
       {% else %}
         {{field.value}}
       {% endif %}
-      <span class="badge rounded-pill float-end" style="background-color: #1A658F; color: #f0f0f0;">{{field.count}}</span>
+      <span class="badge gsearch-badge rounded-pill float-end">{{field.count}}</span>
     </div>
     {% empty %}
     <div class="facet-field mr-3">No Data</div>
@@ -41,7 +41,7 @@
     {% elif facet.value %}
     <div class="facet-field mr-3">
       {% if facet.type == 'avg' %} Average {% elif facet.type == 'sum' %} Sum {% endif %}
-      <span class="badge rounded-pill float-end" style="background-color: #1A658F; color: #f0f0f0;">{{facet.value}}</span>
+      <span class="badge gsearch-badge rounded-pill float-end">{{facet.value}}</span>
     </div>
     {% endif %}
   </div>

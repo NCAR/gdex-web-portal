@@ -27,6 +27,19 @@ html, body {
   .badge-primary {
       background-color: #337ab7;
   }
+  .gsearch-badge {
+      background-color: #0057c2;
+      color: #fff;
+  }
+  .gsearch-badge:hover {
+      color: #42c0ff;
+  }
+
+  input.gsearch-checkbox[type="checkbox"] {
+      border: 1px solid #d9d9d6;
+      background-color: #fff;
+      cursor: pointer;
+  }
   
   /*************************
    Main
