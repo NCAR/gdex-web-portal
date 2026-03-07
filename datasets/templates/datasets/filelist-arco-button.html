@@ -1,7 +1,7 @@
 {% with data.is_glade as is_glade %}
 {% with settings.RDA_STRATUS_BASE_URL as os_base_url %}
 {% with settings.NCAR_STRATUS_URL as ncar_os_base_url %}
-{% with settings.RDA_DATA_BASE_URL as rda_base_url %}
+{% with settings.RDA_DATA_BASE_URL as gdex_base_url %}
 {% with settings.GDEX_CANONICAL_DATA_PATH as gdex_base_path %}
 {% load wagtailcore_tags static decs_tags home_tags custom_tags %}
     <button class='btn btn-primary px-2 py-1 float-end rounded' 
@@ -18,12 +18,12 @@
                     '{% get_copy_path os_base_url data.dsid col.webpath %}',
                     '{% get_copy_path_title os_base_url data.dsid col.webpath %}'
                 {% else %}
-                    '{% get_copy_path rda_base_url data.dsid col.webpath %}',
-                    '{% get_copy_path_title rda_base_url data.dsid col.webpath %}'
+                    '{% get_copy_path gdex_base_url data.dsid col.webpath %}',
+                    '{% get_copy_path_title gdex_base_url data.dsid col.webpath %}'
                 {% endif %}
             )">
         <i class="fa-solid fa-copy pe-1"></i>
-        {% get_copy_path_title rda_base_url data.dsid col.webpath %}
+        {% get_copy_path_title gdex_base_url data.dsid col.webpath %}
     </button>
 {% endwith %}
 {% endwith %}
