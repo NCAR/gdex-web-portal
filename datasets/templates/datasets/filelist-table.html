@@ -38,7 +38,7 @@
                         <!--a href={{ col.url }}-->
 
                         {% if data.is_glade and col.is_file %}
-                            {% if locflag == 'O' %}
+                            {% if data.locflag == 'O' %}
                                 {{ col.data_path|make_local_os_URL }}
                             {% else %}
                                 {{ col.data_path|make_glade_URL }}
