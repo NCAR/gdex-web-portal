@@ -89,6 +89,12 @@ def make_glade_URL(uri):
     return url
 
 @register.filter
+def make_local_os_URL(uri):
+    """ Convert file URL path to a local OS URL for NCAR users with OS access """
+    url = os.path.join(settings.NCAR_STRATUS_URL, uri.lstrip('/'))
+    return url
+
+@register.filter
 def convert_bytes(bytes):
     size_bytes = int(bytes)
     if size_bytes == 0:
