@@ -16,7 +16,7 @@ def exception(code, **kwargs):
 
 def respond_to_request(request):
     if len(request.GET) == 0 and len(request.POST) == 0:
-        return render(request, "csw/exception.html",
+        return render(request, "csw/exception.xml",
                       context=exception("InvalidParameterValue",
                                         locator="REQUEST"),
                       content_type="application/xml", status=400)
