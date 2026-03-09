@@ -1044,8 +1044,11 @@ def create_filelist_table(dsid, gindex, page=0, filter_wfile=None):
     locflag = get_dataset_location(dsid)
     origin_path = get_guest_collection_origin_path(dsid)
 
-    if gindex == "-1":
-        base_url = settings.GLOBUS_STRATUS_BASE_URL
+    if int(gindex) < 0:  # Use Globus HTTPS domains for ARCO datasets (gindex < 0)
+        if locflag == 'G':
+            base_url = settings.GLOBUS_DATA_BASE_URL
+        else:
+            base_url = settings.GLOBUS_STRATUS_BASE_URL
     else:
         base_url = get_webfile_base_url(dsid, files[0]['wfile'], locflag=locflag)
 
