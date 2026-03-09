@@ -1,10 +1,10 @@
 {% load menu_tags %}
 
-<div class="legal-footer py-3">
+<div id="legal-footer" class="legal-footer py-3">
     <div class="container-lg">
         <div class="row">
             <div class="col-12 d-print-none">
-                <p class="text-light copyright pe-md-2">© {% now 'Y' %} UCAR</p>
+                <p class="copyright pe-md-2">© {% now 'Y' %} UCAR</p>
                 <ul class="nav flex-column flex-md-row">
                     {% for item in menu_items %}
                         <li class="nav-item {{ item.active_class }}">
