@@ -15,14 +15,17 @@ def exception(code, **kwargs):
 
 
 def parse_query(request):
+    csw_request = {'error': {'code': "MIssingParameterValue",
+                             'locator': "REQUEST"}}
     if request.method == "GET" and len(request.GET) > 0:
-        pass
+        csw_request = {}
+        for key, value in request.GET.items():
+            csw_request[key] = value
+
     elif request.method == "POST" and len(request.POST) > 0:
         pass
-    else:
-        return {'error': {'code': "MIssingParameterValue",
-                          'locator': "REQUEST"}}
 
+    return csw_request
 
 def respond_to_request(request):
     csw_request = parse_query(request)
