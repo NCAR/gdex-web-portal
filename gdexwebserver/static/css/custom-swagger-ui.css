@@ -9,7 +9,7 @@ table td,
 table th,
 .table td,
 .table th {
-  border: none !important;
+  border: none;
 }
 .ncar thead th {
   background-color: transparent !important;
