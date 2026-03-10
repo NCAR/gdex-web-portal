@@ -89,10 +89,15 @@ def make_glade_URL(uri):
     return url
 
 @register.filter
-def make_local_os_URL(uri):
-    """ Convert file URL path to a local OS URL for NCAR users with OS access """
-    url = os.path.join(settings.NCAR_STRATUS_URL, uri.lstrip('/'))
+def make_local_os_URL(url):
+    """ Convert file URL to a local OS URL for NCAR users with OS access """
+    url = url.replace(settings.RDA_STRATUS_BASE_URL.rstrip('/'), settings.NCAR_STRATUS_URL.rstrip('/'))
     return url
+
+@register.filter
+def concat_paths(base_path, relative_path):
+    """Concatenate base path and relative path, ensuring there is exactly one '/' between them."""
+    return os.path.join(base_path.strip('/'), relative_path.strip('/'))
 
 @register.filter
 def convert_bytes(bytes):
