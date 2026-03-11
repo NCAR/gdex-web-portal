@@ -18,7 +18,7 @@ def parse_query(request):
     if request.method == "GET" and len(request.GET) > 0:
         csw_request = {}
         for key, value in request.GET.items():
-            csw_request[key] = value
+            csw_request[key.lower()] = value
 
     elif request.method == "POST" and len(request.POST) > 0:
         csw_request = {}
@@ -33,9 +33,9 @@ def parse_query(request):
         csw_request = {'error': {'code': "InvalidParameterValue",
                                  'locator': "service"}}
 
-    if 'AcceptVersions' in csw_request:
+    if 'acceptversions' in csw_request:
         versions = [e.strip() for e in
-                    csw_request['AcceptVersions'].split(",")]
+                    csw_request['acceptversions'].split(",")]
         if "2.0.2" not in versions:
             csw_request = {'error': {'code': "VersionNegotiationFailed"}}
 
