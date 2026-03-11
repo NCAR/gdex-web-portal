@@ -52,17 +52,14 @@ def get_staff_dsid(request, dsid):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
-def _trigger_github():
+def _trigger_github(ticket_id=None):
     """
     Triggers the Github Actions workflow via github repository_dispatch
     """
     github_token = os.getenv("PERSONAL_GITHUB_TOKEN")
-
-    #TEST
     if not github_token:
         raise ValueError("PERSONAL_GITHUB_TOKEN did not load properly")
-    else:
-        print("Github token loaded successfully")
+    print("Github token loaded successfully")
         
     url = "https://api.github.com/repos/NCAR/gdex-jira-automation/dispatches"
 
@@ -72,7 +69,10 @@ def _trigger_github():
     }
 
     data = {
-        "event_type": "jira-event"
+        "event_type": "jira-event",
+        "client_payload": {
+            "ticket": ticket_id
+        }
     }
 
     response = requests.post(url, json=data, headers=headers)
@@ -83,26 +83,29 @@ class JiraEventReceiver(APIView):
     renderer_classes = [JSONRenderer] # disable UI rendering, return JSON only
     http_method_names = ['post'] # allow POST only
     
-    def post(self,request):
-        payload = request.body 
-        print("Webhook header keys:")
-        for k in request.headers.keys():
-            print(k)
-        received_signature = request.headers.get("X-Hub-Signature")
+    def post(self,request, ticket_id=None):
+        payload = request.body
+        payload_ticket_id = ticket_id if ticket_id else None
+        print(payload_ticket_id)
+
+        # for i in request.headers.keys():
+        #     print(f"Header: {i} Value: {request.headers[i]}")
+            
+        received_signature = request.headers.get("X-Request-Id")
         shared_secret = os.getenv("JIRA_WEBHOOK_SECRET")
+
         if not shared_secret:
-            print("Warning: JIRA_WEBHOOK_SECRET not set. Webhook signature will not be verified.")
+            raise ValueError("Warning: JIRA_WEBHOOK_SECRET not set. Webhook signature will not be verified.")
 
         #Verify signature
         if not self._verify_signature(payload, received_signature, shared_secret):
             return Response({"status": "error", "message": "Invalid signature"}, status=403)
 
         try:            
-            data = request.data
-            print(data)
+            #data = request.data
             print("Received Jira Webhook")
 
-            status_code, text = _trigger_github()
+            status_code, text = _trigger_github(payload_ticket_id)
         except Exception as e:
             return Response({
                 "status": "error",
@@ -110,14 +113,17 @@ class JiraEventReceiver(APIView):
             }, status=500)
 
         return Response({
-            "status": "Worflow triggered",
+            "status": f"Worflow triggered due to incoming ticket: {payload_ticket_id}",
             "github_response_code": status_code,
             "github_response_text": text
         })
     
-    def _verify_signature(self, payload, received_signature, secret):
-        if not secret or not received_signature:
-            return False
+    def _verify_signature(self, payload: bytes, received_signature: str, secret: str) -> bool:
+        if not secret:
+            raise ValueError("No shared secret found for webhook signature verification.")
+        if not received_signature:
+            raise ValueError("No signature found in headers. Webhook signature will not be verified.")
+        
         if received_signature.startswith("sha256="):
             received_signature = received_signature.split("=", 1)[1]
         # Jira often uses HMAC SHA256
@@ -126,7 +132,9 @@ class JiraEventReceiver(APIView):
             msg=payload,
             digestmod=hashlib.sha256
         ).hexdigest()
-        return hmac.compare_digest(computed_hmac, received_signature)
+        is_match = hmac.compare_digest(computed_hmac, received_signature)
+        print(f"Shared secret and received signature returned: {is_match}")
+        return is_match
 
 
 def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
