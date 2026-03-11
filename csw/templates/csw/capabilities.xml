@@ -7,6 +7,7 @@
     <ows:ServiceTypeVersion>2.0.2</ows:ServiceTypeVersion>
   </ows:ServiceIdentification>
   {% endif %}
+  {% if print_service_provider %}
   <ows:ServiceProvider>
     <ows:ProviderName>NSF NCAR Geoscience Data EXchange</ows:ProviderName>
     <ows:ProviderSite xlink:href="https://gdex.ucar.edu/" />
@@ -17,6 +18,7 @@
       </ows:ContactInfo>
     </ows:ServiceContact>
   </ows:ServiceProvider>
+  {% endif %}
   {% if print_operations_metadata %}
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
@@ -85,6 +87,7 @@
     </ows:Constraint>
   </ows:OperationsMetadata>
   {% endif %}
+  {% if print_filter_capabilities %}
   <ogc:Filter_Capabilities>
     <ogc:Spatial_Capabilities>
       <ogc:GeometryOperands>
@@ -110,4 +113,5 @@
       <ogc:EID />
     </ogc:Id_Capabilities>
   </ogc:Filter_Capabilities>
+  {% endif %}
 </csw:Capabilities>
