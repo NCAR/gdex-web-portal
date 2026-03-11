@@ -50,4 +50,8 @@ def respond_to_request(request):
         return render(request, "csw/exception.xml",
                       context=ctx, content_type="application/xml", status=400)
 
+    if csw_request['request'] == "GetCapabilities":
+        return render(request, "csw/get_capabilities.xml",
+                      content_type="application/xml", status=200)
+
     return render(request, "403.html")
