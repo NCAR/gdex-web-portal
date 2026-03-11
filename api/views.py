@@ -112,7 +112,6 @@ class JiraEventReceiver(APIView):
         print("Received Jira Webhook")
 
         github_repo=os.getenv("GITHUB_REPO")
-        # github_repo = "https://api.github.com/repos/NCAR/gdex-jira-automation/dispatches"
         if not github_repo:
             raise ValueError("GITHUB_REPO did not load properly")
         
