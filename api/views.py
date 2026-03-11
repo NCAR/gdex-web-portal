@@ -52,17 +52,19 @@ def get_staff_dsid(request, dsid):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
-def _trigger_github(ticket_id=None):
+def _trigger_github(github_repo:str, github_token:str, payload=None):
     """
     Triggers the Github Actions workflow via github repository_dispatch
+
+    ticket_id: is optional, but if provided will be included in the client_payload 
+        sent to github and can be used to conditionally run steps in the workflow 
+        or for debugging/logging purposes.
+    Returns the status code and text response from the github API call
     """
-    github_token = os.getenv("PERSONAL_GITHUB_TOKEN")
     if not github_token:
         raise ValueError("PERSONAL_GITHUB_TOKEN did not load properly")
     print("Github token loaded successfully")
         
-    url = "https://api.github.com/repos/NCAR/gdex-jira-automation/dispatches"
-
     headers = {
     "Authorization": f"token {github_token}",
     "Accept": "application/vnd.github.v3+json",
@@ -70,70 +72,76 @@ def _trigger_github(ticket_id=None):
 
     data = {
         "event_type": "jira-event",
-        "client_payload": {
-            "ticket": ticket_id
+        "client_payload": payload
         }
-    }
 
-    response = requests.post(url, json=data, headers=headers)
-    return response.status_code, response.text
+    try:
+        response = requests.post(github_repo, json=data, headers=headers)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        return response.status_code, response.text
+    except requests.excepions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+        return None, str(http_err)
+    except requests.exceptions.ConnectionError as conn_err:
+        print(f"Connection error occured: {conn_err}")
+        return None, str(conn_err)
+    except requests.exceptions.Timeout as timeout_err:
+        print(f"Timeout error occurred: {timeout_err}")
+        return None, str(timeout_err)
+    except requests.exceptions.RequestException as req_err:
+        print(f"An error occurred: {req_err}")
+        return None, str(req_err)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class JiraEventReceiver(APIView):
     renderer_classes = [JSONRenderer] # disable UI rendering, return JSON only
     http_method_names = ['post'] # allow POST only
-    
+
     def post(self,request, ticket_id=None):
         payload = request.body
         payload_ticket_id = ticket_id if ticket_id else None
-        print(payload_ticket_id)
-
-        # for i in request.headers.keys():
-        #     print(f"Header: {i} Value: {request.headers[i]}")
             
         received_signature = request.headers.get("X-Request-Id")
         shared_secret = os.getenv("JIRA_WEBHOOK_SECRET")
-
         if not shared_secret:
             raise ValueError("Warning: JIRA_WEBHOOK_SECRET not set. Webhook signature will not be verified.")
-
+        
         #Verify signature
         if not self._verify_signature(payload, received_signature, shared_secret):
             return Response({"status": "error", "message": "Invalid signature"}, status=403)
+        print("Received Jira Webhook")
 
-        try:            
-            #data = request.data
-            print("Received Jira Webhook")
-
-            status_code, text = _trigger_github(payload_ticket_id)
-        except Exception as e:
-            return Response({
-                "status": "error",
-                "message": str(e)
-            }, status=500)
+        github_repo=os.getenv("GITHUB_REPO")
+        # github_repo = "https://api.github.com/repos/NCAR/gdex-jira-automation/dispatches"
+        if not github_repo:
+            raise ValueError("GITHUB_REPO did not load properly")
+        
+        github_token=os.getenv("PERSONAL_GITHUB_TOKEN")
+        if not github_token:
+            raise ValueError("PERSONAL_GITHUB_TOKEN did not load properly")
+        
+        status_code, text = _trigger_github(github_repo, github_token, payload = {"ticket_id": payload_ticket_id})
 
         return Response({
             "status": f"Worflow triggered due to incoming ticket: {payload_ticket_id}",
             "github_response_code": status_code,
             "github_response_text": text
-        })
+        })   
     
     def _verify_signature(self, payload: bytes, received_signature: str, secret: str) -> bool:
         if not secret:
             raise ValueError("No shared secret found for webhook signature verification.")
         if not received_signature:
-            raise ValueError("No signature found in headers. Webhook signature will not be verified.")
-        
+            raise ValueError("No signature found in headers. Webhook signature will not be verified.")   
         if received_signature.startswith("sha256="):
             received_signature = received_signature.split("=", 1)[1]
-        # Jira often uses HMAC SHA256
+        # Jira uses HMAC SHA256
         computed_hmac = hmac.new(
             key=secret.encode("utf-8"),
             msg=payload,
             digestmod=hashlib.sha256
         ).hexdigest()
         is_match = hmac.compare_digest(computed_hmac, received_signature)
-        print(f"Shared secret and received signature returned: {is_match}")
         return is_match
 
 
