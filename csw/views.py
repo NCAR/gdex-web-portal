@@ -29,7 +29,7 @@ def parse_query(request):
     if 'service' not in csw_request:
         csw_request = {'error': {'code': "MissingParameterValue",
                                  'locator': "service"}}
-    elif csw_request['service'].lower() != "csw":
+    elif csw_request['service'] != "CSW":
         csw_request = {'error': {'code': "InvalidParameterValue",
                                  'locator': "service"}}
 
