@@ -15,17 +15,32 @@ def exception(code, **kwargs):
 
 
 def parse_query(request):
-    csw_request = {'error': {'code': "MIssingParameterValue",
-                             'locator': "REQUEST"}}
     if request.method == "GET" and len(request.GET) > 0:
         csw_request = {}
         for key, value in request.GET.items():
             csw_request[key] = value
 
     elif request.method == "POST" and len(request.POST) > 0:
-        pass
+        csw_request = {}
+    else:
+        csw_request = {'error': {'code': "MIssingParameterValue",
+                                 'locator': "REQUEST"}}
+
+    if 'service' not in csw_request:
+        csw_request = {'error': {'code': "MissingParameterValue",
+                                 'locator': "service"}}
+    elif csw_request['service'].lower() != "csw":
+        csw_request = {'error': {'code': "InvalidParameterValue",
+                                 'locator': "service"}}
+
+    if 'AcceptVersions' in csw_request:
+        versions = [e.strip() for e in
+                    csw_request['AcceptVersions'].split(",")]
+        if "2.0.2" not in versions:
+            csw_request = {'error': {'code': "VersionNegotiationFailed"}}
 
     return csw_request
+
 
 def respond_to_request(request):
     csw_request = parse_query(request)
