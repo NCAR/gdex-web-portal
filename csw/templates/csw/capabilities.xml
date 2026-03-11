@@ -59,7 +59,7 @@
         <ows:Value>hits</ows:Value>
         <ows:Value>results</ows:Value>
       </ows:Parameter>
-      <ows:Parameter name="typeNames">
+      <ows:Parameter name="TypeName">
         <ows:Value>csw:Record</ows:Value>
       </ows:Parameter>
       <ows:Parameter name="CONSTRAINTLANGUAGE">
