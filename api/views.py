@@ -101,7 +101,7 @@ class JiraEventReceiver(APIView):
         payload = request.body
         payload_ticket_id = ticket_id if ticket_id else None
             
-        received_signature = request.headers.get("X-Request-Id")
+        received_signature = request.headers.get("X-Hub-Signature")
         shared_secret = os.getenv("JIRA_WEBHOOK_SECRET")
         if not shared_secret:
             raise ValueError("Warning: JIRA_WEBHOOK_SECRET not set. Webhook signature will not be verified.")
