@@ -1,5 +1,6 @@
 from lxml import etree as ElementTree
 
+from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
