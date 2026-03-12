@@ -82,8 +82,12 @@ def get_record_by_id(request, csw_request):
 def respond_to_request(request):
     csw_request = parse_query(request)
     if 'error' in csw_request:
-        ctx = exception(csw_request['error']['code'],
-                        locator=csw_request['error']['locator'])
+        code = csw_request['error']['code']
+        locator = (csw_request['error']['locator'] if 'locator' in
+                   csw_request['error'] else None)
+        text = (csw_request['error']['text'] if 'text' in csw_request['error']
+                else None)
+        ctx = exception(code, locator=locator, text=text)
         return render(request, "csw/exception.xml",
                       context=ctx, content_type="application/xml", status=400)
 
