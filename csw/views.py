@@ -42,6 +42,32 @@ def parse_query(request):
     return csw_request
 
 
+def get_capabilities(request, csw_request):
+    if 'sections' in csw_request:
+        sections = csw_request['sections'].split(",")
+        ctx = {}
+        if "ServiceIdentification" in sections:
+            ctx['print_service_identification'] = True
+
+        if "ServiceProvider" in sections:
+            ctx['print_service_provider'] = True
+
+        if "OperationsMetadata" in sections:
+            ctx['print_operations_metadata'] = True
+
+        if "Filter_Capabilities" in sections:
+            ctx['print_filter_capabilities'] = True
+
+    else:
+        ctx = {'print_service_identification': True,
+               'print_service_provider': True,
+               'print_operations_metadata': True,
+               'print_filter_capabilities': True}
+
+    return render(request, "csw/capabilities.xml", context=ctx,
+                  content_type="application/xml", status=200)
+
+
 def respond_to_request(request):
     csw_request = parse_query(request)
     if 'error' in csw_request:
@@ -51,28 +77,6 @@ def respond_to_request(request):
                       context=ctx, content_type="application/xml", status=400)
 
     if csw_request['request'] == "GetCapabilities":
-        if 'sections' in csw_request:
-            sections = csw_request['sections'].split(",")
-            ctx = {}
-            if "ServiceIdentification" in sections:
-                ctx['print_service_identification'] = True
-
-            if "ServiceProvider" in sections:
-                ctx['print_service_provider'] = True
-
-            if "OperationsMetadata" in sections:
-                ctx['print_operations_metadata'] = True
-
-            if "Filter_Capabilities" in sections:
-                ctx['print_filter_capabilities'] = True
-
-        else:
-            ctx = {'print_service_identification': True,
-                   'print_service_provider': True,
-                   'print_operations_metadata': True,
-                   'print_filter_capabilities': True}
-
-        return render(request, "csw/capabilities.xml", context=ctx,
-                      content_type="application/xml", status=200)
+        return get_capabilities(request, csw_request)
 
     return render(request, "403.html")
