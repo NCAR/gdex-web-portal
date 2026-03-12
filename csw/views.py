@@ -80,6 +80,30 @@ def get_capabilities(request, csw_request):
                   content_type="application/xml", status=200)
 
 
+def get_hits(request, csw_request):
+    ctx = {}
+    return render(request, "csw/get_records.xml", context=ctx,
+                  content_type="application/xml", status=200)
+
+
+def get_brief_records(request, csw_request):
+    ctx = {}
+    return render(request, "csw/get_records.xml", context=ctx,
+                  content_type="application/xml", status=200)
+
+
+def get_full_records(request, csw_request):
+    ctx = {}
+    return render(request, "csw/get_records.xml", context=ctx,
+                  content_type="application/xml", status=200)
+
+
+def get_summary_records(request, csw_request):
+    ctx = {}
+    return render(request, "csw/get_records.xml", context=ctx,
+                  content_type="application/xml", status=200)
+
+
 def get_records(request, csw_request):
     if 'elementsetname' not in csw_request:
         csw_request['elementsetname'] = "summary"
@@ -110,7 +134,19 @@ def get_records(request, csw_request):
                       context=exception(code, locator="typeNames"),
                       content_type="application/xml", status=400)
 
-    return render(request, "500.html")
+    if csw_request['resulttype'] == "hits":
+        return get_hits(request, csw_request)
+    else:
+        if csw_request['elementsetname'] == "brief":
+            return get_brief_records(request, csw_request)
+        elif csw_request['elementsetname'] == "full":
+            return get_full_records(request, csw_request)
+        elif csw_request['elementsetname'] == "summary":
+            return get_summary_records(request, csw_request)
+
+    return render(request, "csw/exception.xml",
+                  context=exception("TransactionFailed"),
+                  content_type="application/xml", status=500)
 
 
 def get_record_by_id(request, csw_request):
