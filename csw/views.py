@@ -21,6 +21,7 @@ def parse_query(request):
             csw_request[key.lower()] = value
 
     elif request.method == "POST" and len(request.POST) > 0:
+        print(request.body)
         csw_request = {}
     else:
         csw_request = {'error': {'code': "MissingParameterValue",
