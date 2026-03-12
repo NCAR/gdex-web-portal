@@ -1,3 +1,5 @@
+import psycopg2
+
 from lxml import etree as ElementTree
 
 from django.conf import settings
@@ -82,9 +84,43 @@ def get_capabilities(request, csw_request):
 
 
 def get_hits(request, csw_request):
-    ctx = {}
-    return render(request, "csw/get_records.xml", context=ctx,
-                  content_type="application/xml", status=200)
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+    except psycopg2.Error:
+        return render(request, "csw/exception.xml",
+                      contex=exception("TransactionFailed",
+                                       text="Database connection failure"),
+                      content_type="application/xml", status=500)
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute((
+                "select count(dsid) from search.datasets where type in "
+                "('P', 'H')"))
+        res = cursor.fetchone()
+        ctx = {'result_type': "hits",
+               'num_matched': (int(res[0]) if res is not None else 0)}
+        #cursor.execute((
+        #        """select count(t."dc:identifier") from (select concat("""
+        #        """'edu.ucar.gdex:', s.dsid) as "dc:identifier1", s.stitle """
+        #        """as "dc.title", s.summary as "dct:abstract", concat("""
+        #        """'doi:', v.doi) as "dc:identifier2", d.date_change as """
+        #        """"dct:modified" from search.datasets as s left join """
+        #        """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = """
+        #        """'A' left join dssdb.dataset as d on d.dsid = s.dsid """
+        #        """where s.type in ('P', 'H') having (""" +
+        #        csw_request['constraint']['predicate'] + """) as x"""))
+        #res = cursor.fetchall()
+        return render(request, "csw/get_records.xml", context=ctx,
+                      content_type="application/xml", status=200)
+    except psycopg2.Error as err:
+        print(f"CSW ERROR: '{err}', query: '{cursor.query}'")
+        return render(request, "csw/exception.xml",
+                      contex=exception("TransactionFailed",
+                                       text="Database failure"),
+                      content_type="application/xml", status=500)
+    finally:
+        conn.close()
 
 
 def get_brief_records(request, csw_request):
