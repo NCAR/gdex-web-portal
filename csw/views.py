@@ -85,6 +85,35 @@ def get_records(request, csw_request):
 
 
 def get_record_by_id(request, csw_request):
+    if 'elementsetname' not in csw_request:
+        csw_request['elementsetname'] = "summary"
+
+    if csw_request['elementsetname'] not in ("brief", "full", "summary"):
+        return render(request, "csw/exception.xml",
+                      context=exception("InvalidParameterValue",
+                                        locator="ElementSetName"),
+                      content_type="application/xml", status=400)
+
+    if 'resulttype' not in csw_request:
+        csw_request['resulttype'] = "hits"
+
+    if csw_request['resulttype'] not in ("hits", "results"):
+        return render(request, "csw/exception.xml",
+                      context=exception("InvalidParameterValue",
+                                        locator="resultType"),
+                      content_type="application/xml", status=400)
+
+    code = None
+    if 'typenames' not in csw_request:
+        code = "MissingParameterValue"
+    elif csw_request['typenames'] != "csw:Record":
+        code = "InvalidParameterValue"
+
+    if code is not None:
+        return render(request, "csw/exception.xml",
+                      context=exception(code, locator="typeNames"),
+                      content_type="application/xml", status=400)
+
     return render(request, "500.html")
 
 
