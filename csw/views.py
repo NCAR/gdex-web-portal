@@ -68,6 +68,14 @@ def get_capabilities(request, csw_request):
                   content_type="application/xml", status=200)
 
 
+def get_records(request, csw_request):
+    return render(request, "500.html")
+
+
+def get_record_by_id(request, csw_request):
+    return render(request, "500.html")
+
+
 def respond_to_request(request):
     csw_request = parse_query(request)
     if 'error' in csw_request:
@@ -78,5 +86,13 @@ def respond_to_request(request):
 
     if csw_request['request'] == "GetCapabilities":
         return get_capabilities(request, csw_request)
+    elif csw_request['request'] == "GetRecords":
+        return get_records(request, csw_request)
+    elif csw_request['request'] == "GetRecordById":
+        return get_record_by_id(request, csw_request)
+    else:
+        ctx = exception("InvalidParameterValue", locator="REQUEST")
+        return render(request, "csw/exception.xml", context=ctx,
+                      content_type="application/xml", status=400)
 
     return render(request, "403.html")
