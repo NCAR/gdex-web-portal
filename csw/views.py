@@ -1,3 +1,5 @@
+from lxml import etree as ElementTree
+
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
@@ -22,8 +24,16 @@ def parse_query(request):
             csw_request[key.lower()] = value
 
     elif request.method == "POST" and len(request.POST) > 0:
-        print(request.body)
-        csw_request = {}
+        try:
+            root = ElementTree.fromstring(request.body.decode("utf-8"))
+            csw_request = {'request': root.tag}
+            for key, value in root.attrib.items():
+                csw_request[key.lower()] = value
+
+        except Exception as err:
+            return {'error': {'code': "InvalidRequest",
+                              'locator': "Error",
+                              'text': str(err)}}
     else:
         csw_request = {'error': {'code': "MissingParameterValue",
                                  'locator': "REQUEST"}}
