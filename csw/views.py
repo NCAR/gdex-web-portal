@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
 
 def exception(code, **kwargs):
@@ -77,6 +78,7 @@ def get_record_by_id(request, csw_request):
     return render(request, "500.html")
 
 
+@csrf_exempt
 def respond_to_request(request):
     csw_request = parse_query(request)
     if 'error' in csw_request:
