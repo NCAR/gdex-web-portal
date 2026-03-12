@@ -23,7 +23,7 @@ def parse_query(request):
     elif request.method == "POST" and len(request.POST) > 0:
         csw_request = {}
     else:
-        csw_request = {'error': {'code': "MIssingParameterValue",
+        csw_request = {'error': {'code': "MissingParameterValue",
                                  'locator': "REQUEST"}}
 
     if 'service' not in csw_request:
