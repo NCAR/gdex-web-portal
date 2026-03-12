@@ -81,10 +81,6 @@ def get_capabilities(request, csw_request):
 
 
 def get_records(request, csw_request):
-    return render(request, "500.html")
-
-
-def get_record_by_id(request, csw_request):
     if 'elementsetname' not in csw_request:
         csw_request['elementsetname'] = "summary"
 
@@ -114,6 +110,10 @@ def get_record_by_id(request, csw_request):
                       context=exception(code, locator="typeNames"),
                       content_type="application/xml", status=400)
 
+    return render(request, "500.html")
+
+
+def get_record_by_id(request, csw_request):
     return render(request, "500.html")
 
 
