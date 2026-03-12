@@ -114,7 +114,12 @@ def get_records(request, csw_request):
 
 
 def get_record_by_id(request, csw_request):
-    return render(request, "500.html")
+    if 'id' not in csw_request:
+        return render(request, "csw/exception.xml",
+                      context=exception("MissingParameterValue", locator="Id"),
+                      content_type="application/xml", status=400)
+
+    return get_records(request, csw_request)
 
 
 @csrf_exempt
