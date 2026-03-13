@@ -16,6 +16,9 @@
       {% for subject in record.subjects %}
       <dc:subject>{{ subject }}</dc:subject>
       {% endfor %}
+      {% for format in record.formats %}
+      <dc:format>{{ format }}</dc:format>
+      {% endfor %}
       <dct:modified>{{ record.modified }}</dct:modified>
       <dct:abstract>{{ record.abstract }}</dct:abstract>
       {% endif %}

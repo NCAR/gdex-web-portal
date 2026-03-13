@@ -111,7 +111,7 @@ def summary(request, csw_request):
                      'abstract': convert_html_to_text("<summary>" + e[3] +
                                                       "</summary>"),
                      'modified': e[5].strftime("%Y-%m-%dT%H:%M:%S+00:00"),
-                     'subjects': []})
+                     'subjects': [], 'formats': []})
             if len(e[4]) > 4:
                 ctx['records'][-1]['identifiers'].append(e[4])
 
@@ -123,6 +123,13 @@ def summary(request, csw_request):
             subjects = cursor.fetchall()
             for s in subjects:
                 ctx['records'][-1]['subjects'].append(s[0])
+
+            cursor.execute((
+                    "select keyword from search.formats where dsid = %s"),
+                    (e[0], ))
+            formats = cursor.fetchall()
+            for f in formats:
+                ctx['records'][-1]['formats'].append(f[0])
 
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)
