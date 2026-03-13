@@ -58,13 +58,17 @@ def brief(request, csw_request):
         cursor = conn.cursor()
         cursor.execute((
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
-                """"dc:identifier", s.title from search.datasets as s where """
-                """s.type in ('P', 'H') order by s.dsid"""))
+                """"dc:identifier1", s.title, concat('doi:', v.doi) as """
+                """"dc:identifer2" from search.datasets as s left join """
+                """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = 'A' """
+                """where s.type in ('P', 'H') order by s.dsid"""))
         res = cursor.fetchall()
         ctx = {'result_type': "brief", 'num_matched': len(res),
                'num_returned': len(res), 'next_record': 0, 'records': []}
         for e in res:
-            ctx['records'].append({'identifier': e[1], 'title': e[2]})
+            ctx['records'].append({'identifiers': [e[1]], 'title': e[2]})
+            if len(e[3]) > 4:
+                ctx['records'][-1]['identifiers'].append(e[3])
 
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)
