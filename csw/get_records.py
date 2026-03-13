@@ -25,7 +25,7 @@ def hits(request, csw_request):
         cursor = conn.cursor()
         cursor.execute((
                 "select count(dsid) from search.datasets where type in "
-                "('P', 'H') order by dsid"))
+                "('P', 'H')"))
         res = cursor.fetchone()
         ctx = {'result_type': "hits",
                'num_matched': (int(res[0]) if res is not None else 0)}
