@@ -1,221 +1,30 @@
-import psycopg2
-
-from lxml import etree as ElementTree
-
-from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-
-def exception(code, **kwargs):
-    d = {'exception': {}}
-    e = d['exception']
-    e['code'] = code
-    if 'locator' in kwargs:
-        e['locator'] = kwargs['locator']
-
-    if 'text' in kwargs:
-        e['text'] = kwargs['text']
-
-    return d
-
-
-def parse_query(request):
-    if request.method == "GET" and len(request.GET) > 0:
-        csw_request = {}
-        for key, value in request.GET.items():
-            csw_request[key.lower()] = value
-
-    elif request.method == "POST" and len(request.POST) > 0:
-        try:
-            root = ElementTree.fromstring(request.body.decode("utf-8"))
-            csw_request = {'request': root.tag}
-            for key, value in root.attrib.items():
-                csw_request[key.lower()] = value
-
-        except Exception as err:
-            return {'error': {'code': "InvalidRequest",
-                              'locator': "Error",
-                              'text': str(err)}}
-    else:
-        csw_request = {'error': {'code': "MissingParameterValue",
-                                 'locator': "REQUEST"}}
-
-    if 'service' not in csw_request:
-        csw_request = {'error': {'code': "MissingParameterValue",
-                                 'locator': "service"}}
-    elif csw_request['service'] != "CSW":
-        csw_request = {'error': {'code': "InvalidParameterValue",
-                                 'locator': "service"}}
-
-    if 'acceptversions' in csw_request:
-        versions = [e.strip() for e in
-                    csw_request['acceptversions'].split(",")]
-        if "2.0.2" not in versions:
-            csw_request = {'error': {'code': "VersionNegotiationFailed"}}
-
-    return csw_request
-
-
-def get_capabilities(request, csw_request):
-    if 'sections' in csw_request:
-        sections = csw_request['sections'].split(",")
-        ctx = {}
-        if "ServiceIdentification" in sections:
-            ctx['print_service_identification'] = True
-
-        if "ServiceProvider" in sections:
-            ctx['print_service_provider'] = True
-
-        if "OperationsMetadata" in sections:
-            ctx['print_operations_metadata'] = True
-
-        if "Filter_Capabilities" in sections:
-            ctx['print_filter_capabilities'] = True
-
-    else:
-        ctx = {'print_service_identification': True,
-               'print_service_provider': True,
-               'print_operations_metadata': True,
-               'print_filter_capabilities': True}
-
-    return render(request, "csw/capabilities.xml", context=ctx,
-                  content_type="application/xml", status=200)
-
-
-def get_hits(request, csw_request):
-    try:
-        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
-    except psycopg2.Error:
-        return render(request, "csw/exception.xml",
-                      contex=exception("TransactionFailed",
-                                       text="Database connection failure"),
-                      content_type="application/xml", status=500)
-
-    try:
-        cursor = conn.cursor()
-        cursor.execute((
-                "select count(dsid) from search.datasets where type in "
-                "('P', 'H')"))
-        res = cursor.fetchone()
-        ctx = {'result_type': "hits",
-               'num_matched': (int(res[0]) if res is not None else 0)}
-        #cursor.execute((
-        #        """select count(t."dc:identifier") from (select concat("""
-        #        """'edu.ucar.gdex:', s.dsid) as "dc:identifier1", s.stitle """
-        #        """as "dc.title", s.summary as "dct:abstract", concat("""
-        #        """'doi:', v.doi) as "dc:identifier2", d.date_change as """
-        #        """"dct:modified" from search.datasets as s left join """
-        #        """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = """
-        #        """'A' left join dssdb.dataset as d on d.dsid = s.dsid """
-        #        """where s.type in ('P', 'H') having (""" +
-        #        csw_request['constraint']['predicate'] + """) as x"""))
-        #res = cursor.fetchall()
-        return render(request, "csw/get_records.xml", context=ctx,
-                      content_type="application/xml", status=200)
-    except psycopg2.Error as err:
-        print(f"CSW ERROR: '{err}', query: '{cursor.query}'")
-        return render(request, "csw/exception.xml",
-                      contex=exception("TransactionFailed",
-                                       text="Database failure"),
-                      content_type="application/xml", status=500)
-    finally:
-        conn.close()
-
-
-def get_brief_records(request, csw_request):
-    ctx = {}
-    return render(request, "csw/get_records.xml", context=ctx,
-                  content_type="application/xml", status=200)
-
-
-def get_full_records(request, csw_request):
-    ctx = {}
-    return render(request, "csw/get_records.xml", context=ctx,
-                  content_type="application/xml", status=200)
-
-
-def get_summary_records(request, csw_request):
-    ctx = {}
-    return render(request, "csw/get_records.xml", context=ctx,
-                  content_type="application/xml", status=200)
-
-
-def get_records(request, csw_request):
-    if 'elementsetname' not in csw_request:
-        csw_request['elementsetname'] = "summary"
-
-    if csw_request['elementsetname'] not in ("brief", "full", "summary"):
-        return render(request, "csw/exception.xml",
-                      context=exception("InvalidParameterValue",
-                                        locator="ElementSetName"),
-                      content_type="application/xml", status=400)
-
-    if 'resulttype' not in csw_request:
-        csw_request['resulttype'] = "hits"
-
-    if csw_request['resulttype'] not in ("hits", "results"):
-        return render(request, "csw/exception.xml",
-                      context=exception("InvalidParameterValue",
-                                        locator="resultType"),
-                      content_type="application/xml", status=400)
-
-    code = None
-    if 'typenames' not in csw_request:
-        code = "MissingParameterValue"
-    elif csw_request['typenames'] != "csw:Record":
-        code = "InvalidParameterValue"
-
-    if code is not None:
-        return render(request, "csw/exception.xml",
-                      context=exception(code, locator="typeNames"),
-                      content_type="application/xml", status=400)
-
-    if csw_request['resulttype'] == "hits":
-        return get_hits(request, csw_request)
-    else:
-        if csw_request['elementsetname'] == "brief":
-            return get_brief_records(request, csw_request)
-        elif csw_request['elementsetname'] == "full":
-            return get_full_records(request, csw_request)
-        elif csw_request['elementsetname'] == "summary":
-            return get_summary_records(request, csw_request)
-
-    return render(request, "csw/exception.xml",
-                  context=exception("TransactionFailed"),
-                  content_type="application/xml", status=500)
-
-
-def get_record_by_id(request, csw_request):
-    if 'id' not in csw_request:
-        return render(request, "csw/exception.xml",
-                      context=exception("MissingParameterValue", locator="Id"),
-                      content_type="application/xml", status=400)
-
-    return get_records(request, csw_request)
+from . import get_capabilities, get_record_by_id, get_records, utils
 
 
 @csrf_exempt
 def respond_to_request(request):
-    csw_request = parse_query(request)
+    csw_request = utils.parse_request(request)
     if 'error' in csw_request:
         code = csw_request['error']['code']
         locator = (csw_request['error']['locator'] if 'locator' in
                    csw_request['error'] else None)
         text = (csw_request['error']['text'] if 'text' in csw_request['error']
                 else None)
-        ctx = exception(code, locator=locator, text=text)
+        ctx = utils.exception(code, locator=locator, text=text)
         return render(request, "csw/exception.xml",
                       context=ctx, content_type="application/xml", status=400)
 
     if csw_request['request'] == "GetCapabilities":
-        return get_capabilities(request, csw_request)
+        return get_capabilities.respond(request, csw_request)
     elif csw_request['request'] == "GetRecords":
-        return get_records(request, csw_request)
+        return get_records.respond(request, csw_request)
     elif csw_request['request'] == "GetRecordById":
-        return get_record_by_id(request, csw_request)
+        return get_record_by_id.respond(request, csw_request)
     else:
-        ctx = exception("InvalidParameterValue", locator="REQUEST")
+        ctx = utils.exception("InvalidParameterValue", locator="REQUEST")
         return render(request, "csw/exception.xml", context=ctx,
                       content_type="application/xml", status=400)
 
