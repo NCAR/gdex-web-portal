@@ -45,8 +45,8 @@ def hits(request, csw_request):
     except psycopg2.Error as err:
         print(f"CSW 'HITS' ERROR: '{err}', query: '{cursor.query}'")
         return render(request, "csw/exception.xml",
-                      contex=utils.exception("TransactionFailed",
-                                             text="Database failure"),
+                      context=utils.exception("TransactionFailed",
+                                              text="Database failure"),
                       content_type="application/xml", status=500)
     finally:
         conn.close()
@@ -70,8 +70,8 @@ def brief(request, csw_request):
     except psycopg2.Error as err:
         print(f"CSW 'BRIEF' ERROR: '{err}', query: '{cursor.query}'")
         return render(request, "csw/exception.xml",
-                      contex=utils.exception("TransactionFailed",
-                                             text="Database failure"),
+                      context=utils.exception("TransactionFailed",
+                                              text="Database failure"),
                       content_type="application/xml", status=500)
     finally:
         conn.close()
