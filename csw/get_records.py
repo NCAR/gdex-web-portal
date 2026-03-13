@@ -25,7 +25,7 @@ def hits(request, csw_request):
         cursor = conn.cursor()
         cursor.execute((
                 "select count(dsid) from search.datasets where type in "
-                "('P', 'H')"))
+                "('P', 'H') order by dsid"))
         res = cursor.fetchone()
         ctx = {'result_type': "hits",
                'num_matched': (int(res[0]) if res is not None else 0)}
@@ -43,7 +43,7 @@ def hits(request, csw_request):
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)
     except psycopg2.Error as err:
-        print(f"CSW ERROR: '{err}', query: '{cursor.query}'")
+        print(f"CSW 'HITS' ERROR: '{err}', query: '{cursor.query}'")
         return render(request, "csw/exception.xml",
                       contex=utils.exception("TransactionFailed",
                                              text="Database failure"),
@@ -53,9 +53,26 @@ def hits(request, csw_request):
 
 
 def brief(request, csw_request):
-    ctx = {}
-    return render(request, "csw/get_records.xml", context=ctx,
-                  content_type="application/xml", status=200)
+    conn = db_connect(request)
+    try:
+        cursor = conn.cursor()
+        cursor.execute((
+                """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
+                """"dc:identifier", s.title from search.datasets as s where """
+                """s.type in ('P', 'H') order by s.dsid"""))
+        res = cursor.fetchall()
+        ctx = {'result_type': "brief", 'identifier': res[1],
+               'title': res[2]}
+        return render(request, "csw/get_records.xml", context=ctx,
+                      content_type="application/xml", status=200)
+    except psycopg2.Error as err:
+        print(f"CSW 'BRIEF' ERROR: '{err}', query: '{cursor.query}'")
+        return render(request, "csw/exception.xml",
+                      contex=utils.exception("TransactionFailed",
+                                             text="Database failure"),
+                      content_type="application/xml", status=500)
+    finally:
+        conn.close()
 
 
 def full(request, csw_request):
