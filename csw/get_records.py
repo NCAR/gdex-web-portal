@@ -84,7 +84,8 @@ def brief(request, csw_request):
 
 
 def full(request, csw_request):
-    ctx = {}
+    ctx = summary(request, csw_request)
+    ctx['result_type'] = "full"
     return render(request, "csw/get_records.xml", context=ctx,
                   content_type="application/xml", status=200)
 
@@ -131,6 +132,9 @@ def summary(request, csw_request):
             for f in formats:
                 ctx['records'][-1]['formats'].append(
                         f[0].replace("proprietary_", ""))
+
+        if csw_request['elementsetname'] == "full":
+            return ctx
 
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)
