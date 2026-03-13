@@ -61,7 +61,8 @@ def brief(request, csw_request):
                 """"dc:identifier", s.title from search.datasets as s where """
                 """s.type in ('P', 'H') order by s.dsid"""))
         res = cursor.fetchall()
-        ctx = {'result_type': "brief", 'records': []}
+        ctx = {'result_type': "brief", 'num_matched': len(res),
+               'num_returned': len(res), 'next_record': 0, 'records': []}
         for e in res:
             ctx['records'].append({'identifier': e[1], 'title': e[2]})
 
