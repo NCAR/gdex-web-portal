@@ -22,6 +22,9 @@
       <dct:modified>{{ record.modified }}</dct:modified>
       <dct:abstract>{{ record.abstract }}</dct:abstract>
       {% endif %}
+      {% if result_type == "full" %}
+      <dc:publisher>{{ publisher }}</dc:publisher>
+      {% endif %}
       {% if bounding_box %}
       <ows:BoundingBox>
         <ows:LowerCorner>{{ bounding_box.lower_corner.west_lon }} {{ bounding_box.lower_corner.south_lat }}</ows:LowerCorner>

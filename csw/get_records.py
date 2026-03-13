@@ -2,6 +2,7 @@ import psycopg2
 
 from django.conf import settings
 from django.shortcuts import render
+from libpkg.metaformats.settings import ARCHIVE
 from libpkg.xmlutils import convert_html_to_text
 
 from . import utils
@@ -86,6 +87,7 @@ def brief(request, csw_request):
 def full(request, csw_request):
     ctx = summary(request, csw_request)
     ctx['result_type'] = "full"
+    ctx['publisher'] = ARCHIVE['pub_name']['default']['name']
     return render(request, "csw/get_records.xml", context=ctx,
                   content_type="application/xml", status=200)
 
