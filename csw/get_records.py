@@ -110,9 +110,20 @@ def summary(request, csw_request):
                     {'identifiers': [e[1]], 'title': e[2],
                      'abstract': convert_html_to_text("<summary>" + e[3] +
                                                       "</summary>"),
-                     'modified': e[5].strftime("%Y-%m-%dT%H:%M:%S+00:00")})
+                     'modified': e[5].strftime("%Y-%m-%dT%H:%M:%S+00:00"),
+                     'subjects': []})
             if len(e[4]) > 4:
                 ctx['records'][-1]['identifiers'].append(e[4])
+
+            cursor.execute((
+                    "select g.path from search.variables as v left join "
+                    "search.gcmd_sciencekeywords as g on g.uuid = v.keyword "
+                    "where v.dsid = %s and v.vocabulary = 'GCMD' and g.path "
+                    "is not null"), (e[0], ))
+            subjects = cursor.fetchall()
+            for s in subjects:
+                ctx['records'][-1]['subjects'].append(s[0])
+
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)
     except psycopg2.Error as err:
