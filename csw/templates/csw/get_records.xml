@@ -5,17 +5,15 @@
   <csw:SearchResults numberOfRecordsMatched="{{ num_matched }}" numberOfRecordsReturned="0" />
   {% else %}
   <csw:SearchResults elementSet="{{ element_set }}" numberOfRecordsMatched="{{ num_matched }}" numberOfRecordsReturned="{{ num_returned }}" nextRecord="{{ next_record }}">
-    {% if result_type == "brief" %}
     {% for record in records %}
-    <csw:BriefRecord>
+    <csw:{% if result_type == "brief" or result_type == "summary" %}{{ result_type|capfirst }}{% endif %}Record>
       {% for identifier in record.identifiers %}
       <dc:identifier>{{ identifier }}</dc:identifier>
       {% endfor %}
       <dc:title>{{ record.title }}</dc:title>
       <dc:type>Dataset</dc:type>
-    </csw:BriefRecord>
+    </csw:{% if result_type == "brief" %}Brief{% elif result_type == "summary" %}Summary{% endif %}Record>
     {% endfor %}
-    {% endif %}
   </csw:SearchResults>
   {% endif %}
 </csw:GetRecordsResponse>
