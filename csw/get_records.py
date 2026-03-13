@@ -129,7 +129,8 @@ def summary(request, csw_request):
                     "%s"), (e[0], ))
             formats = cursor.fetchall()
             for f in formats:
-                ctx['records'][-1]['formats'].append(f[0])
+                ctx['records'][-1]['formats'].append(
+                        f[0].replace("proprietary_", ""))
 
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)
