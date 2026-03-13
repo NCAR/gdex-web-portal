@@ -61,8 +61,10 @@ def brief(request, csw_request):
                 """"dc:identifier", s.title from search.datasets as s where """
                 """s.type in ('P', 'H') order by s.dsid"""))
         res = cursor.fetchall()
-        ctx = {'result_type': "brief", 'identifier': res[1],
-               'title': res[2]}
+        ctx = {'result_type': "brief", 'records': []}
+        for e in res:
+            ctx['records'].append({'identifier': e[1], 'title': e[2]})
+
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)
     except psycopg2.Error as err:
