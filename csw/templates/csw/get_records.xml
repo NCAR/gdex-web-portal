@@ -12,7 +12,7 @@
       {% endfor %}
       <dc:title>{{ record.title }}</dc:title>
       <dc:type>Dataset</dc:type>
-      {% if result_type == "summary" %}
+      {% if result_type == "full" or result_type == "summary" %}
       {% for subject in record.subjects %}
       <dc:subject>{{ subject }}</dc:subject>
       {% endfor %}
@@ -21,6 +21,12 @@
       {% endfor %}
       <dct:modified>{{ record.modified }}</dct:modified>
       <dct:abstract>{{ record.abstract }}</dct:abstract>
+      {% endif %}
+      {% if bounding_box %}
+      <ows:BoundingBox>
+        <ows:LowerCorner>{{ bounding_box.lower_corner.west_lon }} {{ bounding_box.lower_corner.south_lat }}</ows:LowerCorner>
+        <ows:UpperCorner>{{ bounding_box.upper_corner.east_lon }} {{ bounding_box.upper_corner.north_lat }}</ows:UpperCorner>
+      </ows:BoundingBox>
       {% endif %}
     </csw:{% if result_type == "brief" %}Brief{% elif result_type == "summary" %}Summary{% endif %}Record>
     {% endfor %}
