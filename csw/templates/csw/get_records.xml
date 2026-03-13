@@ -12,6 +12,10 @@
       {% endfor %}
       <dc:title>{{ record.title }}</dc:title>
       <dc:type>Dataset</dc:type>
+      {% if result_type == "summary" %}
+      <dct:modified>{{ record.modified }}</dct:modified>
+      <dct:abstract>{{ record.abstract }}</dct:abstract>
+      {% endif %}
     </csw:{% if result_type == "brief" %}Brief{% elif result_type == "summary" %}Summary{% endif %}Record>
     {% endfor %}
   </csw:SearchResults>
