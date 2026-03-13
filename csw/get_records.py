@@ -125,8 +125,8 @@ def summary(request, csw_request):
                 ctx['records'][-1]['subjects'].append(s[0])
 
             cursor.execute((
-                    "select keyword from search.formats where dsid = %s"),
-                    (e[0], ))
+                    "select distinct keyword from search.formats where dsid = "
+                    "%s"), (e[0], ))
             formats = cursor.fetchall()
             for f in formats:
                 ctx['records'][-1]['formats'].append(f[0])
