@@ -8,7 +8,9 @@
     {% if result_type == "brief" %}
     {% for record in records %}
     <csw:BriefRecord>
-      <dc:identifier>{{ record.identifier }}</dc:identifier>
+      {% for identifier in record.identifiers %}
+      <dc:identifier>{{ identifier }}</dc:identifier>
+      {% endfor %}
       <dc:title>{{ record.title }}</dc:title>
       <dc:type>Dataset</dc:type>
     </csw:BriefRecord>
