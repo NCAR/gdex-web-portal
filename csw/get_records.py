@@ -2,6 +2,7 @@ import psycopg2
 
 from django.conf import settings
 from django.shortcuts import render
+from libpkg.xmlutils import convert_html_to_text
 
 from . import utils
 
@@ -33,7 +34,7 @@ def hits(request, csw_request):
         #        """select count(t."dc:identifier") from (select concat("""
         #        """'edu.ucar.gdex:', s.dsid) as "dc:identifier1", s.stitle """
         #        """as "dc.title", s.summary as "dct:abstract", concat("""
-        #        """'doi:', v.doi) as "dc:identifier2", d.date_change as """
+        #        """'doi:', v.doi) as "dc:identifier2", s.timestamp_utc as """
         #        """"dct:modified" from search.datasets as s left join """
         #        """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = """
         #        """'A' left join dssdb.dataset as d on d.dsid = s.dsid """
@@ -89,9 +90,39 @@ def full(request, csw_request):
 
 
 def summary(request, csw_request):
-    ctx = {}
-    return render(request, "csw/get_records.xml", context=ctx,
-                  content_type="application/xml", status=200)
+    conn = db_connect(request)
+    try:
+        cursor = conn.cursor()
+        cursor.execute((
+                """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
+                """"dc:identifier1", s.title as "dc.title", s.summary as """
+                """"dct:abstract", concat('doi:', v.doi) as """
+                """"dc.identifier2", s.timestamp_utc as "dct:modified" from """
+                """search.datasets as s left join dssdb.dsvrsn as v on v."""
+                """dsid = s.dsid and v.status = 'A' left join dssdb."""
+                """dataset as d on d.dsid = s.dsid where s.type in """
+                """('P', 'H') order by s.dsid"""))
+        res = cursor.fetchall()
+        ctx = {'result_type': "summary", 'num_matched': len(res),
+               'num_returned': len(res), 'next_record': 0, 'records': []}
+        for e in res:
+            ctx['records'].append(
+                    {'identifiers': [e[1]], 'title': e[2],
+                     'abstract': convert_html_to_text("<summary>" + e[3] +
+                                                      "</summary>"),
+                     'modified': e[5].strftime("%Y-%m-%dT%H:%M:%S+00:00")})
+            if len(e[4]) > 4:
+                ctx['records'][-1]['identifiers'].append(e[4])
+        return render(request, "csw/get_records.xml", context=ctx,
+                      content_type="application/xml", status=200)
+    except psycopg2.Error as err:
+        print(f"CSW 'SUMMARY' ERROR: '{err}', query: '{cursor.query}'")
+        return render(request, "csw/exception.xml",
+                      context=utils.exception("TransactionFailed",
+                                              text="Database failure"),
+                      content_type="application/xml", status=500)
+    finally:
+        conn.close()
 
 
 def respond(request, csw_request):
