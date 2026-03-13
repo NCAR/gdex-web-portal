@@ -139,7 +139,9 @@ def summary(request, csw_request):
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)
     except psycopg2.Error as err:
-        print(f"CSW 'SUMMARY' ERROR: '{err}', query: '{cursor.query}'")
+        print((
+                f"CSW '{csw_request['elementsetname']}' ERROR: '{err}', "
+                "query: '{cursor.query}'"))
         return render(request, "csw/exception.xml",
                       context=utils.exception("TransactionFailed",
                                               text="Database failure"),
