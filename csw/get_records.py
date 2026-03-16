@@ -102,7 +102,7 @@ def full(request, csw_request):
                         "select 'Organization', p.path from search."
                         "contributors_new as c left join search."
                         "gcmd_providers as p on p.uuid = c.keyword where dsid "
-                        "= %s and c.citable = 'Y'"),
+                        "= %s and c.citable = 'Y' order by c.disp_order"),
                         (record['identifiers'][0][14:], ))
                 authors = cursor.fetchall()
 
@@ -119,8 +119,8 @@ def full(request, csw_request):
             cursor.execute((
                     "select p.path from search.contributors_new as c left "
                     "join search.gcmd_providers as p on p.uuid = c.keyword "
-                    "where dsid = %s and c.citable = 'N'"),
-                    (record['identifiers'][0][14:], ))
+                    "where dsid = %s and c.citable = 'N' order by c."
+                    "disp_order"), (record['identifiers'][0][14:], ))
             contributors = cursor.fetchall()
             if len(contributors) > 0:
                 record['contributors'] = [c[0] for c in contributors]
