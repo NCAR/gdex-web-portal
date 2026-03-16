@@ -88,8 +88,35 @@ def full(request, csw_request):
     ctx = summary(request, csw_request)
     ctx['result_type'] = "full"
     ctx['publisher'] = ARCHIVE['pub_name']['default']['name']
-    return render(request, "csw/get_records.xml", context=ctx,
-                  content_type="application/xml", status=200)
+    conn = db_connect(request)
+    try:
+        cursor = conn.cursor()
+        for record in ctx['records']:
+            cursor.execute((
+                    "select type, given_name, middle_name, family_name from "
+                    "search.dataset_authors where dsid = %s order by "
+                    "sequence"), (record['identifiers'][0][14:], ))
+            authors = cursor.fetchall()
+            if len(authors) > 0:
+                record['creators'] = []
+                for author in authors:
+                    if author[0] == "Person":
+                        record['creators'].append(
+                                " ".join([a for a in author[1:4] if len(a) >
+                                         0]))
+                    elif author[0] == "Organization":
+                        record['creators'].append(author[1])
+
+        return render(request, "csw/get_records.xml", context=ctx,
+                      content_type="application/xml", status=200)
+    except psycopg2.Error as err:
+        print(f"CSW 'FULL' ERROR: '{err}', query: '{cursor.query}'")
+        return render(request, "csw/exception.xml",
+                      context=utils.exception("TransactionFailed",
+                                              text="Database failure"),
+                      content_type="application/xml", status=500)
+    finally:
+        conn.close()
 
 
 def summary(request, csw_request):

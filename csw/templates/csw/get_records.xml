@@ -24,6 +24,9 @@
       {% endif %}
       {% if result_type == "full" %}
       <dc:publisher>{{ publisher }}</dc:publisher>
+      {% for creator in record.creators %}
+      <dc:creator>{{ creator }}</dc:creator>
+      {% endfor %}
       {% endif %}
       {% if bounding_box %}
       <ows:BoundingBox>
