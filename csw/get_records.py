@@ -3,6 +3,7 @@ import psycopg2
 from django.conf import settings
 from django.shortcuts import render
 from libpkg.metaformats.settings import ARCHIVE
+from libpkg.metautils import metadata_date
 from libpkg.xmlutils import convert_html_to_text
 
 from . import utils
@@ -27,7 +28,7 @@ def hits(request, csw_request):
         cursor = conn.cursor()
         cursor.execute((
                 "select count(dsid) from search.datasets where type in "
-                "('P', 'H')"))
+                "('P', 'H') and dsid < 'd999000'"))
         res = cursor.fetchone()
         ctx = {'result_type': "hits",
                'num_matched': (int(res[0]) if res is not None else 0)}
@@ -35,11 +36,11 @@ def hits(request, csw_request):
         #        """select count(t."dc:identifier") from (select concat("""
         #        """'edu.ucar.gdex:', s.dsid) as "dc:identifier1", s.stitle """
         #        """as "dc.title", s.summary as "dct:abstract", concat("""
-        #        """'doi:', v.doi) as "dc:identifier2", s.timestamp_utc as """
-        #        """"dct:modified" from search.datasets as s left join """
-        #        """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = """
-        #        """'A' left join dssdb.dataset as d on d.dsid = s.dsid """
-        #        """where s.type in ('P', 'H') having (""" +
+        #        """'doi:', v.doi) as "dc:identifier2" from search.datasets """
+        #        """as s left join dssdb.dsvrsn as v on v.dsid = s.dsid and """
+        #        """v.status = 'A' left join dssdb.dataset as d on d.dsid = """
+        #        """s.dsid where s.type in ('P', 'H') and s.dsid < """
+        #        """'d999009' having (""" +
         #        csw_request['constraint']['predicate'] + """) as x"""))
         #res = cursor.fetchall()
         return render(request, "csw/get_records.xml", context=ctx,
@@ -63,7 +64,8 @@ def brief(request, csw_request):
                 """"dc:identifier1", s.title, concat('doi:', v.doi) as """
                 """"dc:identifer2" from search.datasets as s left join """
                 """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = 'A' """
-                """where s.type in ('P', 'H') order by s.dsid"""))
+                """where s.type in ('P', 'H') and s.dsid < 'd999000' order """
+                """by s.dsid"""))
         res = cursor.fetchall()
         ctx = {'result_type': "brief", 'num_matched': len(res),
                'num_returned': len(res), 'next_record': 0, 'records': []}
@@ -145,20 +147,21 @@ def summary(request, csw_request):
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
                 """"dc:identifier1", s.title as "dc.title", s.summary as """
                 """"dct:abstract", concat('doi:', v.doi) as """
-                """"dc.identifier2", s.timestamp_utc as "dct:modified" from """
-                """search.datasets as s left join dssdb.dsvrsn as v on v."""
-                """dsid = s.dsid and v.status = 'A' left join dssdb."""
-                """dataset as d on d.dsid = s.dsid where s.type in """
-                """('P', 'H') order by s.dsid"""))
+                """"dc.identifier2" from search.datasets as s left join """
+                """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = 'A' """
+                """left join dssdb.dataset as d on d.dsid = s.dsid where s."""
+                """type in ('P', 'H') and s.dsid < 'd999000' order by s."""
+                """dsid"""))
         res = cursor.fetchall()
         ctx = {'result_type': "summary", 'num_matched': len(res),
                'num_returned': len(res), 'next_record': 0, 'records': []}
         for e in res:
+            mdate = metadata_date(e[0], cursor)
             ctx['records'].append(
                     {'identifiers': [e[1]], 'title': e[2],
                      'abstract': convert_html_to_text("<summary>" + e[3] +
                                                       "</summary>"),
-                     'modified': e[5].strftime("%Y-%m-%dT%H:%M:%S+00:00"),
+                     'modified': mdate.strftime("%Y-%m-%dT%H:%M:%S+00:00"),
                      'subjects': [], 'formats': []})
             if len(e[4]) > 4:
                 ctx['records'][-1]['identifiers'].append(e[4])
