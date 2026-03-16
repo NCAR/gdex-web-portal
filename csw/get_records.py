@@ -97,6 +97,15 @@ def full(request, csw_request):
                     "search.dataset_authors where dsid = %s order by "
                     "sequence"), (record['identifiers'][0][14:], ))
             authors = cursor.fetchall()
+            if len(authors) == 0:
+                cursor.execute((
+                        "select 'Organization', p.path from search."
+                        "contributors_new as c left join search."
+                        "gcmd_providers as p on p.uuid = c.keyword where dsid "
+                        "= %s and c.citable = 'Y'"),
+                        (record['identifiers'][0][14:], ))
+                authors = cursor.fetchall()
+
             if len(authors) > 0:
                 record['creators'] = []
                 for author in authors:
