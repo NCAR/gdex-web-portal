@@ -27,6 +27,9 @@
       {% for creator in record.creators %}
       <dc:creator>{{ creator }}</dc:creator>
       {% endfor %}
+      {% for contributor in record.contributors %}
+      <dc:contributor>{{ contributor }}</dc:contributor>
+      {% endfor %}
       {% endif %}
       {% if bounding_box %}
       <ows:BoundingBox>

@@ -116,6 +116,15 @@ def full(request, csw_request):
                     elif author[0] == "Organization":
                         record['creators'].append(author[1])
 
+            cursor.execute((
+                    "select p.path from search.contributors_new as c left "
+                    "join search.gcmd_providers as p on p.uuid = c.keyword "
+                    "where dsid = %s and c.citable = 'N'"),
+                    (record['identifiers'][0][14:], ))
+            contributors = cursor.fetchall()
+            if len(contributors) > 0:
+                record['contributors'] = [c[0] for c in contributors]
+
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)
     except psycopg2.Error as err:
