@@ -3,6 +3,7 @@ import psycopg2
 from django.conf import settings
 from django.shortcuts import render
 from libpkg.metaformats.settings import ARCHIVE
+from libpkg.geospatial import fill_geographic_extent_data
 from libpkg.metautils import get_temporal_range, metadata_date
 from libpkg.xmlutils import convert_html_to_text
 
@@ -132,6 +133,15 @@ def full(request, csw_request):
             if all(trange):
                 record['temporal_range'] = {'start': trange[0],
                                             'end': trange[1]}
+
+            geoext = fill_geographic_extent_data(record['identifiers'][0][14:],
+                                                 cursor)
+            if None not in geoext.values():
+                record['bounding_box'] = {
+                        'lower_corner': {'west_lon': geoext['wlon'],
+                                         'south_lat': geoext['slat']},
+                        'upper_corner': {'east_lon': geoext['elon'],
+                                         'north_lat': geoext['nlat']}}
 
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)
