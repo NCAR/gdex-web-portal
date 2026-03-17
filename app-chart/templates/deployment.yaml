@@ -61,7 +61,7 @@ spec:
             secretKeyRef:
               name: calie-github-token
               key: token
-        - name: GITHUB_REPO_URL
+        - name: GITHUB_REPO
           valueFrom:
             secretKeyRef:
               name: gdex-jira-auto-repo
