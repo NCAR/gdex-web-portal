@@ -13,6 +13,7 @@ on:
       - "Dockerfile.bob"
       - "tests/**"
       - "gdexwebserver/static/img/**"
+  workflow_dispatch:
 
 jobs:
   container-rebuild:
