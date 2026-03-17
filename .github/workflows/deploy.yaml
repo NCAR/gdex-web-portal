@@ -13,7 +13,14 @@ on:
       - "Dockerfile.bob"
       - "tests/**"
       - "gdexwebserver/static/img/**"
-
+  workflow_dispatch:
+    inputs:
+      run_reason:
+        description: 'Provide a reason or comment for this workflow'
+        required: false
+        type: string
+        default: 'No comment provided'
+        
 jobs:
   container-rebuild:
     runs-on: ubuntu-latest
