@@ -93,6 +93,13 @@ def full(request, csw_request):
     conn = db_connect(request)
     try:
         cursor = conn.cursor()
+        cursor.execute((
+                "select count(*) from search.datasets where type in "
+                "('P', 'H') and dsid < 'd999000'"))
+        ctx['num_matched'] = cursor.fetchone()[0]
+        if ctx['next_record'] > ctx['num_matched']:
+            ctx['next_record'] = 0
+
         for record in ctx['records']:
             cursor.execute((
                     "select type, given_name, middle_name, family_name from "
@@ -158,6 +165,19 @@ def summary(request, csw_request):
     conn = db_connect(request)
     try:
         cursor = conn.cursor()
+        limit = None
+        offset = 0
+        next_record = 0
+        if csw_request['elementsetname'] == "full":
+            if 'startposition' in csw_request:
+                offset = int(csw_request['startposition']) - 1
+
+            limit = 100
+            if 'maxrecords' in csw_request:
+                limit = min(limit, int(csw_request['maxrecords']))
+
+            next_record = offset + limit + 1
+
         cursor.execute((
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
                 """"dc:identifier1", s.title as "dc.title", s.summary as """
@@ -166,11 +186,11 @@ def summary(request, csw_request):
                 """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = 'A' """
                 """left join dssdb.dataset as d on d.dsid = s.dsid where s."""
                 """type in ('P', 'H') and s.dsid < 'd999000' order by s."""
-                """dsid"""))
+                """dsid limit %s offset %s"""), (limit, offset))
         res = cursor.fetchall()
         ctx = {'result_type': csw_request['elementsetname'],
                'num_matched': len(res), 'num_returned': len(res),
-               'next_record': 0, 'records': []}
+               'next_record': next_record, 'records': []}
         for e in res:
             mdate = metadata_date(e[0], cursor)
             ctx['records'].append(
