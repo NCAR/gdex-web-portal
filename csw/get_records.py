@@ -3,7 +3,7 @@ import psycopg2
 from django.conf import settings
 from django.shortcuts import render
 from libpkg.metaformats.settings import ARCHIVE
-from libpkg.metautils import metadata_date
+from libpkg.metautils import get_temporal_range, metadata_date
 from libpkg.xmlutils import convert_html_to_text
 
 from . import utils
@@ -126,6 +126,12 @@ def full(request, csw_request):
             contributors = cursor.fetchall()
             if len(contributors) > 0:
                 record['contributors'] = [c[0] for c in contributors]
+
+            trange = get_temporal_range(record['identifiers'][0][14:],
+                                        cursor)
+            if all(trange):
+                record['temporal_range'] = {'start': trange[0],
+                                            'end': trange[1]}
 
         return render(request, "csw/get_records.xml", context=ctx,
                       content_type="application/xml", status=200)

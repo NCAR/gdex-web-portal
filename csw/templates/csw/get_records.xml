@@ -30,6 +30,9 @@
       {% for contributor in record.contributors %}
       <dc:contributor>{{ contributor }}</dc:contributor>
       {% endfor %}
+      {% if record.temporal_range %}
+      <dc:date>{{ record.temporal_range.start }}/{{ record.temporal_range.end }}</dc:date>
+      {% endif %}
       {% endif %}
       {% if bounding_box %}
       <ows:BoundingBox>
