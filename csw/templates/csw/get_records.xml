@@ -34,10 +34,10 @@
       <dc:date>{{ record.temporal_range.start }}/{{ record.temporal_range.end }}</dc:date>
       {% endif %}
       {% endif %}
-      {% if bounding_box %}
+      {% if record.bounding_box %}
       <ows:BoundingBox>
-        <ows:LowerCorner>{{ bounding_box.lower_corner.west_lon }} {{ bounding_box.lower_corner.south_lat }}</ows:LowerCorner>
-        <ows:UpperCorner>{{ bounding_box.upper_corner.east_lon }} {{ bounding_box.upper_corner.north_lat }}</ows:UpperCorner>
+        <ows:LowerCorner>{{ record.bounding_box.lower_corner.west_lon }} {{ record.bounding_box.lower_corner.south_lat }}</ows:LowerCorner>
+        <ows:UpperCorner>{{ record.bounding_box.upper_corner.east_lon }} {{ record.bounding_box.upper_corner.north_lat }}</ows:UpperCorner>
       </ows:BoundingBox>
       {% endif %}
     </csw:{% if result_type == "brief" %}Brief{% elif result_type == "summary" %}Summary{% endif %}Record>
