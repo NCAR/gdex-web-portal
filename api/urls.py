@@ -36,7 +36,7 @@ urlpatterns = [
     path(r'generate_notebook', views.generate_notebook),
 
     # Jira Webhook 
-    path(r'jira-event/<ticket_id>/', views.JiraEventReceiver.as_view(), name = 'jira-event-receiver'),
+    path(r'jira-event/<ticket_id>', views.JiraEventReceiver.as_view(), name = 'jira-event-receiver'),
 
     # Dataset calls
     path(r'datasets/<dsid>/documentation/', views.get_dataset_documentation ),
