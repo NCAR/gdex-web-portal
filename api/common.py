@@ -817,20 +817,28 @@ def get_arco_variables(dsid):
     con,cur = init_connection_new()
     wfile_table=f'wfile_{dsid}'
     assert len(wfile_table) == 13
-    match_str = '%.csv'
-    query = f'select wfile from {wfile_table} where gindex=-2 and wfile like %s'
+    match_str = 'catalog%.csv'
+    query = f'select wfile,locflag from {wfile_table} where gindex<0 and wfile like %s'
     cur.execute(query, (match_str,))
     result = cur.fetchall()
     close_connection(con,cur)
-    csv_files = [i[0] for i in result]
+    csv_files = [(i[0],i[1]) for i in result]
     res = [['unknown','error']]
+    print(csv_files)
     for _file in csv_files:
-        if 'http' in _file:
-            url = f'https://{settings.GLOBUS_DATA_DOMAIN}/{dsid}/{_file}'
+        if 'http' in _file[0]:
+            if _file[1] != 'O':
+                url = f'https://{settings.GLOBUS_DATA_DOMAIN}/{dsid}/{_file[0]}'
+            else:
+                url = f'https://os{settings.GLOBUS_DATA_DOMAIN}/{dsid}/{_file[0]}'
+            print(url)
             content = requests.get(url).content
             reader = csv.reader(StringIO(content.decode()))
             res = []
             for row in reader:
+                if dsid == 'd316010':
+                    shifted = [row[-1]] + row[1:-1]
+                    row = shifted
                 res.append(row)
     add_to_cache('arco_vars', dsid, res)
     return res
