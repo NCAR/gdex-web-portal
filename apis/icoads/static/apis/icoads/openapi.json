@@ -1,0 +1,58 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "ICOADS API",
+        "version": "1.0.0",
+        "description": "API for accessing ICOADS data."
+    },
+    "paths": {
+        "/uid/{uid}": {
+            "get": {
+                "summary": "Get ICOADS data by UID",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Unique identifier for the ICOADS data entry"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response with ICOADS data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ICoADSData"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "ICOADS data not found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ICoADSData": {
+                "type": "object",
+                "properties": {
+                    "uid": {
+                        "type": "string",
+                        "description": "Unique identifier for the ICOADS data entry"
+                    },
+                    "data": {
+                        "type": "object",
+                        "description": "The ICOADS data payload"
+                    }
+                }
+            }
+        }
+    }
+}
