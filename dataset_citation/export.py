@@ -29,9 +29,9 @@ def get_ds_data(dsid):
 
 def get_publisher(ds_title):
     if ds_title[0:26] == "ICARUS Chamber Experiment:":
-        return metaformat_settings.ARCHIVE['pub_name']['icarus']
+        return metaformat_settings.ARCHIVE['pub_name']['icarus']['name']
 
-    return metaformat_settings.ARCHIVE['pub_name']['default']
+    return metaformat_settings.ARCHIVE['pub_name']['default']['name']
 
 
 def create_bibtex(dsid):
@@ -95,7 +95,7 @@ def create_ris(dsid):
                 "<summary>" + ds_data[1] + "</summary>",
                 wrapLength=80, indentLength=6).replace("\n", "\r\n").lstrip()
         yield "Provider: {}\r\n".format(
-                metaformat_settings.ARCHIVE['pub_name']['default'])
+                metaformat_settings.ARCHIVE['pub_name']['default']['name'])
         yield "Tagformat: ris\r\n"
         yield "\r\n"
         yield "TY  - DATA\r\n"

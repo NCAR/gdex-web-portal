@@ -17,7 +17,7 @@
     
     {% for item in menu_items %}
         <li class="nav-item{% if item.has_children_in_menu %} dropdown d-flex flex-wrap justify-content-between{% endif %}">
-            <a class="nav-link {{ item.active_class }}" aria-current="page" href="{{ item.href }}">{{ item.text }}</a>
+            <a class="nav-link {{ item.active_class }}" aria-current="page" href="{{ item.href }}">{{ item.specific.menu_title|default:item.text }}</a>
             {% if item.has_children_in_menu %}
                 <button aria-expanded="false" aria-label="Expand/Collapse" class="btn dropdown-toggle px-3 px-md-0 mx-md-1" data-bs-toggle="dropdown" id="{{ item.text | slugify }}" role="button" href="#"></button>
                 {% sub_menu item template="menus/sub_menu.html" %}
@@ -25,4 +25,3 @@
         </li>
     {% endfor %}
 </ul>
- 

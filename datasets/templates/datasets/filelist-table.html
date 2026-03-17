@@ -21,10 +21,10 @@
                     <td class='{{col.name}}' {% if col.name == 'Size' %}data-size='{{col.value}}'{% endif %}>
                     {% if col.url %}
                         
-                        {% if col.is_file %}
+                        {% if col.is_file and col.url|get_extension != "zarr" %}
                             <a style="font-family:'Roboto Mono';"{% if not data.is_glade %} href="{{col.url}}"{% endif %}>
                         {% else %}
-	                        {% if col.webpath|get_extension == "zarr" or col.value|get_extension == "zarr" %}
+	                        {% if col.webpath|get_extension == "zarr" or col.value|get_extension == "zarr" or col.url|get_extension == "zarr" %}
 	                            {# Zarr catalog file #}
                                 {% include "datasets/filelist-arco-button.html" %}
                             {% elif data.is_ajax %}
@@ -38,8 +38,11 @@
                         <!--a href={{ col.url }}-->
 
                         {% if data.is_glade and col.is_file %}
-                            {{ col.data_path|make_glade_URL }}
-                            </a>
+                            {% if data.locflag == 'O' %}
+                                {{ col.url|make_local_os_URL }}
+                            {% else %}
+                                {{ col.data_path|make_glade_URL }}
+                            {% endif %}
 	                    {% elif col.webpath|get_extension == "zarr" %}
 	                        {{ col.webpath|basename }}
                         {% else %}

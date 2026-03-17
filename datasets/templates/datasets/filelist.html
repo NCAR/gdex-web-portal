@@ -1,5 +1,6 @@
 {% load wagtailcore_tags decs_tags home_tags custom_tags static %}
 <script type="text/javascript" src="{% static 'js/cache_filelist.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'datasets/css/filelist.css' %}">
 {% if error_messages %}}
 {{ error_messages }}
 {% endif %}
@@ -53,7 +54,7 @@
             </h3>
         {% endif %}
   
-        {% if not group.is_group_summary and group.rows|length > 0 %}
+        {% if not group.is_group_summary and group.rows|length > 1 %}
             {# Show download buttons, and table summary if not a summary group and there are files in the group #}
             {% if data.is_glade %}
                 {% include "datasets/glade_buttons.html" %}
@@ -63,7 +64,7 @@
             {% include "datasets/filelist-table-summary.html" with group=group %}
         {% endif %}
 
-        {% if not group.is_group_summary and data.groups|length == 1 %}
+        {% if not group.is_group_summary and data.groups|length == 1 and group.rows|length > 1 %}
             {# Show filter option if not a summary group and only one group on the page #}
             {% include "datasets/filelist-filter.html" %}
         {% endif %}

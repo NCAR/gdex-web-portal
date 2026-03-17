@@ -3,6 +3,7 @@ import psycopg2
 from django.conf import settings
 from pathlib import Path
 from urllib.parse import urlparse
+import os
 
 register = template.Library()
 
@@ -89,7 +90,7 @@ def getORCID(extra_data_dict):
 @register.simple_tag
 def get_copy_path(basepath, dsid, webpath):
     """Given a catalog/kerchunk relative path, return full URL/PATH"""
-    return basepath.strip('/') + '/' + dsid + '/' + webpath
+    return os.path.join(basepath.strip('/'), dsid, webpath.strip('/'))
 
 @register.simple_tag
 def get_copy_path_title(basepath, dsid, webpath):

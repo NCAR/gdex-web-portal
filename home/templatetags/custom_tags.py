@@ -80,12 +80,24 @@ def get_dsid_from_url(url):
 
 @register.filter
 def make_glade_URL(uri):
-    if (uri.find('/',0,1) != -1):
-        uri = uri.replace('/','',1)
+    """ Convert file URL path to a posix path for NCAR HPC access """
+    if uri.startswith('/'):
+        uri = uri.lstrip('/')
     url = os.path.join(settings.RDA_CANONICAL_DATA_PATH, uri)
     if '/OS/' in url:
         return re.sub('.*/OS/', settings.NCAR_STRATUS_URL, url)
     return url
+
+@register.filter
+def make_local_os_URL(url):
+    """ Convert file URL to a local OS URL for NCAR users with OS access """
+    url = url.replace(settings.RDA_STRATUS_BASE_URL.rstrip('/'), settings.NCAR_STRATUS_URL.rstrip('/'))
+    return url
+
+@register.filter
+def concat_paths(base_path, relative_path):
+    """Concatenate base path and relative path, ensuring there is exactly one '/' between them."""
+    return os.path.join(base_path.strip('/'), relative_path.strip('/'))
 
 @register.filter
 def convert_bytes(bytes):
@@ -159,8 +171,8 @@ def show_arco_catalogs(context):
                     url = item.get('url', '')
                     if '-posix' in url:
                         url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
-                    elif '-https' in url:
-                        url = 'https://' + settings.GLOBUS_DATA_DOMAIN.strip('/') + file_info['file_path']
+                    elif '-http' in url:
+                        url = url
                     elif '-osdf' not in url: # Some assets don't have posix
                         url = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
                     file_info['file_url'] = url

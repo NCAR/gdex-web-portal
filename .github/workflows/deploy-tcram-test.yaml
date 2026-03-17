@@ -14,7 +14,7 @@ jobs:
         with:
           username: ${{ secrets.TCRAM_HARBOR_USERNAME }}
           password: ${{ secrets.TCRAM_HARBOR_CLI_SECRET }}
-          registry: hub.k8s.ucar.edu/tcram-gdex
+          registry: hub.k8s.ucar.edu
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:

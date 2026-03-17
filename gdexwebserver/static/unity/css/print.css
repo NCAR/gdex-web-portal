@@ -9,6 +9,14 @@
   .featured-work .primary img {
     height: 30rem;
   }
+  .card-footer {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
+    padding: 0.5rem 1rem;
+  }
+  .card-footer:last-child {
+    border-radius: 0 0 calc(0.25rem - 1px) calc(0.25rem - 1px);
+  }
   .card {
     background-clip: border-box;
     background-color: #fff;
@@ -23,7 +31,7 @@
             flex-direction: column;
     min-width: 0;
     position: relative;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
   .card > hr {
     margin-left: 0;
@@ -53,14 +61,6 @@
             flex: 1 1 auto;
     padding: 1rem;
   }
-  .card-footer {
-    background-color: rgba(0, 0, 0, 0.03);
-    border-top: 1px solid rgba(0, 0, 0, 0.125);
-    padding: 0.5rem 1rem;
-  }
-  .card-footer:last-child {
-    border-radius: 0 0 calc(0.25rem - 1px) calc(0.25rem - 1px);
-  }
   .card-group > .card {
     margin-bottom: 0.75rem;
   }
@@ -85,12 +85,9 @@
   }
   .card-img-overlay {
     border-radius: calc(0.25rem - 1px);
-    bottom: 0;
-    left: 0;
+    inset: 0;
     padding: 1rem;
     position: absolute;
-    right: 0;
-    top: 0;
   }
   .card-img,
   .card-img-top,
@@ -122,9 +119,6 @@
   }
   .card-title {
     margin-bottom: 0.5rem;
-  }
-  .sticky-top {
-    position: unset;
   }
   .d-flex {
     display: -webkit-box !important;

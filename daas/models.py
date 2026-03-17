@@ -54,9 +54,13 @@ class DaasHome(Page):
     # Database fields
     body = RichTextField(blank=True)
     additional_information = RichTextField(blank=True)
+    menu_title = models.CharField(max_length=50, blank=True, default="",
+                                  help_text='Short title to use in the navigation bar menu.  If blank, the page title will be used.')
+
  
     # Editor panels configuration
     content_panels = Page.content_panels + [
+        FieldPanel('menu_title'),
         FieldPanel('body', classname='full'),
         FieldPanel('additional_information', classname='full')
     ]

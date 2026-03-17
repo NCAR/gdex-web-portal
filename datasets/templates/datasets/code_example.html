@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags decs_tags custom_tags home_tags static %}
+
+{% block content %}
+
+
+<!-- Allow Code Highlighting  -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<!-- and it's easy to individually load additional languages -->
+<!-- script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script -->
+
+<script>hljs.highlightAll();</script>
+
+
+<!-- leaflet code -->
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+  <!-- Make sure you put this AFTER Leaflet's CSS -->
+ <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+ <!-- end leaflet -->
+ <script>
+     function genMap()
+     {
+     	var map = L.map('map').setView([51.505, -0.09], 13);
+             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+             maxZoom: 19,
+             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+             }).addTo(map);
+     }
+genMap()
+    document.onload = genMap();
+ </script>
+
+<div class='d-flex justify-content-between' id='selectors'>
+	<div id='dateSelector' class='p-1'>
+		<div class='d-flex border border-info rounded-2 p-1 mb-3 bg-light'>
+		<label class='text-nowrap p-1' for="startDate">Start Date</label>
+		<input id="startDate" class="form-control" type="date" value="{{ ctx.get_start_date }}" />
+		</div>
+		<div class='d-flex border border-info rounded-2 p-1 mb-1 bg-light'>
+		<label class='text-nowrap p-1' for="endDate">End Date</label>
+		<input id="endDate" class="form-control" type="date" value="{{ ctx.get_end_date }}"/>
+		</div>
+		<div id='onCasper'>
+	        	<div class="form-check">
+  			<input class="form-check-input" type="checkbox" id="isRemote">
+  			<label class="form-check-label" for="flexSwitchCheckChecked">On NCAR HPC?</label>
+                    </div>
+
+		</div>
+	</div>
+	<div class='m-1'>
+	    <div id='typeSelector' class='dropdown d-flex '>
+		    <!--<label for="exampleType">Example Type</label>-->
+	    	<select name="exampleType" class='form_select form-select-lg mb-3 flex-fill' id="exampleType">
+  	    		<option selected>Type of Example</option>
+  	    		<option value="image">Image Generation</option>
+  	    		<option value="tseries">Time Series</option>
+  	    		<option value="resample">Time Aggregation</option>
+  	    		<option value="regrid">Regridding</option>
+	    	</select>
+	    </div>
+	    <div id='varSelector' class='dropdown d-flex'>
+	    	<!--label for="variables">Variables</label-->
+	    	<select name="variables" id="variables" class='form_select form-select-lg mb-3 flex-fill'>
+  	    		<option selected>Variable</option>
+	    		{% for v in ctx.get_variables %}
+	    		<option value={{ v.code }}>{{ v.description }} {% if v.units %} ({{ v.units }}){% endif %}</option>
+	    		{% endfor %}
+	    	</select>
+	    </div>
+	</div>
+	<div id='mapSelector' class='m-1'>
+		 <div id="map" style='height:180px; width:300px'></div>
+		 <div id='selection' style='font-family:monospaced'>
+			 <div class='d-flex'>
+				 Latitude:&nbsp;&nbsp;
+				 <div id='latN'>90</div> &nbsp;&nbsp;&nbsp;
+				 <div id='latS'>-90</div>
+			 </div>
+			 <div class='d-flex'>
+				 Longitude:&nbsp;
+				 <div id='lonW'>-180</div>&nbsp;&nbsp;&nbsp;
+				 <div id='lonE'>180</div>
+			 </div>
+		 </div>
+
+	</div>
+</div>
+<div class='d-flex' id='codeView'>
+	<div class='flex-grow-1 p-1'>
+		<pre><code id='codeArea'>{{ ctx.get_code }}</code></pre>
+	</div>
+	<div id='requirements' class='p-1' >
+		<pre class='flex-grow-1 bg-light border border-info p-1'>Dependencies<ul>{% for i in ctx.get_requirements %}<li>{{i}}</li>{% endfor %}</ul></pre>
+	</div>
+</div>
+<div class='d-flex justify-content-evenly' id='downloadOptions'>
+	<button type="button" class="btn btn-primary">Copy to Clipboard</button>
+	<button type="button" class="btn btn-primary">Download Jupyter Notebook</button>
+	<button type="button" class="btn btn-primary">Download Script</button>
+</div>
+<script>
+
+	//var url = "{{ request.get_full_path }}";
+	var url = '{{ request.build_absolute_uri }}{{ object.get_absolute_url }}'
+        console.log(url)
+        var url = new URL(url)
+$('#startDate').on('change', function() {
+		url.searchParams.set('start', $(this).val());
+		url.searchParams.set('end', $('#endDate').val());
+		$.get(url.href, function(data){ 
+		$('#codeArea').html(hljs.highlight(data,  { language: 'python' }).value)
+		})
+});
+
+$('#endDate').on('change', function() {
+		url.searchParams.set('end', $(this).val());
+		url.searchParams.set('start', $('#startDate').val());
+		$.get(url.href, function(data){ 
+		$('#codeArea').html(hljs.highlight(data,  { language: 'python' }).value)
+		})
+});
+$('#exampleType').on('change', function() {
+		url.searchParams.set('exampletype', $(this).val());
+		$.get(url.href, function(data){ 
+		$('#codeArea').html(hljs.highlight(data,  { language: 'python' }).value)
+		})
+});
+$('#variables').on('change', function() {
+		url.searchParams.set('param', $(this).val());
+		$.get(url.href, function(data){ 
+		$('#codeArea').html(hljs.highlight(data,  { language: 'python' }).value)
+		})
+	})
+$('#isRemote').click(function(){
+    console.log('checked');
+    if($(this).is(':checked')){
+		url.searchParams.set('is_remote', 'false');
+	}
+	else{
+		url.searchParams.set('is_remote', 'true');
+	}
+		$.get(url.href, function(data){ 
+		$('#codeArea').html(hljs.highlight(data,  { language: 'python' }).value)
+		})
+
+});
+function genMap()
+{
+	var map = L.map('map').setView([0, 0], 0);
+	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 10,
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
+	var editing = false;
+	counter=0;
+
+	selectRect=null;
+	map.on('mousemove', function(e) {
+		if(editing)
+		{
+			counter=counter+1;
+			console.log(counter)
+			var newlat = e.latlng['lat']
+			var newlon = e.latlng['lng']
+			var bounds = [[lat, lon], [newlat, newlon]];
+			updateLatLon(lat,newlat,lon,newlon) 
+			if(counter%10==0)
+			{
+			selectRect.remove();
+			selectRect = L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(map);
+			}
+		}
+	})
+	map.on('click', function(e) {
+		if(!editing){ // do not start multiple "edit sessions"
+			if(selectRect){
+				selectRect.remove();
+			}
+			editing = true;
+			console.log('here');
+			lat = e.latlng['lat']
+			lon = e.latlng['lng']
+			var bounds = [[lat, lon], [lat+1, lon+1]];
+			selectRect = L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(map);
+		}
+		else {
+			editing = false;
+			var newlat = e.latlng['lat']
+			var newlon = e.latlng['lng']
+			var bounds = [[lat, lon], [newlat, newlon]];
+			//selectRect = L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(map);
+			console.log(selectRect)
+
+			updateLatLon(lat,newlat,lon,newlon) 
+
+		url.searchParams.set('nlat', Math.round(lat * 100) / 100);
+		url.searchParams.set('slat', Math.round(newlat * 100) / 100);
+		url.searchParams.set('wlon', Math.round(lon * 100) / 100);
+		url.searchParams.set('elon', Math.round(newlon * 100) / 100);
+		$.get(url.href, function(data){ 
+		$('#codeArea').html(hljs.highlight(data,  { language: 'python' }).value)
+		})
+		}
+	});
+
+}
+
+function updateLatLon(lat1,lat2,lon1,lon2){
+	if(lat1 > lat2) {
+			$('#latN').text(lat1.toFixed(2));
+			$('#latS').text(lat2.toFixed(2));
+	}
+	else {
+			$('#latN').text(lat2.toFixed(2));
+			$('#latS').text(lat1.toFixed(2));
+	}
+	if(lon1 < lon2) {
+			$('#lonW').text(lon1.toFixed(2));
+			$('#lonE').text(lon2.toFixed(2));
+	}
+	else {
+			$('#lonW').text(lon2.toFixed(2));
+			$('#lonE').text(lon1.toFixed(2));
+	}
+}
+
+    window.onload = genMap;
+ </script>
+
+{% endblock %}
