@@ -19,8 +19,9 @@ webapp:
       cpu: 6
     responseTimeout: 180
     maxUploadSize: 60m
+
   ingress:
-    ingressClassName: nginx-internal
+    ingressClassName:nginx-external
 
 volume:
   fs:

@@ -6,6 +6,7 @@ on:
       - ".github/**"
       - ".gitignore"
       - "app-chart/**"
+      
 
 jobs:
   container-rebuild:
