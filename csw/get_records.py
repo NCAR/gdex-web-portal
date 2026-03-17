@@ -89,7 +89,6 @@ def brief(request, csw_request):
 
 def full(request, csw_request):
     ctx = summary(request, csw_request)
-    ctx['result_type'] = "full"
     ctx['publisher'] = ARCHIVE['pub_name']['default']['name']
     conn = db_connect(request)
     try:
@@ -169,8 +168,9 @@ def summary(request, csw_request):
                 """type in ('P', 'H') and s.dsid < 'd999000' order by s."""
                 """dsid"""))
         res = cursor.fetchall()
-        ctx = {'result_type': "summary", 'num_matched': len(res),
-               'num_returned': len(res), 'next_record': 0, 'records': []}
+        ctx = {'result_type': csw_request['elementsetname'],
+               'num_matched': len(res), 'num_returned': len(res),
+               'next_record': 0, 'records': []}
         for e in res:
             mdate = metadata_date(e[0], cursor)
             ctx['records'].append(
