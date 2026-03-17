@@ -828,15 +828,15 @@ def get_arco_variables(dsid):
     for _file in csv_files:
         if 'http' in _file[0]:
             if _file[1] != 'O':
-                url = f'https://{settings.GLOBUS_DATA_DOMAIN}/{dsid}/{_file[0]}'
+                url = get_webfile_url(dsid, _file[0], settings.GLOBUS_DATA_BASE_URL, locflag=_file[1])
             else:
-                url = f'https://os{settings.GLOBUS_DATA_DOMAIN}/{dsid}/{_file[0]}'
+                url = get_webfile_url(dsid, _file[0], settings.GLOBUS_STRATUS_BASE_URL, locflag=_file[1])
             print(url)
             content = requests.get(url).content
             reader = csv.reader(StringIO(content.decode()))
             res = []
             for row in reader:
-                if dsid == 'd316010':
+                if dsid in ['d316010']:
                     shifted = [row[-1]] + row[1:-1]
                     row = shifted
                 res.append(row)
@@ -1394,8 +1394,7 @@ def get_webfile_url(dsid, wfile, base_url, origin_path=None, locflag=None):
     dsid = format_dataset_id(dsid)
 
     # check wfile for leading '/' and remove if found
-    if (wfile.find('/',0,1) != -1):
-        wfile = wfile.replace('/','',1)
+    wfile = wfile.lstrip('/')
 
     if not locflag:
         locflag = get_webfile_location(dsid, wfile)
