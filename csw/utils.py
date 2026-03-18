@@ -49,16 +49,3 @@ def parse_request(request):
             csw_request = {'error': {'code': "VersionNegotiationFailed"}}
 
     return csw_request
-
-
-def db_connect(request):
-    try:
-        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
-    except psycopg2.Error:
-        return render(request, "csw/exception.xml",
-                      context=utils.exception(
-                              "TransactionFailed",
-                              text="Database connection failure"),
-                      content_type="application/xml", status=500)
-
-    return conn

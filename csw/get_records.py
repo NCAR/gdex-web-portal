@@ -10,8 +10,7 @@ from libpkg.xmlutils import convert_html_to_text
 from . import utils
 
 
-def hits(request, csw_request):
-    conn = utils.db_connect(request)
+def hits(request, csw_request, conn):
     try:
         cursor = conn.cursor()
         cursor.execute((
@@ -39,12 +38,9 @@ def hits(request, csw_request):
                       context=utils.exception("TransactionFailed",
                                               text="Database failure"),
                       content_type="application/xml", status=500)
-    finally:
-        conn.close()
 
 
-def brief(request, csw_request):
-    conn = utils.db_connect(request)
+def brief(request, csw_request, conn):
     try:
         cursor = conn.cursor()
         cursor.execute((
@@ -70,14 +66,11 @@ def brief(request, csw_request):
                       context=utils.exception("TransactionFailed",
                                               text="Database failure"),
                       content_type="application/xml", status=500)
-    finally:
-        conn.close()
 
 
-def full(request, csw_request):
+def full(request, csw_request, conn):
     ctx = summary(request, csw_request)
     ctx['publisher'] = ARCHIVE['pub_name']['default']['name']
-    conn = utils.db_connect(request)
     try:
         cursor = conn.cursor()
         cursor.execute((
@@ -144,12 +137,9 @@ def full(request, csw_request):
                       context=utils.exception("TransactionFailed",
                                               text="Database failure"),
                       content_type="application/xml", status=500)
-    finally:
-        conn.close()
 
 
-def summary(request, csw_request):
-    conn = utils.db_connect(request)
+def summary(request, csw_request, conn):
     try:
         cursor = conn.cursor()
         limit = None
@@ -219,8 +209,6 @@ def summary(request, csw_request):
                       context=utils.exception("TransactionFailed",
                                               text="Database failure"),
                       content_type="application/xml", status=500)
-    finally:
-        conn.close()
 
 
 def respond(request, csw_request):
@@ -253,16 +241,27 @@ def respond(request, csw_request):
                       context=utils.exception(code, locator="typeNames"),
                       content_type="application/xml", status=400)
 
-    if csw_request['resulttype'] == "hits":
-        return hits(request, csw_request)
-    else:
-        if csw_request['elementsetname'] == "brief":
-            return brief(request, csw_request)
-        elif csw_request['elementsetname'] == "full":
-            return full(request, csw_request)
-        elif csw_request['elementsetname'] == "summary":
-            return summary(request, csw_request)
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        if csw_request['resulttype'] == "hits":
+            return hits(request, csw_request, conn)
+        else:
+            if csw_request['elementsetname'] == "brief":
+                return brief(request, csw_request, conn)
+            elif csw_request['elementsetname'] == "full":
+                return full(request, csw_request, conn)
+            elif csw_request['elementsetname'] == "summary":
+                return summary(request, csw_request, conn)
 
-    return render(request, "csw/exception.xml",
-                  context=utils.exception("TransactionFailed"),
-                  content_type="application/xml", status=500)
+        return render(request, "csw/exception.xml",
+                      context=utils.exception("TransactionFailed"),
+                      content_type="application/xml", status=500)
+    except Exception:
+        return render(request, "csw/exception.xml",
+                      context=utils.exception(
+                              "TransactionFailed",
+                              text="Database connection failure"),
+                      content_type="application/xml", status=500)
+    finally:
+        if 'conn' in locals():
+            conn.close()
