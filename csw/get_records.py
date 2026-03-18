@@ -10,21 +10,8 @@ from libpkg.xmlutils import convert_html_to_text
 from . import utils
 
 
-def db_connect(request):
-    try:
-        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
-    except psycopg2.Error:
-        return render(request, "csw/exception.xml",
-                      context=utils.exception(
-                              "TransactionFailed",
-                              text="Database connection failure"),
-                      content_type="application/xml", status=500)
-
-    return conn
-
-
 def hits(request, csw_request):
-    conn = db_connect(request)
+    conn = utils.db_connect(request)
     try:
         cursor = conn.cursor()
         cursor.execute((
@@ -57,7 +44,7 @@ def hits(request, csw_request):
 
 
 def brief(request, csw_request):
-    conn = db_connect(request)
+    conn = utils.db_connect(request)
     try:
         cursor = conn.cursor()
         cursor.execute((
@@ -90,7 +77,7 @@ def brief(request, csw_request):
 def full(request, csw_request):
     ctx = summary(request, csw_request)
     ctx['publisher'] = ARCHIVE['pub_name']['default']['name']
-    conn = db_connect(request)
+    conn = utils.db_connect(request)
     try:
         cursor = conn.cursor()
         cursor.execute((
@@ -162,7 +149,7 @@ def full(request, csw_request):
 
 
 def summary(request, csw_request):
-    conn = db_connect(request)
+    conn = utils.db_connect(request)
     try:
         cursor = conn.cursor()
         limit = None
