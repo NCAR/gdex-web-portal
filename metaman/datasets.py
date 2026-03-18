@@ -1861,9 +1861,10 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
                             response.raise_for_status()
 
                     except Exception:
-                        log_error(("Link check failure for '" + url + "': " +
-                                   str(response.status_code)),
-                                  source="fill_from_most_recent_commit")
+                        error = f"Link check failure for '{url}'"
+                        if 'response' in locals():
+                            error += f": {str(response.status_code)}"
+                        log_error(error, source="fill_from_most_recent_commit")
                         errs.append(("- Unresolvable URL <i>" + url + "</i> "
                                      "must be fixed or removed"))
 
