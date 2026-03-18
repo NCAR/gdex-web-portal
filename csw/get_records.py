@@ -69,7 +69,7 @@ def brief(request, csw_request, conn):
 
 
 def full(request, csw_request, conn):
-    ctx = summary(request, csw_request)
+    ctx = summary(request, csw_request, conn)
     ctx['publisher'] = ARCHIVE['pub_name']['default']['name']
     try:
         cursor = conn.cursor()
@@ -256,7 +256,7 @@ def respond(request, csw_request):
         return render(request, "csw/exception.xml",
                       context=utils.exception("TransactionFailed"),
                       content_type="application/xml", status=500)
-    except Exception:
+    except psycopg2.Error:
         return render(request, "csw/exception.xml",
                       context=utils.exception(
                               "TransactionFailed",
