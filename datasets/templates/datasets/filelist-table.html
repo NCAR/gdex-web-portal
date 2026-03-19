@@ -39,7 +39,7 @@
 
                         {% if data.is_glade and col.is_file %}
                             {% if data.locflag == 'O' %}
-                                {{ col.data_path|make_local_os_URL }}
+                                {{ col.url|make_local_os_URL }}
                             {% else %}
                                 {{ col.data_path|make_glade_URL }}
                             {% endif %}

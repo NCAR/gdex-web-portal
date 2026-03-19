@@ -817,20 +817,28 @@ def get_arco_variables(dsid):
     con,cur = init_connection_new()
     wfile_table=f'wfile_{dsid}'
     assert len(wfile_table) == 13
-    match_str = '%.csv'
-    query = f'select wfile from {wfile_table} where gindex=-2 and wfile like %s'
+    match_str = 'catalog%.csv'
+    query = f'select wfile,locflag from {wfile_table} where gindex<0 and wfile like %s'
     cur.execute(query, (match_str,))
     result = cur.fetchall()
     close_connection(con,cur)
-    csv_files = [i[0] for i in result]
+    csv_files = [(i[0],i[1]) for i in result]
     res = [['unknown','error']]
+    print(csv_files)
     for _file in csv_files:
-        if 'http' in _file:
-            url = f'https://{settings.GLOBUS_DATA_DOMAIN}/{dsid}/{_file}'
+        if 'http' in _file[0]:
+            if _file[1] != 'O':
+                url = get_webfile_url(dsid, _file[0], settings.GLOBUS_DATA_BASE_URL, locflag=_file[1])
+            else:
+                url = get_webfile_url(dsid, _file[0], settings.GLOBUS_STRATUS_BASE_URL, locflag=_file[1])
+            print(url)
             content = requests.get(url).content
             reader = csv.reader(StringIO(content.decode()))
             res = []
             for row in reader:
+                if dsid in ['d316010']:
+                    shifted = [row[-1]] + row[1:-1]
+                    row = shifted
                 res.append(row)
     add_to_cache('arco_vars', dsid, res)
     return res
@@ -1044,8 +1052,11 @@ def create_filelist_table(dsid, gindex, page=0, filter_wfile=None):
     locflag = get_dataset_location(dsid)
     origin_path = get_guest_collection_origin_path(dsid)
 
-    if gindex == "-1":
-        base_url = settings.GLOBUS_STRATUS_BASE_URL
+    if int(gindex) < 0:  # Use Globus HTTPS domains for ARCO datasets (gindex < 0)
+        if locflag == 'G':
+            base_url = settings.GLOBUS_DATA_BASE_URL
+        else:
+            base_url = settings.GLOBUS_STRATUS_BASE_URL
     else:
         base_url = get_webfile_base_url(dsid, files[0]['wfile'], locflag=locflag)
 
@@ -1383,8 +1394,7 @@ def get_webfile_url(dsid, wfile, base_url, origin_path=None, locflag=None):
     dsid = format_dataset_id(dsid)
 
     # check wfile for leading '/' and remove if found
-    if (wfile.find('/',0,1) != -1):
-        wfile = wfile.replace('/','',1)
+    wfile = wfile.lstrip('/')
 
     if not locflag:
         locflag = get_webfile_location(dsid, wfile)

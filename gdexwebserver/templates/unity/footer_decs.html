@@ -1,7 +1,7 @@
 {% load menu_tags home_tags %}
 
 <footer>
-    <div class="org-footer d-print-none">
+    <div id="org-footer" class="org-footer d-print-none">
         <div class="container-lg">
             <div class="row">
                 {% flat_menu 'ncar_org_links' show_menu_heading=False template='menus/ncar_footer.html' %}
@@ -13,14 +13,16 @@
 
     {% flat_menu 'legal_footer' show_menu_heading=False template='menus/legal_footer.html' %}
 
-    <div class="nsf-footer py-3">
+    <div id="nsf-footer" class="nsf-footer py-3">
         <div class="container-lg">
             <div class="row align-items-center">
                 <div class="col-12 col-md-1 pb-3 pb-md-0 me-md-3">
                     {% include "unity/picture_wagtail_media.html" with image="NSF_Official_logo" alt="NSF Logo" %}
                 </div>
                 <div class="col-12 col-md-10 flex-md-grow-1">
-                    <p class="mb-0">This material is based upon work supported by the NSF National Center for Atmospheric Research, a major facility sponsored by the U.S. National Science Foundation and managed by the University Corporation for Atmospheric Research. Any opinions, findings and conclusions or recommendations expressed in this material do not necessarily reflect the views of the National Science Foundation.</p>
+                    <p class="mb-0">
+                        This material is based upon work supported by the NSF National Center for Atmospheric Research, a major facility sponsored by the U.S. National Science Foundation and managed by the University Corporation for Atmospheric Research. Any opinions, findings and conclusions or recommendations expressed in this material do not necessarily reflect the views of the <a href="https://nsf.gov" target="_blank">U.S. National Science Foundation.</a>
+                    </p>
                 </div>
             </div>
         </div>

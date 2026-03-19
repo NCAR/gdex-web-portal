@@ -55,6 +55,22 @@ spec:
             cpu: {{ .Values.webapp.container.limits.cpu }}
         ports:
         - containerPort: {{ .Values.webapp.container.port }}
+        env:
+        - name: PERSONAL_GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: calie-github-token
+              key: token
+        - name: GITHUB_REPO
+          valueFrom:
+            secretKeyRef:
+              name: gdex-jira-auto-repo
+              key: url
+        - name: JIRA_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jira-data-center-secret
+              key: secret
         volumeMounts:
         - mountPath: {{ .Values.volume.fs.mountPath }}
           name: {{ .Values.volume.fs.name }}
@@ -66,3 +82,6 @@ spec:
       - name: {{ .Values.volume.fs.name }}
         persistentVolumeClaim:
           claimName: {{ .Values.volume.fs.name }}
+      
+
+

@@ -1,3 +1,5 @@
+{% load custom_tags %}
+
 {% with data.is_glade as is_glade %}
 {% with settings.RDA_STRATUS_BASE_URL as os_base_url %}
 {% with settings.NCAR_STRATUS_URL as ncar_os_base_url %}
@@ -13,7 +15,7 @@
                         '{% get_copy_path gdex_base_path data.dsid col.webpath %}',
                         '{% get_copy_path_title gdex_base_path data.dsid col.webpath %}'
                     {% else %}
-                        '{% get_copy_path gdex_base_path data.dsid col.data_path %}',
+                        '{% with full_path=gdex_base_path|concat_paths:col.data_path %}{{ full_path }}{% endwith %}',
                         '{% get_copy_path_title gdex_base_path data.dsid col.data_path %}'
                     {% endif %}
                 {% elif is_glade and data.locflag == 'O' %}
@@ -21,7 +23,7 @@
                         '{% get_copy_path ncar_os_base_url data.dsid col.webpath %}',
                         '{% get_copy_path_title ncar_os_base_url data.dsid col.webpath %}'
                     {% else %}
-                        '{% get_copy_path ncar_os_base_url data.dsid col.data_path %}',
+                        '{% with full_path=ncar_os_base_url|concat_paths:col.data_path %}{{ full_path }}{% endwith %}',
                         '{% get_copy_path_title ncar_os_base_url data.dsid col.data_path %}'
                     {% endif %}
                 {% elif data.locflag == 'O' %}
@@ -29,7 +31,7 @@
                         '{% get_copy_path os_base_url data.dsid col.webpath %}',
                         '{% get_copy_path_title os_base_url data.dsid col.webpath %}'
                     {% else %}
-                        '{% get_copy_path os_base_url data.dsid col.data_path %}',
+                        '{% with full_path=os_base_url|concat_paths:col.data_path %}{{ full_path }}{% endwith %}',
                         '{% get_copy_path_title os_base_url data.dsid col.data_path %}'
                     {% endif %}
                 {% else %}
@@ -37,7 +39,7 @@
                         '{% get_copy_path gdex_base_url data.dsid col.webpath %}',
                         '{% get_copy_path_title gdex_base_url data.dsid col.webpath %}'
                     {% else %}
-                        '{% get_copy_path gdex_base_url data.dsid col.data_path %}',
+                        '{% with full_path=gdex_base_url|concat_paths:col.data_path %}{{ full_path }}{% endwith %}',
                         '{% get_copy_path_title gdex_base_url data.dsid col.data_path %}'
                     {% endif %}
                 {% endif %}
