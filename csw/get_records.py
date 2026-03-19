@@ -1,5 +1,7 @@
 import psycopg2
+import pytz
 
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.shortcuts import render
 from libpkg.metaformats.settings import ARCHIVE
@@ -163,6 +165,12 @@ def summary(request, csw_request, conn):
                         "('P', 'H') and dsid < 'd999000' order by dsid"))
                 res = cursor.fetchall()
                 ctx['num_matched'] = len(res)
+                cursor.execute((
+                       "insert into metautil.csw_result_set_ids values ("
+                       "%s, %s, %s"), (ctx['result_set_id'],
+                                       datetime.now(pytz.utc) +
+                                       timedelta(hours=3),
+                                       ctx['num_matched']))
                 for e in res:
                     cursor.execute((
                             "insert into metautil.csw_result_sets values ("
