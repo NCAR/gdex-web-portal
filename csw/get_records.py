@@ -166,7 +166,7 @@ def summary(request, csw_request, conn):
                 for e in res:
                     cursor.execute((
                             "insert into metautil.csw_result_sets values ("
-                            "%s, %s)"), (ctx['resultsetid'], e[0]))
+                            "%s, %s)"), (ctx['result_set_id'], e[0]))
 
                 conn.commit()
 
