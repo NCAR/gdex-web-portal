@@ -137,6 +137,8 @@ def full(request, csw_request, conn):
 
 
 def summary(request, csw_request, conn):
+    ctx = {'result_type': csw_request['elementsetname'], 'num_matched': 0,
+           'records': []}
     try:
         cursor = conn.cursor()
         limit = None
@@ -168,6 +170,7 @@ def summary(request, csw_request, conn):
 
                 conn.commit()
 
+        ctx['next_record'] = next_record
         cursor.execute((
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
                 """"dc:identifier1", s.title as "dc.title", s.summary as """
@@ -178,9 +181,10 @@ def summary(request, csw_request, conn):
                 """type in ('P', 'H') and s.dsid < 'd999000' order by s."""
                 """dsid limit %s offset %s"""), (limit, offset))
         res = cursor.fetchall()
-        ctx = {'result_type': csw_request['elementsetname'],
-               'num_matched': len(res), 'num_returned': len(res),
-               'next_record': next_record, 'records': []}
+        if ctx['num_matched'] == 0:
+            ctx['num_matched'] = len(res)
+
+        ctx['num_returned'] = len(res),
         for e in res:
             mdate = metadata_date(e[0], cursor)
             ctx['records'].append(
