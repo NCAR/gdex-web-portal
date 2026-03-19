@@ -167,7 +167,7 @@ def summary(request, csw_request, conn):
                 ctx['num_matched'] = len(res)
                 cursor.execute((
                        "insert into metautil.csw_result_set_ids values ("
-                       "%s, %s, %s"), (ctx['result_set_id'],
+                       "%s, %s, %s)"), (ctx['result_set_id'],
                                        datetime.now(pytz.utc) +
                                        timedelta(hours=3),
                                        ctx['num_matched']))
