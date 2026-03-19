@@ -38,6 +38,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 INSTALLED_APPS = [
     'ajax',
     'apis.citations',
+    'csw',
     'daas',
     'dashboard',
     'dataaccess',
