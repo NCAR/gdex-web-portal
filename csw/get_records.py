@@ -5,6 +5,7 @@ from django.shortcuts import render
 from libpkg.metaformats.settings import ARCHIVE
 from libpkg.geospatial import fill_geographic_extent_data
 from libpkg.metautils import get_temporal_range, metadata_date
+from libpkg.strutils import strand
 from libpkg.xmlutils import convert_html_to_text
 
 from . import utils
@@ -71,15 +72,11 @@ def brief(request, csw_request, conn):
 def full(request, csw_request, conn):
     ctx = summary(request, csw_request, conn)
     ctx['publisher'] = ARCHIVE['pub_name']['default']['name']
+    if ctx['next_record'] > ctx['num_matched']:
+        ctx['next_record'] = 0
+
     try:
         cursor = conn.cursor()
-        cursor.execute((
-                "select count(*) from search.datasets where type in "
-                "('P', 'H') and dsid < 'd999000'"))
-        ctx['num_matched'] = cursor.fetchone()[0]
-        if ctx['next_record'] > ctx['num_matched']:
-            ctx['next_record'] = 0
-
         for record in ctx['records']:
             cursor.execute((
                     "select type, given_name, middle_name, family_name from "
@@ -154,6 +151,22 @@ def summary(request, csw_request, conn):
                 limit = min(limit, int(csw_request['maxrecords']))
 
             next_record = offset + limit + 1
+            if 'resultsetid' in csw_request:
+                ctx['result_set_id'] = csw_request['resultsetid']
+                ctx['request_id'] = ctx['result_set_id']
+            else:
+                ctx['result_set_id'] = strand(20)
+                cursor.execute((
+                        "select dsid from search.datasets where type in "
+                        "('P', 'H') and dsid < 'd999000' order by dsid"))
+                res = cursor.fetchall()
+                ctx['num_matched'] = len(res)
+                for e in res:
+                    cursor.execute((
+                            "insert into metautil.csw_result_sets values ("
+                            "%s, %s)"), (ctx['resultsetid'], e[0]))
+
+                conn.commit()
 
         cursor.execute((
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
