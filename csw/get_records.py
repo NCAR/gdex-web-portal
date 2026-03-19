@@ -164,8 +164,8 @@ def summary(request, csw_request, conn):
                         "('P', 'H') and dsid < 'd999000' order by dsid"))
                 res = cursor.fetchall()
                 ctx['num_matched'] = len(res)
-                expires = (datetime.now(tzinfo=timezone.utc) +
-                           timedelta(hours=3))
+                expires = datetime.now() + timedelta(hours=3)
+                expires.replace(tzinfo=timezone.utc)
                 cursor.execute((
                        "insert into metautil.csw_result_set_ids values ("
                        "%s, %s, %s)"), (ctx['result_set_id'], expires,
