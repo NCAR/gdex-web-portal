@@ -184,7 +184,7 @@ def summary(request, csw_request, conn):
         if ctx['num_matched'] == 0:
             ctx['num_matched'] = len(res)
 
-        ctx['num_returned'] = len(res),
+        ctx['num_returned'] = len(res)
         for e in res:
             mdate = metadata_date(e[0], cursor)
             ctx['records'].append(
