@@ -2,6 +2,7 @@ import psycopg2
 
 from datetime import datetime, timedelta, timezone
 from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import render
 from libpkg.metaformats.settings import ARCHIVE
 from libpkg.geospatial import fill_geographic_extent_data
@@ -72,6 +73,9 @@ def brief(request, csw_request, conn):
 
 def full(request, csw_request, conn):
     ctx = summary(request, csw_request, conn)
+    if isinstance(ctx, HttpResponse):
+        return ctx
+
     ctx['publisher'] = ARCHIVE['pub_name']['default']['name']
     if ctx['next_record'] > ctx['num_matched']:
         ctx['next_record'] = 0
@@ -179,6 +183,16 @@ def summary(request, csw_request, conn):
                     "select list_size from metautil.csw_result_set_ids where "
                     "id = %s"), (ctx['result_set_id'], ))
             res = cursor.fetchone()
+            if res is None:
+                return render(
+                        request, "csw/exception.xml",
+                        context=utils.exception(
+                                "InvalidParameterValue",
+                                locator="ResultSetId",
+                                text=("The specified result set ID is invalid "
+                                      "or the result set has expired")),
+                        content_type="application/xml", status=400)
+
             ctx['num_matched'] = res[0]
             cursor.execute((
                     "select dsid from metautil.csw_result_sets where id = %s "
