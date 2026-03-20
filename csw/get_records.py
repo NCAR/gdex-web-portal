@@ -162,12 +162,12 @@ def summary(request, csw_request, conn):
                         "select dsid from search.datasets where type in "
                         "('P', 'H') and dsid < 'd999000' order by dsid"))
                 res = cursor.fetchall()
-                expires = datetime.now() + timedelta(hours=3)
-                expires.replace(tzinfo=timezone.utc)
+                ctx['result_set_expires'] = datetime.now() + timedelta(hours=3)
+                ctx['result_set_expires'].replace(tzinfo=timezone.utc)
                 cursor.execute((
                        "insert into metautil.csw_result_set_ids values ("
-                       "%s, %s, %s)"), (ctx['result_set_id'], expires,
-                                        len(res)))
+                       "%s, %s, %s)"), (ctx['result_set_id'],
+                                        ctx['result_set_expires'], len(res)))
                 for e in res:
                     cursor.execute((
                             "insert into metautil.csw_result_sets values ("
