@@ -154,9 +154,8 @@ def summary(request, csw_request, conn):
                 limit = min(limit, int(csw_request['maxrecords']))
 
             next_record = offset + limit + 1
-            if 'requestid' in csw_request:
-                ctx['result_set_id'] = csw_request['requestid']
-                ctx['request_id'] = ctx['result_set_id']
+            if 'resultsetid' in csw_request:
+                ctx['result_set_id'] = csw_request['resultsetid']
             else:
                 ctx['result_set_id'] = strand(20)
                 cursor.execute((
