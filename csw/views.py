@@ -18,9 +18,6 @@ def respond_to_request(request):
                       context=ctx, content_type="application/xml", status=400)
 
     purged_ids = utils.purge_result_sets()
-    if 'requestid' in csw_request and csw_request['requestid'] in purged_ids:
-        del csw_request['requestid']
-
     if csw_request['request'] == "GetCapabilities":
         return get_capabilities.respond(request, csw_request)
     elif csw_request['request'] == "GetRecords":
