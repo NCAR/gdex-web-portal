@@ -166,12 +166,12 @@ def summary(request, csw_request, conn):
                         "select dsid from search.datasets where type in "
                         "('P', 'H') and dsid < 'd999000' order by dsid"))
                 res = cursor.fetchall()
-                ctx['result_set_expires'] = datetime.now() + timedelta(hours=3)
-                ctx['result_set_expires'].replace(tzinfo=timezone.utc)
+                expires = datetime.now() + timedelta(hours=3)
+                expires.replace(tzinfo=timezone.utc)
                 cursor.execute((
                        "insert into metautil.csw_result_set_ids values ("
-                       "%s, %s, %s)"), (ctx['result_set_id'],
-                                        ctx['result_set_expires'], len(res)))
+                       "%s, %s, %s)"), (ctx['result_set_id'], expires,
+                                        len(res)))
                 for e in res:
                     cursor.execute((
                             "insert into metautil.csw_result_sets values ("
@@ -180,8 +180,9 @@ def summary(request, csw_request, conn):
                 conn.commit()
 
             cursor.execute((
-                    "select list_size from metautil.csw_result_set_ids where "
-                    "id = %s"), (ctx['result_set_id'], ))
+                    "select list_size, expiration from metautil."
+                    "csw_result_set_ids where id = %s"),
+                    (ctx['result_set_id'], ))
             res = cursor.fetchone()
             if res is None:
                 return render(
@@ -193,7 +194,7 @@ def summary(request, csw_request, conn):
                                       "or the result set has expired")),
                         content_type="application/xml", status=400)
 
-            ctx['num_matched'] = res[0]
+            ctx['num_matched'], ctx['result_set_expires'] = res
             cursor.execute((
                     "select dsid from metautil.csw_result_sets where id = %s "
                     "order by dsid limit %s offset %s"),
