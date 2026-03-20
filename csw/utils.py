@@ -62,8 +62,8 @@ def purge_result_sets():
         now = datetime.now()
         now.replace(tzinfo=timezone.utc)
         cursor.execute((
-                "select id from metautil.csw_result_set_ids where expires < "
-                "%s"), (now, ))
+                "select id from metautil.csw_result_set_ids where expiration "
+                "< %s"), (now, ))
         res = cursor.fetchall()
         if len(res) > 0:
             ids = tuple(e[0] for e in res)
