@@ -23,9 +23,7 @@ def respond_to_request(request):
         return get_records.respond(request, csw_request)
     elif csw_request['request'] == "GetRecordById":
         return get_record_by_id.respond(request, csw_request)
-    else:
-        ctx = utils.exception("InvalidParameterValue", locator="REQUEST")
-        return render(request, "csw/exception.xml", context=ctx,
-                      content_type="application/xml", status=400)
 
-    return render(request, "403.html")
+    ctx = utils.exception("InvalidParameterValue", locator="REQUEST")
+    return render(request, "csw/exception.xml", context=ctx,
+                  content_type="application/xml", status=400)
