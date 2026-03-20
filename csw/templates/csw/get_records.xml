@@ -4,7 +4,7 @@
   {% if result_type == "hits" %}
   <SearchResults numberOfRecordsMatched="{{ num_matched }}" numberOfRecordsReturned="0" />
   {% else %}
-  <SearchResults{% if result_set_id %} resultSetId="{{ result_set_id }}" {% endif %} elementSet="{{ result_type }}" numberOfRecordsMatched="{{ num_matched }}" numberOfRecordsReturned="{{ num_returned }}" nextRecord="{{ next_record }}"{% if result_set_expires %} expires="{{ result_set_expires }}"{% endif %}>
+  <SearchResults{% if result_set_id %} resultSetId="{{ result_set_id }}" {% endif %} elementSet="{{ result_type }}" numberOfRecordsMatched="{{ num_matched }}" numberOfRecordsReturned="{{ num_returned }}" nextRecord="{{ next_record }}"{% if result_set_expires %} expires="{{ result_set_expires|date:"Y-m-d\TH\:i\:s\+\0\0\:\0\0" }}"{% endif %}>
     {% for record in records %}
     <{% if result_type == "brief" or result_type == "summary" %}{{ result_type|capfirst }}{% endif %}Record>
       {% for identifier in record.identifiers %}
