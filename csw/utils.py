@@ -66,13 +66,13 @@ def purge_result_sets():
                 "< %s"), (now, ))
         res = cursor.fetchall()
         if len(res) > 0:
-            ids = tuple(e[0] for e in res)
+            ids = ",".join(e[0] for e in res)
             cursor.execute((
-                    "delete from metautil.csw_result_sets where id in %s"),
-                    (str(ids), ))
+                    "delete from metautil.csw_result_sets where id in (%s)"),
+                    (ids, ))
             cursor.execute((
-                    "delete from metautil.csw_result_set_ids where id in %s"),
-                    (str(ids), ))
+                    "delete from metautil.csw_result_set_ids where id in "
+                    "(%s)"), (ids, ))
             conn.commit()
         else:
             ids = ()
