@@ -1,4 +1,8 @@
+import psycopg2
+
 from lxml import etree as ElementTree
+from datetime import datetime, timezone
+from django.conf import settings
 
 
 def exception(code, **kwargs):
@@ -49,3 +53,31 @@ def parse_request(request):
             csw_request = {'error': {'code': "VersionNegotiationFailed"}}
 
     return csw_request
+
+
+def purge_result_sets():
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        now = datetime.now()
+        now.replace(tzinfo=timezone.utc)
+        cursor.execute((
+                "select id from metautil.csw_result_set_ids where expires < "
+                "%s"), (now, ))
+        res = cursor.fetchall()
+        if len(res) > 0:
+            ids = tuple(e[0] for e in res)
+            cursor.execute((
+                    "delete from metautil.csw_result_sets where id in %s"),
+                    (str(ids), ))
+            cursor.execute((
+                    "delete from metautil.csw_result_set_ids where id in %s"),
+                    (str(ids), ))
+            conn.commit()
+        else:
+            ids = ()
+
+        conn.close()
+        return ids
+    except Exception:
+        return ()
