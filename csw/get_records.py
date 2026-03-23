@@ -174,7 +174,7 @@ def summary(request, csw_request, conn):
                             "join dssdb.dsvrsn as v on v.dsid = s.dsid where "
                             "concat('edu.ucar.gdex:', s.dsid) in " +
                             str(tuple(parts)) + " or concat('doi:', v.doi) in "
-                            + str(tuple(parts)) + " order by s.dsid)")
+                            + str(tuple(parts)) + " order by s.dsid")
                 else:
                     query = (
                             "select dsid from search.datasets where type in "
@@ -232,8 +232,9 @@ def summary(request, csw_request, conn):
                 parts.append("")
 
             search_conditions.append((
-                    "concat('edu.ucar.gdex:', s.dsid) in " + str(tuple(parts))
-                    + " or concat('doi:', v.doi) in " + str(tuple(parts))))
+                    "(concat('edu.ucar.gdex:', s.dsid) in " + str(tuple(parts))
+                    + " or concat('doi:', v.doi) in " + str(tuple(parts)) +
+                    ")"))
 
         cursor.execute((
                 "select s.dsid, concat('edu.ucar.gdex:', s.dsid), s.title, s."
