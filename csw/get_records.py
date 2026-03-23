@@ -146,11 +146,6 @@ def full(request, csw_request, conn):
 def summary(request, csw_request, conn):
     ctx = {'result_type': csw_request['elementsetname'], 'num_matched': 0,
            'records': []}
-    if csw_request['request'] == "GetRecordById" and 'id' in csw_request:
-        id_list = [e.lower() for e in csw_request['id'].split(",")]
-        if len(id_list) == 1:
-            id_list.append("")
-
     try:
         cursor = conn.cursor()
         next_record = 0
@@ -169,7 +164,12 @@ def summary(request, csw_request, conn):
                 ctx['result_set_id'] = csw_request['resultsetid']
             else:
                 ctx['result_set_id'] = strand(20)
-                if 'id_list' in locals():
+                if (csw_request['request'] == "GetRecordById" and 'id' in
+                        csw_request):
+                    id_list = [e.lower() for e in csw_request['id'].split(",")]
+                    if len(id_list) == 1:
+                        id_list.append("")
+
                     query = (
                             "select s.dsid from search.datasets as s left "
                             "join dssdb.dsvrsn as v on v.dsid = s.dsid and "
