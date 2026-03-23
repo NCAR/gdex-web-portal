@@ -211,10 +211,13 @@ def summary(request, csw_request, conn):
                                  "s.dsid < 'd999000'"]
 
         if csw_request['request'] == "GetRecordById" and 'id' in csw_request:
-            parts = ["'" + e + "'" for e in csw_request['id'].split(",")]
+            parts = csw_request['id'].split(",")
+            if len(parts) == 1:
+                parts.append("")
+
             search_conditions.append((
-                    """("dc:identifier1" in (""" + ", ".join(parts) + ") or "
-                    """"dc:identifier2" in (""" + ", ".join(parts) + "))"))
+                    """("dc:identifier1" in """ + str(tuple(parts)) + " or "
+                    """"dc:identifier2" in """ + str(tuple(parts)) + ")"))
 
         cursor.execute((
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
