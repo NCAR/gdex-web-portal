@@ -146,6 +146,11 @@ def full(request, csw_request, conn):
 def summary(request, csw_request, conn):
     ctx = {'result_type': csw_request['elementsetname'], 'num_matched': 0,
            'records': []}
+    if csw_request['request'] == "GetRecordById" and 'id' in csw_request:
+        id_list = [e.lower() for e in csw_request['id'].split(",")]
+        if len(id_list) == 1:
+            id_list.append("")
+
     try:
         cursor = conn.cursor()
         next_record = 0
@@ -164,18 +169,14 @@ def summary(request, csw_request, conn):
                 ctx['result_set_id'] = csw_request['resultsetid']
             else:
                 ctx['result_set_id'] = strand(20)
-                if 'id' in csw_request:
-                    parts = [e.lower() for e in csw_request['id'].split(",")]
-                    if len(parts) == 1:
-                        parts.append("")
-
+                if 'id_list' in locals():
                     query = (
                             "select s.dsid from search.datasets as s left "
                             "join dssdb.dsvrsn as v on v.dsid = s.dsid and "
                             "v.status = 'A' where lower(concat("
                             "'edu.ucar.gdex:', s.dsid)) in " +
-                            str(tuple(parts)) + " or lower(concat("
-                            "'doi:', v.doi)) in " + str(tuple(parts)) +
+                            str(tuple(id_list)) + " or lower(concat("
+                            "'doi:', v.doi)) in " + str(tuple(id_list)) +
                             " order by s.dsid")
                 else:
                     query = (
@@ -228,15 +229,11 @@ def summary(request, csw_request, conn):
             search_conditions = ["s.type in ('P', 'H')",
                                  "s.dsid < 'd999000'"]
 
-        if csw_request['request'] == "GetRecordById" and 'id' in csw_request:
-            parts = csw_request['id'].split(",")
-            if len(parts) == 1:
-                parts.append("")
-
+        if 'id_list' in locals():
             search_conditions.append((
-                    "(concat('edu.ucar.gdex:', s.dsid) in " + str(tuple(parts))
-                    + " or concat('doi:', v.doi) in " + str(tuple(parts)) +
-                    ")"))
+                    "(concat('edu.ucar.gdex:', s.dsid) in " +
+                    str(tuple(id_list)) + " or concat('doi:', v.doi) in " +
+                    str(tuple(id_list)) + ")"))
 
         cursor.execute((
                 "select s.dsid, concat('edu.ucar.gdex:', s.dsid), s.title, s."
