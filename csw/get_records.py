@@ -211,7 +211,7 @@ def summary(request, csw_request, conn):
                                  "s.dsid < 'd999000'"]
 
         if csw_request['request'] == "GetRecordById" and 'id' in csw_request:
-            parts = csw_request['id'].split(",")
+            parts = ["'" + e + "'" for e in csw_request['id'].split(",")]
             search_conditions.append((
                     """("dc:identifier1" in (""" + ", ".join(parts) + ") or "
                     """"dc:identifier2" in (""" + ", ".join(parts) + "))"))
