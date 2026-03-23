@@ -46,12 +46,14 @@ def hits(request, csw_request, conn):
 def brief(request, csw_request, conn):
     try:
         cursor = conn.cursor()
+        search_conditions = ["s.type in ('P', 'H')",
+                             "s.dsid < 'd999000'"]
         cursor.execute((
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
                 """"dc:identifier1", s.title, concat('doi:', v.doi) as """
                 """"dc:identifer2" from search.datasets as s left join """
                 """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = 'A' """
-                """where s.type in ('P', 'H') and s.dsid < 'd999000' order """
+                """where """ + " and ".join(search_conditions) + """ order """
                 """by s.dsid"""))
         res = cursor.fetchall()
         ctx = {'result_type': "brief", 'num_matched': len(res),
@@ -202,20 +204,20 @@ def summary(request, csw_request, conn):
             dsid_list = tuple(e[0] for e in cursor.fetchall())
 
         ctx['next_record'] = next_record
-        query = (
+        if 'dsid_list' in locals():
+            search_conditions = ["s.dsid in " + str(dsid_list)]
+        else:
+            search_conditions = ["s.type in ('P', 'H')",
+                                 "s.dsid < 'd999000'"]
+
+        cursor.execute((
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
                 """"dc:identifier1", s.title as "dc.title", s.summary as """
                 """"dct:abstract", concat('doi:', v.doi) as """
                 """"dc.identifier2" from search.datasets as s left join """
                 """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = 'A' """
-                """left join dssdb.dataset as d on d.dsid = s.dsid where """)
-        if 'dsid_list' in locals():
-            query += "s.dsid in " + str(dsid_list)
-        else:
-            query += """s.type in ('P', 'H') and s.dsid < 'd999000'"""
-
-        query += " order by s.dsid"
-        cursor.execute(query)
+                """left join dssdb.dataset as d on d.dsid = s.dsid where """ +
+                " and ".join(search_conditions) + " order by s.dsid"))
         res = cursor.fetchall()
         if ctx['num_matched'] == 0:
             ctx['num_matched'] = len(res)
