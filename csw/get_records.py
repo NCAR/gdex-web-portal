@@ -217,8 +217,7 @@ def summary(request, csw_request, conn):
 
             search_conditions.append((
                     "concat('edu.ucar.gdex:', s.dsid) in " + str(tuple(parts))
-                    + " or concat('doi:', v.doi) in " + str(tuple(parts)) +
-                    ")"))
+                    + " or concat('doi:', v.doi) in " + str(tuple(parts))))
 
         cursor.execute((
                 "select s.dsid, concat('edu.ucar.gdex:', s.dsid), s.title, s."
