@@ -216,17 +216,16 @@ def summary(request, csw_request, conn):
                 parts.append("")
 
             search_conditions.append((
-                    """("dc:identifier1" in """ + str(tuple(parts)) + " or "
-                    """"dc:identifier2" in """ + str(tuple(parts)) + ")"))
+                    "concat('edu.ucar.gdex:', s.dsid) in " + str(tuple(parts))
+                    + " or concat('doi:', v.doi) in " + str(tuple(parts)) +
+                    ")"))
 
         cursor.execute((
-                """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
-                """"dc:identifier1", s.title as "dc.title", s.summary as """
-                """"dct:abstract", concat('doi:', v.doi) as """
-                """"dc.identifier2" from search.datasets as s left join """
-                """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = 'A' """
-                """left join dssdb.dataset as d on d.dsid = s.dsid where """ +
-                " and ".join(search_conditions) + " order by s.dsid"))
+                "select s.dsid, concat('edu.ucar.gdex:', s.dsid), s.title, s."
+                "summary, concat('doi:', v.doi) from search.datasets as s "
+                "left join dssdb.dsvrsn as v on v.dsid = s.dsid and v.status "
+                "= 'A' left join dssdb.dataset as d on d.dsid = s.dsid where "
+                + " and ".join(search_conditions) + " order by s.dsid"))
         res = cursor.fetchall()
         if ctx['num_matched'] == 0:
             ctx['num_matched'] = len(res)
