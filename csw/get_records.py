@@ -164,9 +164,23 @@ def summary(request, csw_request, conn):
                 ctx['result_set_id'] = csw_request['resultsetid']
             else:
                 ctx['result_set_id'] = strand(20)
-                cursor.execute((
-                        "select dsid from search.datasets where type in "
-                        "('P', 'H') and dsid < 'd999000' order by dsid"))
+                if 'id' in csw_request:
+                    parts = csw_request['id'].split(",")
+                    if len(parts) == 1:
+                        parts.append("")
+
+                     query = (
+                             "select s.dsid from search.datasets as s left "
+                             "join dssdb.dsvrsn as v on v.dsid = s.dsid where "
+                             "concat('edu.ucar.gdex:', s.dsid) in " + str("
+                             "tuple(parts)) + " or concat('doi:', v.doi) in "
+                             + str(tuple(parts)) + " order by s.dsid)"
+                else:
+                    query = (
+                            "select dsid from search.datasets where type in "
+                            "('P', 'H') and dsid < 'd999000' order by dsid)"
+
+                cursor.execute(query)
                 res = cursor.fetchall()
                 expires = datetime.now() + timedelta(hours=3)
                 expires.replace(tzinfo=timezone.utc)
