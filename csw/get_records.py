@@ -165,16 +165,17 @@ def summary(request, csw_request, conn):
             else:
                 ctx['result_set_id'] = strand(20)
                 if 'id' in csw_request:
-                    parts = csw_request['id'].split(",")
+                    parts = [e.lower() for e in csw_request['id'].split(",")]
                     if len(parts) == 1:
                         parts.append("")
 
                     query = (
                             "select s.dsid from search.datasets as s left "
                             "join dssdb.dsvrsn as v on v.dsid = s.dsid and "
-                            "v.status = 'A' where concat('edu.ucar.gdex:', "
-                            "s.dsid) in " + str(tuple(parts)) + " or concat("
-                            "'doi:', v.doi) in " + str(tuple(parts)) +
+                            "v.status = 'A' where lower(concat("
+                            "'edu.ucar.gdex:', s.dsid)) in " +
+                            str(tuple(parts)) + " or lower(concat("
+                            "'doi:', v.doi)) in " + str(tuple(parts)) +
                             " order by s.dsid")
                 else:
                     query = (
