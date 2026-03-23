@@ -210,7 +210,7 @@ def summary(request, csw_request, conn):
             search_conditions = ["s.type in ('P', 'H')",
                                  "s.dsid < 'd999000'"]
 
-        if 'id' in csw_request:
+        if csw_request['request'] == "GetRecordById" and 'id' in csw_request:
             parts = csw_request['id'].split(",")
             search_conditions.append((
                     """("dc:identifier1" in """ + str(tuple(parts)) + " or "
