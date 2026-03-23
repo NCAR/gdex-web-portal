@@ -215,11 +215,13 @@ def summary(request, csw_request, conn):
                     "select dsid from metautil.csw_result_sets where id = %s "
                     "order by dsid limit %s offset %s"),
                     (ctx['result_set_id'], limit, offset))
-            dsid_list = tuple(e[0] for e in cursor.fetchall())
+            dsid_list = [e[0] for e in cursor.fetchall()]
+            if len(dsid_list) == 1:
+                dsid_list.append("")
 
         ctx['next_record'] = next_record
         if 'dsid_list' in locals():
-            search_conditions = ["s.dsid in " + str(dsid_list)]
+            search_conditions = ["s.dsid in " + str(tuple(dsid_list))]
         else:
             search_conditions = ["s.type in ('P', 'H')",
                                  "s.dsid < 'd999000'"]
