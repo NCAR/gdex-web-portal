@@ -210,6 +210,12 @@ def summary(request, csw_request, conn):
             search_conditions = ["s.type in ('P', 'H')",
                                  "s.dsid < 'd999000'"]
 
+        if 'id' in csw_request:
+            parts = csw_request['id'].split(",")
+            search_conditions.append((
+                    """("dc:identifier1" in """ + str(tuple(parts)) + " or "
+                    """"dc:identifier2" in """ + str(tuple(parts)) + ")"))
+
         cursor.execute((
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
                 """"dc:identifier1", s.title as "dc.title", s.summary as """
