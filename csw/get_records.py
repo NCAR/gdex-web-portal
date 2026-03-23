@@ -213,8 +213,8 @@ def summary(request, csw_request, conn):
         if csw_request['request'] == "GetRecordById" and 'id' in csw_request:
             parts = csw_request['id'].split(",")
             search_conditions.append((
-                    """("dc:identifier1" in """ + str(tuple(parts)) + " or "
-                    """"dc:identifier2" in """ + str(tuple(parts)) + ")"))
+                    """("dc:identifier1" in (""" + ", ".join(parts) + ") or "
+                    """"dc:identifier2" in (""" + ", ".join(parts) + "))"))
 
         cursor.execute((
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
