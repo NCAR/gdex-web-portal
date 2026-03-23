@@ -229,12 +229,6 @@ def summary(request, csw_request, conn):
             search_conditions = ["s.type in ('P', 'H')",
                                  "s.dsid < 'd999000'"]
 
-        if 'id_list' in locals():
-            search_conditions.append((
-                    "(concat('edu.ucar.gdex:', s.dsid) in " +
-                    str(tuple(id_list)) + " or concat('doi:', v.doi) in " +
-                    str(tuple(id_list)) + ")"))
-
         cursor.execute((
                 "select s.dsid, concat('edu.ucar.gdex:', s.dsid), s.title, s."
                 "summary, concat('doi:', v.doi) from search.datasets as s "
