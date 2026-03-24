@@ -157,8 +157,8 @@ def summary(request, csw_request, conn):
                 offset = 0
 
             limit = 100
-            if ('maxrecords' in csw_request and len(csw_request['maxrecords'] >
-                    0):
+            if ('maxrecords' in csw_request and len(csw_request['maxrecords'])
+                    > 0):
                 limit = min(limit, int(csw_request['maxrecords']))
 
             next_record = offset + limit + 1
