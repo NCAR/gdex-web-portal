@@ -150,17 +150,20 @@ def summary(request, csw_request, conn):
         cursor = conn.cursor()
         next_record = 0
         if csw_request['elementsetname'] == "full":
-            if 'startposition' in csw_request:
+            if ('startposition' in csw_request and
+                    len(csw_request['startposition']) > 0):
                 offset = int(csw_request['startposition']) - 1
             else:
                 offset = 0
 
             limit = 100
-            if 'maxrecords' in csw_request:
+            if ('maxrecords' in csw_request and len(csw_request['maxrecords'] >
+                    0):
                 limit = min(limit, int(csw_request['maxrecords']))
 
             next_record = offset + limit + 1
-            if 'resultsetid' in csw_request:
+            if ('resultsetid' in csw_request and
+                    len(csw_request['resultsetid']) == 20):
                 ctx['result_set_id'] = csw_request['resultsetid']
             else:
                 if (csw_request['request'] == "GetRecordById" and 'id' in
