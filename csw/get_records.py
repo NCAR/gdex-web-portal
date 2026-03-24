@@ -163,7 +163,6 @@ def summary(request, csw_request, conn):
             if 'resultsetid' in csw_request:
                 ctx['result_set_id'] = csw_request['resultsetid']
             else:
-                ctx['result_set_id'] = strand(20)
                 if (csw_request['request'] == "GetRecordById" and 'id' in
                         csw_request):
                     id_list = [e.lower() for e in csw_request['id'].split(",")]
@@ -184,41 +183,49 @@ def summary(request, csw_request, conn):
                             "('P', 'H') and dsid < 'd999000' order by dsid")
 
                 cursor.execute(query)
-                res = cursor.fetchall()
-                expires = datetime.now() + timedelta(hours=3)
-                expires.replace(tzinfo=timezone.utc)
-                cursor.execute((
-                       "insert into metautil.csw_result_set_ids values ("
-                       "%s, %s, %s)"), (ctx['result_set_id'], expires,
-                                        len(res)))
-                for e in res:
+                dsids = cursor.fetchall()
+                if len(dsids) > 100:
+                    ctx['result_set_id'] = strand(20)
+                    expires = datetime.now() + timedelta(hours=3)
+                    expires.replace(tzinfo=timezone.utc)
                     cursor.execute((
-                            "insert into metautil.csw_result_sets values ("
-                            "%s, %s)"), (ctx['result_set_id'], e[0]))
+                           "insert into metautil.csw_result_set_ids values ("
+                           "%s, %s, %s)"), (ctx['result_set_id'], expires,
+                                            len(dsids)))
+                    for dsid, in dsids:
+                        cursor.execute((
+                                "insert into metautil.csw_result_sets values ("
+                                "%s, %s)"), (ctx['result_set_id'], dsid))
 
-                conn.commit()
+                    conn.commit()
+                else:
+                    ctx['num_matched'] = len(dsids)
 
-            cursor.execute((
-                    "select list_size, expiration from metautil."
-                    "csw_result_set_ids where id = %s"),
-                    (ctx['result_set_id'], ))
-            res = cursor.fetchone()
-            if res is None:
-                return render(
-                        request, "csw/exception.xml",
-                        context=utils.exception(
-                                "InvalidParameterValue",
-                                locator="ResultSetId",
-                                text=("The specified result set ID is invalid "
-                                      "or the result set has expired")),
-                        content_type="application/xml", status=400)
+            if 'result_set_id' in ctx:
+                cursor.execute((
+                        "select list_size, expiration from metautil."
+                        "csw_result_set_ids where id = %s"),
+                        (ctx['result_set_id'], ))
+                res = cursor.fetchone()
+                if res is None:
+                    return render(
+                            request, "csw/exception.xml",
+                            context=utils.exception(
+                                    "InvalidParameterValue",
+                                    locator="ResultSetId",
+                                    text=("The specified result set ID is "
+                                          "invalid or the result set has "
+                                          "expired")),
+                            content_type="application/xml", status=400)
 
-            ctx['num_matched'], ctx['result_set_expires'] = res
-            cursor.execute((
-                    "select dsid from metautil.csw_result_sets where id = %s "
-                    "order by dsid limit %s offset %s"),
-                    (ctx['result_set_id'], limit, offset))
-            dsid_list = [e[0] for e in cursor.fetchall()]
+                ctx['num_matched'], ctx['result_set_expires'] = res
+                cursor.execute((
+                        "select dsid from metautil.csw_result_sets where id = "
+                        "%s order by dsid limit %s offset %s"),
+                        (ctx['result_set_id'], limit, offset))
+                dsids = cursor.fetchall()
+
+            dsid_list = [e[0] for e in dsids]
             if len(dsid_list) == 1:
                 dsid_list.append("")
 
