@@ -299,8 +299,11 @@ def respond(request, csw_request):
 
     if csw_request['elementsetname'] not in ("brief", "full", "summary"):
         return render(request, "csw/exception.xml",
-                      context=utils.exception("InvalidParameterValue",
-                                              locator="ElementSetName"),
+                      context=utils.exception(
+                              "InvalidParameterValue",
+                              locator="ElementSetName",
+                              text=("ElementSetName must have one of 'brief', "
+                                    "'full', or 'summary'")),
                       content_type="application/xml", status=400)
 
     if 'resulttype' not in csw_request:
@@ -308,8 +311,10 @@ def respond(request, csw_request):
 
     if csw_request['resulttype'] not in ("hits", "results"):
         return render(request, "csw/exception.xml",
-                      context=utils.exception("InvalidParameterValue",
-                                              locator="resultType"),
+                      context=utils.exception(
+                              "InvalidParameterValue", locator="resultType",
+                              text=("resultType must have one of 'hits' or "
+                                    "'results'")),
                       content_type="application/xml", status=400)
 
     code = None
