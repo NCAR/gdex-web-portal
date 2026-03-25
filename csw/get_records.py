@@ -46,12 +46,14 @@ def hits(request, csw_request, conn):
 def brief(request, csw_request, conn):
     try:
         cursor = conn.cursor()
+        search_conditions = ["s.type in ('P', 'H')",
+                             "s.dsid < 'd999000'"]
         cursor.execute((
                 """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
                 """"dc:identifier1", s.title, concat('doi:', v.doi) as """
                 """"dc:identifer2" from search.datasets as s left join """
                 """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = 'A' """
-                """where s.type in ('P', 'H') and s.dsid < 'd999000' order """
+                """where """ + " and ".join(search_conditions) + """ order """
                 """by s.dsid"""))
         res = cursor.fetchall()
         ctx = {'result_type': "brief", 'num_matched': len(res),
@@ -148,74 +150,101 @@ def summary(request, csw_request, conn):
         cursor = conn.cursor()
         next_record = 0
         if csw_request['elementsetname'] == "full":
-            if 'startposition' in csw_request:
+            if ('startposition' in csw_request and
+                    len(csw_request['startposition']) > 0):
                 offset = int(csw_request['startposition']) - 1
             else:
                 offset = 0
 
             limit = 100
-            if 'maxrecords' in csw_request:
+            if ('maxrecords' in csw_request and len(csw_request['maxrecords'])
+                    > 0):
                 limit = min(limit, int(csw_request['maxrecords']))
 
             next_record = offset + limit + 1
-            if 'resultsetid' in csw_request:
+            if ('resultsetid' in csw_request and
+                    len(csw_request['resultsetid']) == 20):
                 ctx['result_set_id'] = csw_request['resultsetid']
             else:
-                ctx['result_set_id'] = strand(20)
-                cursor.execute((
-                        "select dsid from search.datasets where type in "
-                        "('P', 'H') and dsid < 'd999000' order by dsid"))
-                res = cursor.fetchall()
-                expires = datetime.now() + timedelta(hours=3)
-                expires.replace(tzinfo=timezone.utc)
-                cursor.execute((
-                       "insert into metautil.csw_result_set_ids values ("
-                       "%s, %s, %s)"), (ctx['result_set_id'], expires,
-                                        len(res)))
-                for e in res:
+                if (csw_request['request'] == "GetRecordById" and 'id' in
+                        csw_request):
+                    id_list = [e.lower() for e in csw_request['id'].split(",")]
+                    query = (
+                            "select s.dsid from search.datasets as s left "
+                            "join dssdb.dsvrsn as v on v.dsid = s.dsid and "
+                            "v.status = 'A' where lower(concat("
+                            "'edu.ucar.gdex:', s.dsid)) = any(%s) or lower("
+                            "concat('doi:', v.doi)) = any(%s) order by s.dsid")
+                    qparams = (id_list, id_list)
+                else:
+                    query = (
+                            "select dsid from search.datasets where type in "
+                            "('P', 'H') and dsid < 'd999000' order by dsid")
+                    qparams = ()
+
+                cursor.execute(query, qparams)
+                dsids = cursor.fetchall()
+                if len(dsids) > 100:
+                    ctx['result_set_id'] = strand(20)
+                    expires = datetime.now() + timedelta(hours=3)
+                    expires.replace(tzinfo=timezone.utc)
                     cursor.execute((
-                            "insert into metautil.csw_result_sets values ("
-                            "%s, %s)"), (ctx['result_set_id'], e[0]))
+                           "insert into metautil.csw_result_set_ids values ("
+                           "%s, %s, %s)"), (ctx['result_set_id'], expires,
+                                            len(dsids)))
+                    for dsid, in dsids:
+                        cursor.execute((
+                                "insert into metautil.csw_result_sets values ("
+                                "%s, %s)"), (ctx['result_set_id'], dsid))
 
-                conn.commit()
+                    conn.commit()
+                else:
+                    ctx['num_matched'] = len(dsids)
 
-            cursor.execute((
-                    "select list_size, expiration from metautil."
-                    "csw_result_set_ids where id = %s"),
-                    (ctx['result_set_id'], ))
-            res = cursor.fetchone()
-            if res is None:
-                return render(
-                        request, "csw/exception.xml",
-                        context=utils.exception(
-                                "InvalidParameterValue",
-                                locator="ResultSetId",
-                                text=("The specified result set ID is invalid "
-                                      "or the result set has expired")),
-                        content_type="application/xml", status=400)
+            if 'result_set_id' in ctx:
+                cursor.execute((
+                        "select list_size, expiration from metautil."
+                        "csw_result_set_ids where id = %s"),
+                        (ctx['result_set_id'], ))
+                res = cursor.fetchone()
+                if res is None:
+                    return render(
+                            request, "csw/exception.xml",
+                            context=utils.exception(
+                                    "InvalidParameterValue",
+                                    locator="ResultSetId",
+                                    text=("The specified result set ID is "
+                                          "invalid or the result set has "
+                                          "expired")),
+                            content_type="application/xml", status=400)
 
-            ctx['num_matched'], ctx['result_set_expires'] = res
-            cursor.execute((
-                    "select dsid from metautil.csw_result_sets where id = %s "
-                    "order by dsid limit %s offset %s"),
-                    (ctx['result_set_id'], limit, offset))
-            dsid_list = tuple(e[0] for e in cursor.fetchall())
+                ctx['num_matched'], ctx['result_set_expires'] = res
+                cursor.execute((
+                        "select dsid from metautil.csw_result_sets where id = "
+                        "%s order by dsid limit %s offset %s"),
+                        (ctx['result_set_id'], limit, offset))
+                dsids = cursor.fetchall()
+
+            dsid_list = [e[0] for e in dsids]
+            if len(dsid_list) == 1:
+                dsid_list.append("")
 
         ctx['next_record'] = next_record
-        query = (
-                """select s.dsid, concat('edu.ucar.gdex:', s.dsid) as """
-                """"dc:identifier1", s.title as "dc.title", s.summary as """
-                """"dct:abstract", concat('doi:', v.doi) as """
-                """"dc.identifier2" from search.datasets as s left join """
-                """dssdb.dsvrsn as v on v.dsid = s.dsid and v.status = 'A' """
-                """left join dssdb.dataset as d on d.dsid = s.dsid where """)
         if 'dsid_list' in locals():
-            query += "s.dsid in " + str(dsid_list)
+            search_conditions = ["s.dsid = any(s)"]
+            qparams = (dsid_list, )
         else:
-            query += """s.type in ('P', 'H') and s.dsid < 'd999000'"""
+            search_conditions = ["s.type in ('P', 'H')",
+                                 "s.dsid < 'd999000'"]
+            qparams = ()
 
-        query += " order by s.dsid"
-        cursor.execute(query)
+        cursor.execute((
+                "select s.dsid, concat('edu.ucar.gdex:', s.dsid), s.title, s."
+                "summary, concat('doi:', v.doi) from search.datasets as s "
+                "left join dssdb.dsvrsn as v on v.dsid = s.dsid and v.status "
+                "= 'A' left join dssdb.dataset as d on d.dsid = s.dsid where "
+                + " and ".join(search_conditions) + " order by s.dsid"),
+                qparams)
         res = cursor.fetchall()
         if ctx['num_matched'] == 0:
             ctx['num_matched'] = len(res)
@@ -270,8 +299,11 @@ def respond(request, csw_request):
 
     if csw_request['elementsetname'] not in ("brief", "full", "summary"):
         return render(request, "csw/exception.xml",
-                      context=utils.exception("InvalidParameterValue",
-                                              locator="ElementSetName"),
+                      context=utils.exception(
+                              "InvalidParameterValue",
+                              locator="ElementSetName",
+                              text=("ElementSetName must have one of 'brief', "
+                                    "'full', or 'summary'")),
                       content_type="application/xml", status=400)
 
     if 'resulttype' not in csw_request:
@@ -279,8 +311,10 @@ def respond(request, csw_request):
 
     if csw_request['resulttype'] not in ("hits", "results"):
         return render(request, "csw/exception.xml",
-                      context=utils.exception("InvalidParameterValue",
-                                              locator="resultType"),
+                      context=utils.exception(
+                              "InvalidParameterValue", locator="resultType",
+                              text=("resultType must have one of 'hits' or "
+                                    "'results'")),
                       content_type="application/xml", status=400)
 
     code = None
