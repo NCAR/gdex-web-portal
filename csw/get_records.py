@@ -169,23 +169,20 @@ def summary(request, csw_request, conn):
                 if (csw_request['request'] == "GetRecordById" and 'id' in
                         csw_request):
                     id_list = [e.lower() for e in csw_request['id'].split(",")]
-                    if len(id_list) == 1:
-                        id_list.append("")
-
                     query = (
                             "select s.dsid from search.datasets as s left "
                             "join dssdb.dsvrsn as v on v.dsid = s.dsid and "
                             "v.status = 'A' where lower(concat("
-                            "'edu.ucar.gdex:', s.dsid)) in " +
-                            str(tuple(id_list)) + " or lower(concat("
-                            "'doi:', v.doi)) in " + str(tuple(id_list)) +
-                            " order by s.dsid")
+                            "'edu.ucar.gdex:', s.dsid)) = any(%s) or lower("
+                            "concat('doi:', v.doi)) = any(%s) order by s.dsid")
+                    qparams = (id_list, id_list)
                 else:
                     query = (
                             "select dsid from search.datasets where type in "
                             "('P', 'H') and dsid < 'd999000' order by dsid")
+                    qparams = ()
 
-                cursor.execute(query)
+                cursor.execute(query, qparams)
                 dsids = cursor.fetchall()
                 if len(dsids) > 100:
                     ctx['result_set_id'] = strand(20)
@@ -234,17 +231,20 @@ def summary(request, csw_request, conn):
 
         ctx['next_record'] = next_record
         if 'dsid_list' in locals():
-            search_conditions = ["s.dsid in " + str(tuple(dsid_list))]
+            search_conditions = ["s.dsid = any(s)"]
+            qparams = (dsid_list, )
         else:
             search_conditions = ["s.type in ('P', 'H')",
                                  "s.dsid < 'd999000'"]
+            qparams = ()
 
         cursor.execute((
                 "select s.dsid, concat('edu.ucar.gdex:', s.dsid), s.title, s."
                 "summary, concat('doi:', v.doi) from search.datasets as s "
                 "left join dssdb.dsvrsn as v on v.dsid = s.dsid and v.status "
                 "= 'A' left join dssdb.dataset as d on d.dsid = s.dsid where "
-                + " and ".join(search_conditions) + " order by s.dsid"))
+                + " and ".join(search_conditions) + " order by s.dsid"),
+                qparams)
         res = cursor.fetchall()
         if ctx['num_matched'] == 0:
             ctx['num_matched'] = len(res)

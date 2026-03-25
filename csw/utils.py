@@ -71,11 +71,11 @@ def purge_result_sets():
                 ids.append("")
 
             cursor.execute((
-                    "delete from metautil.csw_result_sets where id in " +
-                    str(tuple(ids))))
+                    "delete from metautil.csw_result_sets where id = "
+                    "any(%s)"), (ids, ))
             cursor.execute((
-                    "delete from metautil.csw_result_set_ids where id in " +
-                    str(tuple(ids))))
+                    "delete from metautil.csw_result_set_ids where id = "
+                    "any(%s)"), (ids, ))
             conn.commit()
         else:
             ids = ()
