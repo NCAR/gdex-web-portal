@@ -59,7 +59,7 @@ def get_contributor(t):
 
     else:
         parts = t[0].split (" > ")
-        return parts[-1].replace(", ", ":")
+        return parts[-1].replace(", ", "/")
 
     return ""
 
@@ -74,8 +74,10 @@ def list_authors(dsid, et_al, **kwargs):
     if len(auth_list) > 0:
         if auth_list[0][0] == "Person":
             authors = [get_lfm(auth_list[0][1:])]
-        else:
+        elif auth_list[0][0] == "Organization":
             authors = [auth_list[0][1]]
+        else:
+            authors = [get_contributor(auth_list[0][1:])]
 
         if max_authors > 0 and len(auth_list) > max_authors:
             authors.append(et_al)
