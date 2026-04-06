@@ -346,6 +346,7 @@ def get_variable_info(dsid):
     column_names_str = ','.join(column_names)
     query = "select "+ column_names_str +" from summary left join time_ranges on summary.time_range_code=time_ranges.code where dsid=%s"
     cur.execute(query, (dsid,))
+    close_connection(con,cur)
     return to_dict(column_names, cur.fetchall())
 
 def flipbit(bit):
@@ -536,7 +537,6 @@ def get_group_info(dsid, group):
     close_connection(con,cur)
     if len(data) == 0:
         raise ValueError('No Data')
-    close_connection(con,cur)
     return (data[0][0],data[0][1],data[0][2],data[0][3],data[0][4])
 
 def make_list_from_index(list_of_iterable, index=0):
@@ -1530,6 +1530,7 @@ def has_arco(dsid):
     query = "select * from dsgroup where dsid=%s and gindex < 0"
     cur.execute(query, (dsid,))
     data = cur.fetchall()
+    close_connection(con,cur)
     return len(data) != 0
 
 def get_staff():
