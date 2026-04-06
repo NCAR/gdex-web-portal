@@ -1545,9 +1545,11 @@ def get_staff():
 
 def get_staff_dsid(dsid):
     """Get DECS employee information for a specific dataset."""
-    init_connection()
-    cursor.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp inner join dsowner on dssgrp.logname=dsowner.specialist where dsowner.dsid=%s",(dsid,))
-    data = cursor.fetchall()
+	con,cur = init_connection()
+	cur.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp inner join dsowner on dssgrp.logname=dsowner.specialist where dsowner.dsid=%s",(dsid,))
+    data = cur.fetchall()
+    close_connection(con,cur)
+
     data_dict = to_dict(('first_name','last_name','officeno','phoneno','email'),data)
     for i in data_dict:
         i['email'] = i['email']+'@ucar.edu'
