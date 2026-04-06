@@ -1545,8 +1545,8 @@ def get_staff():
 
 def get_staff_dsid(dsid):
     """Get DECS employee information for a specific dataset."""
-	con,cur = init_connection()
-	cur.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp inner join dsowner on dssgrp.logname=dsowner.specialist where dsowner.dsid=%s",(dsid,))
+    con,cur = init_connection_new()
+    cur.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp inner join dsowner on dssgrp.logname=dsowner.specialist where dsowner.dsid=%s",(dsid,))
     data = cur.fetchall()
     close_connection(con,cur)
 
