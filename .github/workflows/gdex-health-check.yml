@@ -49,6 +49,9 @@ jobs:
         elif curl -v --fail-with-body --connect-timeout 60 --max-time 120 --retry 5 --retry-delay 600 https://gdex.ucar.edu > $CURL_OUTPUT 2>&1; then
           echo "status=healthy" >> $GITHUB_OUTPUT
           echo "GDEX is healthy at $(TZ=America/Denver date)"
+        elif curl -v --fail-with-body --connect-timeout 60 --max-time 120 --retry 5 --retry-delay 600 https://gdex.ucar.edu/datasets/d083002 > $CURL_OUTPUT 2>&1; then
+          echo "status=healthy" >> $GITHUB_OUTPUT
+          echo "GDEX is healthy at $(TZ=America/Denver date)"
         else
           echo "status=unhealthy" >> $GITHUB_OUTPUT
           echo "GDEX is unhealthy at $(TZ=America/Denver date)"
