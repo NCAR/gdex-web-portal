@@ -1,0 +1,89 @@
+name: GDEX Health Check
+
+on:
+  schedule:
+    # Run every 30 minutes 
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      force_unhealthy:
+        description: 'Force unhealthy state for testing'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/Denver  # Mountain Time (MDT/MST)
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+    - name: Pull latest changes
+      run: git pull origin main
+      
+    - name: Check GDEX Health
+      id: health-check
+      run: |
+        echo "Checking TDS health at $(TZ=America/Denver date)"
+        
+        # Try curl and capture output and error
+        CURL_OUTPUT=$(mktemp)
+        if [[ "${{ github.event.inputs.force_unhealthy }}" == "true" ]]; then
+          echo "status=unhealthy" >> $GITHUB_OUTPUT
+          echo "Force unhealthy mode enabled - skipping curl check"
+        elif curl -v --fail-with-body --connect-timeout 60 --max-time 120 --retry 5 --retry-delay 600 https://gdex.ucar.edu > $CURL_OUTPUT 2>&1; then
+          echo "status=healthy" >> $GITHUB_OUTPUT
+          echo "GDEX is healthy at $(TZ=America/Denver date)"
+        elif curl -v --fail-with-body --connect-timeout 60 --max-time 120 --retry 5 --retry-delay 600 https://gdex.ucar.edu/datasets/d083002 > $CURL_OUTPUT 2>&1; then
+          echo "status=healthy" >> $GITHUB_OUTPUT
+          echo "GDEX is healthy at $(TZ=America/Denver date)"
+        else
+          echo "status=unhealthy" >> $GITHUB_OUTPUT
+          echo "GDEX is unhealthy at $(TZ=America/Denver date)"
+          echo "---- CURL ERROR OUTPUT ----"
+          cat $CURL_OUTPUT
+          echo "--------------------------"
+        fi
+
+    - name: Create GitHub Issue Notification
+      if: steps.health-check.outputs.status == 'unhealthy'
+      run: |
+        BODY="## GDEX is Unhealthy
+
+        **Time:** ${{ steps.timestamp.outputs.datetime }}
+        **Run ID:** ${{ github.run_id }}
+
+        The automated health check detected that GDEX is not responding at https://gdex.ucar.edu
+
+        [View workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+        CC: @chiaweh2 @rpconroy"
+
+        gh issue create \
+          --title "🚨 GDEX Health Check Failed - ${{ steps.timestamp.outputs.datetime }}" \
+          --body "$BODY" \
+          --label "GDEX server down" \
+          --assignee "rpconroy"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Failed the Action If Unhealthy
+      if: steps.health-check.outputs.status == 'unhealthy'
+      run: |
+        echo "Failing the action because TDS is unhealthy."
+        exit 1

@@ -337,7 +337,6 @@ def get_variable_info(dsid):
     level_type_codes,
     start_date,
     end_date
-
     """
     dsid = format_dataset_id(dsid, remove_ds=True)
     con,cur = init_connection_new(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
@@ -346,8 +345,9 @@ def get_variable_info(dsid):
     column_names_str = ','.join(column_names)
     query = "select "+ column_names_str +" from summary left join time_ranges on summary.time_range_code=time_ranges.code where dsid=%s"
     cur.execute(query, (dsid,))
+    result = cur.fetchall()
     close_connection(con,cur)
-    return to_dict(column_names, cur.fetchall())
+    return to_dict(column_names, result)
 
 def flipbit(bit):
     """flips a bit that is a string."""
