@@ -257,6 +257,38 @@
         }
       }
     },
+    "/minter/{queryMinter}/publications": {
+      "get": {
+        "tags": [
+          "Minters"
+        ],
+        "summary": "Get all publications that have cited any DOI owned by the specified minter",
+        "description": "This operation returns all publications that have cited any DOI that is owned by the specified minter",
+        "operationID": "getMinterPublications",
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/MinterPublicationsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/MinterPublicationsResponseXML"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    },
     "/publishers": {
       "get": {
         "tags": [
@@ -712,6 +744,19 @@
 	    }
 	  }
 	}
+      },
+      "MinterPublicationsResponse": {
+        "type": "object",
+        "properties": {
+        }
+      },
+      "MinterPublicationsResponseXML": {
+        "type": "object",
+        "xml": {
+          "name": "minter"
+        },
+        "properties": {
+        }
       },
       "PublishersResponse": {
         "type": "object",
