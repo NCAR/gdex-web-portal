@@ -21,7 +21,7 @@ webapp:
     maxUploadSize: 60m
 
   ingress:
-    ingressClassName:nginx-external
+    ingressClassName:nginx-internal
 
 volume:
   fs:
