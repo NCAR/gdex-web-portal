@@ -343,6 +343,101 @@
       }
     },
     "schema_defs": {
+      "PublicationsResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "doi": {
+              "type": "object",
+              "properties": {
+                "ID": {
+                  "type": "string",
+                  "description": "DOI of citing work"
+                },
+                "publication_type": {
+                  "type": "string",
+                  "description": "Type of publication\n  * *book_chapter*\n  * *conference_paper*\n  * *journal_article*"
+                },
+                "year": {
+                  "type": "number",
+                  "description": "Publication year of the citing work"
+                },
+                "authors": {
+                  "type": "array",
+                  "description": "Author list of the citing work",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "title": {
+                  "type": "string",
+                  "description": "Title of the citing work"
+                },
+                "publisher": {
+                  "type": "string",
+                  "description": "Publisher of the citing work"
+                },
+                "published_in": {
+                  "type": "object",
+                  "description": "Varies by *publication_type*:\n  * *book_chapter:* {\"ISBN\": \"*string*\", \"editors\": *[]*, \"title\": \"*string*\", \"publisher\": \"*string*\", \"pages\": \"*string*\"}\n  * *conference_paper:* {\"title\": \"*string*\", \"volume\": \"*string*\", \"pages\": \"*string*\"}\n  * *journal_article:* {\"title\": \"*string*\", \"volume\": \"*string*\", \"pages\": \"*string*\"}"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PublicationsResponseXML": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "doi": {
+              "type": "object",
+              "properties": {
+                "ID": {
+                  "type": "string",
+                  "xml": {
+                    "attribute": true
+                  }
+                },
+                "publicationType": {
+                  "type": "string",
+                  "description": "Type of publication\n  * *book_chapter*\n  * *conference_paper*\n  * *journal_article*"
+                },
+                "year": {
+                  "type": "number",
+                  "description": "Publication year of the citing work"
+                },
+                "authors": {
+                  "type": "object",
+                  "description": "Author list of the citing work",
+                  "properties": {
+                    "author": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "title": {
+                  "type": "string",
+                  "description": "Title of the citing work"
+                },
+                "publisher": {
+                  "type": "string",
+                  "description": "Publisher of the citing work"
+                },
+                "publishedIn": {
+                  "type": "object",
+                  "description": "Varies by *publicationType*\n  * *book_chapter:* &lt;ISBN&gt;*string*&lt;/ISBN&gt;&lt;editors&gt;&lt;editor&gt;*string*&lt;/editor&gt;&lt;/editors&gt;&lt;title&gt;*string*&lt;/title&gt;&lt;publisher&gt;*string*&lt;/publisher&gt;&lt;pages&gt;*string*&lt;/pages&gt;\n  * *conference_paper:* &lt;title&gt;*string*&lt;/title&gt;&lt;volume&gt;*string*&lt;/volume&gt;&lt;pages&gt;*string*&lt;/pages&gt;\n  * *journal_article:* &lt;title&gt;*string*&lt;/title&gt;&lt;volume&gt;*string*&lt;/volume&gt;&lt;pages&gt;*string*&lt;/pages&gt;"
+                }
+              }
+            }
+          }
+        }
+      },
       "DOIResponse": {
         "type": "object",
         "properties": {
@@ -474,48 +569,7 @@
                 "type": "string"
               },
               "publications": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "doi": {
-                      "type": "object",
-                      "properties": {
-                        "ID": {
-                          "type": "string",
-                          "description": "DOI of citing work"
-                        },
-                        "publication_type": {
-                          "type": "string",
-                          "description": "Type of publication\n  * *book_chapter*\n  * *conference_paper*\n  * *journal_article*"
-                        },
-                        "year": {
-                          "type": "number",
-                          "description": "Publication year of the citing work"
-                        },
-                        "authors": {
-                          "type": "array",
-                          "description": "Author list of the citing work",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "title": {
-                          "type": "string",
-                          "description": "Title of the citing work"
-                        },
-                        "publisher": {
-                          "type": "string",
-                          "description": "Publisher of the citing work"
-                        },
-                        "published_in": {
-                          "type": "object",
-                          "description": "Varies by *publication_type*:\n  * *book_chapter:* {\"ISBN\": \"*string*\", \"editors\": *[]*, \"title\": \"*string*\", \"publisher\": \"*string*\", \"pages\": \"*string*\"}\n  * *conference_paper:* {\"title\": \"*string*\", \"volume\": \"*string*\", \"pages\": \"*string*\"}\n  * *journal_article:* {\"title\": \"*string*\", \"volume\": \"*string*\", \"pages\": \"*string*\"}"
-                        }
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/components/schema_defs/PublicationsResponse"
               }
             }
           }
@@ -534,55 +588,7 @@
             }
           },
           "publications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "doi": {
-                  "type": "object",
-                  "properties": {
-                    "ID": {
-                      "type": "string",
-                      "xml": {
-                        "attribute": true
-                      }
-                    },
-                    "publicationType": {
-                      "type": "string",
-                      "description": "Type of publication\n  * *book_chapter*\n  * *conference_paper*\n  * *journal_article*"
-                    },
-                    "year": {
-                      "type": "number",
-                      "description": "Publication year of the citing work"
-                    },
-                    "authors": {
-                      "type": "object",
-                      "description": "Author list of the citing work",
-                      "properties": {
-                        "author": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    },
-                    "title": {
-                      "type": "string",
-                      "description": "Title of the citing work"
-                    },
-                    "publisher": {
-                      "type": "string",
-                      "description": "Publisher of the citing work"
-                    },
-                    "publishedIn": {
-                      "type": "object",
-                      "description": "Varies by *publicationType*\n  * *book_chapter:* &lt;ISBN&gt;*string*&lt;/ISBN&gt;&lt;editors&gt;&lt;editor&gt;*string*&lt;/editor&gt;&lt;/editors&gt;&lt;title&gt;*string*&lt;/title&gt;&lt;publisher&gt;*string*&lt;/publisher&gt;&lt;pages&gt;*string*&lt;/pages&gt;\n  * *conference_paper:* &lt;title&gt;*string*&lt;/title&gt;&lt;volume&gt;*string*&lt;/volume&gt;&lt;pages&gt;*string*&lt;/pages&gt;\n  * *journal_article:* &lt;title&gt;*string*&lt;/title&gt;&lt;volume&gt;*string*&lt;/volume&gt;&lt;pages&gt;*string*&lt;/pages&gt;"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/schema_defs/PublicationsResponseXML"
           }
         }
       },
@@ -749,6 +755,17 @@
       "MinterPublicationsResponse": {
         "type": "object",
         "properties": {
+          "minter": {
+            "type": "object",
+            "properties": {
+              "ID": {
+                "type": "string"
+              },
+              "publications": {
+                "$ref": "#/components/schema_defs/PublicationsResponse"
+              }
+            }
+          }
         }
       },
       "MinterPublicationsResponseXML": {
@@ -757,6 +774,15 @@
           "name": "minter"
         },
         "properties": {
+          "ID": {
+            "type": "string",
+            "xml": {
+              "attribute": true
+            }
+          },
+          "publications": {
+            "$ref": "#/components/schema_defs/PublicationsResponseXML"
+          }
         }
       },
       "PublishersResponse": {
