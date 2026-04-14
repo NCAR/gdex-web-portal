@@ -469,17 +469,23 @@ def unique_users(request):
     ips = common.get_number_of_unique_users_db()
     return JsonResponse({'ips':ips})
 
+TWO_WEEKS = 14 * 24 * 60 * 60
+
+@cache_page(TWO_WEEKS)
 def dataset_users_month(request, dsid):
-    return JsonResponse({'value': 42})
+    return JsonResponse({'value': common.get_dataset_users_month(dsid)})
 
+@cache_page(TWO_WEEKS)
 def dataset_users_year(request, dsid):
-    return JsonResponse({'value': 507})
+    return JsonResponse({'value': common.get_dataset_users_year(dsid)})
 
+@cache_page(TWO_WEEKS)
 def dataset_volume_month(request, dsid):
-    return JsonResponse({'value': '1.2 TB'})
+    return JsonResponse({'value': common.get_dataset_volume_month(dsid)})
 
+@cache_page(TWO_WEEKS)
 def dataset_volume_year(request, dsid):
-    return JsonResponse({'value': '8.4 TB'})
+    return JsonResponse({'value': common.get_dataset_volume_year(dsid)})
 
 def globus_download(request, rindex, endpoint):
     json = rdams.main("-globus_download", rindex, endpoint)
