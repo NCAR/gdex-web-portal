@@ -1,6 +1,7 @@
 import json
 import os
 import requests
+from datetime import datetime, timedelta
 import hmac
 import hashlib
 import re
@@ -468,6 +469,52 @@ def volume_downloaded(request):
 def unique_users(request):
     ips = common.get_number_of_unique_users_db()
     return JsonResponse({'ips':ips})
+
+@cache_page(24 * 60 * 60)
+def total_datasets(request):
+    return JsonResponse({'value': common.get_number_of_datasets()})
+
+@cache_page(24 * 60 * 60)
+def total_citations(request):
+    return JsonResponse({'value': common.get_total_citations()})
+
+@cache_page(24 * 60 * 60)
+def gdex_volume(request):
+    return JsonResponse({'value': common.get_gdex_volume()})
+
+@cache_page(24 * 60 * 60)
+def total_requests(request):
+    return JsonResponse({'value': common.get_total_requests()})
+
+@cache_page(24 * 60 * 60)
+def top_datasets(request):
+    return JsonResponse({'top_datasets': common.get_top_datasets()})
+
+@cache_page(24 * 60 * 60)
+def ai_datasets(request):
+    return JsonResponse({'ai_datasets': [list(row) for row in common.get_AI_datasets()]})
+
+TWO_WEEKS = 14 * 24 * 60 * 60
+
+@cache_page(TWO_WEEKS)
+def dataset_users_month(request, dsid):
+    since = datetime.now() - timedelta(days=30)
+    return JsonResponse({'value': common.get_dataset_users(dsid, since)})
+
+@cache_page(TWO_WEEKS)
+def dataset_users_year(request, dsid):
+    since = datetime.now() - timedelta(days=365)
+    return JsonResponse({'value': common.get_dataset_users(dsid, since)})
+
+@cache_page(TWO_WEEKS)
+def dataset_volume_month(request, dsid):
+    since = datetime.now() - timedelta(days=30)
+    return JsonResponse(common.get_dataset_volume(dsid, since))
+
+@cache_page(TWO_WEEKS)
+def dataset_volume_year(request, dsid):
+    since = datetime.now() - timedelta(days=365)
+    return JsonResponse(common.get_dataset_volume(dsid, since))
 
 def globus_download(request, rindex, endpoint):
     json = rdams.main("-globus_download", rindex, endpoint)

@@ -22,23 +22,7 @@ def test_home(request):
     return render(request, 'home/home-test.html', {'display': True})
 
 def by_the_numbers(request):
-    ctx = {
-            'datasets': common.get_number_of_datasets(),
-            'citations': common.get_total_citations(),
-            #'users' : common.get_number_of_unique_users(),
-            'users' : json.loads( # doing this to take advantage of cacheing
-                                         http_request.get(utils.get_hostname()+'/api/metrics/unique_users/').content
-                )['ips'],
-            'downloaded' : common.get_volume_downloaded(),
-            'downloaded_db' : json.loads( # doing this to take advantage of cacheing
-                                         http_request.get(utils.get_hostname()+'/api/metrics/volume_downloaded/').content
-                )['volume'],
-            'volume' : common.get_gdex_volume(),
-            'requests' : common.get_total_requests(),
-            'top_datasets' : common.get_top_datasets(),
-            'ai_datasets' : common.get_AI_datasets(),
-    }
-    return render(request, 'home/splash.html', ctx)
+    return render(request, 'home/splash.html')
 
 def test_splash(request):
     ctx = {

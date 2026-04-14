@@ -2690,4 +2690,54 @@ def get_all_datasets():
         'datasets': datasets_list
     }
 
+
+def get_dataset_users(dsid, since):
+    """Get number of unique users for a dataset since a given datetime."""
+    assert isinstance(since, datetime)
+
+    cur_year = datetime.now().year
+    last_year = since.year
+    last_month = since.month
+    last_day = since.day
+    last_ymd = f'{last_year}-{last_month}-{last_day}'
+
+    con, cur = init_connection_new()
+    query = f"select count(distinct(ip)) from allusage_{last_year} where date > '{last_ymd}' and dsid=%s" + \
+            f" union all select count(distinct(ip)) from allusage_{cur_year} where dsid=%s"
+    cur.execute(query, (dsid, dsid))
+    res = cur.fetchall()
+    close_connection(con, cur)
+    total_IPs = 0
+    for i in res:
+        total_IPs += int(i[0])
+    return total_IPs
+
+def get_dataset_volume(dsid, since):
+    """Get volume of data transferred for a dataset since a given datetime."""
+    assert isinstance(since, datetime)
+
+    cur_year = datetime.now().year
+    last_year = since.year
+    last_month = since.month
+    last_day = since.day
+    last_ymd = f'{last_year}-{last_month}-{last_day}'
+
+    con, cur = init_connection_new()
+    query = f"select sum(size) from allusage_{last_year} where date > '{last_ymd}' and dsid=%s" + \
+            f" union all select sum(size) from allusage_{cur_year} where dsid=%s"
+    cur.execute(query, (dsid, dsid))
+    res = cur.fetchall()
+    close_connection(con, cur)
+    total_bytes = 0
+    for i in res:
+        if i[0] is not None:
+            total_bytes += i[0]
+
+    for unit in ('bytes', 'KB', 'MB', 'GB', 'TB', 'PB'):
+        if total_bytes < 1000:
+            break
+        if unit != 'PB':
+            total_bytes /= 1000
+    return {'value': round(total_bytes, 2), 'unit': unit}
+
     return response

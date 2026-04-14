@@ -29,8 +29,18 @@ urlpatterns = [
     path(r'clear_cache/<dsid>/', views.clear_cache),
 
     # Metrics
-    path(r'metrics/volume_downloaded/', views.volume_downloaded ),
-    path(r'metrics/unique_users/', views.unique_users ),
+    path(r'metrics/volume_downloaded/', views.volume_downloaded),
+    path(r'metrics/unique_users/', views.unique_users),
+    path(r'metrics/total_datasets/', views.total_datasets),
+    path(r'metrics/total_citations/', views.total_citations),
+    path(r'metrics/gdex_volume/', views.gdex_volume),
+    path(r'metrics/total_requests/', views.total_requests),
+    path(r'metrics/top_datasets/', views.top_datasets),
+    path(r'metrics/ai_datasets/', views.ai_datasets),
+    path(r'metrics/dataset/<dsid>/users_month/', views.dataset_users_month),
+    path(r'metrics/dataset/<dsid>/users_year/', views.dataset_users_year),
+    path(r'metrics/dataset/<dsid>/volume_month/', views.dataset_volume_month),
+    path(r'metrics/dataset/<dsid>/volume_year/', views.dataset_volume_year),
 
     # Notebook script
     path(r'generate_notebook', views.generate_notebook),

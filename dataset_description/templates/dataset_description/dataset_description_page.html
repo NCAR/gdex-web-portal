@@ -40,9 +40,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
           path = document.location.pathname.substr(document.location.pathname.indexOf("/datasets") + 10);
           path = path.substr(path.indexOf("/") + 1)
           qs = document.location.search;
-          if (path.length == 0) {
-            setActiveTab("description-tab");
-          } else if (path.indexOf("dataaccess") == 0 || qs.indexOf("content=dataaccess") >= 0 || path.indexOf("listopt") == 0) {
+          if (path.indexOf("dataaccess") == 0 || qs.indexOf("content=dataaccess") >= 0 || path.indexOf("listopt") == 0) {
             setActiveTab("data-access-tab");
           } else if (path.indexOf("citation") == 0) {
             setActiveTab("citation-tab");
@@ -50,15 +48,17 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
             setActiveTab("documentation-tab");
           } else if (path.indexOf("software") == 0) {
             setActiveTab("software-tab");
-          } else if (path.indexOf("metrics") == 0) {
+          } else if (path.indexOf("metrics") == 0 || qs.indexOf("content=metrics") >= 0) {
             setActiveTab("metrics-tab");
+          } else {
+            setActiveTab("description-tab");
           }
         }
 
         function replace_ds_content(response) {
           $('#ds_content').html(response);
           $('html, body').animate({
-            scrollTop: $('#ds_content').offset().top - $('header').height()
+            scrollTop: $('#datasetTab').offset().top - $('header').height()
           });
         }
 
@@ -67,6 +67,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
           if (h) {
             document.title = "NSF NCAR GDEX Dataset {{ page.dsid }} " + t;
             window.history.pushState({'url': u, 'title': t}, "", u);
+            setTab();
           }
         }
 
@@ -146,19 +147,19 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
         {% comment %} Begin Dataset Tabs {% endcomment %}
         <ul class="nav nav-tabs" id="datasetTab" role="tablist">
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2 active" id="description-tab" data-toggle="tab" href="#" role="tab" aria-controls="description" aria-selected="true" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/')">Description</a>
+                <a class="nav-link px-3 py-2 active" id="description-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="description" aria-selected="true" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/')">Description</a>
             </li>
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="data-access-tab" data-toggle="tab" href="#" role="tab" aria-controls="data-access" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/dataaccess/', 'Data Access')">Data Access</a>
+                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="data-access-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="data-access" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/dataaccess/', 'Data Access')">Data Access</a>
             </li>
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2" id="citation-tab" data-toggle="tab" href="#" role="tab" aria-controls="citation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/citation/', 'Citation')">Citation</a>
+                <a class="nav-link px-3 py-2" id="citation-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="citation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/citation/', 'Citation')">Citation</a>
             </li>
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="documentation-tab" data-toggle="tab" href="#" role="tab" aria-controls="documentation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/documentation/', 'Documentation')">Documentation</a>
+                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="documentation-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="documentation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/documentation/', 'Documentation')">Documentation</a>
             </li>
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="software-tab" data-toggle="tab" href="#" role="tab" aria-controls="software" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/software/', 'Software')">Software</a>
+                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="software-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="software" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/software/', 'Software')">Software</a>
             </li>
             <li class="nav-item" role="dataset">
                 <a class="nav-link px-3 py-2" id="metrics-tab" data-toggle="tab" style='cursor:pointer' role="tab" onclick="switch_to_metrics()" aria-controls="metrics" aria-selected="false">Metrics</a>
@@ -171,6 +172,8 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
             {% block ds_content %}
                 {% if 'content' in request.GET and request.GET.content == 'dataaccess' %}
                 <img src="/images/transpace.gif" width="0" height="0" onload="$.get('dataaccess', replace_ds_content)">
+                {% elif 'content' in request.GET and request.GET.content == 'metrics' %}
+                <img src="/images/transpace.gif" width="0" height="0" onload="load_metrics_content()">
                 {% else %}
                 {% include "datasets/description.html" %}
                 {% endif %}
@@ -181,23 +184,64 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
     <script language="javascript" type="text/javascript" src="{% static 'js/swapDivs.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/FileSaver.min.js' %}"></script>
     <script language="javascript" type="text/javascript">
-        function switch_to_metrics() {
-            window.history.pushState("","",'/datasets/{{ page.dsid }}/metrics/#')
-            $.get('/datasets/{{ page.dsid }}/metrics', replace_ds_content).done(function()
+        function load_metrics_content() {
+            const columns = [
                 {
-            // Load needs to be synchronous
-    	    $.getScript("{% static 'js/d3.v5.min.js' %}").done(function()
-                    {
-    	            $.getScript("{% static 'js/metrics.js' %}").done(function()
-                        {
-                        $.getScript("{% static 'js/add_graph.js' %}").done(function()
-                            {
-                            add_graph('{{ page.dsid }}')
-                            })
-                        });
+                    label: 'Previous Month',
+                    metrics: [
+                        { header: 'Users',            endpoint: 'users_month',  icon: 'fa-users'          },
+                        { header: 'Data Transferred', endpoint: 'volume_month', icon: 'fa-database' },
+                    ],
+                },
+                {
+                    label: 'Previous Year',
+                    metrics: [
+                        { header: 'Users',            endpoint: 'users_year',  icon: 'fa-users'          },
+                        { header: 'Data Transferred', endpoint: 'volume_year', icon: 'fa-database' },
+                    ],
+                },
+            ];
+            const container = $('<div>').css({ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' });
+            columns.forEach(function(col) {
+                const column = $('<div>').css({ flex: '1 1 240px' });
+                $('<h4>').text(col.label).css({ textAlign: 'center' }).appendTo(column);
+                col.metrics.forEach(function(m) {
+                    const card = $('<div>').css({
+                        border: '1px solid #dee2e6',
+                        borderRadius: '0.375rem',
+                        padding: '1rem',
+                        marginBottom: '1rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.5rem',
                     });
-                })
-             }
+                    $('<i>').addClass('fas ' + m.icon).css({ fontSize: '1.75rem', color: '#6c757d' }).appendTo(card);
+                    const text = $('<div>').css({ textAlign: 'center' });
+                    $('<div>').css({ fontWeight: '600' }).text(m.header).appendTo(text);
+                    const value = $('<div>').text('Loading...').appendTo(text);
+                    text.appendTo(card);
+                    $.getJSON('/api/metrics/dataset/{{ page.dsid }}/' + m.endpoint + '/', function(data) {
+                        value.text('unit' in data ? data.value + ' ' + data.unit : data.value);
+                    }).fail(function() {
+                        value.text('Error loading data');
+                    });
+                    card.appendTo(column);
+                });
+                column.appendTo(container);
+            });
+            $('#ds_content').empty().append(container);
+            $('html, body').animate({
+                scrollTop: $('#datasetTab').offset().top - $('header').height()
+            });
+        }
+
+        function switch_to_metrics() {
+            const url = '/datasets/{{ page.dsid }}/?content=metrics';
+            window.history.pushState({'url': url, 'title': 'Metrics'}, "", url);
+            setActiveTab("metrics-tab");
+            load_metrics_content();
+        }
     </script>
 
     <img src="/images/transpace.gif" width="0" height="0" onload="setTab()">
