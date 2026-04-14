@@ -43,7 +43,9 @@ def get_publications(minter, cursor, **kwargs):
         publications.append({'doi': {'ID': e['doi_work'],
                                      'publication_type': pubtype,
                                      'year': e['pub_year'],
+                                     'authors': [],
                                      'title': e['title'],
-                                     'publisher': e['publisher']}})
+                                     'publisher': e['publisher'],
+                                     'published_in': {}}})
 
     return (publications, len(res))
