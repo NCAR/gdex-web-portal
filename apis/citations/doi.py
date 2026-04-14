@@ -49,20 +49,20 @@ def get_counts(query_dict, cursor, doi, output_format):
 
 def get_publications(query_dict, cursor, doi, output_format):
     tbls = citations_tables()
-    query = ""
-    for x in range(len(tbls)):
-        if x > 0:
-            query += " union "
+    query = []
+    params = []
+    for tbl in tbls:
+        query.append("select DOI_work, title, pub_year, publisher, type from "
+                     f"citation.{tbl} as d left join citation.works as w on w."
+                     "DOI = d.DOI_work where d.DOI_data = %s and pub_year is "
+                     "not null")
+        params.append(doi)
 
-        query += ("select DOI_work, title, pub_year, publisher, type from "
-                  "citation." + tbls[x] + " as d left join citation.works as "
-                  "w on w.DOI = d.DOI_work where d.DOI_data = '" + doi + "' "
-                  "and pub_year is not null")
-
+    query = " union ".join(query)
     if 'format' not in query_dict:
         query += " order by pub_year"
 
-    cursor.execute(query)
+    cursor.execute(query, params)
     rows = cursor.fetchall()
     a_ws = " "
     if 'format' in query_dict:
@@ -85,11 +85,11 @@ def get_publications(query_dict, cursor, doi, output_format):
             d = {'doi': {'ID': row[0], 'publication_type': "",
                          'year': row[2]}}
             a_list = []
-        cursor.execute((
-                "select concat_ws('" + a_ws + "', first_name, case when "
+        cursor.execute(
+                f"select concat_ws('{a_ws}', first_name, case when "
                 "middle_name = '' then NULL else middle_name end, last_name) "
-                "from citation.works_authors where id = '" + row[0] + "' "
-                "order by sequence"))
+                "from citation.works_authors where id = %s order by sequence",
+                (row[0], ))
         a_rows = cursor.fetchall()
         for a_row in a_rows:
             if output_format == ".xml":
@@ -108,21 +108,21 @@ def get_publications(query_dict, cursor, doi, output_format):
                              'publisher': row[3]})
 
         if row[4] == "C":
-            cursor.execute((
+            cursor.execute(
                     "select pages, ISBN from citation.book_chapter_works "
-                    "where DOI = '" + row[0] + "'"))
+                    "where DOI = %s", (row[0], ))
             c_row = cursor.fetchone()
             if c_row is not None:
-                cursor.execute((
+                cursor.execute(
                         "select title, publisher from citation.book_works "
-                        "where ISBN = '" + c_row[1] + "'"))
+                        "where ISBN = %s", (c_row[1], ))
                 b_row = cursor.fetchone()
                 if b_row is not None:
-                    cursor.execute((
+                    cursor.execute(
                             "select concat_ws(' ', first_name, case when "
                             "middle_name = '' then NULL else middle_name end, "
                             "last_name) from citation.works_authors where id "
-                            "= '" + c_row[1] + "'"))
+                            "= %s", (c_row[1], ))
                     ed_res = cursor.fetchall()
                     if output_format == ".xml":
                         ptype.text = "book_chapter"
@@ -155,9 +155,9 @@ def get_publications(query_dict, cursor, doi, output_format):
                                   'pages': c_row[0]}})
 
         elif row[4] == "J":
-            cursor.execute((
-                    "select pub_name, volume, pages from "
-                    "citation.journal_works where DOI = '" + row[0] + "'"))
+            cursor.execute(
+                    "select pub_name, volume, pages from citation."
+                    "journal_works where DOI = %s", (row[0], ))
             j_row = cursor.fetchone()
             if j_row is not None:
                 if output_format == ".xml":
@@ -177,9 +177,9 @@ def get_publications(query_dict, cursor, doi, output_format):
                               'pages': j_row[2]}})
 
         elif row[4] == "P":
-            cursor.execute((
-                    "select pub_name, volume, pages from "
-                    "citation.proceedings_works where DOI = '" + row[0] + "'"))
+            cursor.execute(
+                    "select pub_name, volume, pages from citation."
+                    "proceedings_works where DOI = %s", (row[0], ))
             p_row = cursor.fetchone()
             if p_row is not None:
                 if output_format == ".xml":
