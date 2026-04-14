@@ -36,4 +36,4 @@ def get_publications(minter, cursor, **kwargs):
     for e in res:
         publications.append({'doi': {'ID': e['doi_work']}})
 
-    return publications
+    return (publications, len(res))
