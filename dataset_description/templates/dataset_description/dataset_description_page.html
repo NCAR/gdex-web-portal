@@ -40,9 +40,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
           path = document.location.pathname.substr(document.location.pathname.indexOf("/datasets") + 10);
           path = path.substr(path.indexOf("/") + 1)
           qs = document.location.search;
-          if (path.length == 0) {
-            setActiveTab("description-tab");
-          } else if (path.indexOf("dataaccess") == 0 || qs.indexOf("content=dataaccess") >= 0 || path.indexOf("listopt") == 0) {
+          if (path.indexOf("dataaccess") == 0 || qs.indexOf("content=dataaccess") >= 0 || path.indexOf("listopt") == 0) {
             setActiveTab("data-access-tab");
           } else if (path.indexOf("citation") == 0) {
             setActiveTab("citation-tab");
@@ -52,6 +50,8 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
             setActiveTab("software-tab");
           } else if (path.indexOf("metrics") == 0 || qs.indexOf("content=metrics") >= 0) {
             setActiveTab("metrics-tab");
+          } else {
+            setActiveTab("description-tab");
           }
         }
 
