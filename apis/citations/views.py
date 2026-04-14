@@ -8,6 +8,7 @@ from lxml import etree as ElementTree
 
 from . import utils
 from .doi import get_counts as get_doi_counts
+from .doi import get_publications as get_doi_publications
 from .minter import get_dois as get_minter_dois
 from .minter import get_publications as get_minter_publications
 
@@ -91,21 +92,21 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
         if kwargs['show'] == "counts":
             if kwargs['output_format'] == ".xml":
                 response.append(
-                        utils.get_doi_counts(query_dict, cursor, doi,
-                                             kwargs['output_format']))
+                        get_doi_counts(query_dict, cursor, doi,
+                                       kwargs['output_format']))
             else:
                 response['doi'].update(
-                        utils.get_doi_counts(query_dict, cursor, doi,
-                                             kwargs['output_format']))
+                        get_doi_counts(query_dict, cursor, doi,
+                                       kwargs['output_format']))
         elif kwargs['show'] == "publications":
             if kwargs['output_format'] == ".xml":
                 response.append(
-                        utils.get_publications(query_dict, cursor, doi,
-                                               kwargs['output_format']))
+                        get_doi_publications(query_dict, cursor, doi,
+                                             kwargs['output_format']))
             else:
                 response['doi'].update(
-                        utils.get_publications(query_dict, cursor, doi,
-                                               kwargs['output_format']))
+                        get_doi_publications(query_dict, cursor, doi,
+                                             kwargs['output_format']))
 
     else:
         tbls = utils.citations_tables()
