@@ -182,22 +182,37 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
     <script type="text/javascript" src="{% static 'js/FileSaver.min.js' %}"></script>
     <script language="javascript" type="text/javascript">
         function switch_to_metrics() {
-            window.history.pushState("","",'/datasets/{{ page.dsid }}/metrics/#')
-            $.get('/datasets/{{ page.dsid }}/metrics', replace_ds_content).done(function()
-                {
-            // Load needs to be synchronous
-    	    $.getScript("{% static 'js/d3.v5.min.js' %}").done(function()
-                    {
-    	            $.getScript("{% static 'js/metrics.js' %}").done(function()
-                        {
-                        $.getScript("{% static 'js/add_graph.js' %}").done(function()
-                            {
-                            add_graph('{{ page.dsid }}')
-                            })
-                        });
-                    });
-                })
-             }
+            window.history.pushState("", "", '/datasets/{{ page.dsid }}/metrics/#');
+            const metrics = [
+                { header: 'Users (last month)',            endpoint: 'users_month'   },
+                { header: 'Users (last year)',             endpoint: 'users_year'    },
+                { header: 'Data Transferred (last month)', endpoint: 'volume_month'  },
+                { header: 'Data Transferred (last year)',  endpoint: 'volume_year'   },
+            ];
+            const container = $('<div>').css({
+                display: 'flex',
+                gap: '1rem',
+                flexWrap: 'wrap',
+            });
+            const cards = {};
+            metrics.forEach(function(m) {
+                const card = $('<div>').css({
+                    flex: '1 1 200px',
+                    border: '1px solid #dee2e6',
+                    borderRadius: '0.375rem',
+                    padding: '1rem',
+                });
+                $('<h5>').text(m.header).appendTo(card);
+                const value = $('<p>').text('Loading...').appendTo(card);
+                $.getJSON('/api/metrics/dataset/{{ page.dsid }}/' + m.endpoint + '/', function(data) {
+                    value.text(data.value);
+                }).fail(function() {
+                    value.text('Error loading data');
+                });
+                card.appendTo(container);
+            });
+            $('#ds_content').empty().append(container);
+        }
     </script>
 
     <img src="/images/transpace.gif" width="0" height="0" onload="setTab()">

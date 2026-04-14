@@ -31,6 +31,10 @@ urlpatterns = [
     # Metrics
     path(r'metrics/volume_downloaded/', views.volume_downloaded ),
     path(r'metrics/unique_users/', views.unique_users ),
+    path(r'metrics/dataset/<dsid>/users_month/', views.dataset_users_month),
+    path(r'metrics/dataset/<dsid>/users_year/', views.dataset_users_year),
+    path(r'metrics/dataset/<dsid>/volume_month/', views.dataset_volume_month),
+    path(r'metrics/dataset/<dsid>/volume_year/', views.dataset_volume_year),
 
     # Notebook script
     path(r'generate_notebook', views.generate_notebook),
