@@ -220,7 +220,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
                     const value = $('<div>').text('Loading...').appendTo(text);
                     text.appendTo(card);
                     $.getJSON('/api/metrics/dataset/{{ page.dsid }}/' + m.endpoint + '/', function(data) {
-                        value.text(data.value);
+                        value.text('unit' in data ? data.value + ' ' + data.unit : data.value);
                     }).fail(function() {
                         value.text('Error loading data');
                     });

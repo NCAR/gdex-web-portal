@@ -485,12 +485,12 @@ def dataset_users_year(request, dsid):
 @cache_page(TWO_WEEKS)
 def dataset_volume_month(request, dsid):
     since = datetime.now() - timedelta(days=30)
-    return JsonResponse({'value': common.get_dataset_volume(dsid, since)})
+    return JsonResponse(common.get_dataset_volume(dsid, since))
 
 @cache_page(TWO_WEEKS)
 def dataset_volume_year(request, dsid):
     since = datetime.now() - timedelta(days=365)
-    return JsonResponse({'value': common.get_dataset_volume(dsid, since)})
+    return JsonResponse(common.get_dataset_volume(dsid, since))
 
 def globus_download(request, rindex, endpoint):
     json = rdams.main("-globus_download", rindex, endpoint)
