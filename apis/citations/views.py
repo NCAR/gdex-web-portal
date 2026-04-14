@@ -192,6 +192,14 @@ def minter(minter, query_dict, **kwargs):
                     p = ElementTree.SubElement(e, "publication")
                     d = ElementTree.SubElement(p, "doi",
                                                ID=publication['doi']['ID'])
+                    ElementTree.SubElement(d, "publicationType").text = (
+                            publication['doi']['publication_type'])
+                    ElementTree.SubElement(d, "year").text = (
+                            publication['doi']['year'])
+                    ElementTree.SubElement(d, "title").text = (
+                            publication['doi']['title'])
+                    ElementTree.SubElement(d, "publisher").text = (
+                            publication['doi']['publisher'])
             else:
                 response['minter'].update({'citedby-count': citedby_count,
                                            'publications': publications})
