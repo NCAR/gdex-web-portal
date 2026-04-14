@@ -50,7 +50,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
             setActiveTab("documentation-tab");
           } else if (path.indexOf("software") == 0) {
             setActiveTab("software-tab");
-          } else if (path.indexOf("metrics") == 0) {
+          } else if (path.indexOf("metrics") == 0 || qs.indexOf("content=metrics") >= 0) {
             setActiveTab("metrics-tab");
           }
         }
@@ -171,6 +171,8 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
             {% block ds_content %}
                 {% if 'content' in request.GET and request.GET.content == 'dataaccess' %}
                 <img src="/images/transpace.gif" width="0" height="0" onload="$.get('dataaccess', replace_ds_content)">
+                {% elif 'content' in request.GET and request.GET.content == 'metrics' %}
+                <img src="/images/transpace.gif" width="0" height="0" onload="load_metrics_content()">
                 {% else %}
                 {% include "datasets/description.html" %}
                 {% endif %}
@@ -181,8 +183,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
     <script language="javascript" type="text/javascript" src="{% static 'js/swapDivs.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/FileSaver.min.js' %}"></script>
     <script language="javascript" type="text/javascript">
-        function switch_to_metrics() {
-            window.history.pushState("", "", '/datasets/{{ page.dsid }}/metrics/#');
+        function load_metrics_content() {
             const columns = [
                 {
                     label: 'Previous Month',
@@ -228,6 +229,13 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
                 column.appendTo(container);
             });
             $('#ds_content').empty().append(container);
+        }
+
+        function switch_to_metrics() {
+            const url = '/datasets/{{ page.dsid }}/?content=metrics';
+            window.history.pushState({'url': url, 'title': 'Metrics'}, "", url);
+            setActiveTab("metrics-tab");
+            load_metrics_content();
         }
     </script>
 

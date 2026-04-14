@@ -372,9 +372,7 @@ def get_request(request, rqstid):
 
 def get_metrics(request, dsnum):
     dsid = format_dataset_id(dsnum)
-    return render(request,
-                  'datasets/metrics.html',
-                  {'dsid': dsid})
+    return redirect(f'/datasets/{dsid}/?content=metrics')
 
 
 def get_detailed_metadata(request, dsid):
