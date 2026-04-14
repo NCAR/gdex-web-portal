@@ -203,7 +203,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
             const container = $('<div>').css({ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' });
             columns.forEach(function(col) {
                 const column = $('<div>').css({ flex: '1 1 240px' });
-                $('<h4>').text(col.label).appendTo(column);
+                $('<h4>').text(col.label).css({ textAlign: 'center' }).appendTo(column);
                 col.metrics.forEach(function(m) {
                     const card = $('<div>').css({
                         border: '1px solid #dee2e6',
@@ -211,11 +211,12 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
                         padding: '1rem',
                         marginBottom: '1rem',
                         display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '0.75rem',
+                        gap: '0.5rem',
                     });
                     $('<i>').addClass('fas ' + m.icon).css({ fontSize: '1.75rem', color: '#6c757d' }).appendTo(card);
-                    const text = $('<div>');
+                    const text = $('<div>').css({ textAlign: 'center' });
                     $('<div>').css({ fontWeight: '600' }).text(m.header).appendTo(text);
                     const value = $('<div>').text('Loading...').appendTo(text);
                     text.appendTo(card);
