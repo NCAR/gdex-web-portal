@@ -1,3 +1,6 @@
+from . import utils
+
+
 def get_dois(minter, cursor, **kwargs):
     query = ("select distinct c.doi_data, d.publisher, d.asset_type from "
              f"citation.data_citations{minter} as c left join citation."
@@ -28,12 +31,16 @@ def get_dois(minter, cursor, **kwargs):
 
 
 def get_publications(minter, cursor, **kwargs):
-    query = ("select distinct c.doi_work from citation.data_citations"
-             f"{minter} as c")
+    query = ("select distinct c.doi_work, w.type, w.pub_year from citation."
+             f"data_citations{minter} as c left join citation.works as w on w."
+             "doi = c.doi_work")
     cursor.execute(query)
     res = cursor.fetchall()
     publications = []
     for e in res:
-        publications.append({'doi': {'ID': e['doi_work']}})
+        pubtype = utils.get_publication_type(e['type'])
+        publications.append({'doi': {'ID': e['doi_work'],
+                                     'publication_type': pubtype,
+                                     'year': e['pub_year']}})
 
     return (publications, len(res))
