@@ -28,5 +28,12 @@ def get_dois(minter, cursor, **kwargs):
 
 
 def get_publications(minter, cursor, **kwargs):
+    query = ("select distinct c.doi_work from citation.data_citations"
+             f"{minter} as c")
+    cursor.execute(query)
+    res = cursor.fetchall()
     publications = []
+    for e in res:
+        publications.append({'doi': {'ID': e['doi_work']}})
+
     return publications
