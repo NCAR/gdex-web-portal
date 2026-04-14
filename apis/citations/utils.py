@@ -80,6 +80,19 @@ def get_counts(query_dict, cursor, doi, output_format):
         return {'counts': list}
 
 
+def get_publication_type(type):
+    if type == "C":
+        return "book_chapter"
+
+    if type == "J":
+        return "journal_article"
+
+    if type == "P":
+        return "conference_paper"
+
+    return None
+
+
 def get_publications(query_dict, cursor, doi, output_format):
     tbls = citations_tables()
     query = ""
