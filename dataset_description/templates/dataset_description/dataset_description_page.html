@@ -67,6 +67,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
           if (h) {
             document.title = "NSF NCAR GDEX Dataset {{ page.dsid }} " + t;
             window.history.pushState({'url': u, 'title': t}, "", u);
+            setTab();
           }
         }
 
