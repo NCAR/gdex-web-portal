@@ -1,10 +1,14 @@
+import json
+import psycopg2
+
 from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse
-import psycopg2
-import json
-from . import utils
 from lxml import etree as ElementTree
+
+from . import utils
+from .minter import get_dois as get_minter_dois
+from .minter import get_publications as get_minter_publications
 
 
 metadb_config = settings.RDADB['metadata_config_pg']
@@ -160,88 +164,58 @@ def minter(minter, query_dict, **kwargs):
     conn = psycopg2.connect(**metadb_config)
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     if 'show' in kwargs:
-        query = ("select distinct c.DOI_data, d.DOI_data, d.publisher, "
-                 "d.asset_type from citation.data_citations" + minter + " as "
-                 "c left join citation.doi_data as d on d.DOI_data = "
-                 "c.DOI_data")
-        wc = []
-        if 'asset-type' in query_dict:
-            wc.append("d.asset_type = '" + query_dict.get('asset-type') + "'")
+        if kwargs['show'] == "dois":
+            dois = get_minter_dois(minter, cursor, **query_dict, **kwargs)
             if kwargs['output_format'] == ".xml":
-                ElementTree.SubElement(response, "assetType").text = (
-                        query_dict.get('asset-type'))
-            else:
-                response['minter'].update(
-                        {'asset-type': query_dict.get('asset-type')})
-
-        if 'publisher' in query_dict:
-            wc.append(("d.publisher = '" +
-                       query_dict.get('publisher').strip('"') + "'"))
-            if kwargs['output_format'] == ".xml":
-                ElementTree.SubElement(response, "publisher").text = (
-                        query_dict.get('publisher'))
-            else:
-                response['minter'].update(
-                        {'publisher': query_dict.get('publisher')})
-
-        if len(wc) > 0:
-            query += " where " + " and ".join(wc)
-
-        query += " order by c.DOI_data"
-        cursor.execute(query)
-        res = cursor.fetchall()
-        dois = []
-        for e in res:
-            d = {'doi': {'ID': e['doi_data']}}
-            if 'asset-type' not in query_dict:
-                d['doi'].update({'asset-type': e['asset_type']})
-
-            if 'publisher' not in query_dict:
-                d['doi'].update({'publisher': e['publisher']})
-
-            dois.append(d)
-
-        if kwargs['output_format'] == ".xml":
-            e = ElementTree.SubElement(response, "dois")
-            for doi in dois:
-                d = ElementTree.SubElement(e, "doi")
-                d.set('ID', doi['doi']['ID'])
-                if 'asset-type' not in query_dict:
+                e = ElementTree.SubElement(response, "dois")
+                for doi in dois:
+                    d = ElementTree.SubElement(e, "doi")
+                    d.set('ID', doi['doi']['ID'])
                     ElementTree.SubElement(d, "assetType").text = (
                             doi['doi']['asset-type'])
 
-                if 'publisher' not in query_dict:
                     ElementTree.SubElement(d, "publisher").text = (
                             doi['doi']['publisher'])
 
-        else:
-            response['minter'].update({'dois': dois})
+            else:
+                response['minter'].update({'dois': dois})
+
+            return {'response': response, 'status': 200}
+        elif kwargs['show'] == "publications":
+            publications = get_minter_publications(
+                    minter, cursor, **query_dict, **kwargs)
+            if kwargs['output_format'] == ".xml":
+                e = ElementTree.SubElement(response, "publications")
+                for publication in publications:
+                    p = ElementTree.SubElement(e, "publication")
+            else:
+                response['minter'].update({'publications': publications})
+
+            return {'response': response, 'status': 200}
+
+    query = ("select distinct d.publisher, d.asset_type from citation."
+             f"data_citations{minter} as c left join citation.doi_data as d "
+             "on d.DOI_data = c.DOI_data")
+    cursor.execute(query)
+    res = cursor.fetchall()
+    pubs = []
+    assets = []
+    for e in res:
+        pubs.append(e['publisher'])
+        if e['asset_type'] not in assets:
+            assets.append(e['asset_type'])
+
+    if kwargs['output_format'] == ".xml":
+        e = ElementTree.SubElement(response, "assetTypes")
+        for asset in assets:
+            ElementTree.SubElement(e, "assetType").text = asset
+
+        e = ElementTree.SubElement(response, "publishers")
+        for pub in pubs:
+            ElementTree.SubElement(e, "publisher").text = pub
 
     else:
-        query = ("select distinct d.publisher, d.asset_type from "
-                 "citation.data_citations" + minter + " as c left join "
-                 "citation.doi_data as d on d.DOI_data = c.DOI_data")
-        cursor.execute(query)
-        res = cursor.fetchall()
-        pubs = []
-        assets = []
-        for e in res:
-            pubs.append(e['publisher'])
-            if e['asset_type'] not in assets:
-                assets.append(e['asset_type'])
-
-        if kwargs['output_format'] == ".xml":
-            e = ElementTree.SubElement(response, "assetTypes")
-            for asset in assets:
-                ElementTree.SubElement(e, "assetType").text = asset
-
-            e = ElementTree.SubElement(response, "publishers")
-            for pub in pubs:
-                ElementTree.SubElement(e, "publisher").text = pub
-
-        else:
-            response['minter'].update(
-                    {'asset-types': assets, 'publishers': pubs})
+        response['minter'].update({'asset-types': assets, 'publishers': pubs})
 
     return {'response': response, 'status': 200}
 
