@@ -182,14 +182,17 @@ def minter(minter, query_dict, **kwargs):
 
             return {'response': response, 'status': 200}
         elif kwargs['show'] == "publications":
-            publications = get_minter_publications(
+            publications, citedby_count = get_minter_publications(
                     minter, cursor, **query_dict, **kwargs)
             if kwargs['output_format'] == ".xml":
+                e = ElementTree.SubElement(response, "citedbyCount").text = (
+                        str(citedby_count))
                 e = ElementTree.SubElement(response, "publications")
                 for publication in publications:
                     p = ElementTree.SubElement(e, "publication")
             else:
-                response['minter'].update({'publications': publications})
+                response['minter'].update({'citedby-count': citedby_count,
+                                           'publications': publications})
 
             return {'response': response, 'status': 200}
 
