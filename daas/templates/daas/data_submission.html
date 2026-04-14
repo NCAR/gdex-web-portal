@@ -22,9 +22,24 @@
 
             <p class="text-center body-font-large">
             <strong>No data to submit?
-            <a href="{% slugurl 'submit-data-request' %}">      
+            <a href="{% slugurl 'suggest-dataset' %}">      
             Suggest a dataset to be hosted on GDEX.</strong>
             </p>
+
+            <div class="text-center mt-2 mt-md-4">
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+        
+                    <a class="btn btn-primary btn-lg py-1 px-2" style="font-size: 2rem;"
+                        href="{% slugurl 'submit-data-request' %}">
+                        Submit Data
+                    </a>
+
+                    <a class="btn btn-primary btn-lg py-1 px-2" style="font-size: 2rem;"
+                        href="{% slugurl 'suggest-dataset' %}">
+                        Suggest Dataset
+                    </a>
+                </div>
+            </div>
 
             <div class="text-center">
                 <div class="col-12 mt-2 mt-md-4">
