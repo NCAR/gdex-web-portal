@@ -3,18 +3,20 @@ def get_dois(minter, cursor, **kwargs):
              f"citation.data_citations{minter} as c left join citation."
              "doi_data as d on d.doi_data = c.doi_data")
     wc = []
+    params = []
     if 'asset-type' in kwargs:
-        wc.append("d.asset_type = '" + kwargs.get('asset-type') + "'")
+        wc.append("d.asset_type = %s")
+        params.append(kwargs['asset-type'][-1])
 
     if 'publisher' in kwargs:
-        wc.append(("d.publisher = '" +
-                   kwargs.get('publisher').strip('"') + "'"))
+        wc.append("d.publisher = %s")
+        params.append(kwargs['publisher'][-1].strip('"'))
 
     if len(wc) > 0:
         query += " where " + " and ".join(wc)
 
     query += " order by c.doi_data"
-    cursor.execute(query)
+    cursor.execute(query, params)
     res = cursor.fetchall()
     dois = []
     for e in res:
