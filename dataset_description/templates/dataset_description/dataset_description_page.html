@@ -231,6 +231,9 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
                 column.appendTo(container);
             });
             $('#ds_content').empty().append(container);
+            $('html, body').animate({
+                scrollTop: $('#datasetTab').offset().top - $('header').height()
+            });
         }
 
         function switch_to_metrics() {
