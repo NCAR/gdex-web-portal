@@ -58,7 +58,7 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
         function replace_ds_content(response) {
           $('#ds_content').html(response);
           $('html, body').animate({
-            scrollTop: $('#ds_content').offset().top - $('header').height()
+            scrollTop: $('#datasetTab').offset().top - $('header').height()
           });
         }
 
@@ -146,19 +146,19 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
         {% comment %} Begin Dataset Tabs {% endcomment %}
         <ul class="nav nav-tabs" id="datasetTab" role="tablist">
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2 active" id="description-tab" data-toggle="tab" href="#" role="tab" aria-controls="description" aria-selected="true" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/')">Description</a>
+                <a class="nav-link px-3 py-2 active" id="description-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="description" aria-selected="true" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/')">Description</a>
             </li>
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="data-access-tab" data-toggle="tab" href="#" role="tab" aria-controls="data-access" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/dataaccess/', 'Data Access')">Data Access</a>
+                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="data-access-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="data-access" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/dataaccess/', 'Data Access')">Data Access</a>
             </li>
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2" id="citation-tab" data-toggle="tab" href="#" role="tab" aria-controls="citation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/citation/', 'Citation')">Citation</a>
+                <a class="nav-link px-3 py-2" id="citation-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="citation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/citation/', 'Citation')">Citation</a>
             </li>
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="documentation-tab" data-toggle="tab" href="#" role="tab" aria-controls="documentation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/documentation/', 'Documentation')">Documentation</a>
+                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="documentation-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="documentation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/documentation/', 'Documentation')">Documentation</a>
             </li>
             <li class="nav-item" role="dataset">
-                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="software-tab" data-toggle="tab" href="#" role="tab" aria-controls="software" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/software/', 'Software')">Software</a>
+                <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="software-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="software" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/software/', 'Software')">Software</a>
             </li>
             <li class="nav-item" role="dataset">
                 <a class="nav-link px-3 py-2" id="metrics-tab" data-toggle="tab" style='cursor:pointer' role="tab" onclick="switch_to_metrics()" aria-controls="metrics" aria-selected="false">Metrics</a>
