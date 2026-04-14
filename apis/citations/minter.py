@@ -31,9 +31,9 @@ def get_dois(minter, cursor, **kwargs):
 
 
 def get_publications(minter, cursor, **kwargs):
-    query = ("select distinct c.doi_work, w.type, w.pub_year from citation."
-             f"data_citations{minter} as c left join citation.works as w on w."
-             "doi = c.doi_work order by w.pub_year")
+    query = ("select distinct c.doi_work, w.type, w.pub_year, w.title, w."
+             f"publisher from citation.data_citations{minter} as c left join "
+             "citation.works as w on w.doi = c.doi_work order by w.pub_year")
     cursor.execute(query)
     res = cursor.fetchall()
     publications = []
@@ -41,6 +41,8 @@ def get_publications(minter, cursor, **kwargs):
         pubtype = utils.get_publication_type(e['type'])
         publications.append({'doi': {'ID': e['doi_work'],
                                      'publication_type': pubtype,
-                                     'year': e['pub_year']}})
+                                     'year': e['pub_year'],
+                                     'title': e['title'],
+                                     'publisher': e['publisher']}})
 
     return (publications, len(res))
