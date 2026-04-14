@@ -183,33 +183,49 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
     <script language="javascript" type="text/javascript">
         function switch_to_metrics() {
             window.history.pushState("", "", '/datasets/{{ page.dsid }}/metrics/#');
-            const metrics = [
-                { header: 'Users (last month)',            endpoint: 'users_month'   },
-                { header: 'Users (last year)',             endpoint: 'users_year'    },
-                { header: 'Data Transferred (last month)', endpoint: 'volume_month'  },
-                { header: 'Data Transferred (last year)',  endpoint: 'volume_year'   },
+            const columns = [
+                {
+                    label: 'Previous Month',
+                    metrics: [
+                        { header: 'Users',            endpoint: 'users_month',  icon: 'fa-users'          },
+                        { header: 'Data Transferred', endpoint: 'volume_month', icon: 'fa-database' },
+                    ],
+                },
+                {
+                    label: 'Previous Year',
+                    metrics: [
+                        { header: 'Users',            endpoint: 'users_year',  icon: 'fa-users'          },
+                        { header: 'Data Transferred', endpoint: 'volume_year', icon: 'fa-database' },
+                    ],
+                },
             ];
-            const container = $('<div>').css({
-                display: 'flex',
-                gap: '1rem',
-                flexWrap: 'wrap',
-            });
-            const cards = {};
-            metrics.forEach(function(m) {
-                const card = $('<div>').css({
-                    flex: '1 1 200px',
-                    border: '1px solid #dee2e6',
-                    borderRadius: '0.375rem',
-                    padding: '1rem',
+            const container = $('<div>').css({ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' });
+            columns.forEach(function(col) {
+                const column = $('<div>').css({ flex: '1 1 240px' });
+                $('<h4>').text(col.label).appendTo(column);
+                col.metrics.forEach(function(m) {
+                    const card = $('<div>').css({
+                        border: '1px solid #dee2e6',
+                        borderRadius: '0.375rem',
+                        padding: '1rem',
+                        marginBottom: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                    });
+                    $('<i>').addClass('fas ' + m.icon).css({ fontSize: '1.75rem', color: '#6c757d' }).appendTo(card);
+                    const text = $('<div>');
+                    $('<div>').css({ fontWeight: '600' }).text(m.header).appendTo(text);
+                    const value = $('<div>').text('Loading...').appendTo(text);
+                    text.appendTo(card);
+                    $.getJSON('/api/metrics/dataset/{{ page.dsid }}/' + m.endpoint + '/', function(data) {
+                        value.text(data.value);
+                    }).fail(function() {
+                        value.text('Error loading data');
+                    });
+                    card.appendTo(column);
                 });
-                $('<h5>').text(m.header).appendTo(card);
-                const value = $('<p>').text('Loading...').appendTo(card);
-                $.getJSON('/api/metrics/dataset/{{ page.dsid }}/' + m.endpoint + '/', function(data) {
-                    value.text(data.value);
-                }).fail(function() {
-                    value.text('Error loading data');
-                });
-                card.appendTo(container);
+                column.appendTo(container);
             });
             $('#ds_content').empty().append(container);
         }
