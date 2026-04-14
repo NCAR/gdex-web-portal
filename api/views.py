@@ -470,6 +470,30 @@ def unique_users(request):
     ips = common.get_number_of_unique_users_db()
     return JsonResponse({'ips':ips})
 
+@cache_page(24 * 60 * 60)
+def total_datasets(request):
+    return JsonResponse({'value': common.get_number_of_datasets()})
+
+@cache_page(24 * 60 * 60)
+def total_citations(request):
+    return JsonResponse({'value': common.get_total_citations()})
+
+@cache_page(24 * 60 * 60)
+def gdex_volume(request):
+    return JsonResponse({'value': common.get_gdex_volume()})
+
+@cache_page(24 * 60 * 60)
+def total_requests(request):
+    return JsonResponse({'value': common.get_total_requests()})
+
+@cache_page(24 * 60 * 60)
+def top_datasets(request):
+    return JsonResponse({'top_datasets': common.get_top_datasets()})
+
+@cache_page(24 * 60 * 60)
+def ai_datasets(request):
+    return JsonResponse({'ai_datasets': [list(row) for row in common.get_AI_datasets()]})
+
 TWO_WEEKS = 14 * 24 * 60 * 60
 
 @cache_page(TWO_WEEKS)
