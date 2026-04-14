@@ -1,6 +1,7 @@
 import json
 import os
 import requests
+from datetime import datetime, timedelta
 import hmac
 import hashlib
 import re
@@ -473,19 +474,23 @@ TWO_WEEKS = 14 * 24 * 60 * 60
 
 @cache_page(TWO_WEEKS)
 def dataset_users_month(request, dsid):
-    return JsonResponse({'value': common.get_dataset_users_month(dsid)})
+    since = datetime.now() - timedelta(days=30)
+    return JsonResponse({'value': common.get_dataset_users(dsid, since)})
 
 @cache_page(TWO_WEEKS)
 def dataset_users_year(request, dsid):
-    return JsonResponse({'value': common.get_dataset_users_year(dsid)})
+    since = datetime.now() - timedelta(days=365)
+    return JsonResponse({'value': common.get_dataset_users(dsid, since)})
 
 @cache_page(TWO_WEEKS)
 def dataset_volume_month(request, dsid):
-    return JsonResponse({'value': common.get_dataset_volume_month(dsid)})
+    since = datetime.now() - timedelta(days=30)
+    return JsonResponse({'value': common.get_dataset_volume(dsid, since)})
 
 @cache_page(TWO_WEEKS)
 def dataset_volume_year(request, dsid):
-    return JsonResponse({'value': common.get_dataset_volume_year(dsid)})
+    since = datetime.now() - timedelta(days=365)
+    return JsonResponse({'value': common.get_dataset_volume(dsid, since)})
 
 def globus_download(request, rindex, endpoint):
     json = rdams.main("-globus_download", rindex, endpoint)

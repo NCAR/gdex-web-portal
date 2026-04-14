@@ -2691,32 +2691,18 @@ def get_all_datasets():
     }
 
 
-def get_dataset_users_month(dsid):
-    """Get number of unique users for a dataset over the last month."""
+def get_dataset_users(dsid, since):
+    """Get number of unique users for a dataset since a given datetime."""
     con, cur = init_connection_new()
     # TODO: implement real query
     close_connection(con, cur)
     return 42
 
-def get_dataset_users_year(dsid):
-    """Get number of unique users for a dataset over the last year."""
-    con, cur = init_connection_new()
-    # TODO: implement real query
-    close_connection(con, cur)
-    return 507
-
-def get_dataset_volume_month(dsid):
-    """Get volume of data transferred for a dataset over the last month."""
+def get_dataset_volume(dsid, since):
+    """Get volume of data transferred for a dataset since a given datetime."""
     con, cur = init_connection_new()
     # TODO: implement real query
     close_connection(con, cur)
     return '1.2 TB'
-
-def get_dataset_volume_year(dsid):
-    """Get volume of data transferred for a dataset over the last year."""
-    con, cur = init_connection_new()
-    # TODO: implement real query
-    close_connection(con, cur)
-    return '8.4 TB'
 
     return response
