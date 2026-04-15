@@ -188,25 +188,8 @@ def minter(minter, query_dict, **kwargs):
             publications, citedby_count = get_minter_publications(
                     minter, cursor, **query_dict, **kwargs)
             if kwargs['output_format'] == ".xml":
-                e = ElementTree.SubElement(response, "citedbyCount").text = (
-                        str(citedby_count))
-                e = ElementTree.SubElement(response, "publications")
-                for publication in publications:
-                    pub_e = ElementTree.SubElement(e, "publication")
-                    doi_e = ElementTree.SubElement(
-                            pub_e, "doi", ID=publication['doi']['ID'])
-                    ElementTree.SubElement(doi_e, "publicationType").text = (
-                            publication['doi']['publication_type'])
-                    ElementTree.SubElement(doi_e, "year").text = (
-                            str(publication['doi']['year']))
-                    auth_e = ElementTree.SubElement(doi_e, "authors")
-                    for author in publication['doi']['authors']:
-                        ElementTree.SubElement(auth_e, "author").text = author
-
-                    ElementTree.SubElement(doi_e, "title").text = (
-                            publication['doi']['title'])
-                    ElementTree.SubElement(doi_e, "publisher").text = (
-                            publication['doi']['publisher'])
+                utils.format_publication_list_as_xml(
+                        publications, citedby_count, response)
             else:
                 response['minter'].update({'citedby-count': citedby_count,
                                            'publications': publications})
