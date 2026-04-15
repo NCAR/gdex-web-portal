@@ -1,5 +1,6 @@
-from django.conf import settings
 import psycopg2
+
+from django.conf import settings
 from lxml import etree as ElementTree
 
 
@@ -126,6 +127,28 @@ def do_volume_markup(v, **kwargs):
             v = "<i>" + v + "</i>"
 
     return v
+
+
+def format_publication_list_as_xml(publications, citedby_count, root):
+    e = ElementTree.SubElement(root, "citedbyCount").text = (
+            str(citedby_count))
+    e = ElementTree.SubElement(root, "publications")
+    for publication in publications:
+        pub_e = ElementTree.SubElement(e, "publication")
+        doi_e = ElementTree.SubElement(
+                pub_e, "doi", ID=publication['doi']['ID'])
+        ElementTree.SubElement(doi_e, "publicationType").text = (
+                publication['doi']['publication_type'])
+        ElementTree.SubElement(doi_e, "year").text = (
+                str(publication['doi']['year']))
+        auth_e = ElementTree.SubElement(doi_e, "authors")
+        for author in publication['doi']['authors']:
+            ElementTree.SubElement(auth_e, "author").text = author
+
+        ElementTree.SubElement(doi_e, "title").text = (
+                publication['doi']['title'])
+        ElementTree.SubElement(doi_e, "publisher").text = (
+                publication['doi']['publisher'])
 
 
 def format_as_bibliography(list, **kwargs):
