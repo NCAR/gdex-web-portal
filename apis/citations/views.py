@@ -198,7 +198,7 @@ def minter(minter, query_dict, **kwargs):
                     ElementTree.SubElement(doi_e, "publicationType").text = (
                             publication['doi']['publication_type'])
                     ElementTree.SubElement(doi_e, "year").text = (
-                            publication['doi']['year'])
+                            str(publication['doi']['year']))
                     auth_e = ElementTree.SubElement(doi_e, "authors")
                     for author in publication['authors']:
                         ElementTree.SubElement(auth_e, "author").text = author
