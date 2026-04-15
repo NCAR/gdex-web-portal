@@ -1,7 +1,7 @@
 from lxml import etree as ElementTree
 
 from .utils import (citations_tables, format_as_bibliography,
-                    get_publication_type)
+                    get_authors, get_publication_type)
 
 
 def get_counts(doi, cursor, **kwargs):
@@ -53,9 +53,9 @@ def get_publications(doi, cursor, **kwargs):
     query = []
     params = []
     for tbl in tbls:
-        query.append("select DOI_work, title, pub_year, publisher, type from "
+        query.append("select doi_work, title, pub_year, publisher, type from "
                      f"citation.{tbl} as d left join citation.works as w on w."
-                     "DOI = d.DOI_work where d.DOI_data = %s and pub_year is "
+                     "doi = d.doi_work where d.doi_data = %s and pub_year is "
                      "not null")
         params.append(doi)
 
@@ -65,9 +65,9 @@ def get_publications(doi, cursor, **kwargs):
 
     cursor.execute(query, params)
     rows = cursor.fetchall()
-    a_ws = " "
+    auth_sep = " "
     if 'format' in kwargs:
-        a_ws = "::"
+        auth_sep = "::"
 
     if kwargs['output_format'] == ".xml":
         list = ElementTree.Element('publications')
@@ -88,18 +88,13 @@ def get_publications(doi, cursor, **kwargs):
                          'year': row[2]}}
             a_list = []
 
-        cursor.execute(
-                f"select concat_ws('{a_ws}', first_name, case when "
-                "middle_name = '' then NULL else middle_name end, last_name) "
-                "from citation.works_authors where id = %s order by sequence",
-                (row[0], ))
-        a_rows = cursor.fetchall()
-        for a_row in a_rows:
+        authors = get_authors(row[0], auth_sep, cursor)
+        for author in authors:
             if kwargs['output_format'] == ".xml":
                 a = ElementTree.SubElement(a_list, 'author')
-                a.text = a_row[0]
+                a.text = author
             else:
-                a_list.append(a_row[0])
+                a_list.append(author)
 
         if kwargs['output_format'] == ".xml":
             t = ElementTree.SubElement(d, 'title')
@@ -113,7 +108,7 @@ def get_publications(doi, cursor, **kwargs):
         if row[4] == "C":
             cursor.execute(
                     "select pages, ISBN from citation.book_chapter_works "
-                    "where DOI = %s", (row[0], ))
+                    "where doi = %s", (row[0], ))
             c_row = cursor.fetchone()
             if c_row is not None:
                 cursor.execute(
@@ -159,7 +154,7 @@ def get_publications(doi, cursor, **kwargs):
         elif row[4] == "J":
             cursor.execute(
                     "select pub_name, volume, pages from citation."
-                    "journal_works where DOI = %s", (row[0], ))
+                    "journal_works where doi = %s", (row[0], ))
             j_row = cursor.fetchone()
             if j_row is not None:
                 if kwargs['output_format'] == ".xml":
@@ -179,7 +174,7 @@ def get_publications(doi, cursor, **kwargs):
         elif row[4] == "P":
             cursor.execute(
                     "select pub_name, volume, pages from citation."
-                    "proceedings_works where DOI = %s", (row[0], ))
+                    "proceedings_works where doi = %s", (row[0], ))
             p_row = cursor.fetchone()
             if p_row is not None:
                 if kwargs['output_format'] == ".xml":
