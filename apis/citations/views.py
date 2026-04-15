@@ -87,7 +87,7 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
         response = {'doi': {'ID': doi}}
 
     conn = psycopg2.connect(**metadb_config)
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     if 'show' in kwargs:
         if kwargs['show'] == "counts":
             if kwargs['output_format'] == ".xml":
