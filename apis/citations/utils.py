@@ -46,6 +46,14 @@ def get_publication_type(type):
     return None
 
 
+def get_authors(id, cursor, separator):
+    cursor.execute(
+            f"select concat_ws('{separator}', first_name, case when "
+            "middle_name = '' then NULL else middle_name end, last_name) from "
+            "citation.works_authors where id = %s order by sequence", (id, ))
+    return [e[0] for e in cursor.fetchall()]
+
+
 def authors_from_list(list):
     authors = ""
     for i, author in enumerate(list, 1):
