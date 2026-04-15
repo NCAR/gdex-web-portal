@@ -1,6 +1,7 @@
 from lxml import etree as ElementTree
 
-from .utils import citations_tables, format_as_bibliography
+from .utils import (citations_tables, format_as_bibliography,
+                    get_publication_type)
 
 
 def get_counts(query_dict, cursor, doi, output_format):
@@ -74,15 +75,16 @@ def get_publications(query_dict, cursor, doi, output_format):
         list = []
 
     for row in rows:
+        pubtype = get_publication_type(row[4])
         if output_format == ".xml":
             d = ElementTree.SubElement(list, "doi")
             d.set('ID', row[0])
-            ptype = ElementTree.SubElement(d, "publicationType")
+            ElementTree.SubElement(d, "publicationType").text = pubtype
             y = ElementTree.SubElement(d, "year")
             y.text = str(row[2])
             a_list = ElementTree.SubElement(d, "authors")
         else:
-            d = {'doi': {'ID': row[0], 'publication_type': "",
+            d = {'doi': {'ID': row[0], 'publication_type': pubtype,
                          'year': row[2]}}
             a_list = []
         cursor.execute(
@@ -125,7 +127,6 @@ def get_publications(query_dict, cursor, doi, output_format):
                             "= %s", (c_row[1], ))
                     ed_res = cursor.fetchall()
                     if output_format == ".xml":
-                        ptype.text = "book_chapter"
                         bc = ElementTree.SubElement(d, 'publishedIn')
                         i = ElementTree.SubElement(bc, 'ISBN')
                         i.text = c_row[1]
@@ -147,7 +148,6 @@ def get_publications(query_dict, cursor, doi, output_format):
                             ed_list.append(editor[0])
 
                     if output_format is None or output_format == ".json":
-                        d['doi']['publication_type'] = "book_chapter"
                         d['doi'].update(
                                 {'published_in':
                                  {'ISBN': c_row[1], 'editors': ed_list,
@@ -161,7 +161,6 @@ def get_publications(query_dict, cursor, doi, output_format):
             j_row = cursor.fetchone()
             if j_row is not None:
                 if output_format == ".xml":
-                    ptype.text = "journal_article"
                     j = ElementTree.SubElement(d, 'publishedIn')
                     t = ElementTree.SubElement(j, 'title')
                     t.text = j_row[0]
@@ -170,7 +169,6 @@ def get_publications(query_dict, cursor, doi, output_format):
                     pg = ElementTree.SubElement(j, 'pages')
                     pg.text = j_row[2]
                 else:
-                    d['doi']['publication_type'] = "journal_article"
                     d['doi'].update(
                             {'published_in':
                              {'title': j_row[0], 'volume': j_row[1],
@@ -183,7 +181,6 @@ def get_publications(query_dict, cursor, doi, output_format):
             p_row = cursor.fetchone()
             if p_row is not None:
                 if output_format == ".xml":
-                    ptype.text = "conference_paper"
                     p = ElementTree.SubElement(d, 'publishedIn')
                     t = ElementTree.SubElement(p, 'title')
                     t.text = p_row[0]
@@ -192,7 +189,6 @@ def get_publications(query_dict, cursor, doi, output_format):
                     pg = ElementTree.SubElement(p, 'pages')
                     pg.text = p_row[2]
                 else:
-                    d['doi']['publication_type'] = "conference_paper"
                     d['doi'].update(
                             {'published_in':
                              {'title': p_row[0], 'volume': p_row[1],
