@@ -88,7 +88,7 @@ def get_publications(doi, cursor, **kwargs):
                          'year': row[2]}}
             a_list = []
 
-        authors = get_authors(row[0], auth_sep, cursor)
+        authors = get_authors(row[0], cursor, auth_sep)
         for author in authors:
             if kwargs['output_format'] == ".xml":
                 ElementTree.SubElement(a_list, "author").text = author
