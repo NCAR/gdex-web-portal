@@ -44,7 +44,8 @@ def get_publications(minter, cursor, **kwargs):
                 {'doi': {'ID': e['doi_work'],
                          'publication_type': pubtype,
                          'year': e['pub_year'],
-                         'authors': utils.get_authors(e['doi_work']),
+                         'authors': utils.get_authors(e['doi_work'], cursor,
+                                                      " "),
                          'title': e['title'],
                          'publisher': e['publisher'],
                          'published_in': {}}})
