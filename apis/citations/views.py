@@ -26,6 +26,9 @@ def citations(request, output_format=None):
         return render(request, "404.html", {})
 
     response = {'response': "Bad request", 'status': 400}
+    from_swagger = (
+            True if 'X-From-Swagger' in request.headers and
+            request.headers['X-From-Swagger'] == "true" else False)
     parts = request.path.replace("%2F", "/").split("/")
     if parts[-1] == "":
         parts.pop()
@@ -44,7 +47,8 @@ def citations(request, output_format=None):
                               output_format=output_format)
         elif len(parts) == 5:
             response = minter(parts[3], request.GET, show=parts[4],
-                              output_format=output_format)
+                              output_format=output_format,
+                              from_swagger=from_swagger)
 
     elif parts[2] == "minters":
         if len(parts) == 3:
