@@ -91,15 +91,14 @@ def get_publications(doi, cursor, **kwargs):
         authors = get_authors(row[0], auth_sep, cursor)
         for author in authors:
             if kwargs['output_format'] == ".xml":
-                a = ElementTree.SubElement(a_list, 'author')
-                a.text = author
+                ElementTree.SubElement(a_list, "author").text = author
             else:
                 a_list.append(author)
 
         if kwargs['output_format'] == ".xml":
-            t = ElementTree.SubElement(d, 'title')
+            t = ElementTree.SubElement(d, "title")
             t.text = row[1]
-            p = ElementTree.SubElement(d, 'publisher')
+            p = ElementTree.SubElement(d, "publisher")
             p.text = row[3]
         else:
             d['doi'].update({'authors': a_list, 'title': row[1],
@@ -123,15 +122,15 @@ def get_publications(doi, cursor, **kwargs):
                             "= %s", (c_row[1], ))
                     ed_res = cursor.fetchall()
                     if kwargs['output_format'] == ".xml":
-                        bc = ElementTree.SubElement(d, 'publishedIn')
-                        i = ElementTree.SubElement(bc, 'ISBN')
+                        bc = ElementTree.SubElement(d, "publishedIn")
+                        i = ElementTree.SubElement(bc, "ISBN")
                         i.text = c_row[1]
-                        ed_list = ElementTree.SubElement(bc, 'editors')
-                        t = ElementTree.SubElement(bc, 'title')
+                        ed_list = ElementTree.SubElement(bc, "editors")
+                        t = ElementTree.SubElement(bc, "title")
                         t.text = b_row[0]
-                        p = ElementTree.SubElement(bc, 'publisher')
+                        p = ElementTree.SubElement(bc, "publisher")
                         p.text = b_row[1]
-                        pg = ElementTree.SubElement(bc, 'pages')
+                        pg = ElementTree.SubElement(bc, "pages")
                         pg.text = c_row[0]
                     else:
                         ed_list = []
@@ -147,8 +146,8 @@ def get_publications(doi, cursor, **kwargs):
                             kwargs['output_format'] == ".json"):
                         d['doi'].update(
                                 {'published_in':
-                                 {'ISBN': c_row[1], 'editors': ed_list,
-                                  'title': b_row[0], 'publisher': b_row[1],
+                                 {'ISBN': c_row[1], "editors": ed_list,
+                                  'title': b_row[0], "publisher": b_row[1],
                                   'pages': c_row[0]}})
 
         elif row[4] == "J":
@@ -158,12 +157,12 @@ def get_publications(doi, cursor, **kwargs):
             j_row = cursor.fetchone()
             if j_row is not None:
                 if kwargs['output_format'] == ".xml":
-                    j = ElementTree.SubElement(d, 'publishedIn')
-                    t = ElementTree.SubElement(j, 'title')
+                    j = ElementTree.SubElement(d, "publishedIn")
+                    t = ElementTree.SubElement(j, "title")
                     t.text = j_row[0]
-                    v = ElementTree.SubElement(j, 'volume')
+                    v = ElementTree.SubElement(j, "volume")
                     v.text = j_row[1]
-                    pg = ElementTree.SubElement(j, 'pages')
+                    pg = ElementTree.SubElement(j, "pages")
                     pg.text = j_row[2]
                 else:
                     d['doi'].update(
@@ -178,12 +177,12 @@ def get_publications(doi, cursor, **kwargs):
             p_row = cursor.fetchone()
             if p_row is not None:
                 if kwargs['output_format'] == ".xml":
-                    p = ElementTree.SubElement(d, 'publishedIn')
-                    t = ElementTree.SubElement(p, 'title')
+                    p = ElementTree.SubElement(d, "publishedIn")
+                    t = ElementTree.SubElement(p, "title")
                     t.text = p_row[0]
-                    v = ElementTree.SubElement(p, 'volume')
+                    v = ElementTree.SubElement(p, "volume")
                     v.text = p_row[1]
-                    pg = ElementTree.SubElement(p, 'pages')
+                    pg = ElementTree.SubElement(p, "pages")
                     pg.text = p_row[2]
                 else:
                     d['doi'].update(
