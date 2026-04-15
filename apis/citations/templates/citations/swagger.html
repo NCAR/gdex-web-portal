@@ -10,6 +10,12 @@
       window.ui = SwaggerUIBundle({
         url: 'https://{{ request.get_host }}/static/apis/citations/openapi.json',
         dom_id: '#swagger-ui',
+        requestInterceptor: (req) => {
+          if (!req.loadSpec) {
+            req.headers['X-From-Swagger'] = "true";
+          }
+          return req;
+        },
       });
     };
 </script>
