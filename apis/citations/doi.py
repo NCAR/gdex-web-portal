@@ -32,7 +32,7 @@ def get_counts(doi, cursor, **kwargs):
     query += " group by pub_year order by pub_year"
     cursor.execute(query, params)
     rows = cursor.fetchall()
-    if output_format == ".xml":
+    if kwargs['output_format'] == ".xml":
         counts = ElementTree.Element('counts')
         for row in rows:
             e = ElementTree.SubElement(counts, "year")
@@ -69,14 +69,14 @@ def get_publications(doi, cursor, **kwargs):
     if 'format' in kwargs:
         a_ws = "::"
 
-    if output_format == ".xml":
+    if kwargs['output_format'] == ".xml":
         list = ElementTree.Element('publications')
     else:
         list = []
 
     for row in rows:
         pubtype = get_publication_type(row[4])
-        if output_format == ".xml":
+        if kwargs['output_format'] == ".xml":
             d = ElementTree.SubElement(list, "doi")
             d.set('ID', row[0])
             ElementTree.SubElement(d, "publicationType").text = pubtype
@@ -95,13 +95,13 @@ def get_publications(doi, cursor, **kwargs):
                 (row[0], ))
         a_rows = cursor.fetchall()
         for a_row in a_rows:
-            if output_format == ".xml":
+            if kwargs['output_format'] == ".xml":
                 a = ElementTree.SubElement(a_list, 'author')
                 a.text = a_row[0]
             else:
                 a_list.append(a_row[0])
 
-        if output_format == ".xml":
+        if kwargs['output_format'] == ".xml":
             t = ElementTree.SubElement(d, 'title')
             t.text = row[1]
             p = ElementTree.SubElement(d, 'publisher')
@@ -127,7 +127,7 @@ def get_publications(doi, cursor, **kwargs):
                             "last_name) from citation.works_authors where id "
                             "= %s", (c_row[1], ))
                     ed_res = cursor.fetchall()
-                    if output_format == ".xml":
+                    if kwargs['output_format'] == ".xml":
                         bc = ElementTree.SubElement(d, 'publishedIn')
                         i = ElementTree.SubElement(bc, 'ISBN')
                         i.text = c_row[1]
@@ -142,13 +142,14 @@ def get_publications(doi, cursor, **kwargs):
                         ed_list = []
 
                     for editor in ed_res:
-                        if output_format == ".xml":
+                        if kwargs['output_format'] == ".xml":
                             e = ElementTree.SubElement(ed_list, 'editor')
                             e.text = editor[0]
                         else:
                             ed_list.append(editor[0])
 
-                    if output_format is None or output_format == ".json":
+                    if (kwargs['output_format'] is None or
+                            kwargs['output_format'] == ".json"):
                         d['doi'].update(
                                 {'published_in':
                                  {'ISBN': c_row[1], 'editors': ed_list,
@@ -161,7 +162,7 @@ def get_publications(doi, cursor, **kwargs):
                     "journal_works where DOI = %s", (row[0], ))
             j_row = cursor.fetchone()
             if j_row is not None:
-                if output_format == ".xml":
+                if kwargs['output_format'] == ".xml":
                     j = ElementTree.SubElement(d, 'publishedIn')
                     t = ElementTree.SubElement(j, 'title')
                     t.text = j_row[0]
@@ -181,7 +182,7 @@ def get_publications(doi, cursor, **kwargs):
                     "proceedings_works where DOI = %s", (row[0], ))
             p_row = cursor.fetchone()
             if p_row is not None:
-                if output_format == ".xml":
+                if kwargs['output_format'] == ".xml":
                     p = ElementTree.SubElement(d, 'publishedIn')
                     t = ElementTree.SubElement(p, 'title')
                     t.text = p_row[0]
@@ -195,7 +196,8 @@ def get_publications(doi, cursor, **kwargs):
                              {'title': p_row[0], 'volume': p_row[1],
                               'pages': p_row[2]}})
 
-        if output_format is None or output_format == ".json":
+        if (kwargs['output_format'] is None or kwargs['output_format'] ==
+                ".json"):
             list.append(d)
 
     if 'format' in kwargs:
@@ -206,7 +208,7 @@ def get_publications(doi, cursor, **kwargs):
 
             return format_as_bibliography(list, markup=markup)
 
-    if output_format == ".xml":
+    if kwargs['output_format'] == ".xml":
         return list
 
     return {'publications': list}
