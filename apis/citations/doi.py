@@ -4,7 +4,7 @@ from .utils import (citations_tables, format_as_bibliography,
                     get_publication_type)
 
 
-def get_counts(query_dict, cursor, doi, output_format):
+def get_counts(doi, cursor, **kwargs);
     tbls = citations_tables()
     u = []
     params = []
@@ -17,13 +17,13 @@ def get_counts(query_dict, cursor, doi, output_format):
     u = " union ".join(u)
     query = f"select pub_year, count(distinct doi_work) from ({u}) as t"
     wc = []
-    if 'min' in query_dict:
+    if 'min' in kwargs:
         wc.append("pub_year >= %s")
-        params.append(query_dict.get('min'))
+        params.append(kwargs['min'][-1])
 
-    if 'max' in query_dict:
+    if 'max' in kwargs:
         wc.append("pub_year <= %s")
-        params.append(query_dict.get('max'))
+        params.append(kwargs['max'][-1])
 
     if len(wc) > 0:
         wc = " and ".join(wc)
@@ -48,7 +48,7 @@ def get_counts(query_dict, cursor, doi, output_format):
         return {'counts': list}
 
 
-def get_publications(query_dict, cursor, doi, output_format):
+def get_publications(doi, cursor, **kwargs):
     tbls = citations_tables()
     query = []
     params = []
@@ -60,13 +60,13 @@ def get_publications(query_dict, cursor, doi, output_format):
         params.append(doi)
 
     query = " union ".join(query)
-    if 'format' not in query_dict:
+    if 'format' not in kwargs:
         query += " order by pub_year"
 
     cursor.execute(query, params)
     rows = cursor.fetchall()
     a_ws = " "
-    if 'format' in query_dict:
+    if 'format' in kwargs:
         a_ws = "::"
 
     if output_format == ".xml":
@@ -87,6 +87,7 @@ def get_publications(query_dict, cursor, doi, output_format):
             d = {'doi': {'ID': row[0], 'publication_type': pubtype,
                          'year': row[2]}}
             a_list = []
+
         cursor.execute(
                 f"select concat_ws('{a_ws}', first_name, case when "
                 "middle_name = '' then NULL else middle_name end, last_name) "
@@ -197,11 +198,11 @@ def get_publications(query_dict, cursor, doi, output_format):
         if output_format is None or output_format == ".json":
             list.append(d)
 
-    if 'format' in query_dict:
-        if query_dict['format'] == "bibliography":
+    if 'format' in kwargs:
+        if kwargs['format'][-1] == "bibliography":
             markup = None
-            if 'markup' in query_dict:
-                markup = query_dict['markup']
+            if 'markup' in kwargs:
+                markup = kwargs['markup'][-1]
 
             return format_as_bibliography(list, markup=markup)
 
