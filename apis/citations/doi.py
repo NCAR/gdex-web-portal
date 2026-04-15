@@ -4,7 +4,7 @@ from .utils import (citations_tables, format_as_bibliography,
                     get_publication_type)
 
 
-def get_counts(doi, cursor, **kwargs);
+def get_counts(doi, cursor, **kwargs):
     tbls = citations_tables()
     u = []
     params = []
