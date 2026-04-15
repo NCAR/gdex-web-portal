@@ -166,6 +166,7 @@ def minter(minter, query_dict, **kwargs):
     conn = psycopg2.connect(**metadb_config)
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     if 'show' in kwargs:
+        # return specific information for the minter
         if kwargs['show'] == "dois":
             dois = get_minter_dois(minter, cursor, **query_dict, **kwargs)
             if kwargs['output_format'] == ".xml":
@@ -191,16 +192,20 @@ def minter(minter, query_dict, **kwargs):
                         str(citedby_count))
                 e = ElementTree.SubElement(response, "publications")
                 for publication in publications:
-                    p = ElementTree.SubElement(e, "publication")
-                    d = ElementTree.SubElement(p, "doi",
-                                               ID=publication['doi']['ID'])
-                    ElementTree.SubElement(d, "publicationType").text = (
+                    pub_e = ElementTree.SubElement(e, "publication")
+                    doi_e = ElementTree.SubElement(
+                            pub_e, "doi", ID=publication['doi']['ID'])
+                    ElementTree.SubElement(doi_e, "publicationType").text = (
                             publication['doi']['publication_type'])
-                    ElementTree.SubElement(d, "year").text = (
+                    ElementTree.SubElement(doi_e, "year").text = (
                             publication['doi']['year'])
-                    ElementTree.SubElement(d, "title").text = (
+                    auth_e = ElementTree.SubElement(doi_e, "authors")
+                    for author in publication['authors']:
+                        ElementTree.SubElement(auth_e, "author").text = author
+
+                    ElementTree.SubElement(doi_e, "title").text = (
                             publication['doi']['title'])
-                    ElementTree.SubElement(d, "publisher").text = (
+                    ElementTree.SubElement(doi_e, "publisher").text = (
                             publication['doi']['publisher'])
             else:
                 response['minter'].update({'citedby-count': citedby_count,
@@ -208,6 +213,7 @@ def minter(minter, query_dict, **kwargs):
 
             return {'response': response, 'status': 200}
 
+    # return general minter information
     query = ("select distinct d.publisher, d.asset_type from citation."
              f"data_citations{minter} as c left join citation.doi_data as d "
              "on d.DOI_data = c.DOI_data")
