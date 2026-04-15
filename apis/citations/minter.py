@@ -40,12 +40,13 @@ def get_publications(minter, cursor, **kwargs):
     publications = []
     for e in res:
         pubtype = utils.get_publication_type(e['type'])
-        publications.append({'doi': {'ID': e['doi_work'],
-                                     'publication_type': pubtype,
-                                     'year': e['pub_year'],
-                                     'authors': [],
-                                     'title': e['title'],
-                                     'publisher': e['publisher'],
-                                     'published_in': {}}})
+        publications.append(
+                {'doi': {'ID': e['doi_work'],
+                         'publication_type': pubtype,
+                         'year': e['pub_year'],
+                         'authors': utils.get_authors(e['doi_work']),
+                         'title': e['title'],
+                         'publisher': e['publisher'],
+                         'published_in': {}}})
 
     return (publications, len(res))
