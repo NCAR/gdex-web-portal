@@ -37,6 +37,11 @@ def get_publications(minter, cursor, **kwargs):
              "not null order by w.pub_year")
     cursor.execute(query)
     res = cursor.fetchall()
+    if kwargs['from_swagger']:
+        # if from swagger, limit the results to 10, otherwise a large number of
+        #  results overloads the swagger UI
+        del res[10:]
+
     publications = []
     for e in res:
         pubtype = utils.get_publication_type(e['type'])
