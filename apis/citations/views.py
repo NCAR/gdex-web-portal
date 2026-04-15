@@ -101,12 +101,12 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
         elif kwargs['show'] == "publications":
             if kwargs['output_format'] == ".xml":
                 response.append(
-                        get_doi_publications(query_dict, cursor, doi,
-                                             kwargs['output_format']))
+                        get_doi_publications(doi, cursor, **query_dict,
+                                             **kwargs))
             else:
                 response['doi'].update(
-                        get_doi_publications(query_dict, cursor, doi,
-                                             kwargs['output_format']))
+                        get_doi_publications(doi, cursor, **query_dict,
+                                             **kwargs))
 
     else:
         tbls = utils.citations_tables()
