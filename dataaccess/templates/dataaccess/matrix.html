@@ -2,144 +2,141 @@
 {% load static %}
 
 {% if 'error' in matrix %}
-<h3>{{ matrix.error.header }}</h3>
-<p>{{ matrix.error.message|richtext }}</p>
-{% if 'module' in matrix.error %}
-<p>module: {{ matrix.error.module }}</p>
-{% endif %}
+ <h3>{{ matrix.error.header }}</h3>
+ <p>{{ matrix.error.message|richtext }}</p>
+ {% if 'module' in matrix.error %}
+  <p>module: {{ matrix.error.module }}</p>
+ {% endif %}
 {% else %}
-<link rel="stylesheet" type="text/css" href="{% static 'dataaccess/css/matrix.css' %}">
-<style type="text/css">
-    .mtrx {
-        display: grid;
-        grid-gap: 1px;
-        grid-template-columns: {{ matrix.grid_template_columns }};
-    }
-    /* Action buttons */
-    .mtrx-btn-download {
-        font-size: 1.3rem;
-        padding: 1rem 1.75rem;
-    }
-    .mtrx-btn-subset {
-        font-size: 1.3rem;
-        padding: .6rem 1.75rem;
-    }
-    .mtrx-btn-split {
-        font-size: 1.3rem;
-    }
-    .mtrx-dropdown {
-        min-width: max-content;
-    }
-    .mtrx-login-note {
-        font-size: 0.65rem;
-    }
-    /* Matrix grid rows */
-    .mtrx-col-header {
-        grid-row: 2;
-    }
-    .mtrx-union-item {
-        grid-row: 3;
-    }
-    .mtrx-desc-header {
-        grid-column: 1 / 3;
-        grid-row: 1 / 3;
-    }
-    .mtrx-all-products {
-        grid-column: 1 / 3;
-        grid-row: 3;
-    }
-    /* Bubble widths */
-    .bubble-w-180 { width: 180px; }
-    .bubble-w-200 { width: 200px; }
-    .bubble-w-210 { width: 210px; }
-    .bubble-w-300 { width: 300px; }
-</style>
-<script type="text/javascript">
-    // show loading spinner during ajax content load
-    $(document).on("ajaxSend", function() {
-      $("#ds_content").html('<div class="text-center mt-3" id="loading"><strong>Loading ... &nbsp;&nbsp;</strong><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>');
-    });
-    // initialize tooltips
-    $('[data-toggle="tooltip"]').tooltip();
-</script>
+ <link rel="stylesheet" type="text/css" href="{% static 'dataaccess/css/matrix.css' %}">
+ <style type="text/css">
+     .mtrx {
+         display: grid;
+         grid-gap: 1px;
+         grid-template-columns: {{ matrix.grid_template_columns }};
+     }
+     /* Action buttons */
+     .mtrx-btn-download,
+     .mtrx-btn-subset {
+         font-size: 1.4rem;
+         padding: 1.1rem 2rem;
+         flex: 1;
+     }
+     .mtrx-btn-split {
+         font-size: 1.4rem;
+     }
+     .mtrx-dropdown {
+         min-width: max-content;
+     }
+     .mtrx-login-note {
+         font-size: 0.65rem;
+     }
+     /* Matrix grid rows */
+     .mtrx-col-header {
+         grid-row: 2;
+     }
+     .mtrx-union-item {
+         grid-row: 3;
+     }
+     .mtrx-desc-header {
+         grid-column: 1 / 3;
+         grid-row: 1 / 3;
+     }
+     .mtrx-all-products {
+         grid-column: 1 / 3;
+         grid-row: 3;
+     }
+     /* Bubble widths */
+     .bubble-w-180 { width: 180px; }
+     .bubble-w-200 { width: 200px; }
+     .bubble-w-210 { width: 210px; }
+     .bubble-w-300 { width: 300px; }
+ </style>
+ <script type="text/javascript">
+     // show loading spinner during ajax content load
+     $(document).on("ajaxSend", function() {
+         $("#ds_content").html('<div class="text-center mt-3" id="loading"><strong>Loading ... &nbsp;&nbsp;</strong><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>');
+     });
+     // initialize tooltips
+     $('[data-toggle="tooltip"]').tooltip();
+ </script>
 
-
-{% comment %} Large Action Buttons {% endcomment %}
-<div class="d-flex gap-3 justify-content-center my-3">
-    {% if matrix.columns.web_files %}
-    {% if matrix.group_data|length > 1 %}
+ {% comment %} Large Action Buttons {% endcomment %}
+ <div class="d-flex gap-3 justify-content-center my-3">
+  {% if matrix.columns.web_files %}
+   {% if matrix.group_data|length > 1 %}
     <div class="btn-group">
-        <button type="button" class="btn btn-primary btn-lg mtrx-btn-download" data-toggle="tooltip" data-placement="top" title="Search and Download full files." onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
-        <button type="button" class="btn btn-primary btn-lg dropdown-toggle dropdown-toggle-split mtrx-btn-split" data-bs-toggle="dropdown" aria-expanded="false">
-            <span class="visually-hidden">Toggle Dropdown</span>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown">
-            {% for group in matrix.group_data %}
-            {% if group.index > 0 and group.dwebcnt > 0 %}
-            <li><a class="dropdown-item" href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}{{ group.index }}/', replace_ds_content)">{{ group.title|striptags }}</a></li>
-            {% endif %}
-            {% endfor %}
-        </ul>
+     <button type="button" class="btn btn-primary btn-lg mtrx-btn-download" data-toggle="tooltip" data-placement="top" title="Search and Download full files." onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
+     <button type="button" class="btn btn-primary btn-lg dropdown-toggle dropdown-toggle-split mtrx-btn-split" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="visually-hidden">Toggle Dropdown</span>
+     </button>
+     <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown">
+      {% for group in matrix.group_data %}
+       {% if group.index > 0 and group.dwebcnt > 0 %}
+        <li><a class="dropdown-item" href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}{{ group.index }}/', replace_ds_content)">{{ group.title|striptags }}</a></li>
+       {% endif %}
+      {% endfor %}
+     </ul>
     </div>
-    {% else %}
+   {% else %}
     <button type="button" class="btn btn-primary btn-lg mtrx-btn-download" data-toggle="tooltip" data-placement="top" title="Search and Download full files." onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
-    {% endif %}
-    {% endif %}
+   {% endif %}
+  {% endif %}
 
-    {% if matrix.columns.subset %}
-    {% if matrix.group_data|length > 1 %}
+  {% if matrix.columns.subset %}
+   {% if matrix.group_data|length > 1 %}
     <div class="btn-group">
-        <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg mtrx-btn-subset" data-toggle="tooltip" data-placement="top" {% if matrix.duser %}title="GDEX will subset files for you, so you only download what you need" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}title="You must be logged in to request a subset" onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset{% if not matrix.duser %}<br><small class="mtrx-login-note">(Login Required)</small>{% endif %}</button>
-        <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg dropdown-toggle dropdown-toggle-split mtrx-btn-split" data-bs-toggle="dropdown" aria-expanded="false">
-            <span class="visually-hidden">Toggle Dropdown</span>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown">
-            {% for group in matrix.group_data %}
-            {% if group.index > 0 and group.urls.subset %}
-            <li><a class="dropdown-item" href="javascript:void(0)" {% if matrix.duser %}onclick="$.get('{{ group.urls.subset }}', replace_ds_content)"{% else %}onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>{{ group.title|striptags }}</a></li>
-            {% endif %}
-            {% endfor %}
-        </ul>
+     <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg mtrx-btn-subset" data-toggle="tooltip" data-placement="top" {% if matrix.duser %}title="GDEX will subset files for you, so you only download what you need" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}title="You must be logged in to request a subset" onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset{% if not matrix.duser %}<br><small class="mtrx-login-note">(Login Required)</small>{% endif %}</button>
+     <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg dropdown-toggle dropdown-toggle-split mtrx-btn-split" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="visually-hidden">Toggle Dropdown</span>
+     </button>
+     <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown">
+      {% for group in matrix.group_data %}
+       {% if group.index > 0 and group.urls.subset %}
+        <li><a class="dropdown-item" href="javascript:void(0)" {% if matrix.duser %}onclick="$.get('{{ group.urls.subset }}', replace_ds_content)"{% else %}onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>{{ group.title|striptags }}</a></li>
+       {% endif %}
+      {% endfor %}
+     </ul>
     </div>
-    {% else %}
+   {% else %}
     <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg mtrx-btn-subset" data-toggle="tooltip" data-placement="top" {% if matrix.duser %}title="GDEX will subset files for you, so you only download what you need" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}title="You must be logged in to request a subset" onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset{% if not matrix.duser %}<br><small class="mtrx-login-note">(Login Required)</small>{% endif %}</button>
-    {% endif %}
-    {% endif %}
-</div>
+   {% endif %}
+  {% endif %}
+ </div>
 
-{% comment %} Secondary access buttons — Thredds and analysis-ready groups {% endcomment %}
-<div class="d-flex flex-wrap gap-2 justify-content-center mb-3" id="secondary-access-buttons">
-    {% if matrix.union_urls.dap and 'thredds' in matrix.union_urls.dap %}
-    <div class="btn-group">
-        <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Access TDS based services such as OPeNDAP, WMS, NCSS, and more." onclick="location='{{ matrix.union_urls.dap }}'">Thredds</button>
-        {% if matrix.group_data|length > 1 %}
-        <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-            <span class="visually-hidden">Toggle Dropdown</span>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown">
-            {% for group in matrix.group_data %}
-            {% if group.index > 0 and group.urls.dap and 'thredds' in group.urls.dap %}
-            <li><a class="dropdown-item" href="{{ group.urls.dap }}">{{ group.title|striptags }}</a></li>
-            {% endif %}
-            {% endfor %}
-        </ul>
-        {% endif %}
-    </div>
+ {% comment %} Secondary access buttons — Thredds and analysis-ready groups {% endcomment %}
+ <div class="d-flex flex-wrap gap-2 justify-content-center mb-3" id="secondary-access-buttons">
+  {% if matrix.union_urls.dap and 'thredds' in matrix.union_urls.dap %}
+   <div class="btn-group">
+    <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Access TDS based services such as OPeNDAP, WMS, NCSS, and more." onclick="location='{{ matrix.union_urls.dap }}'">Thredds</button>
+    {% if matrix.group_data|length > 1 %}
+     <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="visually-hidden">Toggle Dropdown</span>
+     </button>
+     <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown">
+      {% for group in matrix.group_data %}
+       {% if group.index > 0 and group.urls.dap and 'thredds' in group.urls.dap %}
+        <li><a class="dropdown-item" href="{{ group.urls.dap }}">{{ group.title|striptags }}</a></li>
+       {% endif %}
+      {% endfor %}
+     </ul>
     {% endif %}
-    {% for group in matrix.group_data %}
-    {% if group.index < 0 %}
+   </div>
+  {% endif %}
+  {% for group in matrix.group_data %}
+   {% if group.index < 0 %}
     {% with title=group.title|striptags|lower %}
-    <button type="button" class="btn btn-outline-primary" {% if 'reference' in title or 'kerchunk' in title %}data-toggle="tooltip" data-placement="top" title="Access this dataset using Kerchunk references"{% elif 'catalog' in title %}data-toggle="tooltip" data-placement="top" title="Access this dataset using Intake-ESM for easier variable searching"{% endif %} onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)">{{ group.title|striptags }}</button>
+     <button type="button" class="btn btn-outline-primary" {% if 'reference' in title or 'kerchunk' in title %}data-toggle="tooltip" data-placement="top" title="Access this dataset using Kerchunk references"{% elif 'catalog' in title %}data-toggle="tooltip" data-placement="top" title="Access this dataset using Intake-ESM for easier variable searching"{% endif %} onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)">{{ group.title|striptags }}</button>
     {% endwith %}
-    {% endif %}
-    {% endfor %}
-</div>
-<script>
-(function() {
-    var sec = document.getElementById('secondary-access-buttons');
-    if (sec && sec.children.length > 0) {
-        sec.insertAdjacentHTML('beforebegin', '<hr class="mx-3 my-2"><p class="text-center text-muted mb-2"><small>Other Access Methods</small></p>');
-    }
-})();
-</script>
+   {% endif %}
+  {% endfor %}
+ </div>
+ <script>
+ (function() {
+     var sec = document.getElementById('secondary-access-buttons');
+     if (sec && sec.children.length > 0) {
+         sec.insertAdjacentHTML('beforebegin', '<hr class="mx-3 my-2"><p class="text-center text-muted mb-2"><small>Other Access Methods</small></p>');
+     }
+ })();
+ </script>
 {% endif %}
