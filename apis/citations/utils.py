@@ -34,17 +34,17 @@ def valid_minters():
     return list
 
 
-def get_publication_type(type):
+def get_publication_data(type):
     if type == "C":
-        return "book_chapter"
+        return ("book_chapter", {})
 
     if type == "J":
-        return "journal_article"
+        return ("journal_article", {})
 
     if type == "P":
-        return "conference_paper"
+        return ("conference_paper", {})
 
-    return None
+    return (None, {})
 
 
 def get_authors(id, cursor, separator):

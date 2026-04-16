@@ -1,7 +1,7 @@
 from lxml import etree as ElementTree
 
 from .utils import (citations_tables, format_as_bibliography,
-                    get_authors, get_publication_type)
+                    get_authors, get_publication_data)
 
 
 def get_counts(doi, cursor, **kwargs):
@@ -75,7 +75,7 @@ def get_publications(doi, cursor, **kwargs):
         list = []
 
     for row in rows:
-        pubtype = get_publication_type(row[4])
+        pubtype, pubdata = get_publication_data(row[4])
         if kwargs['output_format'] == ".xml":
             d = ElementTree.SubElement(list, "doi")
             d.set('ID', row[0])
