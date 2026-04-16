@@ -162,7 +162,7 @@ def minter(minter, query_dict, **kwargs):
                 ("The specified minter \"" + minter + "\" is not a valid "
                  "minter."))
 
-    if minter == "rda":
+    if minter == "gdex":
         minter = ""
     else:
         minter = "_" + minter
