@@ -75,7 +75,7 @@ def get_publications(doi, cursor, **kwargs):
         list = []
 
     for row in rows:
-        pubtype, pubdata = get_publication_data(row[4])
+        pubtype, pubdata = get_publication_data(row[4], row[0], cursor)
         if kwargs['output_format'] == ".xml":
             d = ElementTree.SubElement(list, "doi")
             d.set('ID', row[0])
