@@ -70,6 +70,31 @@
     {% endif %}
 </div>
 
+{% if matrix.union_urls.dap and 'thredds' in matrix.union_urls.dap %}
+<div class="d-flex gap-2 justify-content-center mb-3">
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-secondary" onclick="location='{{ matrix.union_urls.dap }}'">Thredds</button>
+        {% if matrix.group_data|length > 1 %}
+        <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="visually-hidden">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu">
+            {% for group in matrix.group_data %}
+            {% if group.index > 0 and group.urls.dap and 'thredds' in group.urls.dap %}
+            <li><a class="dropdown-item" href="{{ group.urls.dap }}">{{ group.title|striptags }}</a></li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% for group in matrix.group_data %}
+    {% if group.index < 1 and group.urls.dap and 'thredds' in group.urls.dap %}
+    <a href="{{ group.urls.dap }}" class="btn btn-outline-secondary">{{ group.title|striptags }}</a>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="mtrx mx-1">
     {% comment %} Begin Header {% endcomment %}
 
