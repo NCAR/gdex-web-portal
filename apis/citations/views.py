@@ -193,10 +193,15 @@ def minter(minter, query_dict, **kwargs):
                     minter, cursor, **query_dict, **kwargs)
             if kwargs['output_format'] == ".xml":
                 utils.format_publication_list_as_xml(
-                        publications, citedby_count, response)
+                        publications, citedby_count, response, **kwargs)
             else:
-                response['minter'].update({'citedby-count': citedby_count,
-                                           'publications': publications})
+                response['minter']['citedby-count'] = citedby_count
+                if kwargs['from_swagger']:
+                    response['minter']['comment'] = (
+                           "Example results from this UI are limited to 10 "
+                           "results. A (e.g.) 'curl' command will return all "
+                           "available results.")
+                response['minter']['publications'] = publications
 
             return {'response': response, 'status': 200}
 
