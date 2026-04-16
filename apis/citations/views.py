@@ -159,8 +159,7 @@ def minter(minter, query_dict, **kwargs):
     if minter not in valid_minters:
         return utils.error(
                 kwargs['output_format'],
-                ("The specified minter \"" + minter + "\" is not a valid "
-                 "minter."))
+                f"The specified minter '{minter}' is not a valid minter.")
 
     if minter == "gdex":
         minter = ""
