@@ -26,6 +26,50 @@
 <center>
     <span class="body-font-small">Mouse over the underlined table headings for detailed descriptions</span>
 </center>
+
+{% comment %} Large Action Buttons {% endcomment %}
+<div class="d-flex gap-3 justify-content-center my-3">
+    {% if matrix.columns.web_files %}
+    {% if matrix.group_data|length > 1 %}
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary btn-lg" onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
+        <button type="button" class="btn btn-primary btn-lg dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="visually-hidden">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu">
+            {% for group in matrix.group_data %}
+            {% if group.index > 0 and group.dwebcnt > 0 %}
+            <li><a class="dropdown-item" href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}{{ group.index }}/', replace_ds_content)">{{ group.title|striptags }}</a></li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <button type="button" class="btn btn-primary btn-lg" onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
+    {% endif %}
+    {% endif %}
+
+    {% if matrix.columns.subset %}
+    {% if matrix.group_data|length > 1 %}
+    <div class="btn-group">
+        <button type="button" class="btn btn-secondary btn-lg" {% if matrix.duser %}onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset</button>
+        <button type="button" class="btn btn-secondary btn-lg dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="visually-hidden">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu">
+            {% for group in matrix.group_data %}
+            {% if group.index > 0 and group.urls.subset %}
+            <li><a class="dropdown-item" href="javascript:void(0)" {% if matrix.duser %}onclick="$.get('{{ group.urls.subset }}', replace_ds_content)"{% else %}onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>{{ group.title|striptags }}</a></li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <button type="button" class="btn btn-secondary btn-lg" {% if matrix.duser %}onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset</button>
+    {% endif %}
+    {% endif %}
+</div>
+
 <div class="mtrx mx-1">
     {% comment %} Begin Header {% endcomment %}
 
