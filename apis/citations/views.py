@@ -9,8 +9,8 @@ from lxml import etree as ElementTree
 from . import utils
 from .doi import get_counts as get_doi_counts
 from .doi import get_publications as get_doi_publications
-from .minter import get_dois as get_minter_dois
-from .minter import get_publications as get_minter_publications
+from .minter import (update_general_minter_response,
+                     updated_specific_minter_response)
 
 
 metadb_config = settings.RDADB['metadata_config_pg']
@@ -167,70 +167,20 @@ def minter(minter, query_dict, **kwargs):
     else:
         minter = "_" + minter
 
-    conn = psycopg2.connect(**metadb_config)
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    if 'show' in kwargs:
-        # return specific information for the minter
-        if kwargs['show'] == "dois":
-            dois = get_minter_dois(minter, cursor, **query_dict, **kwargs)
-            if kwargs['output_format'] == ".xml":
-                e = ElementTree.SubElement(response, "dois")
-                for doi in dois:
-                    d = ElementTree.SubElement(e, "doi")
-                    d.set('ID', doi['doi']['ID'])
-                    ElementTree.SubElement(d, "assetType").text = (
-                            doi['doi']['asset-type'])
+    try:
+        conn = psycopg2.connect(**metadb_config)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        if 'show' in kwargs:
+            # return specific information for the minter
+            if updated_specific_minter_response(
+                    response, minter, cursor, **query_dict, **kwargs):
+                return {'response': response, 'status': 200}
 
-                    ElementTree.SubElement(d, "publisher").text = (
-                            doi['doi']['publisher'])
-
-            else:
-                response['minter'].update({'dois': dois})
-
-            return {'response': response, 'status': 200}
-        elif kwargs['show'] == "publications":
-            publications, citedby_count = get_minter_publications(
-                    minter, cursor, **query_dict, **kwargs)
-            if kwargs['output_format'] == ".xml":
-                utils.format_publication_list_as_xml(
-                        publications, citedby_count, response, **kwargs)
-            else:
-                response['minter']['citedby-count'] = citedby_count
-                if kwargs['from_swagger']:
-                    response['minter']['comment'] = (
-                           "Example results from this UI are limited to 10 "
-                           "results. A (e.g.) 'curl' command will return all "
-                           "available results.")
-                response['minter']['publications'] = publications
-
-            return {'response': response, 'status': 200}
-
-    # return general minter information
-    query = ("select distinct d.publisher, d.asset_type from citation."
-             f"data_citations{minter} as c left join citation.doi_data as d "
-             "on d.DOI_data = c.DOI_data")
-    cursor.execute(query)
-    res = cursor.fetchall()
-    pubs = []
-    assets = []
-    for e in res:
-        pubs.append(e['publisher'])
-        if e['asset_type'] not in assets:
-            assets.append(e['asset_type'])
-
-    if kwargs['output_format'] == ".xml":
-        e = ElementTree.SubElement(response, "assetTypes")
-        for asset in assets:
-            ElementTree.SubElement(e, "assetType").text = asset
-
-        e = ElementTree.SubElement(response, "publishers")
-        for pub in pubs:
-            ElementTree.SubElement(e, "publisher").text = pub
-
-    else:
-        response['minter'].update({'asset-types': assets, 'publishers': pubs})
-
-    return {'response': response, 'status': 200}
+        # return general minter information
+        update_general_minter_response(response, minter, cursor, **kwargs)
+        return {'response': response, 'status': 200}
+    finally:
+        conn.close()
 
 
 def minters(output_format):
