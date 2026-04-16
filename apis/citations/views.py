@@ -27,8 +27,8 @@ def citations(request, output_format=None):
 
     response = {'response': "Bad request", 'status': 400}
     from_swagger = (
-            True if 'X-From-Swagger' in request.headers and
-            request.headers['X-From-Swagger'] == "true" else False)
+        True if 'referer' in request.headers and
+        request.headers['referer'].find(request.get_host()) > 0 else False)
     parts = request.path.replace("%2F", "/").split("/")
     if parts[-1] == "":
         parts.pop()
