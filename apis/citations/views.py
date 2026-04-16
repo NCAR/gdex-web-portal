@@ -211,4 +211,5 @@ def publishers(output_format):
         else:
             response['publishers'].append(e[0])
 
+    conn.close()
     return {'response': response, 'status': 200}
