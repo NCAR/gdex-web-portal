@@ -21,6 +21,8 @@
     $(document).on("ajaxSend", function() {
       $("#ds_content").html('<div class="text-center mt-3" id="loading"><strong>Loading ... &nbsp;&nbsp;</strong><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>');
     });
+    // initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
 </script>
 
 <center>
@@ -32,8 +34,8 @@
     {% if matrix.columns.web_files %}
     {% if matrix.group_data|length > 1 %}
     <div class="btn-group">
-        <button type="button" class="btn btn-primary btn-lg" onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
-        <button type="button" class="btn btn-primary btn-lg dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+        <button type="button" class="btn btn-primary btn-lg" style="font-size: 1.3rem; padding: .6rem 1.75rem" onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
+        <button type="button" class="btn btn-primary btn-lg dropdown-toggle dropdown-toggle-split" style="font-size: 1.3rem" data-bs-toggle="dropdown" aria-expanded="false">
             <span class="visually-hidden">Toggle Dropdown</span>
         </button>
         <ul class="dropdown-menu">
@@ -45,15 +47,15 @@
         </ul>
     </div>
     {% else %}
-    <button type="button" class="btn btn-primary btn-lg" onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
+    <button type="button" class="btn btn-primary btn-lg" style="font-size: 1.3rem; padding: .6rem 1.75rem" onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
     {% endif %}
     {% endif %}
 
     {% if matrix.columns.subset %}
     {% if matrix.group_data|length > 1 %}
     <div class="btn-group">
-        <button type="button" class="btn btn-secondary btn-lg" {% if matrix.duser %}onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset</button>
-        <button type="button" class="btn btn-secondary btn-lg dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+        <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg" style="font-size: 1.3rem; padding: .6rem 1.75rem" data-toggle="tooltip" data-placement="top" {% if matrix.duser %}title="GDEX will subset files for you, so you only download what you need" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}title="You must be logged in to request a subset" onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset{% if not matrix.duser %} <small>(Login Required)</small>{% endif %}</button>
+        <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg dropdown-toggle dropdown-toggle-split" style="font-size: 1.3rem" data-bs-toggle="dropdown" aria-expanded="false">
             <span class="visually-hidden">Toggle Dropdown</span>
         </button>
         <ul class="dropdown-menu">
@@ -65,13 +67,14 @@
         </ul>
     </div>
     {% else %}
-    <button type="button" class="btn btn-secondary btn-lg" {% if matrix.duser %}onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset</button>
+    <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg" style="font-size: 1.3rem; padding: .6rem 1.75rem" data-toggle="tooltip" data-placement="top" {% if matrix.duser %}title="GDEX will subset files for you, so you only download what you need" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}title="You must be logged in to request a subset" onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset{% if not matrix.duser %} <small>(Login Required)</small>{% endif %}</button>
     {% endif %}
     {% endif %}
 </div>
 
-{% if matrix.union_urls.dap and 'thredds' in matrix.union_urls.dap %}
-<div class="d-flex gap-2 justify-content-center mb-3">
+{% comment %} Secondary access buttons — Thredds and analysis-ready groups {% endcomment %}
+<div class="d-flex flex-wrap gap-2 justify-content-center mb-3" id="secondary-access-buttons">
+    {% if matrix.union_urls.dap and 'thredds' in matrix.union_urls.dap %}
     <div class="btn-group">
         <button type="button" class="btn btn-outline-secondary" onclick="location='{{ matrix.union_urls.dap }}'">Thredds</button>
         {% if matrix.group_data|length > 1 %}
@@ -87,13 +90,21 @@
         </ul>
         {% endif %}
     </div>
+    {% endif %}
     {% for group in matrix.group_data %}
-    {% if group.index < 1 and group.urls.dap and 'thredds' in group.urls.dap %}
-    <a href="{{ group.urls.dap }}" class="btn btn-outline-secondary">{{ group.title|striptags }}</a>
+    {% if group.index < 0 %}
+    <button type="button" class="btn btn-outline-secondary" onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)">{{ group.title|striptags }}</button>
     {% endif %}
     {% endfor %}
 </div>
-{% endif %}
+<script>
+(function() {
+    var sec = document.getElementById('secondary-access-buttons');
+    if (sec && sec.children.length > 0) {
+        sec.insertAdjacentHTML('beforebegin', '<hr class="mx-3 my-2">');
+    }
+})();
+</script>
 
 <div class="mtrx mx-1">
     {% comment %} Begin Header {% endcomment %}
