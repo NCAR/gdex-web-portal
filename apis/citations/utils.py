@@ -182,6 +182,14 @@ def format_publication_list_as_xml(publications, citedby_count, root):
                 publication['doi']['title'])
         ElementTree.SubElement(doi_e, "publisher").text = (
                 publication['doi']['publisher'])
+        pubdata_e = ElementTree.SubElement(doi_e, "publishedIn")
+        for key, value in publication['doi']['published_in'].items():
+            sub_e = ElementTree.SubElement(pubdata_e, key)
+            if type(value) is str:
+                sub_e.text = value
+            elif type(value) is list:
+                for v in value:
+                    ElementTree.SubElement(sub_e, key[:-1]).text = v
 
 
 def format_as_bibliography(list, **kwargs):
