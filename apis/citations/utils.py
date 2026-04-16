@@ -34,15 +34,48 @@ def valid_minters():
     return list
 
 
-def get_publication_data(type):
+def get_publication_data(type, doi, cursor):
     if type == "C":
-        return ("book_chapter", {})
+        cursor.execute(
+                "select pages, ISBN from citation.book_chapter_works where "
+                "doi = %s", (doi, ))
+        book_chapter = cursor.fetchone()
+        if book_chapter is not None:
+            cursor.execute(
+                    "select title, publisher from citation.book_works where "
+                    "ISBN = %s", (book_chapter[1], ))
+            book = cursor.fetchone()
+            if book is not None:
+                cursor.execute(
+                        "select concat_ws(' ', first_name, case when "
+                        "middle_name = '' then NULL else middle_name end, "
+                        "last_name) from citation.works_authors where id  = "
+                        "%s", (book_chapter[1], ))
+                return ("book_chapter",
+                        {'ISBN': book_chapter[1],
+                         'editors': [e[0] for e in cursor.fetchall()],
+                         'title': book[0], 'publisher': book[1],
+                         'pages': book_chapter[0]})
 
     if type == "J":
-        return ("journal_article", {})
+        cursor.execute(
+                "select pub_name, volume, pages from citation.journal_works "
+                "where doi = %s", (doi, ))
+        journal = cursor.fetchone()
+        if journal is not None:
+            return ("journal_article",
+                    {'title': journal[0], 'volume': journal[1],
+                     'pages': journal[2]})
 
     if type == "P":
-        return ("conference_paper", {})
+        cursor.execute(
+                "select pub_name, volume, pages from citation."
+                "proceedings_works where doi = %s", (doi, ))
+        preprint = cursor.fetchone()
+        if preprint is not None:
+            return ("conference_paper",
+                    {'title': preprint[0], 'volume': preprint[1],
+                     'pages': preprint[2]})
 
     return (None, {})
 
