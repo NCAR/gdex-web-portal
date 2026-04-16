@@ -27,7 +27,7 @@ def valid_minters():
     for tbl in tbls:
         center = tbl.replace("data_citations", "")
         if len(center) == 0:
-            list.append('gdex')
+            list.append("gdex")
         else:
             list.append(center[1:])
 
