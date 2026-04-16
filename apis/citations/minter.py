@@ -61,7 +61,7 @@ def get_publications(minter, cursor, **kwargs):
     return (publications, len(res))
 
 
-def update_specific_minter_response(response, minter, cursor, **kwargs):
+def updated_specific_minter_response(response, minter, cursor, **kwargs):
     if kwargs['show'] == "dois":
         dois = get_dois(minter, cursor, **kwargs)
         if kwargs['output_format'] == ".xml":
