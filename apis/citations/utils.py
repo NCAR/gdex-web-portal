@@ -162,12 +162,18 @@ def do_volume_markup(v, **kwargs):
     return v
 
 
-def format_publication_list_as_xml(publications, citedby_count, root):
-    e = ElementTree.SubElement(root, "citedbyCount").text = (
+def format_publication_list_as_xml(publications, citedby_count, root,
+                                   **kwargs):
+    ElementTree.SubElement(root, "citedbyCount").text = (
             str(citedby_count))
-    e = ElementTree.SubElement(root, "publications")
+    if 'from_swagger' in kwargs and kwargs['from_swagger']:
+        ElementTree.SubElement(root, "comment").text = (
+                "Example results from this UI are limited to 10 results. A "
+                "(e.g.) 'curl' command will return all available results.")
+
+    pubs_e = ElementTree.SubElement(root, "publications")
     for publication in publications:
-        pub_e = ElementTree.SubElement(e, "publication")
+        pub_e = ElementTree.SubElement(pubs_e, "publication")
         doi_e = ElementTree.SubElement(
                 pub_e, "doi", ID=publication['doi']['ID'])
         ElementTree.SubElement(doi_e, "publicationType").text = (
@@ -184,12 +190,12 @@ def format_publication_list_as_xml(publications, citedby_count, root):
                 publication['doi']['publisher'])
         pubdata_e = ElementTree.SubElement(doi_e, "publishedIn")
         for key, value in publication['doi']['published_in'].items():
-            sub_e = ElementTree.SubElement(pubdata_e, key)
+            e = ElementTree.SubElement(pubdata_e, key)
             if type(value) is str:
-                sub_e.text = value
+                e.text = value
             elif type(value) is list:
                 for v in value:
-                    ElementTree.SubElement(sub_e, key[:-1]).text = v
+                    ElementTree.SubElement(e, key[:-1]).text = v
 
 
 def format_as_bibliography(list, **kwargs):
