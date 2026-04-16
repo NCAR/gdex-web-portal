@@ -12,7 +12,7 @@
         dom_id: '#swagger-ui',
         requestInterceptor: (req) => {
           if (!req.loadSpec) {
-            req.headers['X-From-Swagger'] = "true";
+            delete req.headers['accept'];
           }
           return req;
         },
