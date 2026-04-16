@@ -53,6 +53,6 @@ def get_publications(minter, cursor, **kwargs):
                                                       " "),
                          'title': e['title'],
                          'publisher': e['publisher'],
-                         'published_in': {}}})
+                         'published_in': pubdata}})
 
     return (publications, len(res))
