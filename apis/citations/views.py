@@ -118,11 +118,6 @@ def minter(minter, query_dict, **kwargs):
                 kwargs['output_format'],
                 f"The specified minter '{minter}' is not a valid minter.")
 
-    if minter == "gdex":
-        minter = ""
-    else:
-        minter = "_" + minter
-
     try:
         conn = psycopg2.connect(**metadb_config)
         cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)

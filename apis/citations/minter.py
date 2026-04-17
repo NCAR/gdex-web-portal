@@ -7,7 +7,7 @@ from .utils import (format_publication_list_as_xml,
 
 def get_dois(minter, cursor, **kwargs):
     query = ("select distinct c.doi_data, d.publisher, d.asset_type from "
-             f"citation.data_citations{minter} as c left join citation."
+             f"citation.data_citations_{minter} as c left join citation."
              "doi_data as d on d.doi_data = c.doi_data")
     wc = []
     params = []
@@ -36,7 +36,7 @@ def get_dois(minter, cursor, **kwargs):
 
 def get_publications(minter, cursor, **kwargs):
     query = ("select distinct c.doi_work, w.type, w.pub_year, w.title, w."
-             f"publisher from citation.data_citations{minter} as c left join "
+             f"publisher from citation.data_citations_{minter} as c left join "
              "citation.works as w on w.doi = c.doi_work where w.pub_year is "
              "not null order by w.pub_year")
     cursor.execute(query)
@@ -103,7 +103,7 @@ def updated_specific_minter_response(response, minter, cursor, **kwargs):
 
 def update_general_minter_response(response, minter, cursor, **kwargs):
     query = ("select distinct d.publisher, d.asset_type from citation."
-             f"data_citations{minter} as c left join citation.doi_data as d "
+             f"data_citations_{minter} as c left join citation.doi_data as d "
              "on d.DOI_data = c.DOI_data")
     cursor.execute(query)
     res = cursor.fetchall()
