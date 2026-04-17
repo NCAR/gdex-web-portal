@@ -115,6 +115,7 @@ def updated_specific_doi_response(response, doi, cursor, **kwargs):
             format_publication_list_as_xml(
                     publications, citedby_count, response, **kwargs)
         else:
+            response['doi']['citedby-count'] = citedby_count
             response['doi']['publications'] = publications
 
         return True
