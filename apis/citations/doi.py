@@ -249,6 +249,7 @@ def updated_specific_doi_response(response, doi, cursor, **kwargs):
 
                 publications = format_publications_as_bibliography(
                         publications, markup=markup)
+
         if kwargs['output_format'] == ".xml":
             format_publication_list_as_xml(
                     publications, citedby_count, response, **kwargs)
