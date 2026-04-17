@@ -8,8 +8,14 @@
 <script>
     window.onload = () => {
       window.ui = SwaggerUIBundle({
-        url: 'https://api.gdex.ucar.edu/static/apis/citations/openapi.json',
+        url: 'https://{{ request.get_host }}/static/apis/citations/openapi.json',
         dom_id: '#swagger-ui',
+        requestInterceptor: (req) => {
+          if (!req.loadSpec) {
+            delete req.headers['accept'];
+          }
+          return req;
+        },
       });
     };
 </script>

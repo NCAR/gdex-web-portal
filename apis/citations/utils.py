@@ -1,6 +1,7 @@
-from django.conf import settings
 import psycopg2
-from lxml import etree as ElementTree
+
+from django.conf import settings
+from lxml import etree
 
 
 metadb_config = settings.RDADB['metadata_config_pg']
@@ -24,228 +25,63 @@ def valid_minters():
     tbls = citations_tables()
     list = []
     for tbl in tbls:
-        center = tbl.replace("data_citations", "")
-        if len(center) == 0:
-            list.append('rda')
-        else:
-            list.append(center[1:])
+        list.append(tbl.replace("data_citations_", ""))
 
     return list
 
 
-def get_counts(query_dict, cursor, doi, output_format):
-    tbls = citations_tables()
-    u = ""
-    for x in range(len(tbls)):
-        if x > 0:
-            u += " union "
+def get_publication_data(type, doi, cursor):
+    if type == "C":
+        cursor.execute(
+                "select pages, ISBN from citation.book_chapter_works where "
+                "doi = %s", (doi, ))
+        book_chapter = cursor.fetchone()
+        if book_chapter is not None:
+            cursor.execute(
+                    "select title, publisher from citation.book_works where "
+                    "ISBN = %s", (book_chapter[1], ))
+            book = cursor.fetchone()
+            if book is not None:
+                cursor.execute(
+                        "select concat_ws(' ', first_name, case when "
+                        "middle_name = '' then NULL else middle_name end, "
+                        "last_name) from citation.works_authors where id  = "
+                        "%s", (book_chapter[1], ))
+                return ("book_chapter",
+                        {'ISBN': book_chapter[1],
+                         'editors': [e[0] for e in cursor.fetchall()],
+                         'title': book[0], 'publisher': book[1],
+                         'pages': book_chapter[0]})
 
-        u += ("select distinct doi_work, pub_year from citation." + tbls[x] +
-              " as d left join citation.works as w on w.doi = d.doi_work "
-              "where d.doi_data = '" + doi + "' and pub_year is not null")
+    if type == "J":
+        cursor.execute(
+                "select pub_name, volume, pages from citation.journal_works "
+                "where doi = %s", (doi, ))
+        journal = cursor.fetchone()
+        if journal is not None:
+            return ("journal_article",
+                    {'title': journal[0], 'volume': journal[1],
+                     'pages': journal[2]})
 
-    query = "select pub_year, count(distinct doi_work) from (" + u + ") as t"
-    wc = ""
-    if 'min' in query_dict:
-        if len(wc) > 0:
-            wc += " and "
+    if type == "P":
+        cursor.execute(
+                "select pub_name, volume, pages from citation."
+                "proceedings_works where doi = %s", (doi, ))
+        preprint = cursor.fetchone()
+        if preprint is not None:
+            return ("conference_paper",
+                    {'title': preprint[0], 'volume': preprint[1],
+                     'pages': preprint[2]})
 
-        wc += "pub_year >= " + query_dict.get('min')
-
-    if 'max' in query_dict:
-        if len(wc) > 0:
-            wc += " and "
-
-        wc += "pub_year <= " + query_dict.get('max')
-
-    if len(wc) > 0:
-        query += " where " + wc
-
-    query += " group by pub_year order by pub_year"
-    cursor.execute(query)
-    rows = cursor.fetchall()
-    if output_format == ".xml":
-        counts = ElementTree.Element('counts')
-        for row in rows:
-            e = ElementTree.SubElement(counts, "year")
-            e.text = str(row[0])
-            e.set('citations', str(row[1]))
-
-        return counts
-    else:
-        list = []
-        for row in rows:
-            list.append({'year': str(row[0]), 'citations': row[1]})
-
-        return {'counts': list}
+    return (None, {})
 
 
-def get_publications(query_dict, cursor, doi, output_format):
-    tbls = citations_tables()
-    query = ""
-    for x in range(len(tbls)):
-        if x > 0:
-            query += " union "
-
-        query += ("select DOI_work, title, pub_year, publisher, type from "
-                  "citation." + tbls[x] + " as d left join citation.works as "
-                  "w on w.DOI = d.DOI_work where d.DOI_data = '" + doi + "' "
-                  "and pub_year is not null")
-
-    if 'format' not in query_dict:
-        query += " order by pub_year"
-
-    cursor.execute(query)
-    rows = cursor.fetchall()
-    a_ws = " "
-    if 'format' in query_dict:
-        a_ws = "::"
-
-    if output_format == ".xml":
-        list = ElementTree.Element('publications')
-    else:
-        list = []
-
-    for row in rows:
-        if output_format == ".xml":
-            d = ElementTree.SubElement(list, "doi")
-            d.set('ID', row[0])
-            ptype = ElementTree.SubElement(d, "publicationType")
-            y = ElementTree.SubElement(d, "year")
-            y.text = str(row[2])
-            a_list = ElementTree.SubElement(d, "authors")
-        else:
-            d = {'doi': {'ID': row[0], 'publication_type': "",
-                         'year': row[2]}}
-            a_list = []
-        cursor.execute((
-                "select concat_ws('" + a_ws + "', first_name, case when "
-                "middle_name = '' then NULL else middle_name end, last_name) "
-                "from citation.works_authors where id = '" + row[0] + "' "
-                "order by sequence"))
-        a_rows = cursor.fetchall()
-        for a_row in a_rows:
-            if output_format == ".xml":
-                a = ElementTree.SubElement(a_list, 'author')
-                a.text = a_row[0]
-            else:
-                a_list.append(a_row[0])
-
-        if output_format == ".xml":
-            t = ElementTree.SubElement(d, 'title')
-            t.text = row[1]
-            p = ElementTree.SubElement(d, 'publisher')
-            p.text = row[3]
-        else:
-            d['doi'].update({'authors': a_list, 'title': row[1],
-                             'publisher': row[3]})
-
-        if row[4] == "C":
-            cursor.execute((
-                    "select pages, ISBN from citation.book_chapter_works "
-                    "where DOI = '" + row[0] + "'"))
-            c_row = cursor.fetchone()
-            if c_row is not None:
-                cursor.execute((
-                        "select title, publisher from citation.book_works "
-                        "where ISBN = '" + c_row[1] + "'"))
-                b_row = cursor.fetchone()
-                if b_row is not None:
-                    cursor.execute((
-                            "select concat_ws(' ', first_name, case when "
-                            "middle_name = '' then NULL else middle_name end, "
-                            "last_name) from citation.works_authors where id "
-                            "= '" + c_row[1] + "'"))
-                    ed_res = cursor.fetchall()
-                    if output_format == ".xml":
-                        ptype.text = "book_chapter"
-                        bc = ElementTree.SubElement(d, 'publishedIn')
-                        i = ElementTree.SubElement(bc, 'ISBN')
-                        i.text = c_row[1]
-                        ed_list = ElementTree.SubElement(bc, 'editors')
-                        t = ElementTree.SubElement(bc, 'title')
-                        t.text = b_row[0]
-                        p = ElementTree.SubElement(bc, 'publisher')
-                        p.text = b_row[1]
-                        pg = ElementTree.SubElement(bc, 'pages')
-                        pg.text = c_row[0]
-                    else:
-                        ed_list = []
-
-                    for editor in ed_res:
-                        if output_format == ".xml":
-                            e = ElementTree.SubElement(ed_list, 'editor')
-                            e.text = editor[0]
-                        else:
-                            ed_list.append(editor[0])
-
-                    if output_format is None or output_format == ".json":
-                        d['doi']['publication_type'] = "book_chapter"
-                        d['doi'].update(
-                                {'published_in':
-                                 {'ISBN': c_row[1], 'editors': ed_list,
-                                  'title': b_row[0], 'publisher': b_row[1],
-                                  'pages': c_row[0]}})
-
-        elif row[4] == "J":
-            cursor.execute((
-                    "select pub_name, volume, pages from "
-                    "citation.journal_works where DOI = '" + row[0] + "'"))
-            j_row = cursor.fetchone()
-            if j_row is not None:
-                if output_format == ".xml":
-                    ptype.text = "journal_article"
-                    j = ElementTree.SubElement(d, 'publishedIn')
-                    t = ElementTree.SubElement(j, 'title')
-                    t.text = j_row[0]
-                    v = ElementTree.SubElement(j, 'volume')
-                    v.text = j_row[1]
-                    pg = ElementTree.SubElement(j, 'pages')
-                    pg.text = j_row[2]
-                else:
-                    d['doi']['publication_type'] = "journal_article"
-                    d['doi'].update(
-                            {'published_in':
-                             {'title': j_row[0], 'volume': j_row[1],
-                              'pages': j_row[2]}})
-
-        elif row[4] == "P":
-            cursor.execute((
-                    "select pub_name, volume, pages from "
-                    "citation.proceedings_works where DOI = '" + row[0] + "'"))
-            p_row = cursor.fetchone()
-            if p_row is not None:
-                if output_format == ".xml":
-                    ptype.text = "conference_paper"
-                    p = ElementTree.SubElement(d, 'publishedIn')
-                    t = ElementTree.SubElement(p, 'title')
-                    t.text = p_row[0]
-                    v = ElementTree.SubElement(p, 'volume')
-                    v.text = p_row[1]
-                    pg = ElementTree.SubElement(p, 'pages')
-                    pg.text = p_row[2]
-                else:
-                    d['doi']['publication_type'] = "conference_paper"
-                    d['doi'].update(
-                            {'published_in':
-                             {'title': p_row[0], 'volume': p_row[1],
-                              'pages': p_row[2]}})
-
-        if output_format is None or output_format == ".json":
-            list.append(d)
-
-    if 'format' in query_dict:
-        if query_dict['format'] == "bibliography":
-            markup = None
-            if 'markup' in query_dict:
-                markup = query_dict['markup']
-
-            return format_as_bibliography(list, markup=markup)
-
-    if output_format == ".xml":
-        return list
-    else:
-        return {'publications': list}
+def get_authors(id, cursor, separator):
+    cursor.execute(
+            f"select concat_ws('{separator}', first_name, case when "
+            "middle_name = '' then NULL else middle_name end, last_name) from "
+            "citation.works_authors where id = %s order by sequence", (id, ))
+    return [e[0].replace("\\\\", "\\") for e in cursor.fetchall()]
 
 
 def authors_from_list(list):
@@ -322,7 +158,50 @@ def do_volume_markup(v, **kwargs):
     return v
 
 
-def format_as_bibliography(list, **kwargs):
+def format_publication_list_as_xml(publications, citedby_count, root,
+                                   **kwargs):
+    etree.SubElement(root, "citedbyCount").text = str(citedby_count)
+    if 'from_swagger' in kwargs and kwargs['from_swagger']:
+        etree.SubElement(root, "comment").text = (
+                "Example results from this UI are limited to 10 results. A "
+                "(e.g.) 'curl' command will return all available results.")
+
+    pubs_e = etree.SubElement(root, "publications")
+    if type(publications) is list:
+        # list of raw publications
+        for publication in publications:
+            pub_e = etree.SubElement(pubs_e, "publication")
+            doi_e = etree.SubElement(
+                    pub_e, "doi", ID=publication['doi']['ID'])
+            etree.SubElement(doi_e, "publicationType").text = (
+                    publication['doi']['publication_type'])
+            etree.SubElement(doi_e, "year").text = (
+                    str(publication['doi']['year']))
+            auth_e = etree.SubElement(doi_e, "authors")
+            for author in publication['doi']['authors']:
+                etree.SubElement(auth_e, "author").text = author
+
+            etree.SubElement(doi_e, "title").text = (
+                    publication['doi']['title'])
+            etree.SubElement(doi_e, "publisher").text = (
+                    publication['doi']['publisher'])
+            pubdata_e = etree.SubElement(doi_e, "publishedIn")
+            for key, value in publication['doi']['published_in'].items():
+                e = etree.SubElement(pubdata_e, key)
+                if type(value) is str:
+                    e.text = value
+                elif type(value) is list:
+                    for v in value:
+                        etree.SubElement(e, key[:-1]).text = v
+
+    elif type(publications) is dict:
+        # bibliography
+        bib_e = etree.SubElement(pubs_e, "bibliography")
+        for publication in publications['bibliography']:
+            etree.SubElement(bib_e, "publication").text = publication
+
+
+def format_publications_as_bibliography(list, **kwargs):
     # default is APA style
     bib_list = []
     markup = None
@@ -392,8 +271,8 @@ def format_as_bibliography(list, **kwargs):
 
 def error(output_format, error_message):
     if output_format == ".xml":
-        response = ElementTree.Element("Error")
-        ElementTree.SubElement(response, "ErrorMessage").text = error_message
+        response = etree.Element("Error")
+        etree.SubElement(response, "ErrorMessage").text = error_message
     else:
         response = {'error_message': error_message}
 

@@ -1,10 +1,16 @@
+import json
+import psycopg2
+
 from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse
-import psycopg2
-import json
-from . import utils
 from lxml import etree as ElementTree
+
+from . import utils
+from .doi import (update_general_doi_response,
+                  updated_specific_doi_response)
+from .minter import (update_general_minter_response,
+                     updated_specific_minter_response)
 
 
 metadb_config = settings.RDADB['metadata_config_pg']
@@ -20,6 +26,9 @@ def citations(request, output_format=None):
         return render(request, "404.html", {})
 
     response = {'response': "Bad request", 'status': 400}
+    from_swagger = (
+        True if 'referer' in request.headers and
+        request.headers['referer'].find(request.get_host()) > 0 else False)
     parts = request.path.replace("%2F", "/").split("/")
     if parts[-1] == "":
         parts.pop()
@@ -38,7 +47,8 @@ def citations(request, output_format=None):
                               output_format=output_format)
         elif len(parts) == 5:
             response = minter(parts[3], request.GET, show=parts[4],
-                              output_format=output_format)
+                              output_format=output_format,
+                              from_swagger=from_swagger)
 
     elif parts[2] == "minters":
         if len(parts) == 3:
@@ -80,61 +90,18 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
     else:
         response = {'doi': {'ID': doi}}
 
-    conn = psycopg2.connect(**metadb_config)
-    cursor = conn.cursor()
-    if 'show' in kwargs:
-        if kwargs['show'] == "counts":
-            if kwargs['output_format'] == ".xml":
-                response.append(
-                        utils.get_counts(query_dict, cursor, doi,
-                                         kwargs['output_format']))
-            else:
-                response['doi'].update(
-                        utils.get_counts(query_dict, cursor, doi,
-                                         kwargs['output_format']))
-        elif kwargs['show'] == "publications":
-            if kwargs['output_format'] == ".xml":
-                response.append(
-                        utils.get_publications(query_dict, cursor, doi,
-                                               kwargs['output_format']))
-            else:
-                response['doi'].update(
-                        utils.get_publications(query_dict, cursor, doi,
-                                               kwargs['output_format']))
+    try:
+        conn = psycopg2.connect(**metadb_config)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        if 'show' in kwargs:
+            updated_specific_doi_response(response, doi, cursor, **query_dict,
+                                          **kwargs)
+            return {'response': response, 'status': 200}
 
-    else:
-        tbls = utils.citations_tables()
-        u = ""
-        for x in range(len(tbls)):
-            if x > 0:
-                u += " union "
-
-            u += ("select DOI_work, pub_year from citation." + tbls[x] + " as "
-                  "d left join citation.works as w on w.DOI = d.DOI_work "
-                  "where d.DOI_data = '" + doi + "' and pub_year is not null")
-
-        query = ("select count(distinct DOI_work), min(pub_year), "
-                 "max(pub_year) from (" + u + ") as t")
-        cursor.execute(query)
-        row = cursor.fetchone()
-        if kwargs['output_format'] == ".xml":
-            ElementTree.SubElement(response, 'totalCitations').text = (
-                    str(row[0]))
-        else:
-            response['doi'].update({'total_citations': row[0]})
-
-        if row[0] > 0:
-            if kwargs['output_format'] == ".xml":
-                years = ElementTree.SubElement(response, 'years')
-                ElementTree.SubElement(years, "min").text = str(row[1])
-                ElementTree.SubElement(years, "max").text = str(row[2])
-            else:
-                response['doi'].update({'years': {'min': row[1],
-                                                  'max': row[2]}})
-
-    cursor.close()
-    conn.close()
-    return {'response': response, 'status': 200}
+        update_general_doi_response(response, doi, cursor, **kwargs)
+        return {'response': response, 'status': 200}
+    finally:
+        conn.close()
 
 
 def minter(minter, query_dict, **kwargs):
@@ -149,101 +116,22 @@ def minter(minter, query_dict, **kwargs):
     if minter not in valid_minters:
         return utils.error(
                 kwargs['output_format'],
-                ("The specified minter \"" + minter + "\" is not a valid "
-                 "minter."))
+                f"The specified minter '{minter}' is not a valid minter.")
 
-    if minter == "rda":
-        minter = ""
-    else:
-        minter = "_" + minter
+    try:
+        conn = psycopg2.connect(**metadb_config)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        if 'show' in kwargs:
+            # return specific information for the minter
+            if updated_specific_minter_response(
+                    response, minter, cursor, **query_dict, **kwargs):
+                return {'response': response, 'status': 200}
 
-    conn = psycopg2.connect(**metadb_config)
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    if 'show' in kwargs:
-        query = ("select distinct c.DOI_data, d.DOI_data, d.publisher, "
-                 "d.asset_type from citation.data_citations" + minter + " as "
-                 "c left join citation.doi_data as d on d.DOI_data = "
-                 "c.DOI_data")
-        wc = []
-        if 'asset-type' in query_dict:
-            wc.append("d.asset_type = '" + query_dict.get('asset-type') + "'")
-            if kwargs['output_format'] == ".xml":
-                ElementTree.SubElement(response, "assetType").text = (
-                        query_dict.get('asset-type'))
-            else:
-                response['minter'].update(
-                        {'asset-type': query_dict.get('asset-type')})
-
-        if 'publisher' in query_dict:
-            wc.append(("d.publisher = '" +
-                       query_dict.get('publisher').strip('"') + "'"))
-            if kwargs['output_format'] == ".xml":
-                ElementTree.SubElement(response, "publisher").text = (
-                        query_dict.get('publisher'))
-            else:
-                response['minter'].update(
-                        {'publisher': query_dict.get('publisher')})
-
-        if len(wc) > 0:
-            query += " where " + " and ".join(wc)
-
-        query += " order by c.DOI_data"
-        cursor.execute(query)
-        res = cursor.fetchall()
-        dois = []
-        for e in res:
-            d = {'doi': {'ID': e['doi_data']}}
-            if 'asset-type' not in query_dict:
-                d['doi'].update({'asset-type': e['asset_type']})
-
-            if 'publisher' not in query_dict:
-                d['doi'].update({'publisher': e['publisher']})
-
-            dois.append(d)
-
-        if kwargs['output_format'] == ".xml":
-            e = ElementTree.SubElement(response, "dois")
-            for doi in dois:
-                d = ElementTree.SubElement(e, "doi")
-                d.set('ID', doi['doi']['ID'])
-                if 'asset-type' not in query_dict:
-                    ElementTree.SubElement(d, "assetType").text = (
-                            doi['doi']['asset-type'])
-
-                if 'publisher' not in query_dict:
-                    ElementTree.SubElement(d, "publisher").text = (
-                            doi['doi']['publisher'])
-
-        else:
-            response['minter'].update({'dois': dois})
-
-    else:
-        query = ("select distinct d.publisher, d.asset_type from "
-                 "citation.data_citations" + minter + " as c left join "
-                 "citation.doi_data as d on d.DOI_data = c.DOI_data")
-        cursor.execute(query)
-        res = cursor.fetchall()
-        pubs = []
-        assets = []
-        for e in res:
-            pubs.append(e['publisher'])
-            if e['asset_type'] not in assets:
-                assets.append(e['asset_type'])
-
-        if kwargs['output_format'] == ".xml":
-            e = ElementTree.SubElement(response, "assetTypes")
-            for asset in assets:
-                ElementTree.SubElement(e, "assetType").text = asset
-
-            e = ElementTree.SubElement(response, "publishers")
-            for pub in pubs:
-                ElementTree.SubElement(e, "publisher").text = pub
-
-        else:
-            response['minter'].update(
-                    {'asset-types': assets, 'publishers': pubs})
-
-    return {'response': response, 'status': 200}
+        # return general minter information
+        update_general_minter_response(response, minter, cursor, **kwargs)
+        return {'response': response, 'status': 200}
+    finally:
+        conn.close()
 
 
 def minters(output_format):
@@ -275,4 +163,5 @@ def publishers(output_format):
         else:
             response['publishers'].append(e[0])
 
+    conn.close()
     return {'response': response, 'status': 200}
