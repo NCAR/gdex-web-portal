@@ -198,7 +198,7 @@ def format_publication_list_as_xml(publications, citedby_count, root,
                     ElementTree.SubElement(e, key[:-1]).text = v
 
 
-def format_as_bibliography(list, **kwargs):
+def format_publications_as_bibliography(list, **kwargs):
     # default is APA style
     bib_list = []
     markup = None
