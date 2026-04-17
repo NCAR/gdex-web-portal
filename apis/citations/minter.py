@@ -41,6 +41,7 @@ def get_publications(minter, cursor, **kwargs):
              "not null order by w.pub_year")
     cursor.execute(query)
     res = cursor.fetchall()
+    citedby_count = len(res)
     if kwargs['from_swagger']:
         # if from swagger, limit the results to 10, otherwise a large number of
         #  results overloads the swagger UI
@@ -59,7 +60,7 @@ def get_publications(minter, cursor, **kwargs):
                          'publisher': e['publisher'],
                          'published_in': pubdata}})
 
-    return (publications, len(res))
+    return (publications, citedby_count)
 
 
 def updated_specific_minter_response(response, minter, cursor, **kwargs):
