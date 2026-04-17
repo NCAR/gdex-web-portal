@@ -7,8 +7,8 @@ from django.http import HttpResponse
 from lxml import etree as ElementTree
 
 from . import utils
-from .doi import get_counts as get_doi_counts
-from .doi import get_publications as get_doi_publications
+from .doi import (update_general_doi_response,
+                  updated_specific_doi_response)
 from .minter import (update_general_minter_response,
                      updated_specific_minter_response)
 
@@ -90,61 +90,18 @@ def doi(doi_prefix, doi_suffix, query_dict, **kwargs):
     else:
         response = {'doi': {'ID': doi}}
 
-    conn = psycopg2.connect(**metadb_config)
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    if 'show' in kwargs:
-        if kwargs['show'] == "counts":
-            if kwargs['output_format'] == ".xml":
-                response.append(
-                        get_doi_counts(query_dict, cursor, doi,
-                                       kwargs['output_format']))
-            else:
-                response['doi'].update(
-                        get_doi_counts(query_dict, cursor, doi,
-                                       kwargs['output_format']))
-        elif kwargs['show'] == "publications":
-            if kwargs['output_format'] == ".xml":
-                response.append(
-                        get_doi_publications(doi, cursor, **query_dict,
-                                             **kwargs))
-            else:
-                response['doi'].update(
-                        get_doi_publications(doi, cursor, **query_dict,
-                                             **kwargs))
+    try:
+        conn = psycopg2.connect(**metadb_config)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        if 'show' in kwargs:
+            updated_specific_doi_response(response, doi, cursor, **query_dict,
+                                          **kwargs)
+            return {'response': response, 'status': 200}
 
-    else:
-        tbls = utils.citations_tables()
-        u = ""
-        for x in range(len(tbls)):
-            if x > 0:
-                u += " union "
-
-            u += ("select DOI_work, pub_year from citation." + tbls[x] + " as "
-                  "d left join citation.works as w on w.DOI = d.DOI_work "
-                  "where d.DOI_data = '" + doi + "' and pub_year is not null")
-
-        query = ("select count(distinct DOI_work), min(pub_year), "
-                 "max(pub_year) from (" + u + ") as t")
-        cursor.execute(query)
-        row = cursor.fetchone()
-        if kwargs['output_format'] == ".xml":
-            ElementTree.SubElement(response, 'totalCitations').text = (
-                    str(row[0]))
-        else:
-            response['doi'].update({'total_citations': row[0]})
-
-        if row[0] > 0:
-            if kwargs['output_format'] == ".xml":
-                years = ElementTree.SubElement(response, 'years')
-                ElementTree.SubElement(years, "min").text = str(row[1])
-                ElementTree.SubElement(years, "max").text = str(row[2])
-            else:
-                response['doi'].update({'years': {'min': row[1],
-                                                  'max': row[2]}})
-
-    cursor.close()
-    conn.close()
-    return {'response': response, 'status': 200}
+        update_general_doi_response(response, doi, cursor, **kwargs)
+        return {'response': response, 'status': 200}
+    finally:
+        conn.close()
 
 
 def minter(minter, query_dict, **kwargs):
