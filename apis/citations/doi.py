@@ -1,7 +1,10 @@
 from lxml import etree
 
-from .utils import (citations_tables, format_as_bibliography,
-                    get_authors, get_publication_data)
+from .utils import (citations_tables,
+                    format_publication_list_as_xml,
+                    format_publications_as_bibliography,
+                    get_authors,
+                    get_publication_data)
 
 
 def get_counts(doi, cursor, **kwargs):
@@ -53,10 +56,10 @@ def get_publications(doi, cursor, **kwargs):
     query = []
     params = []
     for tbl in tbls:
-        query.append("select doi_work, title, pub_year, publisher, type from "
-                     f"citation.{tbl} as d left join citation.works as w on w."
-                     "doi = d.doi_work where d.doi_data = %s and pub_year is "
-                     "not null")
+        query.append(
+                "select doi_work, title, pub_year, publisher, type from "
+                f"citation.{tbl} as d left join citation.works as w on w.doi "
+                "= d.doi_work where d.doi_data = %s and pub_year is not null")
         params.append(doi)
 
     query = " union ".join(query)
@@ -64,11 +67,27 @@ def get_publications(doi, cursor, **kwargs):
         query += " order by pub_year"
 
     cursor.execute(query, params)
-    rows = cursor.fetchall()
+    res = cursor.fetchall()
+    publications = []
     auth_sep = " "
     if 'format' in kwargs:
         auth_sep = "::"
 
+    for e in res:
+        pubtype, pubdata = (
+                get_publication_data(e['type'], e['doi_work'], cursor))
+        publications.append(
+                {'doi': {'ID': e['doi_work'],
+                         'publication_type': pubtype,
+                         'year': e['pub_year'],
+                         'authors': get_authors(e['doi_work'], cursor,
+                                                auth_sep),
+                         'title': e['title'],
+                         'publisher': e['publisher'],
+                         'published_in': pubdata}})
+
+    return (publications, len(res))
+    """
     if kwargs['output_format'] == ".xml":
         list = etree.Element('publications')
     else:
@@ -200,31 +219,41 @@ def get_publications(doi, cursor, **kwargs):
             if 'markup' in kwargs:
                 markup = kwargs['markup'][-1]
 
-            return format_as_bibliography(list, markup=markup)
+            return format_publications_as_bibliography(list, markup=markup)
 
     if kwargs['output_format'] == ".xml":
         return list
 
     return {'publications': list}
+    """
 
 
 def updated_specific_doi_response(response, doi, cursor, **kwargs):
     if kwargs['show'] == "counts":
         if kwargs['output_format'] == ".xml":
             response.append(
-                    get_counts(doi, cursor, kwargs['output_format']))
+                    get_counts(doi, cursor, **kwargs))
         else:
             response['doi'].update(
-                    get_counts(doi, cursor, kwargs['output_format']))
+                    get_counts(doi, cursor, **kwargs))
 
         return True
     elif kwargs['show'] == "publications":
+        publications, citedby_count = get_publications(
+                doi, cursor, **kwargs)
+        if 'format' in kwargs:
+            if kwargs['format'][-1] == "bibliography":
+                markup = None
+                if 'markup' in kwargs:
+                    markup = kwargs['markup'][-1]
+
+                publications = format_publications_as_bibliography(
+                        publications, markup=markup)
         if kwargs['output_format'] == ".xml":
-            response.append(
-                    get_publications(doi, cursor, **kwargs))
+            format_publication_list_as_xml(
+                    publications, citedby_count, response, **kwargs)
         else:
-            response['doi'].update(
-                    get_publications(doi, cursor, **kwargs))
+            response['doi']['publications'] = publications
 
         return True
 
