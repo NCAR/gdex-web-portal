@@ -1,7 +1,7 @@
 import psycopg2
 
 from django.conf import settings
-from lxml import etree as ElementTree
+from lxml import etree
 
 
 metadb_config = settings.RDADB['metadata_config_pg']
@@ -81,7 +81,7 @@ def get_authors(id, cursor, separator):
             f"select concat_ws('{separator}', first_name, case when "
             "middle_name = '' then NULL else middle_name end, last_name) from "
             "citation.works_authors where id = %s order by sequence", (id, ))
-    return [e[0] for e in cursor.fetchall()]
+    return [e[0].replace("\\\\", "\\") for e in cursor.fetchall()]
 
 
 def authors_from_list(list):
@@ -160,38 +160,45 @@ def do_volume_markup(v, **kwargs):
 
 def format_publication_list_as_xml(publications, citedby_count, root,
                                    **kwargs):
-    ElementTree.SubElement(root, "citedbyCount").text = (
-            str(citedby_count))
+    etree.SubElement(root, "citedbyCount").text = str(citedby_count)
     if 'from_swagger' in kwargs and kwargs['from_swagger']:
-        ElementTree.SubElement(root, "comment").text = (
+        etree.SubElement(root, "comment").text = (
                 "Example results from this UI are limited to 10 results. A "
                 "(e.g.) 'curl' command will return all available results.")
 
-    pubs_e = ElementTree.SubElement(root, "publications")
-    for publication in publications:
-        pub_e = ElementTree.SubElement(pubs_e, "publication")
-        doi_e = ElementTree.SubElement(
-                pub_e, "doi", ID=publication['doi']['ID'])
-        ElementTree.SubElement(doi_e, "publicationType").text = (
-                publication['doi']['publication_type'])
-        ElementTree.SubElement(doi_e, "year").text = (
-                str(publication['doi']['year']))
-        auth_e = ElementTree.SubElement(doi_e, "authors")
-        for author in publication['doi']['authors']:
-            ElementTree.SubElement(auth_e, "author").text = author
+    pubs_e = etree.SubElement(root, "publications")
+    if type(publications) is list:
+        # list of raw publications
+        for publication in publications:
+            pub_e = etree.SubElement(pubs_e, "publication")
+            doi_e = etree.SubElement(
+                    pub_e, "doi", ID=publication['doi']['ID'])
+            etree.SubElement(doi_e, "publicationType").text = (
+                    publication['doi']['publication_type'])
+            etree.SubElement(doi_e, "year").text = (
+                    str(publication['doi']['year']))
+            auth_e = etree.SubElement(doi_e, "authors")
+            for author in publication['doi']['authors']:
+                etree.SubElement(auth_e, "author").text = author
 
-        ElementTree.SubElement(doi_e, "title").text = (
-                publication['doi']['title'])
-        ElementTree.SubElement(doi_e, "publisher").text = (
-                publication['doi']['publisher'])
-        pubdata_e = ElementTree.SubElement(doi_e, "publishedIn")
-        for key, value in publication['doi']['published_in'].items():
-            e = ElementTree.SubElement(pubdata_e, key)
-            if type(value) is str:
-                e.text = value
-            elif type(value) is list:
-                for v in value:
-                    ElementTree.SubElement(e, key[:-1]).text = v
+            etree.SubElement(doi_e, "title").text = (
+                    publication['doi']['title'])
+            etree.SubElement(doi_e, "publisher").text = (
+                    publication['doi']['publisher'])
+            pubdata_e = etree.SubElement(doi_e, "publishedIn")
+            for key, value in publication['doi']['published_in'].items():
+                e = etree.SubElement(pubdata_e, key)
+                if type(value) is str:
+                    e.text = value
+                elif type(value) is list:
+                    for v in value:
+                        etree.SubElement(e, key[:-1]).text = v
+
+    elif type(publications) is dict:
+        # bibliography
+        bib_e = etree.SubElement(pubs_e, "bibliography")
+        for publication in publications['bibliography']:
+            etree.SubElement(bib_e, "publication").text = publication
 
 
 def format_publications_as_bibliography(list, **kwargs):
@@ -264,8 +271,8 @@ def format_publications_as_bibliography(list, **kwargs):
 
 def error(output_format, error_message):
     if output_format == ".xml":
-        response = ElementTree.Element("Error")
-        ElementTree.SubElement(response, "ErrorMessage").text = error_message
+        response = etree.Element("Error")
+        etree.SubElement(response, "ErrorMessage").text = error_message
     else:
         response = {'error_message': error_message}
 
