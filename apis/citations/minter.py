@@ -1,6 +1,8 @@
-from . import utils
-
 from lxml import etree
+
+from .utils import (format_publication_list_as_xml,
+                    get_authors,
+                    get_publication_data)
 
 
 def get_dois(minter, cursor, **kwargs):
@@ -47,13 +49,12 @@ def get_publications(minter, cursor, **kwargs):
     publications = []
     for e in res:
         pubtype, pubdata = (
-                utils.get_publication_data(e['type'], e['doi_work'], cursor))
+                get_publication_data(e['type'], e['doi_work'], cursor))
         publications.append(
                 {'doi': {'ID': e['doi_work'],
                          'publication_type': pubtype,
                          'year': e['pub_year'],
-                         'authors': utils.get_authors(e['doi_work'], cursor,
-                                                      " "),
+                         'authors': get_authors(e['doi_work'], cursor, " "),
                          'title': e['title'],
                          'publisher': e['publisher'],
                          'published_in': pubdata}})
@@ -83,7 +84,7 @@ def updated_specific_minter_response(response, minter, cursor, **kwargs):
         publications, citedby_count = get_publications(
                 minter, cursor, **kwargs)
         if kwargs['output_format'] == ".xml":
-            utils.format_publication_list_as_xml(
+            format_publication_list_as_xml(
                     publications, citedby_count, response, **kwargs)
         else:
             response['minter']['citedby-count'] = citedby_count
