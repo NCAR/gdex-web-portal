@@ -1,4 +1,4 @@
-from lxml import etree as ElementTree
+from lxml import etree
 
 from .utils import (citations_tables, format_as_bibliography,
                     get_authors, get_publication_data)
@@ -33,9 +33,9 @@ def get_counts(doi, cursor, **kwargs):
     cursor.execute(query, params)
     rows = cursor.fetchall()
     if kwargs['output_format'] == ".xml":
-        counts = ElementTree.Element('counts')
+        counts = etree.Element('counts')
         for row in rows:
-            e = ElementTree.SubElement(counts, "year")
+            e = etree.SubElement(counts, "year")
             e.text = str(row[0])
             e.set('citations', str(row[1]))
 
@@ -70,19 +70,19 @@ def get_publications(doi, cursor, **kwargs):
         auth_sep = "::"
 
     if kwargs['output_format'] == ".xml":
-        list = ElementTree.Element('publications')
+        list = etree.Element('publications')
     else:
         list = []
 
     for row in rows:
         pubtype, pubdata = get_publication_data(row[4], row[0], cursor)
         if kwargs['output_format'] == ".xml":
-            d = ElementTree.SubElement(list, "doi")
+            d = etree.SubElement(list, "doi")
             d.set('ID', row[0])
-            ElementTree.SubElement(d, "publicationType").text = pubtype
-            y = ElementTree.SubElement(d, "year")
+            etree.SubElement(d, "publicationType").text = pubtype
+            y = etree.SubElement(d, "year")
             y.text = str(row[2])
-            a_list = ElementTree.SubElement(d, "authors")
+            a_list = etree.SubElement(d, "authors")
         else:
             d = {'doi': {'ID': row[0], 'publication_type': pubtype,
                          'year': row[2]}}
@@ -91,14 +91,14 @@ def get_publications(doi, cursor, **kwargs):
         authors = get_authors(row[0], cursor, auth_sep)
         for author in authors:
             if kwargs['output_format'] == ".xml":
-                ElementTree.SubElement(a_list, "author").text = author
+                etree.SubElement(a_list, "author").text = author
             else:
                 a_list.append(author)
 
         if kwargs['output_format'] == ".xml":
-            t = ElementTree.SubElement(d, "title")
+            t = etree.SubElement(d, "title")
             t.text = row[1]
-            p = ElementTree.SubElement(d, "publisher")
+            p = etree.SubElement(d, "publisher")
             p.text = row[3]
         else:
             d['doi'].update({'authors': a_list, 'title': row[1],
@@ -122,22 +122,22 @@ def get_publications(doi, cursor, **kwargs):
                             "= %s", (c_row[1], ))
                     ed_res = cursor.fetchall()
                     if kwargs['output_format'] == ".xml":
-                        bc = ElementTree.SubElement(d, "publishedIn")
-                        i = ElementTree.SubElement(bc, "ISBN")
+                        bc = etree.SubElement(d, "publishedIn")
+                        i = etree.SubElement(bc, "ISBN")
                         i.text = c_row[1]
-                        ed_list = ElementTree.SubElement(bc, "editors")
-                        t = ElementTree.SubElement(bc, "title")
+                        ed_list = etree.SubElement(bc, "editors")
+                        t = etree.SubElement(bc, "title")
                         t.text = b_row[0]
-                        p = ElementTree.SubElement(bc, "publisher")
+                        p = etree.SubElement(bc, "publisher")
                         p.text = b_row[1]
-                        pg = ElementTree.SubElement(bc, "pages")
+                        pg = etree.SubElement(bc, "pages")
                         pg.text = c_row[0]
                     else:
                         ed_list = []
 
                     for editor in ed_res:
                         if kwargs['output_format'] == ".xml":
-                            e = ElementTree.SubElement(ed_list, 'editor')
+                            e = etree.SubElement(ed_list, 'editor')
                             e.text = editor[0]
                         else:
                             ed_list.append(editor[0])
@@ -157,12 +157,12 @@ def get_publications(doi, cursor, **kwargs):
             j_row = cursor.fetchone()
             if j_row is not None:
                 if kwargs['output_format'] == ".xml":
-                    j = ElementTree.SubElement(d, "publishedIn")
-                    t = ElementTree.SubElement(j, "title")
+                    j = etree.SubElement(d, "publishedIn")
+                    t = etree.SubElement(j, "title")
                     t.text = j_row[0]
-                    v = ElementTree.SubElement(j, "volume")
+                    v = etree.SubElement(j, "volume")
                     v.text = j_row[1]
-                    pg = ElementTree.SubElement(j, "pages")
+                    pg = etree.SubElement(j, "pages")
                     pg.text = j_row[2]
                 else:
                     d['doi'].update(
@@ -177,12 +177,12 @@ def get_publications(doi, cursor, **kwargs):
             p_row = cursor.fetchone()
             if p_row is not None:
                 if kwargs['output_format'] == ".xml":
-                    p = ElementTree.SubElement(d, "publishedIn")
-                    t = ElementTree.SubElement(p, "title")
+                    p = etree.SubElement(d, "publishedIn")
+                    t = etree.SubElement(p, "title")
                     t.text = p_row[0]
-                    v = ElementTree.SubElement(p, "volume")
+                    v = etree.SubElement(p, "volume")
                     v.text = p_row[1]
-                    pg = ElementTree.SubElement(p, "pages")
+                    pg = etree.SubElement(p, "pages")
                     pg.text = p_row[2]
                 else:
                     d['doi'].update(
@@ -206,3 +206,56 @@ def get_publications(doi, cursor, **kwargs):
         return list
 
     return {'publications': list}
+
+
+def updated_specific_doi_response(response, doi, cursor, **kwargs):
+    if kwargs['show'] == "counts":
+        if kwargs['output_format'] == ".xml":
+            response.append(
+                    get_counts(doi, cursor, kwargs['output_format']))
+        else:
+            response['doi'].update(
+                    get_counts(doi, cursor, kwargs['output_format']))
+
+        return True
+    elif kwargs['show'] == "publications":
+        if kwargs['output_format'] == ".xml":
+            response.append(
+                    get_publications(doi, cursor, **kwargs))
+        else:
+            response['doi'].update(
+                    get_publications(doi, cursor, **kwargs))
+
+        return True
+
+    return False
+
+
+def update_general_doi_response(response, doi, cursor, **kwargs):
+    tbls = citations_tables()
+    u = ""
+    for x in range(len(tbls)):
+        if x > 0:
+            u += " union "
+
+        u += ("select DOI_work, pub_year from citation." + tbls[x] + " as d "
+              "left join citation.works as w on w.DOI = d.DOI_work where d."
+              "doi_data = '" + doi + "' and pub_year is not null")
+
+    query = ("select count(distinct DOI_work), min(pub_year), "
+             "max(pub_year) from (" + u + ") as t")
+    cursor.execute(query)
+    row = cursor.fetchone()
+    if kwargs['output_format'] == ".xml":
+        etree.SubElement(response, 'totalCitations').text = str(row[0])
+    else:
+        response['doi'].update({'total_citations': row[0]})
+
+    if row[0] > 0:
+        if kwargs['output_format'] == ".xml":
+            years = etree.SubElement(response, 'years')
+            etree.SubElement(years, "min").text = str(row[1])
+            etree.SubElement(years, "max").text = str(row[2])
+        else:
+            response['doi'].update({'years': {'min': row[1],
+                                              'max': row[2]}})
