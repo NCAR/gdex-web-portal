@@ -50,7 +50,9 @@ def get_bookchapter_ref(request):
     d = {}
     d.update({'relation_options': utils.ds_relationship_options()})
     if 'editItem' in request.POST:
-        parts = request.POST['editItem'].split("[!]")
+        parts = request.POST['editItem'].split("///")
+        d.update({'item_num': parts[-1]})
+        parts = parts[0].split("[!]")
         d.update({
             'replace_item': request.POST['editItem'].replace("'", "\\'"),
             'authors': parts[1],
@@ -313,7 +315,9 @@ def get_preprint_ref(request):
     d = {}
     d.update({'relation_options': utils.ds_relationship_options()})
     if 'editItem' in request.POST:
-        parts = request.POST['editItem'].split("[!]")
+        parts = request.POST['editItem'].split("///")
+        d.update({'item_num': parts[-1]})
+        parts = parts[0].split("[!]")
         d.update({
             'replace_item': request.POST['editItem'].replace("'", "\\'"),
             'authors': parts[1],
