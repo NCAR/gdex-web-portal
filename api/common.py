@@ -337,7 +337,6 @@ def get_variable_info(dsid):
     level_type_codes,
     start_date,
     end_date
-
     """
     dsid = format_dataset_id(dsid, remove_ds=True)
     con,cur = init_connection_new(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
@@ -346,7 +345,9 @@ def get_variable_info(dsid):
     column_names_str = ','.join(column_names)
     query = "select "+ column_names_str +" from summary left join time_ranges on summary.time_range_code=time_ranges.code where dsid=%s"
     cur.execute(query, (dsid,))
-    return to_dict(column_names, cur.fetchall())
+    result = cur.fetchall()
+    close_connection(con,cur)
+    return to_dict(column_names, result)
 
 def flipbit(bit):
     """flips a bit that is a string."""
@@ -536,7 +537,6 @@ def get_group_info(dsid, group):
     close_connection(con,cur)
     if len(data) == 0:
         raise ValueError('No Data')
-    close_connection(con,cur)
     return (data[0][0],data[0][1],data[0][2],data[0][3],data[0][4])
 
 def make_list_from_index(list_of_iterable, index=0):
@@ -1530,6 +1530,7 @@ def has_arco(dsid):
     query = "select * from dsgroup where dsid=%s and gindex < 0"
     cur.execute(query, (dsid,))
     data = cur.fetchall()
+    close_connection(con,cur)
     return len(data) != 0
 
 def get_staff():
@@ -1544,9 +1545,11 @@ def get_staff():
 
 def get_staff_dsid(dsid):
     """Get DECS employee information for a specific dataset."""
-    init_connection()
-    cursor.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp inner join dsowner on dssgrp.logname=dsowner.specialist where dsowner.dsid=%s",(dsid,))
-    data = cursor.fetchall()
+    con,cur = init_connection_new()
+    cur.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp inner join dsowner on dssgrp.logname=dsowner.specialist where dsowner.dsid=%s",(dsid,))
+    data = cur.fetchall()
+    close_connection(con,cur)
+
     data_dict = to_dict(('first_name','last_name','officeno','phoneno','email'),data)
     for i in data_dict:
         i['email'] = i['email']+'@ucar.edu'
@@ -2686,5 +2689,55 @@ def get_all_datasets():
         'count': len(datasets_list),
         'datasets': datasets_list
     }
+
+
+def get_dataset_users(dsid, since):
+    """Get number of unique users for a dataset since a given datetime."""
+    assert isinstance(since, datetime)
+
+    cur_year = datetime.now().year
+    last_year = since.year
+    last_month = since.month
+    last_day = since.day
+    last_ymd = f'{last_year}-{last_month}-{last_day}'
+
+    con, cur = init_connection_new()
+    query = f"select count(distinct(ip)) from allusage_{last_year} where date > '{last_ymd}' and dsid=%s" + \
+            f" union all select count(distinct(ip)) from allusage_{cur_year} where dsid=%s"
+    cur.execute(query, (dsid, dsid))
+    res = cur.fetchall()
+    close_connection(con, cur)
+    total_IPs = 0
+    for i in res:
+        total_IPs += int(i[0])
+    return total_IPs
+
+def get_dataset_volume(dsid, since):
+    """Get volume of data transferred for a dataset since a given datetime."""
+    assert isinstance(since, datetime)
+
+    cur_year = datetime.now().year
+    last_year = since.year
+    last_month = since.month
+    last_day = since.day
+    last_ymd = f'{last_year}-{last_month}-{last_day}'
+
+    con, cur = init_connection_new()
+    query = f"select sum(size) from allusage_{last_year} where date > '{last_ymd}' and dsid=%s" + \
+            f" union all select sum(size) from allusage_{cur_year} where dsid=%s"
+    cur.execute(query, (dsid, dsid))
+    res = cur.fetchall()
+    close_connection(con, cur)
+    total_bytes = 0
+    for i in res:
+        if i[0] is not None:
+            total_bytes += i[0]
+
+    for unit in ('bytes', 'KB', 'MB', 'GB', 'TB', 'PB'):
+        if total_bytes < 1000:
+            break
+        if unit != 'PB':
+            total_bytes /= 1000
+    return {'value': round(total_bytes, 2), 'unit': unit}
 
     return response
