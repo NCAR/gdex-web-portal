@@ -122,7 +122,7 @@ function checkPreprintForm() {
     i+='[!]comment:'+document.preprint_form.annotation.value;
   }
   {% if 'replace_item' in data %}
-  replaceItem('references_field', '{{ data.replace_item }}', i);
+  replaceItemPos('references_field', document.preprint_form.item_num.value, i);
   {% else %}
   addItem('references_field', i);
   {% endif %}
@@ -213,4 +213,5 @@ function checkPreprintForm() {
     <center>
         <button class="btn btn-primary px-2 py-1 border-1" onclick="document.preprint_form.submit()">{% if 'replace_item' in data %}Save Changes{% else %}Add Reference{% endif %}</button>
     </center>
+    <input type="hidden" name="item_num" value="{{ data.item_num }}">
 </form>
