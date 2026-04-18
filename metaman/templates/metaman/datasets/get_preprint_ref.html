@@ -122,7 +122,7 @@ function checkPreprintForm() {
     i+='[!]comment:'+document.preprint_form.annotation.value;
   }
   {% if 'replace_item' in data %}
-  replaceItem('references_field', '{{ data.replace_item }}', i);
+  replaceItemPos('references_field', document.preprint_form.item_num.value, i);
   {% else %}
   addItem('references_field', i);
   {% endif %}
