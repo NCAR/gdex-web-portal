@@ -16,7 +16,6 @@ from lxml import etree as ElementTree
 from pathlib import Path
 
 from django.conf import settings
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
@@ -674,9 +673,10 @@ def update_metadata_database(ctx, conn, **kwargs):
                     topic = strutils.to_title(parts[1])
                     term = strutils.to_title(parts[2])
                     variable = strutils.to_title(parts[-1])
-                    cursor.execute((
+                    cursor.execute(
                             "insert into search.gcmd_variables (keyword, "
-                            "dsid, topic, term) values (%s, %s, %s, %s)"),
+                            "dsid, topic, term) values (%s, %s, %s, %s) on "
+                            "conflict do nothing",
                             (variable, ctx['dsid'], topic, term))
                     conn.commit()
                     if topic not in topic_map:
