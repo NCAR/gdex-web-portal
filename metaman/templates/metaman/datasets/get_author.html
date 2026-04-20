@@ -276,7 +276,7 @@ function submitRIS() {
                         <span style="color: red; font-weight: bold">*</span>&nbsp;First Name or Initial:
                     </div>
                     <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="first_name" size="25" value="{{ data.fname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}>
+                        <input type="text" class="fixedWidth14" name="first_name" size="25" value="{{ data.fname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
                     </div>
                 </div>
                 <div class="row gx-0 gx-md-1 mt-1">
@@ -294,7 +294,7 @@ function submitRIS() {
                         <span style="color: red; font-weight: bold">*</span>&nbsp;Last Name:
                     </div>
                     <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="last_name" size="25" value="{{ data.lname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}>
+                        <input type="text" class="fixedWidth14" name="last_name" size="25" value="{{ data.lname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
                     </div>
                 </div>
                 {% if 'ris_file' not in request.FILES %}
