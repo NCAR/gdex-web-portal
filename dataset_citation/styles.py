@@ -129,7 +129,8 @@ def export_citation(request, dsid, **kwargs):
 
             return HttpResponse(
                     e['template'].substitute(
-                            authors=authors,
+                            authors=authors.encode("utf-8")
+                                           .decode("unicode_escape"),
                             pub_year=ds_data[1].year,
                             update_frequency=update_frequency,
                             title=ds_data[0],
