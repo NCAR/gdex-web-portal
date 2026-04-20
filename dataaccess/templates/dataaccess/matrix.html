@@ -58,7 +58,9 @@
          $("#ds_content").html('<div class="text-center mt-3" id="loading"><strong>Loading ... &nbsp;&nbsp;</strong><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>');
      });
      // initialize tooltips
-     $('[data-toggle="tooltip"]').tooltip();
+     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
+         new bootstrap.Tooltip(el);
+     });
  </script>
 
  {% comment %} Large Action Buttons {% endcomment %}
@@ -66,7 +68,7 @@
   {% if matrix.columns.web_files %}
    {% if matrix.group_data|length > 1 %}
     <div class="btn-group">
-     <button type="button" class="btn btn-primary btn-lg mtrx-btn-download" data-toggle="tooltip" data-placement="top" title="Search and Download full files." onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
+     <button type="button" class="btn btn-primary btn-lg mtrx-btn-download" data-bs-toggle="tooltip" data-bs-placement="top" title="Search and Download full files." onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
      <button type="button" class="btn btn-primary btn-lg dropdown-toggle dropdown-toggle-split mtrx-btn-split" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="visually-hidden">Toggle Dropdown</span>
      </button>
@@ -79,14 +81,14 @@
      </ul>
     </div>
    {% else %}
-    <button type="button" class="btn btn-primary btn-lg mtrx-btn-download" data-toggle="tooltip" data-placement="top" title="Search and Download full files." onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
+    <button type="button" class="btn btn-primary btn-lg mtrx-btn-download" data-bs-toggle="tooltip" data-bs-placement="top" title="Search and Download full files." onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Download Files</button>
    {% endif %}
   {% endif %}
 
   {% if matrix.columns.subset %}
    {% if matrix.group_data|length > 1 %}
     <div class="btn-group">
-     <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg mtrx-btn-subset" data-toggle="tooltip" data-placement="top" {% if matrix.duser %}title="GDEX will subset files for you, so you only download what you need" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}title="You must be logged in to request a subset" onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset{% if not matrix.duser %}<br><small class="mtrx-login-note">(Login Required)</small>{% endif %}</button>
+     <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg mtrx-btn-subset" data-bs-toggle="tooltip" data-bs-placement="top" {% if matrix.duser %}title="GDEX will subset files for you, so you only download what you need" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}title="You must be logged in to request a subset" onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset{% if not matrix.duser %}<br><small class="mtrx-login-note">(Login Required)</small>{% endif %}</button>
      <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg dropdown-toggle dropdown-toggle-split mtrx-btn-split" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="visually-hidden">Toggle Dropdown</span>
      </button>
@@ -99,7 +101,7 @@
      </ul>
     </div>
    {% else %}
-    <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg mtrx-btn-subset" data-toggle="tooltip" data-placement="top" {% if matrix.duser %}title="GDEX will subset files for you, so you only download what you need" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}title="You must be logged in to request a subset" onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset{% if not matrix.duser %}<br><small class="mtrx-login-note">(Login Required)</small>{% endif %}</button>
+    <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg mtrx-btn-subset" data-bs-toggle="tooltip" data-bs-placement="top" {% if matrix.duser %}title="GDEX will subset files for you, so you only download what you need" onclick="$.get('{{ matrix.union_urls.subset }}', replace_ds_content)"{% else %}title="You must be logged in to request a subset" onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>Get a Subset{% if not matrix.duser %}<br><small class="mtrx-login-note">(Login Required)</small>{% endif %}</button>
    {% endif %}
   {% endif %}
  </div>
@@ -108,7 +110,7 @@
  <div class="d-flex flex-wrap gap-2 justify-content-center mb-3" id="secondary-access-buttons">
   {% if matrix.union_urls.dap and 'thredds' in matrix.union_urls.dap %}
    <div class="btn-group">
-    <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Access TDS based services such as OPeNDAP, WMS, NCSS, and more." onclick="location='{{ matrix.union_urls.dap }}'">Thredds</button>
+    <button type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Access TDS based services such as OPeNDAP, WMS, NCSS, and more." onclick="location='{{ matrix.union_urls.dap }}'">Thredds</button>
     {% if matrix.group_data|length > 1 %}
      <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="visually-hidden">Toggle Dropdown</span>
@@ -126,7 +128,7 @@
   {% for group in matrix.group_data %}
    {% if group.index < 0 %}
     {% with title=group.title|striptags|lower %}
-     <button type="button" class="btn btn-outline-primary" {% if 'reference' in title or 'kerchunk' in title %}data-toggle="tooltip" data-placement="top" title="Access this dataset using Kerchunk references"{% elif 'catalog' in title %}data-toggle="tooltip" data-placement="top" title="Access this dataset using Intake-ESM for easier variable searching"{% endif %} onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)">{{ group.title|striptags }}</button>
+     <button type="button" class="btn btn-outline-primary" {% if 'reference' in title or 'kerchunk' in title %}data-bs-toggle="tooltip" data-bs-placement="top" title="Access this dataset using Kerchunk references"{% elif 'catalog' in title %}data-bs-toggle="tooltip" data-bs-placement="top" title="Access this dataset using Intake-ESM for easier variable searching"{% endif %} onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)">{{ group.title|striptags }}</button>
     {% endwith %}
    {% endif %}
   {% endfor %}
