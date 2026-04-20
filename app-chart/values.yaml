@@ -13,10 +13,10 @@ webapp:
     image: docker.io/dattore/gdex-web-portal:v398
     port: 8080
     requests:
-      memory: 4Gi
+      memory: 8Gi
       cpu: 1
     limits:
-      memory: 16Gi
+      memory: 32Gi
       cpu: 6
     responseTimeout: 180
     maxUploadSize: 60m
