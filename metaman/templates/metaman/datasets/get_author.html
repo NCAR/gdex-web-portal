@@ -119,8 +119,12 @@ function doFMLSubmit() {
   for (n = 0; n < f.length; ++n) {
     var ch = f.charAt(n);
     if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z') && ch != '-' && ch != '\'' && (ch != '.' || n != (f.length - 1) )) {
-      alert("Malformed first name - only capital and lower letters, the apostrophe, and the hyphen are allowed in author names");
-      return false;
+      if (l.substring(n, n + 6).search(/\\u[0-9a-zA-Z]{4}/) == 0) {
+        n += 5;
+      } else {
+        alert("Malformed first name - only capital and lower letters, the apostrophe, and the hyphen are allowed in author names");
+        return false;
+      }
     }
   }
   for (n = 0; n < l.length; ++n) {
@@ -272,7 +276,7 @@ function submitRIS() {
                         <span style="color: red; font-weight: bold">*</span>&nbsp;First Name or Initial:
                     </div>
                     <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="first_name" size="25" value="{{ data.fname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}>
+                        <input type="text" class="fixedWidth14" name="first_name" size="25" value="{{ data.fname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
                     </div>
                 </div>
                 <div class="row gx-0 gx-md-1 mt-1">
@@ -290,7 +294,7 @@ function submitRIS() {
                         <span style="color: red; font-weight: bold">*</span>&nbsp;Last Name:
                     </div>
                     <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="last_name" size="25" value="{{ data.lname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}>
+                        <input type="text" class="fixedWidth14" name="last_name" size="25" value="{{ data.lname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
                     </div>
                 </div>
                 {% if 'ris_file' not in request.FILES %}
