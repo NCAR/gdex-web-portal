@@ -996,7 +996,7 @@ def update_metadata_database(ctx, conn, **kwargs):
                     cursor.execute((
                             "insert into search.grid_resolutions (keyword, "
                             "vocabulary, dsid, origin) values (%s, 'GCMD', "
-                            "%s, 'dssmm')"),
+                            "%s, 'dssmm') on conflict do nothing"),
                             (grid['hres_keyword'], ctx['dsid']))
                     conn.commit()
 
