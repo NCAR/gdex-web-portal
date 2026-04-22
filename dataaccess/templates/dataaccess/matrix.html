@@ -28,6 +28,10 @@
      .mtrx-dropdown {
          min-width: max-content;
      }
+     .mtrx-dropdown-scroll {
+         max-height: 456px;
+         overflow-y: auto;
+     }
      .mtrx-login-note {
          font-size: 0.65rem;
      }
@@ -72,7 +76,7 @@
      <button type="button" class="btn btn-primary btn-lg dropdown-toggle dropdown-toggle-split mtrx-btn-split" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="visually-hidden">Toggle Dropdown</span>
      </button>
-     <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown">
+     <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown{% if matrix.group_data|length > 12 %} mtrx-dropdown-scroll{% endif %}">
       {% for group in matrix.group_data %}
        {% if group.index > 0 and group.dwebcnt > 0 %}
         <li><a class="dropdown-item" href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}{{ group.index }}/', replace_ds_content)">{{ group.title|striptags }}</a></li>
@@ -92,7 +96,7 @@
      <button type="button" class="btn {% if matrix.duser %}btn-primary{% else %}btn-secondary{% endif %} btn-lg dropdown-toggle dropdown-toggle-split mtrx-btn-split" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="visually-hidden">Toggle Dropdown</span>
      </button>
-     <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown">
+     <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown{% if matrix.group_data|length > 12 %} mtrx-dropdown-scroll{% endif %}">
       {% for group in matrix.group_data %}
        {% if group.index > 0 and group.urls.subset %}
         <li><a class="dropdown-item" href="javascript:void(0)" {% if matrix.duser %}onclick="$.get('{{ group.urls.subset }}', replace_ds_content)"{% else %}onclick="location='/accounts/login/?return=/datasets/{{ matrix.dsid }}/dataaccess/'"{% endif %}>{{ group.title|striptags }}</a></li>
@@ -115,7 +119,7 @@
      <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
       <span class="visually-hidden">Toggle Dropdown</span>
      </button>
-     <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown">
+     <ul class="dropdown-menu dropdown-menu-end mtrx-dropdown{% if matrix.group_data|length > 12 %} mtrx-dropdown-scroll{% endif %}">
       {% for group in matrix.group_data %}
        {% if group.index > 0 and group.urls.dap and 'thredds' in group.urls.dap %}
         <li><a class="dropdown-item" href="{{ group.urls.dap }}">{{ group.title|striptags }}</a></li>
