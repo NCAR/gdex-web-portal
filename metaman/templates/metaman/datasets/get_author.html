@@ -123,6 +123,7 @@ function addAuthor(f, m, l, o) {
 </script>
 <center>
     <h2>{% if 'replace_item' in data %}Edit Author{% else %}Add an Author{% endif %}</h2>
+    Type of Author:<span class="ms-2"><input type="radio" name="auth_select" oninput="alert('A')"> Person<span><span class="ms-2"><input type="radio" name="auth_select" oninput="alert('B')"> Corporate</span>
     <div class="text-start ms-2">
         {% if 'replace_item' in data and data.has_doi and not data.is_manager %}
         <div class="mb-1">
