@@ -696,33 +696,6 @@ def get_author(request):
         elif len(parts) == 1:
             d['corp_name'] = parts[0]
 
-    elif 'ris_file' in request.FILES:
-        s = ""
-        for chunk in request.FILES['ris_file']:
-            s += chunk.decode("utf-8")
-
-        lines = s.split("\n")
-        tag = re.compile("^A[U2]  - ")
-        authors = []
-        for line in lines:
-            if tag.match(line):
-                parts = line[6:].split(",")
-                if len(parts) != 2 or len(parts[-1]) == 0:
-                    return render(request,
-                                  "metaman/datasets/get_author.html",
-                                  {'error': ("Author line is not in proper "
-                                             "RIS format")})
-
-                if len(authors) > 0:
-                    authors.append((utils.trim(parts[-1]) + " " +
-                                    utils.trim(parts[0])))
-                else:
-                    authors.append((utils.trim(parts[0]) + ", " +
-                                    utils.trim(parts[-1])))
-
-        d.update({'authors': ", ".join(authors)})
-        d['from_ris'] = True
-
     return render(request, "metaman/datasets/get_author.html", {'data': d})
 
 
