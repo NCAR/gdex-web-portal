@@ -132,10 +132,6 @@ function addAuthor(f, m, l, o) {
         {% if data.lname|length > 0 or 'replace_item' not in data %}
         <form name="fml_form" action="javascript:void(0)" onsubmit="return doFMLSubmit()">
             {% if 'replace_item' not in data %}
-            <br>
-            <br>
-            <b>OR</b>
-            <br>
             You can manually enter Person author names one-at-a-time:
             <br>
             {% endif %}
