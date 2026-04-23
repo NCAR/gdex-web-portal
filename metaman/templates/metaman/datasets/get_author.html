@@ -125,71 +125,75 @@ function addAuthor(f, m, l, o) {
     <h2>{% if 'replace_item' in data %}Edit Author{% else %}Add an Author{% endif %}</h2>
     Type of Author:<span class="ms-2"><input type="radio" name="auth_select" oninput="alert('A')"> Person<span><span class="ms-2"><input type="radio" name="auth_select" oninput="alert('B')"> Corporate</span>
     <div class="text-start ms-2">
-        {% if 'replace_item' in data and data.has_doi and not data.is_manager %}
-        <div class="mb-1">
-            <font color="red">Because this dataset has been assigned a DOI, the only modifiable field is the ORCID ID.</font>
+        {% if data.lname|length > 0 or 'replace_item' not in data %}
+        <div class="d-none">
+            {% if 'replace_item' in data and data.has_doi and not data.is_manager %}
+            <div class="mb-1">
+                <font color="red">Because this dataset has been assigned a DOI, the only modifiable field is the ORCID ID.</font>
+            </div>
+            {% endif %}
+            <form name="fml_form" action="javascript:void(0)" onsubmit="return doFMLSubmit()">
+                {% if 'replace_item' not in data %}
+                {% endif %}
+                <span style="color: red; font-weight: bold">*</span>&nbsp; = required
+                <div class="component two-column container-lg overflow-hidden mb-3">
+                    <div class="row gx-0 gx-md-1 mt-1">
+                        <div class="col-12 col-md-2"></div>
+                        <div class="col-12 col-md-2 text-end">
+                            <span style="color: red; font-weight: bold">*</span>&nbsp;First Name or Initial:
+                        </div>
+                        <div class="col-12 col-md-8 text-start">
+                            <input type="text" class="fixedWidth14" name="first_name" size="25" value="{{ data.fname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
+                        </div>
+                    </div>
+                    <div class="row gx-0 gx-md-1 mt-1">
+                        <div class="col-12 col-md-2"></div>
+                        <div class="col-12 col-md-2 text-end">
+                            Middle Name or Initial:
+                        </div>
+                        <div class="col-12 col-md-8 text-start">
+                            <input type="text" class="fixedWidth14" name="middle_name" size="25" value="{{ data.mname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}>
+                        </div>
+                    </div>
+                    <div class="row gx-0 gx-md-1 mt-1">
+                        <div class="col-12 col-md-2"></div>
+                        <div class="col-12 col-md-2 text-end">
+                            <span style="color: red; font-weight: bold">*</span>&nbsp;Last Name:
+                        </div>
+                        <div class="col-12 col-md-8 text-start">
+                            <input type="text" class="fixedWidth14" name="last_name" size="25" value="{{ data.lname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
+                        </div>
+                    </div>
+                    <div class="row gx-0 gx-md-1 mt-1">
+                        <div class="col-12 col-md-2"></div>
+                        <div class="col-12 col-md-2 text-end">
+                            ORCID iD:
+                        </div>
+                        <div class="col-12 col-md-8 text-start">
+                            <input type="text" class="fixedWidth14" name="orcid_id" size="25" value="{{ data.orcid_id }}">
+                        </div>
+                    </div>
+                </div>
+                <center>
+                    <button class="btn btn-primary px-2 py-1 border-1" onclick="document.fml_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Person Author</button>
+                </center>
+            </form>
         </div>
         {% endif %}
-        {% if data.lname|length > 0 or 'replace_item' not in data %}
-        <form name="fml_form" action="javascript:void(0)" onsubmit="return doFMLSubmit()">
-            {% if 'replace_item' not in data %}
-            {% endif %}
-            <span style="color: red; font-weight: bold">*</span>&nbsp; = required
-            <div class="component two-column container-lg overflow-hidden mb-3">
-                <div class="row gx-0 gx-md-1 mt-1">
-                    <div class="col-12 col-md-2"></div>
-                    <div class="col-12 col-md-2 text-end">
-                        <span style="color: red; font-weight: bold">*</span>&nbsp;First Name or Initial:
-                    </div>
-                    <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="first_name" size="25" value="{{ data.fname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
-                    </div>
-                </div>
-                <div class="row gx-0 gx-md-1 mt-1">
-                    <div class="col-12 col-md-2"></div>
-                    <div class="col-12 col-md-2 text-end">
-                        Middle Name or Initial:
-                    </div>
-                    <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="middle_name" size="25" value="{{ data.mname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}>
-                    </div>
-                </div>
-                <div class="row gx-0 gx-md-1 mt-1">
-                    <div class="col-12 col-md-2"></div>
-                    <div class="col-12 col-md-2 text-end">
-                        <span style="color: red; font-weight: bold">*</span>&nbsp;Last Name:
-                    </div>
-                    <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="last_name" size="25" value="{{ data.lname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
-                    </div>
-                </div>
-                <div class="row gx-0 gx-md-1 mt-1">
-                    <div class="col-12 col-md-2"></div>
-                    <div class="col-12 col-md-2 text-end">
-                        ORCID iD:
-                    </div>
-                    <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="orcid_id" size="25" value="{{ data.orcid_id }}">
-                    </div>
-                </div>
-            </div>
-            <center>
-                <button class="btn btn-primary px-2 py-1 border-1" onclick="document.fml_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Person Author</button>
-            </center>
-        </form>
-        {% endif %}
         {% if data.corp_name|length > 0 or 'replace_item' not in data %}
-        <form name="corp_form" action="javascript:void(0)" onsubmit="return doCorpSubmit()">
-            {% if 'replace_item' in data %}
-            Updated Corporate author name:
-            {% else %}
-            Corporate author name:
-            {% endif %}
-            <input type="text" class="fixedWidth14" name="name" size="90" value="{{ data.corp_name }}">
-            <div class="mt-1">
-                <button class="btn btn-primary px-2 py-1 border-1" onclick="document.corp_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Corporate Author</button>
-            </div>
-        </form>
+        <div class="d-none">
+            <form name="corp_form" action="javascript:void(0)" onsubmit="return doCorpSubmit()">
+                {% if 'replace_item' in data %}
+                Updated Corporate author name:
+                {% else %}
+                Corporate author name:
+                {% endif %}
+                <input type="text" class="fixedWidth14" name="name" size="90" value="{{ data.corp_name }}">
+                <div class="mt-1">
+                    <button class="btn btn-primary px-2 py-1 border-1" onclick="document.corp_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Corporate Author</button>
+                </div>
+            </form>
+        </div>
         {% endif %}
     </div>
 </center>
