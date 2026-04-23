@@ -120,13 +120,18 @@ function addAuthor(f, m, l, o) {
   changed_authors_field = true;
 }
 
+function toggleAuthorView(show, hide) {
+    document.getElementById(show + "_view").classList.replace("d-none", "d-block");
+    document.getElementById(hide + "_view").classList.replace("d-block", "d-none");
+}
+
 </script>
 <center>
     <h2>{% if 'replace_item' in data %}Edit Author{% else %}Add an Author{% endif %}</h2>
-    Type of Author:<span class="ms-2"><input type="radio" name="auth_select" oninput="alert('A')"> Person<span><span class="ms-2"><input type="radio" name="auth_select" oninput="alert('B')"> Corporate</span>
+    Type of Author:<span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('person', 'corporate')"> Person<span><span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('corporate', 'person')"> Institution/Corporate</span>
     <div class="text-start ms-2">
         {% if data.lname|length > 0 or 'replace_item' not in data %}
-        <div class="d-none">
+        <div id="person_view" class="d-none">
             {% if 'replace_item' in data and data.has_doi and not data.is_manager %}
             <div class="mb-1">
                 <font color="red">Because this dataset has been assigned a DOI, the only modifiable field is the ORCID ID.</font>
@@ -181,7 +186,7 @@ function addAuthor(f, m, l, o) {
         </div>
         {% endif %}
         {% if data.corp_name|length > 0 or 'replace_item' not in data %}
-        <div class="d-none">
+        <div id="corporate_view" class="d-none">
             <form name="corp_form" action="javascript:void(0)" onsubmit="return doCorpSubmit()">
                 {% if 'replace_item' in data %}
                 Updated Corporate author name:
