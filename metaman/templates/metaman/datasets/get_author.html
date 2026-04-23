@@ -132,8 +132,6 @@ function addAuthor(f, m, l, o) {
         {% if data.lname|length > 0 or 'replace_item' not in data %}
         <form name="fml_form" action="javascript:void(0)" onsubmit="return doFMLSubmit()">
             {% if 'replace_item' not in data %}
-            You can manually enter Person author names one-at-a-time:
-            <br>
             {% endif %}
             <span style="color: red; font-weight: bold">*</span>&nbsp; = required
             <div class="component two-column container-lg overflow-hidden mb-3">
@@ -184,11 +182,7 @@ function addAuthor(f, m, l, o) {
             {% if 'replace_item' in data %}
             Updated Corporate author name:
             {% else %}
-            <br>
-            <br>
-            <b>OR</b>
-            <br>
-            You can enter a Corporate author name:
+            Corporate author name:
             {% endif %}
             <input type="text" class="fixedWidth14" name="name" size="90" value="{{ data.corp_name }}">
             <div class="mt-1">
