@@ -120,15 +120,6 @@ function addAuthor(f, m, l, o) {
   changed_authors_field = true;
 }
 
-function submitRIS() {
-  if (document.ris_form.ris_file.value.length == 0) {
-    return false;
-  }
-  var f = new FormData(document.ris_form);
-  getContentFromFormData('modal-window-content', 'get_author/', f);
-  return true;
-}
-
 </script>
 <center>
     <h2>{% if 'replace_item' in data %}Edit Author{% else %}Add Author(s){% endif %}</h2>
@@ -138,7 +129,6 @@ function submitRIS() {
             <font color="red">Because this dataset has been assigned a DOI, the only modifiable field is the ORCID ID.</font>
         </div>
         {% endif %}
-        {% if not data.from_ris %}
         {% if data.lname|length > 0 or 'replace_item' not in data %}
         <form name="fml_form" action="javascript:void(0)" onsubmit="return doFMLSubmit()">
             {% if 'replace_item' not in data %}
@@ -157,7 +147,7 @@ function submitRIS() {
                         <span style="color: red; font-weight: bold">*</span>&nbsp;First Name or Initial:
                     </div>
                     <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="first_name" size="25" value="{{ data.fname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
+                        <input type="text" class="fixedWidth14" name="first_name" size="25" value="{{ data.fname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
                     </div>
                 </div>
                 <div class="row gx-0 gx-md-1 mt-1">
@@ -166,7 +156,7 @@ function submitRIS() {
                         Middle Name or Initial:
                     </div>
                     <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="middle_name" size="25" value="{{ data.mname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}>
+                        <input type="text" class="fixedWidth14" name="middle_name" size="25" value="{{ data.mname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}>
                     </div>
                 </div>
                 <div class="row gx-0 gx-md-1 mt-1">
@@ -175,10 +165,9 @@ function submitRIS() {
                         <span style="color: red; font-weight: bold">*</span>&nbsp;Last Name:
                     </div>
                     <div class="col-12 col-md-8 text-start">
-                        <input type="text" class="fixedWidth14" name="last_name" size="25" value="{{ data.lname }}"{% if 'ris_file' in request.FILES or data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
+                        <input type="text" class="fixedWidth14" name="last_name" size="25" value="{{ data.lname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
                     </div>
                 </div>
-                {% if 'ris_file' not in request.FILES %}
                 <div class="row gx-0 gx-md-1 mt-1">
                     <div class="col-12 col-md-2"></div>
                     <div class="col-12 col-md-2 text-end">
@@ -188,15 +177,12 @@ function submitRIS() {
                         <input type="text" class="fixedWidth14" name="orcid_id" size="25" value="{{ data.orcid_id }}">
                     </div>
                 </div>
-                {% endif %}
             </div>
             <center>
                 <button class="btn btn-primary px-2 py-1 border-1" onclick="document.fml_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Person Author</button>
             </center>
         </form>
         {% endif %}
-        {% endif %}
-        {% if not data.from_ris %}
         {% if data.corp_name|length > 0 or 'replace_item' not in data %}
         <form name="corp_form" action="javascript:void(0)" onsubmit="return doCorpSubmit()">
             {% if 'replace_item' in data %}
@@ -213,22 +199,6 @@ function submitRIS() {
                 <button class="btn btn-primary px-2 py-1 border-1" onclick="document.corp_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Corporate Author</button>
             </div>
         </form>
-        {% endif %}
-        {% endif %}
-        {% if not data.from_ris %}
-        {% if 'ris_file' not in request.FILES and 'replace_item' not in data %}
-        <form name="ris_form" action="javascript:void(0)" method="post" enctype="multipart/form-data" onsubmit="return submitRIS()">
-            <br>
-            <br>
-            <b>OR</b>
-            <br>
-            You can upload an RIS file:
-            <br>
-            <input type="file" id="ris_file" name="ris_file">&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="document.ris_form.submit()">Upload RIS</button></td></tr>
-            <input type="hidden" name="edit_dsid" value="{{ request.POST.edit_dsid }}">
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-        </form>
-        {% endif %}
         {% endif %}
     </div>
 </center>
