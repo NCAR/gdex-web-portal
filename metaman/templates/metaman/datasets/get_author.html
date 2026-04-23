@@ -76,7 +76,7 @@ function doFMLSubmit() {
     m += '.';
   }
   {% if 'replace_item' in data %}
-  replaceItem('authors_field', '{{ data.replace_item }}', f + '[!]' + m + '[!]' + l + '[!]' + o);
+  replaceItemPos('authors_field', document.fml_form.item_num.value, f + '[!]' + m + '[!]' + l + '[!]' + o);
   {% else %}
   addAuthor(f, m, l, o);
   {% endif %}
@@ -91,7 +91,7 @@ function doCorpSubmit() {
     return false;
   }
   {% if 'replace_item' in data %}
-  replaceItem('authors_field', '{{ data.replace_item }}', n);
+  replaceItemPos('authors_field', document.corp_form.item_num.value, n);
   {% else %}
   addAuthor(n);
   {% endif %}
@@ -186,6 +186,7 @@ function toggleAuthorView(show, hide) {
                 <center>
                     <button class="btn btn-primary px-2 py-1 border-1" onclick="document.fml_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Person Author</button>
                 </center>
+                <input type="hidden" name="item_num" value="{{ data.item_num }}">
             </form>
         </div>
         {% endif %}
@@ -198,6 +199,7 @@ function toggleAuthorView(show, hide) {
                 <center class="mt-1">
                     <button class="btn btn-primary px-2 py-1 border-1" onclick="document.corp_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Corporate Author</button>
                 </center>
+                <input type="hidden" name="item_num" value="{{ data.item_num }}">
             </form>
         </div>
         {% endif %}
