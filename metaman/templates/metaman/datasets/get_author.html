@@ -128,7 +128,7 @@ function toggleAuthorView(show, hide) {
 </script>
 <center>
     <h2>{% if 'replace_item' in data %}Edit Author{% else %}Add an Author{% endif %}</h2>
-    Type of Author:<span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('person', 'corporate')"> Person<span><span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('corporate', 'person')"> Institution/Corporate</span>
+    <span class="fs-6">Type of Author:<span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('person', 'corporate')"> Person<span><span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('corporate', 'person')"> Institution/Corporate</span></span>
     <div class="text-start ms-2">
         {% if data.lname|length > 0 or 'replace_item' not in data %}
         <div id="person_view" class="d-none">
@@ -186,7 +186,7 @@ function toggleAuthorView(show, hide) {
         </div>
         {% endif %}
         {% if data.corp_name|length > 0 or 'replace_item' not in data %}
-        <div id="corporate_view" class="d-none">
+        <div id="corporate_view" class="d-none mt-2">
             <form name="corp_form" action="javascript:void(0)" onsubmit="return doCorpSubmit()">
                 {% if 'replace_item' in data %}
                 Updated Corporate author name:
