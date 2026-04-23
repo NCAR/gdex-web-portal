@@ -79,7 +79,7 @@ def edit_item(request, item):
         opts = []
         start = MAP[item]['item-start'] if 'item-start' in MAP[item] else 0
         for n in range(start, len(items)):
-            if item == "reference":
+            if item in ("author", "reference"):
                 opts.append({'value': (items[n].replace("\"", "&amp;quot;") +
                                        "///" + str(n)),
                              'description': items[n]})
