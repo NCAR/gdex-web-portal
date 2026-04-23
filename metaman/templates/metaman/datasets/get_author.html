@@ -188,11 +188,8 @@ function toggleAuthorView(show, hide) {
         {% if data.corp_name|length > 0 or 'replace_item' not in data %}
         <div id="corporate_view" class="d-none mt-2">
             <form name="corp_form" action="javascript:void(0)" onsubmit="return doCorpSubmit()">
-                {% if 'replace_item' in data %}
-                Updated Corporate author name:
-                {% else %}
-                Corporate author name:
-                {% endif %}
+                {% if 'replace_item' in data %}Updated {% endif %}Institution/Corporate author name:
+                <br>
                 <input type="text" class="fixedWidth14" name="name" size="90" value="{{ data.corp_name }}">
                 <div class="mt-1">
                     <button class="btn btn-primary px-2 py-1 border-1" onclick="document.corp_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Corporate Author</button>
