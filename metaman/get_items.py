@@ -685,7 +685,9 @@ def get_author(request):
     d.update({'is_manager': (iuser in config.metadata_managers)})
     if 'editItem' in request.POST:
         d.update({'replace_item': request.POST['editItem']})
-        parts = request.POST['editItem'].split("[!]")
+        parts = request.POST['editItem'].split("///")
+        d.update({'item_num': parts[-1]})
+        parts = parts[0].split("[!]")
         if len(parts) in (3, 4):
             d['fname'] = parts[0]
             d['mname'] = parts[1]
