@@ -1703,7 +1703,7 @@ def get_AI_datasets(limit=50):
 def get_total_citations():
     """Get total number of citations"""
     con,cur = init_connection_new(config=get_WGrML_config())
-    query = "select distinct v.dsid,c.DOI_work,e.title,d.pub_year from citation.data_citations as c left join dssdb.dsvrsn as v on v.doi = c.DOI_data left join citation.works as d on c.DOI_work = d.DOI left join dssdb.dataset as e on e.dsid = v.dsid ;"
+    query = "select distinct v.dsid,c.DOI_work,e.title,d.pub_year from citation.data_citations_gdex as c left join dssdb.dsvrsn as v on v.doi = c.DOI_data left join citation.works as d on c.DOI_work = d.DOI left join dssdb.dataset as e on e.dsid = v.dsid ;"
     cur.execute(query)
     response = cur.fetchall()
     close_connection(con,cur)
