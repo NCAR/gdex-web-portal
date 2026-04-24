@@ -673,16 +673,38 @@ def get_author(request):
     if len(iuser) == 0:
         return render(request, "500.html")
 
+
+    d = {'dsid': request.POST['edit_dsid']}
     has_doi = utils.has_doi(request.POST['edit_dsid'])
     if type(has_doi) is str:
         return render(request, "metaman/datasets/get_author.html",
-                      {'error': ("unable to check if dataset has a DOI: '" +
-                                 has_doi + "'")})
+                      {'error':
+                       f"unable to check if dataset has a DOI: '{has_doi}'"})
 
-    d = {'has_doi': utils.has_doi(request.POST['edit_dsid']),
-         'fname': "", 'mname': "", 'lname': "", 'orcid_id': "",
-         'corp_name': "", 'from_ris': False}
-    d.update({'is_manager': (iuser in config.metadata_managers)})
+    if 'check_orcid' in request.POST:
+        d['orcid_id'] = request.POST['check_orcid']
+        if utils.validate_orcid_id(d['orcid_id']):
+            err, d['mname'], d['lname'] = (
+                    utils.get_author_from_orcid_id(d['orcid_id']))
+            if type(err) is dict:
+                return render(request, "metaman/datasets/get_author.html",
+                               err)
+            else:
+                d['fname'] = err
+                if ((not has_doi or iuser in config.metadata_managers) and
+                        (len(d['fname']) <= 1 or (len(d['fname']) == 2 and
+                        d['fname'][-1] == '.'))):
+                    d['fname_mutable'] = True
+                if ((not has_doi or iuser in config.metadata_managers) and
+                        (len(d['mname']) <= 1 or (len(d['mname']) == 2 and
+                        d['mname'][-1] == '.'))):
+                    d['mname_mutable'] = True
+
+        else:
+            d = {'error': "The ORCID iD that you entered is not valid."}
+
+        return render(request, "metaman/datasets/get_author.html", d)
+
     if 'editItem' in request.POST:
         d.update({'replace_item': request.POST['editItem']})
         parts = request.POST['editItem'].split("///")
@@ -690,7 +712,15 @@ def get_author(request):
         parts = parts[0].split("[!]")
         if len(parts) in (3, 4):
             d['fname'] = parts[0]
+            if ((not has_doi or iuser in config.metadata_managers) and
+                    (len(d['fname']) <= 1 or (len(d['fname']) == 2 and
+                    d['fname'][-1] == '.'))):
+                d['fname_mutable'] = True
             d['mname'] = parts[1]
+            if ((not has_doi or iuser in config.metadata_managers) and
+                    (len(d['mname']) <= 1 or (len(d['mname']) == 2 and
+                    d['mname'][-1] == '.'))):
+                d['mname_mutable'] = True
             d['lname'] = parts[2]
             if len(parts) == 4:
                 d['orcid_id'] = parts[3]
@@ -698,7 +728,9 @@ def get_author(request):
         elif len(parts) == 1:
             d['corp_name'] = parts[0]
 
-    return render(request, "metaman/datasets/get_author.html", {'data': d})
+        return render(request, "metaman/datasets/get_author.html", d)
+
+    return render(request, "metaman/datasets/get_author.html", d)
 
 
 def get_gcmd_keywords(keyword_list, search_words):
@@ -729,6 +761,7 @@ def get_platform(request):
             return render(request,
                           "metaman/datasets/get_descriptive_keyword.html",
                           {'error': "database error '{}'".format(res)})
+
 
         ctx.update({'results': res})
 

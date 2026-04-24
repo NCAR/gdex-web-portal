@@ -821,12 +821,43 @@ img.icon-size {
                     <div class="col-12 col-md-auto"></div>
                     <div class="col-12 col-md-10 ms-1 mb-1" style="border: thin solid black">
                         <div class="text-muted mb-2 p-1">
-                            Data Authors (optional) are <em>persons</em> who should be credited for producing the data.  Data Contributors (mandatory) are <em>institutions</em> from where the data were obtained.
+                            Data Contributors (mandatory) are <em>institutions</em> from where the data were obtained. Data Authors (optional) are <em>persons</em> who should be credited for producing the data, and all person authors will need to be connected to one of the contributor entries.
                         </div>
-                        <div class="text-muted mb-2">
-                            When both are present, the Data Authors take precedence and all entries are used in the data citation.  Otherwise, the Data Contributors are used as the "authors" in the data citation.  In the latter case, you should list all institutions that contributed data to the dataset, but if you don't think all of them should be cited in the dataset citation, use the tool provided to indicate which institutions should be cited, and in what order.
+                        <div class="text-muted mb-2 p-1">
+                            For the dataset citation, Data Authors will be used if they have been specified. Otherwise, the Data Contributors will be used in the author list. In the latter case, you should list all institutions that contributed data to the dataset, but if you don't think all of them should be cited in the dataset citation, you can use the tool provided to indicate which institutions should be cited, and in what order.
                         </div>
                         <div class="component two-column container-lg overflow-hidden mb-1">
+                            <div class="row gx-0 gx-md-1">
+                                <div class="col-12 col-md-auto">
+                                    <div class="float-end" id="contributors_status_div">
+                                        <img class="commit-status" id="contributors_status" src="/images/circle-dash.jpeg">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-11 ms-1 mb-1">
+                                    <i class="fas fa-angle-right pe-1" id="contributors_trimg"></i><a href="javascript:void(0)" onclick="toggleField('contributors')">Data Contributors</a><font color="red">*</font>
+                                    <br>
+                                    <div class="metaman-field" id="contributors">
+                                        <textarea class="fixedWidth14 w-100" id="contributors_field" style="height: 5em; resize: none" disabled>{{ contributors }}</textarea>
+                                        <div class="w-100 overflow-auto mb-2">
+                                        {% if has_doi and not is_manager %}
+                                            <small>&nbsp;(this field is locked because the dataset has a DOI)</small>
+                                        </div>
+                                        {% else %}
+                                            <div class="d-inline float-start">
+                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Contributor')">Add</button>
+                                            </div>
+
+                                            <div class="d-inline float-end">
+                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('contributor')">Edit</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('contributor')">Remove</button>
+                                            </div>
+                                        </div>
+                                        <div class="mb-1">
+                                            <span class="text-muted">Use <a href="javascript:void(0)" onclick="popContributorCitationTool()">this tool</a> to indicate which contributors should be cited and in what order</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
                             <div class="row gx-0 gx-md-1">
                                 <div class="col-12 col-md-auto">
                                     <div class="float-end" id="authors_status_div">
@@ -863,37 +894,6 @@ img.icon-size {
                                         </div>
                                         <div class="mb-1">
                                             <span class="text-muted">Use <a href="javascript:void(0)" onclick="popAuthorReorderTool()">this tool</a> to re-order the authors</span>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row gx-0 gx-md-1">
-                                <div class="col-12 col-md-auto">
-                                    <div class="float-end" id="contributors_status_div">
-                                        <img class="commit-status" id="contributors_status" src="/images/circle-dash.jpeg">
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-11 ms-1 mb-1">
-                                    <i class="fas fa-angle-right pe-1" id="contributors_trimg"></i><a href="javascript:void(0)" onclick="toggleField('contributors')">Data Contributors</a><font color="red">*</font>
-                                    <br>
-                                    <div class="metaman-field" id="contributors">
-                                        <textarea class="fixedWidth14 w-100" id="contributors_field" style="height: 5em; resize: none" disabled>{{ contributors }}</textarea>
-                                        <div class="w-100 overflow-auto mb-2">
-                                        {% if has_doi and not is_manager %}
-                                            <small>&nbsp;(this field is locked because the dataset has a DOI)</small>
-                                        </div>
-                                        {% else %}
-                                            <div class="d-inline float-start">
-                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="popAdd('Contributor')">Add</button>
-                                            </div>
-
-                                            <div class="d-inline float-end">
-                                                <button class="btn btn-primary px-2 py-1 border-1" onclick="popEdit('contributor')">Edit</button>&nbsp;&nbsp;<button class="btn btn-primary px-2 py-1 border-1" onclick="popRemove('contributor')">Remove</button>
-                                            </div>
-                                        </div>
-                                        <div class="mb-1">
-                                            <span class="text-muted">Use <a href="javascript:void(0)" onclick="popContributorCitationTool()">this tool</a> to indicate which contributors should be cited and in what order</span>
                                         </div>
                                         {% endif %}
                                     </div>

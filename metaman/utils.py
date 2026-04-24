@@ -12,7 +12,7 @@ import sys
 from datetime import datetime
 from dateutil import tz
 from email.message import EmailMessage
-from lxml import etree as ElementTree
+from lxml import etree
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -35,7 +35,7 @@ def get_iuser(request):
 def ds_relationship_options():
     rel_opts = []
     try:
-        tree = ElementTree.parse(
+        tree = etree.parse(
                 root_dirs['web'] + "/metadata/schemas/dsOverview3.xsd")
         root = tree.getroot()
         ns = {
@@ -370,7 +370,7 @@ def check_html(html, spellchecker):
         errs.append(err)
 
     try:
-        root = ElementTree.fromstring(html.replace("&", "&amp;"))
+        root = etree.fromstring(html.replace("&", "&amp;"))
     except Exception as err:
         errs.append("XML parse error: <i>{}</i>".format(err))
         return errs
@@ -388,8 +388,7 @@ def check_html(html, spellchecker):
                     "there is content somewhere that is not within a "
                     "paragraph (&amp;lt;p&amp;gt;&amp;lt;/p&amp;gt;)."))
 
-    check_text = "".join(
-            [ElementTree.tostring(e).decode("ascii") for e in root])
+    check_text = "".join([etree.tostring(e).decode("ascii") for e in root])
     spellchecker.check(
             convert_html_to_text(html).encode("utf-8")
                                       .decode("unicode-escape"))
@@ -402,7 +401,7 @@ def check_html(html, spellchecker):
     checked_urls = set()
     for part in xparts:
         if part.find("<a href") == 0:
-            anchor = ElementTree.fromstring(part + "</a>")
+            anchor = etree.fromstring(part + "</a>")
             if anchor.get("href") not in checked_urls:
                 try:
                     response = requests.get(
@@ -1280,6 +1279,7 @@ def horizontal_resolution_keyword(res_type, max_res):
         if max_res < 0.005:
             return "H : 250 meters - < 500 meters"
 
+
         if max_res < 0.01:
             return "H : 500 meters - < 1 km"
 
@@ -1372,3 +1372,50 @@ def set_wfile_version(dsid, doi, conn):
                 "update dssdb.wfile_" + dsid + " set vindex = %s where type = "
                 "'D'"), (res[0], ))
         conn.commit()
+
+
+def validate_orcid_id(orcid_id):
+    try:
+        response = requests.get(f"https://orcid.org/{orcid_id}",
+                                headers={'Accept': "application/xml"})
+        response.raise_for_status()
+        return True
+    except Exception:
+        return False
+
+
+def get_author_from_orcid_id(orcid_id):
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        cursor.execute(
+                "select given_name, middle_name, family_name from search."
+                "authors where pid = %s", (orcid_id, ))
+        res = cursor.fetchone()
+        if res is not None:
+            return res
+
+        with open("/data/local/orcid/bearer_token", "r") as f:
+            token = f.read().strip()
+
+        response = requests.get(
+                 f"https://api.orcid.org/v3.0/{orcid_id}/personal-details",
+                 headers={'Accept': "application/vnd.orcid+xml",
+                          'Authorization': f"Bearer {token}"})
+        root = etree.fromstring(response.text.encode("utf-8"))
+        ns = {'personal-details': "http://www.orcid.org/ns/personal-details"}
+        lname = root.find(
+                "./personal-details:name/personal-details:family-name", ns)
+        if lname is None:
+            return ({'error': "No last name is available for this ID"}, None,
+                    None)
+
+        fname = root.find(
+                "./personal-details:name/personal-details:given-names", ns)
+        return (fname.text if fname is not None else None, None, lname)
+
+    except Exception as err:
+        return ({'error': err}, None, None)
+    finally:
+        if 'conn' in locals():
+            conn.close()

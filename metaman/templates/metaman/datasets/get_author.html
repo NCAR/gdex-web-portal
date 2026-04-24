@@ -1,22 +1,45 @@
+{% if not orcid_id %}
+<div id="get_author_page">
+{% endif %}
 {% if error %}
-<p>
-    An error occurred: {{ error }}
+<p class="mt-3 ms-3">
+    An error occurred: <font color="red">{{ error }}</font>
 </p>
 {% else %}
 <script id="get_author_script" language="javascript">
+function wellFormedOrcidId(o) {
+  if (o.length > 0 && (o.length != 19 || o.charAt(4) != '-' || o.charAt(9) != '-' || o.charAt(14) != '-')) {
+    alert("Malformed ORCID iD - must have the format 'AAAA-BBBB-CCCC-DDDD'");
+    return false;
+  }
+  if (o.length > 0) {
+    for (n = 0; n < 18; ++n) {
+      if (n % 5 != 4 && (o.charAt(n) < '0' || o.charAt(n) > '9')) {
+        alert("Malformed ORCID iD - only digits allowed");
+        return false;
+      }
+    }
+    if (o.charAt(18) < '0' || o.charAt(18) > '9' && o.charAt(18) != 'X') {
+      alert("Malformed ORCID iD - check digit (last digit) must be digit or 'X'");
+      return false;
+    }
+  }
+  return true;
+}
+{% if orcid_id %}
 function doFMLSubmit() {
-  var f = document.fml_form.first_name.value;
+  var f = document.person_form.first_name.value;
   if (f.length == 0) {
     alert("Error: missing author first name");
     return false;
   }
-  var m = document.fml_form.middle_name.value;
-  var l = document.fml_form.last_name.value;
+  var m = document.person_form.middle_name.value;
+  var l = document.person_form.last_name.value;
   if (l.length < 2) {
     alert("Error: missing or invalid author last name");
     return false;
   }
-  var o = document.fml_form.orcid_id.value;
+  var o = document.person_form.orcid_id.value;
   for (n = 0; n < f.length; ++n) {
     var ch = f.charAt(n);
     if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z') && ch != '-' && ch != '\'' && (ch != '.' || n != (f.length - 1) )) {
@@ -39,44 +62,20 @@ function doFMLSubmit() {
       }
     }
   }
-  if (o.length > 0 && (o.length != 19 || o.charAt(4) != '-' || o.charAt(9) != '-' || o.charAt(14) != '-')) {
-    alert("Malformed ORCID iD - must have the format 'AAAA-BBBB-CCCC-DDDD'");
+  if (!wellFormedOrcidId(o)) {
     return false;
   }
-  if (o.length > 0) {
-    if (o.length != 19) {
-      alert("Invalid ORCID iD");
-      return false;
-    }
-    var is_good = true;
-    for (n = 0; n < 18; ++n) {
-      if (n % 5 == 4) {
-        if (o.charAt(n) != '-') {
-          is_good = false;
-        }
-      } else {
-        if (o.charAt(n) < '0' || o.charAt(n) > '9') {
-          is_good = false;
-        }
-      }
-      if (!is_good) {
-        alert("Malformed ORCID iD - must have the format 'AAAA-BBBB-CCCC-DDDD'");
-        return false;
-      }
-    }
-    if (o.charAt(18) < '0' || o.charAt(18) > '9' && o.charAt(18) != 'X') {
-      alert("Invalid ORCID iD check digit (last digit) - must be 0-9 or 'X'");
-      return false;
-    }
-  }
+  f = f.trim();
+  m = m.trim();
+  l = l.trim();
   if (f.length == 1) {
     f += '.';
   }
   if (m.length == 1) {
     m += '.';
   }
-  {% if 'replace_item' in data %}
-  replaceItemPos('authors_field', document.fml_form.item_num.value, f + '[!]' + m + '[!]' + l + '[!]' + o);
+  {% if replace_item %}
+  replaceItemPos('authors_field', document.person_form.item_num.value, f + '[!]' + m + '[!]' + l + '[!]' + o);
   {% else %}
   addAuthor(f, m, l, o);
   {% endif %}
@@ -90,7 +89,7 @@ function doCorpSubmit() {
     alert("Error: missing or invalid corporate name");
     return false;
   }
-  {% if 'replace_item' in data %}
+  {% if replace_item %}
   replaceItemPos('authors_field', document.corp_form.item_num.value, n);
   {% else %}
   addAuthor(n);
@@ -119,90 +118,124 @@ function addAuthor(f, m, l, o) {
   auth_list.scrollTop = auth_list.scrollHeight;
   changed_authors_field = true;
 }
+{% else %}
+function doOrcidCheck() {
+  if (!wellFormedOrcidId(document.orcid_form.orcid_id.value)) {
+    return;
+  }
+  getAjaxContent('POST', 'edit_dsid={{ dsid }}&check_orcid=' + document.orcid_form.orcid_id.value + '&csrfmiddlewaretoken={{ csrf_token }}', 'get_author/', 'get_author_page');
+  document.getElementById('orcid_search').innerHTML = "Searching...";
+}
 
-{% if 'replace_item' not in data %}
 function toggleAuthorView(show, hide) {
     document.getElementById(show + "_view").classList.replace("d-none", "d-block");
     document.getElementById(hide + "_view").classList.replace("d-block", "d-none");
 }
 {% endif %}
-
 </script>
 <center>
-    <h2>{% if 'replace_item' in data %}Edit Author{% else %}Add an Author{% endif %}</h2>
-    {% if 'replace_item' not in data %}
+    <h2>{% if replace_item %}Edit Author{% else %}Add an Author{% endif %}</h2>
+    {% if not replace_item and not orcid_id %}
     <span class="fs-6">Type of Author:<span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('person', 'corporate')"> Person<span><span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('corporate', 'person')"> Institution/Corporate</span></span>
     {% endif %}
-    <div class="text-start ms-2">
-        {% if data.lname|length > 0 or 'replace_item' not in data %}
-        <div id="person_view"{% if 'replace_item' not in data %} class="d-none"{% endif %}>
-            {% if 'replace_item' in data and data.has_doi and not data.is_manager %}
-            <div class="mb-1">
-                <font color="red">Because this dataset has been assigned a DOI, the only modifiable field is the ORCID ID.</font>
-            </div>
+    <div class="text-start mt-2">
+        {% if lname|length > 0 or not replace_item %}
+        <div id="person_view"{% if not replace_item and not orcid_id %} class="d-none"{% endif %}>
+            {% if not orcid_id and not item_num %}
+            <center>
+                <div id="orcid_search">
+                    <form name="orcid_form" action="javascript:void(0)" onsubmit="return false">
+                        ORCID iD: <input type="text" class="font-monospace" name="orcid_id" size="19" maxlength="19"> <button class="btn btn-primary px-1 py-0 border-1 ms-1" onclick="doOrcidCheck()">Search</button>
+                    </form>
+                </div>
+            </center>
+            {% else %}
+            {% if fname_mutable or mname_mutable %}
+            <p>
+                <sup><font color="red">&dagger;</font></sup>&nbsp;You can modify any field that has an input box. All other fields are immutable.
+            </p>
+            {% elif replace_item %}
+            <p>
+                <font color="red">There are no modifiable fields for this author.</font>
+            </p>
             {% endif %}
-            <form name="fml_form" action="javascript:void(0)" onsubmit="return doFMLSubmit()">
-                {% if 'replace_item' not in data %}
-                {% endif %}
-                <span style="color: red; font-weight: bold">*</span>&nbsp; = required
+            <form name="person_form" action="javascript:void(0)" onsubmit="return doFMLSubmit()">
                 <div class="component two-column container-lg overflow-hidden mb-3">
                     <div class="row gx-0 gx-md-1 mt-1">
-                        <div class="col-12 col-md-2"></div>
-                        <div class="col-12 col-md-2 text-end">
-                            <span style="color: red; font-weight: bold">*</span>&nbsp;First Name or Initial:
+                        <div class="col-12 col-md-3"></div>
+                        <div class="col-12 col-md-3 text-end">
+                            {% if fname_mutable %}<sup><font color="red">&dagger;</font></sup>&nbsp;{% endif %}First Name or Initial:
                         </div>
-                        <div class="col-12 col-md-8 text-start">
-                            <input type="text" class="fixedWidth14" name="first_name" size="25" value="{{ data.fname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
-                        </div>
-                    </div>
-                    <div class="row gx-0 gx-md-1 mt-1">
-                        <div class="col-12 col-md-2"></div>
-                        <div class="col-12 col-md-2 text-end">
-                            Middle Name or Initial:
-                        </div>
-                        <div class="col-12 col-md-8 text-start">
-                            <input type="text" class="fixedWidth14" name="middle_name" size="25" value="{{ data.mname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}>
+                        <div class="col-12 col-md-6 text-start">
+                            {% if fname_mutable %}
+                            <input type="text" class="fs-6" name="first_name" size="25" value="{{ fname }}">
+                            <br>
+                            <span class="text-muted">(unicode sequences '\uxxxx' allowed)</span>
+                            {% else %}
+                            <span class="fs-6 fw-bold">{{ fname }}<span>
+                            <input type="hidden" name="first_name" value="{{ fname }}" />
+                            {% endif %}
                         </div>
                     </div>
                     <div class="row gx-0 gx-md-1 mt-1">
-                        <div class="col-12 col-md-2"></div>
-                        <div class="col-12 col-md-2 text-end">
-                            <span style="color: red; font-weight: bold">*</span>&nbsp;Last Name:
+                        <div class="col-12 col-md-3"></div>
+                        <div class="col-12 col-md-3 text-end">
+                            {% if mname_mutable %}<sup><font color="red">&dagger;</font></sup>&nbsp;{% endif %}Middle Name or Initial:
                         </div>
-                        <div class="col-12 col-md-8 text-start">
-                            <input type="text" class="fixedWidth14" name="last_name" size="25" value="{{ data.lname }}"{% if data.has_doi and not data.is_manager %} readonly{% endif %}> (unicode sequences '\uxxxx' allowed)
+                        <div class="col-12 col-md-6 text-start">
+                            {% if mname_mutable %}
+                            <input type="text" class="fs-6" name="middle_name" size="25" value="{{ mname }}">
+                            {% else %}
+                            <span class="fs-6 fw-bold">{{ mname }}<span>
+                            <input type="hidden" name="middle_name" value="{{ mname }}" />
+                            {% endif %}
                         </div>
                     </div>
                     <div class="row gx-0 gx-md-1 mt-1">
-                        <div class="col-12 col-md-2"></div>
-                        <div class="col-12 col-md-2 text-end">
+                        <div class="col-12 col-md-3"></div>
+                        <div class="col-12 col-md-3 text-end">
+                            Last Name:
+                        </div>
+                        <div class="col-12 col-md-6 text-start">
+                            <span class="fs-6 fw-bold">{{ lname }}<span>
+                            <input type="hidden" name="last_name" value="{{ lname }}" />
+                        </div>
+                    </div>
+                    <div class="row gx-0 gx-md-1 mt-1">
+                        <div class="col-12 col-md-3"></div>
+                        <div class="col-12 col-md-3 text-end">
                             ORCID iD:
                         </div>
-                        <div class="col-12 col-md-8 text-start">
-                            <input type="text" class="fixedWidth14" name="orcid_id" size="25" value="{{ data.orcid_id }}">
+                        <div class="col-12 col-md-6 text-start">
+                            <span class="fs-6 fw-bold">{{ orcid_id }}</span>
+                            <input type="hidden" name="orcid_id" value="{{ orcid_id }}" />
                         </div>
                     </div>
                 </div>
                 <center>
-                    <button class="btn btn-primary px-2 py-1 border-1" onclick="document.fml_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Person Author</button>
+                    <button class="btn btn-primary px-2 py-1 border-1"{% if fname_mutable or mname_mutable %} onclick="document.person_form.submit()"{% else %} disabled{% endif %}>{% if replace_item %}Update{% else %}Add{% endif %} This Author</button>
                 </center>
-                <input type="hidden" name="item_num" value="{{ data.item_num }}">
+                <input type="hidden" name="item_num" value="{{ item_num }}">
             </form>
+            {% endif %}
         </div>
         {% endif %}
-        {% if data.corp_name|length > 0 or 'replace_item' not in data %}
-        <div id="corporate_view" class="{% if 'replace_item' not in data %}d-none {% endif %}mt-2">
+        {% if corp_name|length > 0 or not replace_item %}
+        <div id="corporate_view" class="{% if not replace_item %}d-none {% endif %}mt-2">
             <form name="corp_form" action="javascript:void(0)" onsubmit="return doCorpSubmit()">
-                {% if 'replace_item' in data %}Updated {% endif %}Institution/Corporate author name:
+                {% if replace_item %}Updated {% endif %}Institution/Corporate author name:
                 <br>
-                <input type="text" class="fixedWidth14" name="name" size="90" value="{{ data.corp_name }}">
-                <center class="mt-2">
-                    <button class="btn btn-primary px-2 py-1 border-1" onclick="document.corp_form.submit()">{% if 'replace_item' in data %}Update{% else %}Add{% endif %} Corporate Author</button>
+                <input type="text" class="fs-6" name="name" size="90" value="{{ corp_name }}">
+                <center class="mt-1">
+                    <button class="btn btn-primary px-2 py-1 border-1" onclick="document.corp_form.submit()">{% if replace_item %}Update{% else %}Add{% endif %} Corporate Author</button>
                 </center>
-                <input type="hidden" name="item_num" value="{{ data.item_num }}">
+                <input type="hidden" name="item_num" value="{{ item_num }}">
             </form>
         </div>
         {% endif %}
     </div>
 </center>
+{% endif %}
+{% if not orcid_id %}
+</div>
 {% endif %}
