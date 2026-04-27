@@ -75,9 +75,9 @@ function doFMLSubmit() {
     m += '.';
   }
   {% if replace_item %}
-  replaceItemPos('authors_field', document.person_form.item_num.value, f + '[!]' + m + '[!]' + l + '[!]' + o);
+  replaceItemPos('authors_field', document.person_form.item_num.value, document.person_form.uuid.value + '[!]' + f + '[!]' + m + '[!]' + l + '[!]' + o);
   {% else %}
-  addAuthor(f, m, l, o);
+  addAuthor(document.person_form.uuid.value, f, m, l, o);
   {% endif %}
   hideModalWindow();
   return true;
@@ -98,22 +98,23 @@ function doCorpSubmit() {
   return true;
 }
 
-function addAuthor(f, m, l, o) {
+function addAuthor(u, f, m, l, o) {
   var auth_list = document.getElementById("authors_field");
   if (auth_list.value.length > 0 && auth_list.value.charAt(auth_list.value.length-1) != "\n") {
     auth_list.value += "\n";
   }
+  entry = u + '[!]' + f;
   if (typeof(m) != "undefined") {
-    f += '[!]' + m;
+    entry += '[!]' + m;
   }
   if (typeof(l) != "undefined") {
-    f += '[!]' + l;
+    entry += '[!]' + l;
   }
   if (typeof(o) != "undefined") {
-    f += '[!]' + o;
+    entry += '[!]' + o;
   }
   if (auth_list.value.indexOf(f) < 0) {
-    auth_list.value += f;
+    auth_list.value += entry;
   }
   auth_list.scrollTop = auth_list.scrollHeight;
   changed_authors_field = true;
@@ -215,6 +216,7 @@ function toggleAuthorView(show, hide) {
                 <center>
                     <button class="btn btn-primary px-2 py-1 border-1"{% if fname_mutable or mname_mutable %} onclick="document.person_form.submit()"{% else %} disabled{% endif %}>{% if replace_item %}Update{% else %}Add{% endif %} This Author</button>
                 </center>
+                <input type="hidden" name="uuid" value="{{ uuid }}">
                 <input type="hidden" name="item_num" value="{{ item_num }}">
             </form>
             {% endif %}
