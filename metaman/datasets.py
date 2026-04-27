@@ -1894,8 +1894,8 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
     try:
         cursor.execute(
                 "select type, given_name, coalesce(middle_name, ''), "
-                "family_name, coalesce(orcid_id) from search.dataset_authors "
-                "where dsid = %s order by sequence", (dsid, ))
+                "family_name, coalesce(orcid_id, '') from search."
+                "dataset_authors where dsid = %s order by sequence", (dsid, ))
         res = cursor.fetchall()
     except psycopg2.Error as err:
         log_error(err, source="fill_from_most_recent_commit")
