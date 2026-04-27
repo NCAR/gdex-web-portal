@@ -1389,8 +1389,8 @@ def get_author_from_orcid_id(orcid_id):
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
         cursor.execute(
-                "select given_name, middle_name, family_name from search."
-                "authors where pid = %s", (orcid_id, ))
+                "select uuid, given_name, middle_name, family_name from "
+                "search.authors where pid = %s", (orcid_id, ))
         res = cursor.fetchone()
         if res is not None:
             return res
@@ -1412,7 +1412,7 @@ def get_author_from_orcid_id(orcid_id):
 
         fname = root.find(
                 "./personal-details:name/personal-details:given-names", ns)
-        return (fname.text if fname is not None else "", "", lname.text)
+        return ("", fname.text if fname is not None else "", "", lname.text)
 
     except Exception as err:
         return ({'error': err}, None, None)
