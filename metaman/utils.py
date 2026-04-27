@@ -1412,7 +1412,7 @@ def get_author_from_orcid_id(orcid_id):
 
         fname = root.find(
                 "./personal-details:name/personal-details:given-names", ns)
-        return (fname.text if fname is not None else None, None, lname)
+        return (fname.text if fname is not None else "", "", lname.text)
 
     except Exception as err:
         return ({'error': err}, None, None)
