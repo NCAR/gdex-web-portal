@@ -684,13 +684,13 @@ def get_author(request):
     if 'check_orcid' in request.POST:
         d['orcid_id'] = request.POST['check_orcid']
         if utils.validate_orcid_id(d['orcid_id']):
-            err, d['mname'], d['lname'] = (
+            err, d['fname'], d['mname'], d['lname'] = (
                     utils.get_author_from_orcid_id(d['orcid_id']))
             if type(err) is dict:
                 return render(request, "metaman/datasets/get_author.html",
                                err)
             else:
-                d['fname'] = err
+                d['uuid'] = err
                 if ((not has_doi or iuser in config.metadata_managers) and
                         (len(d['fname']) <= 1 or (len(d['fname']) == 2 and
                         d['fname'][-1] == '.'))):
