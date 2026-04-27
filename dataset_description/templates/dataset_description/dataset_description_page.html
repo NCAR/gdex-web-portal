@@ -155,12 +155,16 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
             <li class="nav-item" role="dataset">
                 <a class="nav-link px-3 py-2" id="citation-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="citation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/citation/', 'Citation')">Citation</a>
             </li>
+            {% if has_documentation %}
             <li class="nav-item" role="dataset">
                 <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="documentation-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="documentation" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/documentation/', 'Documentation')">Documentation</a>
             </li>
+            {% endif %}
+            {% if has_software %}
             <li class="nav-item" role="dataset">
                 <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="software-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="software" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/software/', 'Software')">Software</a>
             </li>
+            {% endif %}
             <li class="nav-item" role="dataset">
                 <a class="nav-link px-3 py-2" id="metrics-tab" data-toggle="tab" style='cursor:pointer' role="tab" onclick="switch_to_metrics()" aria-controls="metrics" aria-selected="false">Metrics</a>
             </li>
