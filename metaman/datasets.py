@@ -519,7 +519,7 @@ def commit_changes(request, dsid):
 
 def commit_dsoverview(tdir_name, dsid, iuser, cvscomment):
     xml_file = dsid + ".xml"
-    env = {'TMPDIR': "/data/ptmp"}
+    env = {'TMPDIR': root_dirs['cvs']}
     subprocess.run((
             bin_utils['cvs'] + " -Q -d " + root_dirs['cvs'] + " checkout "
             "-d " + tdir_name + " " + os.path.join("datasets", xml_file)),
@@ -1891,27 +1891,28 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
         if len(errs) > 0:
             errors.update({'title': errs})
 
-    elist = root.findall("./author")
+    try:
+        cursor.execute(
+                "select type, given_name, coalesce(middle_name, ''), "
+                "family_name, coalesce(orcid_id) from search.dataset_authors "
+                "where dsid = %s order by sequence", (dsid, ))
+        res = cursor.fetchall()
+    except psycopg2.Error as err:
+        log_error(err, source="fill_from_most_recent_commit")
+        return ({'error': ("unable to retrieve dataset authors from the "
+                           "metadata database: '{}'").format(err)}, )
+
     authors = []
-    for e in elist:
-        lname = e.get("lname")
-        if lname is not None:
-            authors.append("[!]".join([e.get("fname"), e.get("mname"), lname,
-                                       (e.get("orcid_id") or "")]))
-        else:
-            name = e.get("name")
-            if name is not None:
-                authors.append(name)
-            else:
-                return ({'error': "bad author: '" + str(e) + "'"}, )
+    for e in res:
+        authors.append("[!]".join(e[1:]) if e[0] == "Person" else e[1])
 
     page_vars['authors'] = "\n".join(authors)
     try:
-        cursor.execute((
+        cursor.execute(
                 "select g.path, p.keyword, p.former_name, p.contact, p."
                 "citable from search.contributors_new as p left join search."
                 "gcmd_providers as g on g.uuid = p.keyword where p.dsid = %s "
-                "and p.vocabulary = 'GCMD' order by p.disp_order, g.path"),
+                "and p.vocabulary = 'GCMD' order by p.disp_order, g.path",
                (dsid, ))
         res = cursor.fetchall()
     except psycopg2.Error as err:
