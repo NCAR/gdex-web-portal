@@ -26,6 +26,7 @@ function wellFormedOrcidId(o) {
   }
   return true;
 }
+{% if orcid_id or inst_name %}
 {% if orcid_id %}
 function doFMLSubmit() {
   var f = document.person_form.first_name.value;
@@ -75,45 +76,41 @@ function doFMLSubmit() {
     m += '.';
   }
   {% if replace_item %}
-  replaceItemPos('authors_field', document.person_form.item_num.value, f + '[!]' + m + '[!]' + l + '[!]' + o);
+  replaceItemPos('authors_field', document.person_form.item_num.value, f + '[!]' + m + '[!]' + l + '[!]' + o + '[!]' + document.person_form.uuid.value + "!");
   {% else %}
-  addAuthor(f, m, l, o);
+  addAuthor(f, m, l, o, document.person_form.uuid.value);
   {% endif %}
   hideModalWindow();
   return true;
 }
-
-function doCorpSubmit() {
-  var n = document.corp_form.name.value;
+{% else %}
+function doInstitutionSubmit() {
+  var n = document.institution_form.name.value;
   if (n.length < 2) {
-    alert("Error: missing or invalid corporate name");
+    alert("Error: missing or invalid institution name");
     return false;
   }
+  n += "[!]" + document.institution_form.uuid.value;
   {% if replace_item %}
-  replaceItemPos('authors_field', document.corp_form.item_num.value, n);
+  replaceItemPos('authors_field', document.institution_form.item_num.value, n + "!");
   {% else %}
-  addAuthor(n);
+  addAuthor(n)
   {% endif %}
   hideModalWindow();
   return true;
 }
-
-function addAuthor(f, m, l, o) {
+{% endif %}
+function addAuthor(f, m, l, o, u) {
   var auth_list = document.getElementById("authors_field");
   if (auth_list.value.length > 0 && auth_list.value.charAt(auth_list.value.length-1) != "\n") {
     auth_list.value += "\n";
   }
+  entry = f;
   if (typeof(m) != "undefined") {
-    f += '[!]' + m;
-  }
-  if (typeof(l) != "undefined") {
-    f += '[!]' + l;
-  }
-  if (typeof(o) != "undefined") {
-    f += '[!]' + o;
+    entry += "[!]" + m + "[!]" + l + "[!]" + o + "[!]" + u;
   }
   if (auth_list.value.indexOf(f) < 0) {
-    auth_list.value += f;
+    auth_list.value += entry;
   }
   auth_list.scrollTop = auth_list.scrollHeight;
   changed_authors_field = true;
@@ -136,7 +133,7 @@ function toggleAuthorView(show, hide) {
 <center>
     <h2>{% if replace_item %}Edit Author{% else %}Add an Author{% endif %}</h2>
     {% if not replace_item and not orcid_id %}
-    <span class="fs-6">Type of Author:<span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('person', 'corporate')"> Person<span><span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('corporate', 'person')"> Institution/Corporate</span></span>
+    <span class="fs-6">Type of Author:<span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('person', 'institution')"> Person<span><span class="ms-2"><input type="radio" name="author_select" oninput="toggleAuthorView('institution', 'person')"> Institution/Organization</span></span>
     {% endif %}
     <div class="text-start mt-2">
         {% if lname|length > 0 or not replace_item %}
@@ -215,20 +212,22 @@ function toggleAuthorView(show, hide) {
                 <center>
                     <button class="btn btn-primary px-2 py-1 border-1"{% if fname_mutable or mname_mutable %} onclick="document.person_form.submit()"{% else %} disabled{% endif %}>{% if replace_item %}Update{% else %}Add{% endif %} This Author</button>
                 </center>
+                <input type="hidden" name="uuid" value="{{ uuid }}">
                 <input type="hidden" name="item_num" value="{{ item_num }}">
             </form>
             {% endif %}
         </div>
         {% endif %}
-        {% if corp_name|length > 0 or not replace_item %}
-        <div id="corporate_view" class="{% if not replace_item %}d-none {% endif %}mt-2">
-            <form name="corp_form" action="javascript:void(0)" onsubmit="return doCorpSubmit()">
-                {% if replace_item %}Updated {% endif %}Institution/Corporate author name:
+        {% if inst_name|length > 0 or not replace_item %}
+        <div id="institution_view" class="{% if not replace_item %}d-none {% endif %}mt-2">
+            <form name="institution_form" action="javascript:void(0)" onsubmit="return doInstitutionSubmit()">
+                {% if replace_item %}Updated {% endif %}Institution/Organization author name:
                 <br>
-                <input type="text" class="fs-6" name="name" size="90" value="{{ corp_name }}">
+                <input type="text" class="fs-6" name="name" size="90" value="{{ inst_name }}">
                 <center class="mt-1">
-                    <button class="btn btn-primary px-2 py-1 border-1" onclick="document.corp_form.submit()">{% if replace_item %}Update{% else %}Add{% endif %} Corporate Author</button>
+                    <button class="btn btn-primary px-2 py-1 border-1" onclick="document.institution_form.submit()">{% if replace_item %}Update{% else %}Add{% endif %} Institution Author</button>
                 </center>
+                <input type="hidden" name="uuid" value="{{ uuid }}">
                 <input type="hidden" name="item_num" value="{{ item_num }}">
             </form>
         </div>

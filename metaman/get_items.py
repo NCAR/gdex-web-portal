@@ -684,13 +684,13 @@ def get_author(request):
     if 'check_orcid' in request.POST:
         d['orcid_id'] = request.POST['check_orcid']
         if utils.validate_orcid_id(d['orcid_id']):
-            err, d['mname'], d['lname'] = (
+            err, d['fname'], d['mname'], d['lname'] = (
                     utils.get_author_from_orcid_id(d['orcid_id']))
             if type(err) is dict:
                 return render(request, "metaman/datasets/get_author.html",
                                err)
             else:
-                d['fname'] = err
+                d['uuid'] = err
                 if ((not has_doi or iuser in config.metadata_managers) and
                         (len(d['fname']) <= 1 or (len(d['fname']) == 2 and
                         d['fname'][-1] == '.'))):
@@ -710,7 +710,7 @@ def get_author(request):
         parts = request.POST['editItem'].split("///")
         d.update({'item_num': parts[-1]})
         parts = parts[0].split("[!]")
-        if len(parts) in (3, 4):
+        if len(parts) in (4, 5):
             d['fname'] = parts[0]
             if ((not has_doi or iuser in config.metadata_managers) and
                     (len(d['fname']) <= 1 or (len(d['fname']) == 2 and
@@ -722,11 +722,16 @@ def get_author(request):
                     d['mname'][-1] == '.'))):
                 d['mname_mutable'] = True
             d['lname'] = parts[2]
-            if len(parts) == 4:
+            if len(parts[3]) > 0:
                 d['orcid_id'] = parts[3]
 
-        elif len(parts) == 1:
-            d['corp_name'] = parts[0]
+            if len(parts[4]) > 0:
+                d['uuid'] = parts[4].split("!")[0]
+
+        else:
+            d['inst_name'] = parts[0]
+            if len(parts[1]) > 0:
+                d['uuid'] = parts[1].split("!")[0]
 
         return render(request, "metaman/datasets/get_author.html", d)
 

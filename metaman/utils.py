@@ -797,12 +797,18 @@ def extract_authors(list):
     for e in alst:
         parts = e.split("[!]")
         d = {}
-        if len(parts) == 1:
-            d.update({'corporation': parts[0]})
-        elif len(parts) == 3 or len(parts) == 4:
+        if len(parts) == 2:
+            d['organization'] = parts[0]
+            if len(parts[1]) > 0:
+                d['uuid'] = parts[1]
+
+        else:
             d.update({'fname': parts[0], 'mname': parts[1], 'lname': parts[2]})
-            if len(parts) == 4 and len(parts[3]) > 0:
-                d.update({'orcid_id': parts[3]})
+            if len(parts[3]) > 0:
+                d['orcid_id'] = parts[3]
+
+            if len(parts[4]) > 0:
+                d['uuid'] = parts[4]
 
         authors.append(d)
 
@@ -1389,8 +1395,8 @@ def get_author_from_orcid_id(orcid_id):
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
         cursor.execute(
-                "select given_name, middle_name, family_name from search."
-                "authors where pid = %s", (orcid_id, ))
+                "select uuid, given_name, middle_name, family_name from "
+                "search.authors where pid = %s", (orcid_id, ))
         res = cursor.fetchone()
         if res is not None:
             return res
@@ -1412,7 +1418,7 @@ def get_author_from_orcid_id(orcid_id):
 
         fname = root.find(
                 "./personal-details:name/personal-details:given-names", ns)
-        return (fname.text if fname is not None else "", "", lname.text)
+        return ("", fname.text if fname is not None else "", "", lname.text)
 
     except Exception as err:
         return ({'error': err}, None, None)

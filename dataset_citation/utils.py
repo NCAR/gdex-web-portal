@@ -7,19 +7,20 @@ def get_authors(dsid):
     try:
         conn = psycopg2.connect(**django_settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
-        cursor.execute((
-                "select type, given_name, middle_name, family_name from "
-                "search.dataset_authors where dsid = %s order by sequence"),
+        cursor.execute(
+                "select a.type, a.given_name, a.middle_name, a.family_name "
+                "from search.authors as a left join search.dataset_authors as "
+                "d on d.uuid = a.uuid where d.dsid = %s order by d.sequence",
                 (dsid, ))
         res = cursor.fetchall()
         if len(res) > 0:
             return res
 
-        cursor.execute((
+        cursor.execute(
                 "select 'Contributor', g.path, c.contact from search."
                 "contributors_new as c left join search.gcmd_providers as g "
                 "on g.uuid = c.keyword where c.dsid = %s and c.vocabulary = "
-                "'GCMD' and c.citable = 'Y' order by c.disp_order"), (dsid, ))
+                "'GCMD' and c.citable = 'Y' order by c.disp_order", (dsid, ))
         return cursor.fetchall()
     except Exception:
         return ()
@@ -58,7 +59,7 @@ def get_contributor(t):
             return "Unaffiliated Individual:" + contacts[0]
 
     else:
-        parts = t[0].split (" > ")
+        parts = t[0].split(" > ")
         return parts[-1].replace(", ", "/")
 
     return ""
@@ -66,7 +67,7 @@ def get_contributor(t):
 
 def list_authors(dsid, et_al, **kwargs):
     max_authors = kwargs['maxAuthors'] if 'maxAuthors' in kwargs else 0
-    if max_authors == 0 and et_al != None and len(et_al) == 0:
+    if max_authors == 0 and et_al is not None and len(et_al) == 0:
         return ""
 
     lfm = kwargs['lastFirstMiddle'] if 'lastFirstMiddle' in kwargs else "first"

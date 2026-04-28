@@ -613,25 +613,59 @@ def update_metadata_database(ctx, conn, **kwargs):
         conn.commit()
         cursor.execute("delete from search.dataset_authors where dsid = %s",
                        (ctx['dsid'], ))
-        conn.commit()
-        for x in range(0, len(ctx['authors'])):
-            author = ctx['authors'][x]
-            if 'corporation' in author:
-                cursor.execute((
-                        "insert into search.dataset_authors (dsid, type, "
-                        "given_name, sequence) values (%s, %s, %s, %s)"),
-                        (ctx['dsid'], "Organization", author['corporation'],
-                         x))
+        for seq_no in range(0, len(ctx['authors'])):
+            author = ctx['authors'][seq_no]
+            if 'organization' in author:
+                if 'uuid' not in author:
+                    cursor.execute(
+                            "select uuid from search.authors where type = "
+                            "'Organization' and given_name = %s",
+                            (author['organization'], ))
+                    author['uuid'], = cursor.fetchone() or (None, )
+                    if author['uuid'] is None:
+                        cursor.execute(
+                                "insert into search.authors (type, "
+                                "given_name) values (%s, %s) returning uuid",
+                                ("Organization", author['organization']))
+                        author['uuid'], = cursor.fetchone()
+
+                else:
+                    if author['uuid'][-1] == "!":
+                        author['uuid'] = author['uuid'][:-1]
+                        cursor.execute(
+                                "update search.authors set given_name = %s "
+                                "where uuid = %s",
+                                (author['organization'], author['uuid']))
+
+                cursor.execute(
+                        "insert into search.dataset_authors (dsid, uuid, "
+                        "sequence) values (%s, %s, %s)",
+                        (ctx['dsid'], author['uuid'], seq_no))
             else:
                 orcid_id = author['orcid_id'] if 'orcid_id' in author else None
-                cursor.execute((
-                        "insert into search.dataset_authors (dsid, type, "
-                        "given_name, middle_name, family_name, orcid_id, "
-                        "sequence) values (%s, %s, %s, %s, %s, %s, %s) on "
-                        "conflict on constraint dataset_authors_pkey do "
-                        "nothing"),
-                        (ctx['dsid'], "Person", author['fname'],
-                         author['mname'], author['lname'], orcid_id, x))
+                if 'uuid' not in author:
+                    cursor.execute(
+                            "insert into search.authors (type, given_name, "
+                            "middle_name, family_name, pid) values (%s, %s, "
+                            "%s, %s, %s) on conflict on constraint pid_key do "
+                            "update set type = 'Person'returning uuid",
+                            ("Person", author['fname'], author['mname'],
+                             author['lname'], orcid_id))
+                    author['uuid'], = cursor.fetchone()
+                else:
+                    if author['uuid'][-1] == "!":
+                        author['uuid'] = author['uuid'][:-1]
+                        cursor.execute(
+                                "update search.authors set given_name = %s, "
+                                "middle_name = %s, family_name = %s where "
+                                "uuid = %s",
+                                (author['fname'], author['mname'],
+                                 author['lname'], author['uuid']))
+
+                cursor.execute(
+                        "insert into search.dataset_authors (dsid, uuid, "
+                        "sequence) values (%s, %s, %s)",
+                        (ctx['dsid'], author['uuid'], seq_no))
 
         conn.commit()
     except Exception as e:
@@ -1893,9 +1927,11 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
 
     try:
         cursor.execute(
-                "select type, given_name, coalesce(middle_name, ''), "
-                "family_name, coalesce(orcid_id, '') from search."
-                "dataset_authors where dsid = %s order by sequence", (dsid, ))
+                "select a.type, a.given_name, coalesce(a.middle_name, ''), "
+                "a.family_name, coalesce(a.pid, ''), d.uuid from search."
+                "dataset_authors as d left join search.authors as a on a.uuid "
+                "= d.uuid where d.dsid = %s order by d.sequence",
+                (dsid, ))
         res = cursor.fetchall()
     except psycopg2.Error as err:
         log_error(err, source="fill_from_most_recent_commit")
@@ -1903,8 +1939,20 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
                            "metadata database: '{}'").format(err)}, )
 
     authors = []
+    errs = []
     for e in res:
-        authors.append("[!]".join(e[1:]) if e[0] == "Person" else e[1])
+        if e[0] is None:
+            errs.append(
+                    f"Dataset author UUID '{e[5]}' has no entry in authors "
+                    "table")
+        else:
+            authors.append("[!]".join(
+                    e[1:] if e[0] == "Person" else [e[1], e[5]]))
+
+    if len(errs) > 0:
+        err = "; ".join(errs)
+        log_error(err, source="fill_from_most_recent_commit")
+        return ({'error': f"Dataset author error: '{err}'"}, )
 
     page_vars['authors'] = "\n".join(authors)
     try:
@@ -1913,7 +1961,7 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
                 "citable from search.contributors_new as p left join search."
                 "gcmd_providers as g on g.uuid = p.keyword where p.dsid = %s "
                 "and p.vocabulary = 'GCMD' order by p.disp_order, g.path",
-               (dsid, ))
+                (dsid, ))
         res = cursor.fetchall()
     except psycopg2.Error as err:
         log_error(err, source="fill_from_most_recent_commit")
