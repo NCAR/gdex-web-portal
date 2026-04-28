@@ -613,7 +613,6 @@ def update_metadata_database(ctx, conn, **kwargs):
         conn.commit()
         cursor.execute("delete from search.dataset_authors2 where dsid = %s",
                        (ctx['dsid'], ))
-        conn.commit()
         for seq_no in range(0, len(ctx['authors'])):
             author = ctx['authors'][seq_no]
             if 'organization' in author:
@@ -625,7 +624,7 @@ def update_metadata_database(ctx, conn, **kwargs):
                 if uuid is None:
                     cursor.execute(
                             "insert into search.authors (type, given_name) "
-                            "values (%s %s) returning uuid",
+                            "values (%s, %s) returning uuid",
                             ("Organization", author['organization']))
                     uuid, = cursor.fetchone()
 
@@ -1910,7 +1909,7 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
     try:
         cursor.execute(
                 "select a.type, a.given_name, coalesce(a.middle_name, ''), "
-                "a.family_name, coalesce(a.pid, ''), a.uuid from search."
+                "a.family_name, coalesce(a.pid, ''), d.uuid from search."
                 "dataset_authors2 as d left join search.authors as a on a."
                 "uuid = d.uuid where d.dsid = %s order by d.sequence",
                 (dsid, ))
@@ -1921,8 +1920,20 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
                            "metadata database: '{}'").format(err)}, )
 
     authors = []
+    errs = []
     for e in res:
-        authors.append("[!]".join(e[1:] if e[0] == "Person" else [e[1], e[5]]))
+        if e[0] is None:
+            errs.append(
+                    "Dataset author UUID '{e[5]}' has no entry in authors "
+                    "table")
+        else:
+            authors.append("[!]".join(
+                    e[1:] if e[0] == "Person" else [e[1], e[5]]))
+
+    if len(errs) > 0:
+        err = "\n".join(errs)
+        log_error(err, source="fill_from_most_recent_commit")
+        return ({'error': f"Dataset author error: '{err}'"}, )
 
     page_vars['authors'] = "\n".join(authors)
     try:
