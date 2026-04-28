@@ -729,7 +729,7 @@ def get_author(request):
                 d['uuid'] = parts[4]
 
         else:
-            d['corp_name'] = parts[0]
+            d['inst_name'] = parts[0]
             if len(parts[1]) > 0:
                 d['uuid'] = parts[1]
 
