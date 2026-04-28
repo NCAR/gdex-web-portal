@@ -616,17 +616,21 @@ def update_metadata_database(ctx, conn, **kwargs):
         for seq_no in range(0, len(ctx['authors'])):
             author = ctx['authors'][seq_no]
             if 'organization' in author:
-                cursor.execute(
-                        "select uuid from search.authors where type = "
-                        "'Organization' and given_name = %s",
-                        (author['organization'], ))
-                uuid, = cursor.fetchone() or (None, )
-                if uuid is None:
+                if 'uuid' not in author:
                     cursor.execute(
-                            "insert into search.authors (type, given_name) "
-                            "values (%s, %s) returning uuid",
-                            ("Organization", author['organization']))
-                    uuid, = cursor.fetchone()
+                            "select uuid from search.authors where type = "
+                            "'Organization' and given_name = %s",
+                            (author['organization'], ))
+                    uuid, = cursor.fetchone() or (None, )
+                    if uuid is None:
+                        cursor.execute(
+                                "insert into search.authors (type, "
+                                "given_name) values (%s, %s) returning uuid",
+                                ("Organization", author['organization']))
+                        uuid, = cursor.fetchone()
+
+                else:
+                    pass
 
                 cursor.execute(
                         "insert into search.dataset_authors2 (dsid, uuid, "
@@ -643,6 +647,8 @@ def update_metadata_database(ctx, conn, **kwargs):
                             ("Person", author['fname'], author['mname'],
                              author['lname'], orcid_id))
                     author['uuid'], = cursor.fetchone()
+                else:
+                    pass
 
                 cursor.execute(
                         "insert into search.dataset_authors2 (dsid, uuid, "
