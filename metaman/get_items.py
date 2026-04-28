@@ -726,12 +726,12 @@ def get_author(request):
                 d['orcid_id'] = parts[3]
 
             if len(parts[4]) > 0:
-                d['uuid'] = parts[4]
+                d['uuid'] = parts[4].split("!")[0]
 
         else:
             d['inst_name'] = parts[0]
             if len(parts[1]) > 0:
-                d['uuid'] = parts[1]
+                d['uuid'] = parts[1].split("!")[0]
 
         return render(request, "metaman/datasets/get_author.html", d)
 
