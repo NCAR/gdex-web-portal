@@ -26,6 +26,7 @@ function wellFormedOrcidId(o) {
   }
   return true;
 }
+{% if orcid_id or inst_name %}
 {% if orcid_id %}
 function doFMLSubmit() {
   var f = document.person_form.first_name.value;
@@ -82,7 +83,7 @@ function doFMLSubmit() {
   hideModalWindow();
   return true;
 }
-
+{% else %}
 function doInstitutionSubmit() {
   var n = document.institution_form.name.value;
   if (n.length < 2) {
@@ -97,7 +98,7 @@ function doInstitutionSubmit() {
   hideModalWindow();
   return true;
 }
-
+{% endif %}
 function addAuthor(f, m, l, o, u) {
   var auth_list = document.getElementById("authors_field");
   if (auth_list.value.length > 0 && auth_list.value.charAt(auth_list.value.length-1) != "\n") {
@@ -223,12 +224,12 @@ function toggleAuthorView(show, hide) {
             {% endif %}
         </div>
         {% endif %}
-        {% if corp_name|length > 0 or not replace_item %}
+        {% if inst_name|length > 0 or not replace_item %}
         <div id="institution_view" class="{% if not replace_item %}d-none {% endif %}mt-2">
             <form name="institution_form" action="javascript:void(0)" onsubmit="return doInstitutionSubmit()">
                 {% if replace_item %}Updated {% endif %}Institution/Organization author name:
                 <br>
-                <input type="text" class="fs-6" name="name" size="90" value="{{ corp_name }}">
+                <input type="text" class="fs-6" name="name" size="90" value="{{ inst_name }}">
                 <center class="mt-1">
                     <button class="btn btn-primary px-2 py-1 border-1" onclick="document.institution_form.submit()">{% if replace_item %}Update{% else %}Add{% endif %} Institution Author</button>
                 </center>
