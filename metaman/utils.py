@@ -797,12 +797,18 @@ def extract_authors(list):
     for e in alst:
         parts = e.split("[!]")
         d = {}
-        if len(parts) == 1:
-            d.update({'corporation': parts[0]})
-        elif len(parts) == 3 or len(parts) == 4:
+        if len(parts) == 2:
+            d['organization'] = parts[0]
+            if len(parts[1]) > 0:
+                d['uuid'] = parts[1]
+
+        else:
             d.update({'fname': parts[0], 'mname': parts[1], 'lname': parts[2]})
-            if len(parts) == 4 and len(parts[3]) > 0:
-                d.update({'orcid_id': parts[3]})
+            if len(parts[3]) > 0:
+                d['orcid_id'] = parts[3]
+
+            if len(parts[4]) > 0:
+                d['uuid'] = parts[4]
 
         authors.append(d)
 
