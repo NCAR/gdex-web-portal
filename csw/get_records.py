@@ -86,9 +86,11 @@ def full(request, csw_request, conn):
         cursor = conn.cursor()
         for record in ctx['records']:
             cursor.execute((
-                    "select type, given_name, middle_name, family_name from "
-                    "search.dataset_authors where dsid = %s order by "
-                    "sequence"), (record['identifiers'][0][14:], ))
+                    "select a.type, a.given_name, a.middle_name, a."
+                    "family_name from search.authors as a left join search."
+                    "dataset_authors2 as d on d.uuid = a.uuid where d.dsid = "
+                    "%s order by d.sequence"),
+                    (record['identifiers'][0][14:], ))
             authors = cursor.fetchall()
             if len(authors) == 0:
                 cursor.execute((
