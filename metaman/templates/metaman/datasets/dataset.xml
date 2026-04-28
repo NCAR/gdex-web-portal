@@ -15,7 +15,7 @@
   <contributor vocabulary="GCMD"{% if contributor.former_name %} formerName="{{ contributor.former_name }}"{% endif %}{% if contributor.url %} url="{{ contributor.url }}"{% endif %}{% if contributor.contact %} contact="{{ contributor.contact }}"{% endif %} citable="{{ contributor.citable }}">{{ contributor.uuid }}</contributor>
 {% endfor %}
 {% for author in authors %}
-  <author xsi:type="author{% if author.corporation %}Corporation" name="{{ author.corporation }}"{% elif author.lname %}Person" fname="{{ author.fname }}" mname="{{ author.mname }}" lname="{{ author.lname }}"{% if author.orcid_id %} orcid_id="{{ author.orcid_id }}"{% endif %}{% endif %} />
+  <author xsi:type="author{% if author.organization %}Organization" name="{{ author.organization }}"{% elif author.lname %}Person" fname="{{ author.fname }}" mname="{{ author.mname }}" lname="{{ author.lname }}"{% if author.orcid_id %} orcid_id="{{ author.orcid_id }}"{% endif %}{% endif %} />
 {% endfor %}
 {% if access_restrictions or usage_restrictions %}
   <restrictions>
