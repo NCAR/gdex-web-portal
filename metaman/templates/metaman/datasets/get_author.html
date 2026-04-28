@@ -90,10 +90,11 @@ function doInstitutionSubmit() {
     alert("Error: missing or invalid institution name");
     return false;
   }
+  n += "[!]" + document.institution_form.uuid.value;
   {% if replace_item %}
   replaceItemPos('authors_field', document.institution_form.item_num.value, n);
   {% else %}
-  addAuthor(n, null, null, null, document.institution_form.uuid.value);
+  addAuthor(n)
   {% endif %}
   hideModalWindow();
   return true;
@@ -105,16 +106,9 @@ function addAuthor(f, m, l, o, u) {
     auth_list.value += "\n";
   }
   entry = f;
-  if (m != null) {
-    entry += "[!]" + m;
+  if (typeof(m) != "undefined") {
+    entry += "[!]" + m + "[!]" + l + "[!]" + o + "[!]" + u;
   }
-  if (l != null) {
-    entry += "[!]" + l;
-  }
-  if (o != null) {
-    entry += "[!]" + o;
-  }
-  entry += "[!]" + u;
   if (auth_list.value.indexOf(f) < 0) {
     auth_list.value += entry;
   }
