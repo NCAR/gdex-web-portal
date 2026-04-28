@@ -103,18 +103,9 @@ function addAuthor(f, m, l, o, u) {
   if (auth_list.value.length > 0 && auth_list.value.charAt(auth_list.value.length-1) != "\n") {
     auth_list.value += "\n";
   }
-  entry = f;
+  entry = f + "[!]";
   if (typeof(m) != "undefined") {
-    entry += '[!]' + m;
-  }
-  if (typeof(l) != "undefined") {
-    entry += '[!]' + l;
-  }
-  if (typeof(o) != "undefined") {
-    entry += '[!]' + o;
-  }
-  if (typeof(u) != "undefined") {
-    entry += '[!]' + u;
+    entry += m + "[!]" + l + "[!]" + o + "[!]" + u;
   }
   if (auth_list.value.indexOf(f) < 0) {
     auth_list.value += entry;
