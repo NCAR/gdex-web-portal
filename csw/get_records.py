@@ -233,7 +233,7 @@ def summary(request, csw_request, conn):
 
         ctx['next_record'] = next_record
         if 'dsid_list' in locals():
-            search_conditions = ["s.dsid = any(s)"]
+            search_conditions = ["s.dsid = any(%s)"]
             qparams = (dsid_list, )
         else:
             search_conditions = ["s.type in ('P', 'H')",
@@ -288,7 +288,7 @@ def summary(request, csw_request, conn):
     except psycopg2.Error as err:
         print((
                 f"CSW '{csw_request['elementsetname']}' ERROR: '{err}', "
-                "query: '{cursor.query}'"))
+                f"query: '{cursor.query}'"))
         return render(request, "csw/exception.xml",
                       context=utils.exception("TransactionFailed",
                                               text="Database failure"),
