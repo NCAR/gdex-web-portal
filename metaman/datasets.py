@@ -611,7 +611,7 @@ def update_metadata_database(ctx, conn, **kwargs):
                 "version = version+1 where dsid = %s"),
                 (ctx['title'], backflag, ctx['dsid']))
         conn.commit()
-        cursor.execute("delete from search.dataset_authors2 where dsid = %s",
+        cursor.execute("delete from search.dataset_authors where dsid = %s",
                        (ctx['dsid'], ))
         for seq_no in range(0, len(ctx['authors'])):
             author = ctx['authors'][seq_no]
@@ -638,7 +638,7 @@ def update_metadata_database(ctx, conn, **kwargs):
                                 (author['organization'], author['uuid']))
 
                 cursor.execute(
-                        "insert into search.dataset_authors2 (dsid, uuid, "
+                        "insert into search.dataset_authors (dsid, uuid, "
                         "sequence) values (%s, %s, %s)",
                         (ctx['dsid'], author['uuid'], seq_no))
             else:
@@ -663,7 +663,7 @@ def update_metadata_database(ctx, conn, **kwargs):
                                  author['lname'], author['uuid']))
 
                 cursor.execute(
-                        "insert into search.dataset_authors2 (dsid, uuid, "
+                        "insert into search.dataset_authors (dsid, uuid, "
                         "sequence) values (%s, %s, %s)",
                         (ctx['dsid'], author['uuid'], seq_no))
 
@@ -1929,8 +1929,8 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
         cursor.execute(
                 "select a.type, a.given_name, coalesce(a.middle_name, ''), "
                 "a.family_name, coalesce(a.pid, ''), d.uuid from search."
-                "dataset_authors2 as d left join search.authors as a on a."
-                "uuid = d.uuid where d.dsid = %s order by d.sequence",
+                "dataset_authors as d left join search.authors as a on a.uuid "
+                "= d.uuid where d.dsid = %s order by d.sequence",
                 (dsid, ))
         res = cursor.fetchall()
     except psycopg2.Error as err:

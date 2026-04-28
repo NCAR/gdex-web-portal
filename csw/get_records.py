@@ -88,7 +88,7 @@ def full(request, csw_request, conn):
             cursor.execute((
                     "select a.type, a.given_name, a.middle_name, a."
                     "family_name from search.authors as a left join search."
-                    "dataset_authors2 as d on d.uuid = a.uuid where d.dsid = "
+                    "dataset_authors as d on d.uuid = a.uuid where d.dsid = "
                     "%s order by d.sequence"),
                     (record['identifiers'][0][14:], ))
             authors = cursor.fetchall()

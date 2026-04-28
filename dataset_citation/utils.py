@@ -9,9 +9,9 @@ def get_authors(dsid):
         cursor = conn.cursor()
         cursor.execute(
                 "select a.type, a.given_name, a.middle_name, a.family_name "
-                "from search.authors as a left join search.dataset_authors2 "
-                "as d on d.uuid = a.uuid where d.dsid = %s order by d."
-                "sequence", (dsid, ))
+                "from search.authors as a left join search.dataset_authors as "
+                "d on d.uuid = a.uuid where d.dsid = %s order by d.sequence",
+                (dsid, ))
         res = cursor.fetchall()
         if len(res) > 0:
             return res
