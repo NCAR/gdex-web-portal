@@ -76,7 +76,7 @@ function doFMLSubmit() {
     m += '.';
   }
   {% if replace_item %}
-  replaceItemPos('authors_field', document.person_form.item_num.value, f + '[!]' + m + '[!]' + l + '[!]' + o + '[!]' + document.person_form.uuid.value);
+  replaceItemPos('authors_field', document.person_form.item_num.value, f + '[!]' + m + '[!]' + l + '[!]' + o + '[!]' + document.person_form.uuid.value + "!");
   {% else %}
   addAuthor(f, m, l, o, document.person_form.uuid.value);
   {% endif %}
@@ -92,7 +92,7 @@ function doInstitutionSubmit() {
   }
   n += "[!]" + document.institution_form.uuid.value;
   {% if replace_item %}
-  replaceItemPos('authors_field', document.institution_form.item_num.value, n);
+  replaceItemPos('authors_field', document.institution_form.item_num.value, n + "!");
   {% else %}
   addAuthor(n)
   {% endif %}
