@@ -621,21 +621,26 @@ def update_metadata_database(ctx, conn, **kwargs):
                             "select uuid from search.authors where type = "
                             "'Organization' and given_name = %s",
                             (author['organization'], ))
-                    uuid, = cursor.fetchone() or (None, )
-                    if uuid is None:
+                    author['uuid'], = cursor.fetchone() or (None, )
+                    if author['uuid'] is None:
                         cursor.execute(
                                 "insert into search.authors (type, "
                                 "given_name) values (%s, %s) returning uuid",
                                 ("Organization", author['organization']))
-                        uuid, = cursor.fetchone()
+                        author['uuid'], = cursor.fetchone()
 
                 else:
-                    pass
+                    if author['uuid'][-1] == "!":
+                        author['uuid'] = author['uuid'][:-1]
+                        cursor.execute(
+                                "update search.authors set given_name = %s "
+                                "where uuid = %s",
+                                (author['organization'], author['uuid']))
 
                 cursor.execute(
                         "insert into search.dataset_authors2 (dsid, uuid, "
                         "sequence) values (%s, %s, %s)",
-                        (ctx['dsid'], uuid, seq_no))
+                        (ctx['dsid'], author['uuid'], seq_no))
             else:
                 orcid_id = author['orcid_id'] if 'orcid_id' in author else None
                 if 'uuid' not in author:
@@ -648,7 +653,14 @@ def update_metadata_database(ctx, conn, **kwargs):
                              author['lname'], orcid_id))
                     author['uuid'], = cursor.fetchone()
                 else:
-                    pass
+                    if author['uuid'][-1] == "!":
+                        author['uuid'] = author['uuid'][:-1]
+                        cursor.execute(
+                                "update search.authors set given_name = %s, "
+                                "middle_name = %s, family_name = %s where "
+                                "uuid = %s",
+                                (author['fname'], author['mname'],
+                                 author['lname'], author['uuid']))
 
                 cursor.execute(
                         "insert into search.dataset_authors2 (dsid, uuid, "
