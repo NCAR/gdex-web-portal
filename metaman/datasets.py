@@ -638,7 +638,8 @@ def update_metadata_database(ctx, conn, **kwargs):
                     cursor.execute(
                             "insert into search.authors (type, given_name, "
                             "middle_name, family_name, pid) values (%s, %s, "
-                            "%s, %s, %s) returning uuid",
+                            "%s, %s, %s) on conflict on constraint pid_key do "
+                            "update set type = 'Person'returning uuid",
                             ("Person", author['fname'], author['mname'],
                              author['lname'], orcid_id))
                     author['uuid'], = cursor.fetchone()
@@ -1924,14 +1925,14 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
     for e in res:
         if e[0] is None:
             errs.append(
-                    "Dataset author UUID '{e[5]}' has no entry in authors "
+                    f"Dataset author UUID '{e[5]}' has no entry in authors "
                     "table")
         else:
             authors.append("[!]".join(
                     e[1:] if e[0] == "Person" else [e[1], e[5]]))
 
     if len(errs) > 0:
-        err = "\n".join(errs)
+        err = "; ".join(errs)
         log_error(err, source="fill_from_most_recent_commit")
         return ({'error': f"Dataset author error: '{err}'"}, )
 
