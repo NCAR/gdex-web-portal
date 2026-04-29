@@ -51,21 +51,21 @@
             }
             .copy-btn {
                 position: absolute;
-                top: 8px;
-                right: 8px;
-                background: #4CAF50;
-                border: none;
-                color: white;
-                padding: 6px 10px;
+                top: 6px;
+                right: 6px;
+                background: rgba(255,255,255,0.85);
+                border: 1px solid #ccc;
+                color: #555;
+                padding: 3px 8px;
                 border-radius: 4px;
                 cursor: pointer;
                 font-size: 12px;
+                line-height: 1.5;
+                transition: background 0.15s;
             }
             .copy-btn:hover {
-                background: #45a049;
-            }
-            #quickstart {
-                position: relative;
+                background: #fff;
+                color: #333;
             }
            </style>
 
@@ -80,11 +80,10 @@
                    });
                    $(".copy-btn").click(function() {
                        var code = $('#quickstart').text();
-
+                       const btn = $(this);
                        navigator.clipboard.writeText(code).then(() => {
-                           const btn = $(this);
-                           btn.text("Copied!");
-                           setTimeout(() => btn.text("Copy"), 1500);
+                           btn.html('<i class="fas fa-check"></i> Copied!');
+                           setTimeout(() => btn.html('<i class="fas fa-clipboard"></i> Copy'), 1500);
                        });
                    });
                });
@@ -109,18 +108,15 @@ ds['${varname}'] # ${extras}`
                searchInput.addEventListener('input', (event) => {
                    const query = event.target.value;
 
-                   // Logic to execute on keystroke
-                   console.log("Searching for:", query);
+                   $("#dropdown").html('<div class="dropdown_option text-muted">Loading...</div>').show();
                    $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+query, { }, function(data) {
-                       // 'data' is already a parsed JS object/array
                        update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'));
                        renderOptions(data);
                    })
                        .fail(function() {
                            console.error("Error fetching data");
+                           $("#dropdown").hide();
                        });
-
-
                });
                function renderOptions(filtered) {
                    $("#dropdown").empty();
@@ -169,7 +165,7 @@ ds['${varname}'] # ${extras}`
            </script>
                        </div>
                        <div style='position:relative'>
-                           <button class="copy-btn">Copy</button>
+                           <button class="copy-btn"><i class="fas fa-clipboard"></i> Copy</button>
        <pre><code id='quickstart'># Search for a variable above to get a specific filename
 import xarray
 ds = xarray.open_dataset('filename', engine='kerchunk')
