@@ -807,39 +807,53 @@ def get_random_webfile(dsid, parameter_code=None, start_date=None, end_date=None
         return result[0] # should only return 1 entry, so take first
     return None
 
+_ARCO_COLS = ['path', 'variable', 'format', 'short_name', 'long_name']
+
 def get_arco_variables(dsid):
     """Get Arco Variables"""
     import csv
     from io import StringIO
-    csv_info = check_cache('arco_vars', dsid )
+    csv_info = check_cache('arco_vars', dsid)
     if csv_info is not None:
         return csv_info
-    con,cur = init_connection_new()
-    wfile_table=f'wfile_{dsid}'
+    con, cur = init_connection_new()
+    wfile_table = f'wfile_{dsid}'
     assert len(wfile_table) == 13
     match_str = 'catalog%.csv'
     query = f'select wfile,locflag from {wfile_table} where gindex<0 and wfile like %s'
     cur.execute(query, (match_str,))
     result = cur.fetchall()
-    close_connection(con,cur)
-    csv_files = [(i[0],i[1]) for i in result]
-    res = [['unknown','error']]
-    print(csv_files)
+    close_connection(con, cur)
+    csv_files = [(i[0], i[1]) for i in result]
+    res = [['unknown', 'error']]
     for _file in csv_files:
         if 'http' in _file[0]:
             if _file[1] != 'O':
                 url = get_webfile_url(dsid, _file[0], settings.GLOBUS_DATA_BASE_URL, locflag=_file[1])
             else:
                 url = get_webfile_url(dsid, _file[0], settings.GLOBUS_STRATUS_BASE_URL, locflag=_file[1])
-            print(url)
             content = requests.get(url).content
-            reader = csv.reader(StringIO(content.decode()))
-            res = []
-            for row in reader:
-                if dsid in ['d316010']:
-                    shifted = [row[-1]] + row[1:-1]
-                    row = shifted
-                res.append(row)
+            rows = list(csv.reader(StringIO(content.decode())))
+            if not rows:
+                res = []
+                continue
+            header = [col.strip().lower() for col in rows[0]]
+            col_indices = [header.index(col) if col in header else None for col in _ARCO_COLS]
+            if col_indices == list(range(len(_ARCO_COLS))):
+                res = rows
+            else:
+                res = [_ARCO_COLS]
+                for row in rows[1:]:
+                    new_row = []
+                    for i, col in enumerate(_ARCO_COLS):
+                        idx = col_indices[i]
+                        if idx is not None:
+                            new_row.append(row[idx] if idx < len(row) else '')
+                        elif col == 'format':
+                            new_row.append('zarr')
+                        else:
+                            new_row.append('')
+                    res.append(new_row)
     add_to_cache('arco_vars', dsid, res)
     return res
 
