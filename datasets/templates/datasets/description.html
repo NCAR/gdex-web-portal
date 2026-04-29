@@ -118,43 +118,51 @@ ds['${varname}'] # ${extras}`
                            $("#dropdown").hide();
                        });
                });
+               const PAGE_SIZE = 8;
+               function makeOptionDiv(value) {
+                   return $("<div>")
+                       .addClass("dropdown_option")
+                       .text(value)
+                       .on("click", function () {
+                           $("#searchBar").val(value);
+                           $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+value, { }, function(data) {
+                               update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'));
+                           });
+                       });
+               }
                function renderOptions(filtered) {
                    $("#dropdown").empty();
-                   console.log('creating selections');
-
-                   console.log('length is' + filtered.data.length);
-                   if( filtered.data.length > 0){
-                       $("#dropdown").show();
-                   }
-                   else {
+                   if (filtered.data.length === 0) {
                        $("#dropdown").hide();
+                       return;
                    }
-                   $.each(filtered.data, function (_, value) {
-                       console.log(value);
-                       value = value[4];
-                       console.log(value);
-
+                   $("#dropdown").show();
+                   const values = filtered.data.map(function(row) { return row[4]; });
+                   const visible = values.slice(0, PAGE_SIZE);
+                   const hidden = values.slice(PAGE_SIZE);
+                   $.each(visible, function(_, value) {
+                       makeOptionDiv(value).appendTo("#dropdown");
+                   });
+                   if (hidden.length > 0) {
                        $("<div>")
-                           .addClass("dropdown_option")
-                           .text(value)
+                           .addClass("dropdown_option text-muted")
+                           .css("font-style", "italic")
+                           .text(hidden.length + " more...")
                            .appendTo("#dropdown")
                            .on("click", function () {
-                               $("#searchBar").val(value);
-                               $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+value, { }, function(data) {
-                                   // 'data' is already a parsed JS object/array
-                                   console.log("Parsed Response:", data);
-                                   console.log("number of results:", data.data.length);
-                                   update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'));
-                               })
+                               $(this).remove();
+                               $.each(hidden, function(_, value) {
+                                   makeOptionDiv(value).appendTo("#dropdown");
+                               });
                            });
-                   });
+                   }
                }
 
                $("#searchBar")
                    .on("focus", function () {
-                       $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+query, { }, function(data) {
-                           renderOptions(data);
-                       });
+                       if ($("#dropdown").children().length > 0) {
+                           $("#dropdown").show();
+                       }
                    })
 
                $(document).on("click", function (e) {
