@@ -165,7 +165,8 @@
                            .css("font-style", "italic")
                            .text(hidden.length + " more...")
                            .appendTo("#dropdown")
-                           .on("click", function () {
+                           .on("click", function (e) {
+                               e.stopPropagation();
                                $(this).remove();
                                $.each(hidden, function(_, value) {
                                    makeOptionDiv(value).appendTo("#dropdown");
@@ -182,7 +183,7 @@
                    })
 
                $(document).on("click", function (e) {
-                   if (!$(e.target).closest(".container").length) {
+                   if (!$(e.target).closest("#search_container").length) {
                        $("#dropdown").hide();
                    }
                });
