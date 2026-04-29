@@ -16,38 +16,48 @@
  <div class="row gx-0 mb-2 mb-md-1">
      <div class="col-12 col-md-2 dataset-label">Quick Access:</div>
      <div class="col-12 col-md-10">
-     <div id='search_container' class='d-flex justify-content-end'>
-      <div class='me-2' style='position:relative'>
-            <input type="text" id="searchBar" placeholder="Search for Variables...">
-     <div id="dropdown" style='postition:absolute'></div>
+     <div id='search_container' class='d-flex justify-content-end align-items-center'>
+      <div class='me-3' style='position:relative; width:300px'>
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="fas fa-search fa-sm text-muted"></i></span>
+          <input type="text" id="searchBar" class="form-control border-start-0 ps-0" placeholder="Search variables...">
+        </div>
+        <div id="dropdown"></div>
       </div>
-      <div class="form-check">
+      <div class="form-check mb-0">
        <input class="form-check-input" type="checkbox" value="" id="onHPC">
        <label class="form-check-label" for="onHPC">On NCAR HPC?</label>
-           </div>
+      </div>
            <style>
-            #searchBar {
-                width:300px;
-            }
             #dropdown {
                 position: absolute;
-                top: 100%;
+                top: calc(100% + 3px);
                 left: 0;
                 right: 0;
-                border: 1px solid #ccc;
+                border: 1px solid #dee2e6;
+                border-radius: 0.375rem;
                 background: #fff;
-                max-height: 150px;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+                max-height: 220px;
                 overflow-y: auto;
                 display: none;
                 z-index: 100;
             }
             .dropdown_option {
-                padding: 8px;
+                padding: 7px 12px;
                 cursor: pointer;
+                font-size: 0.875rem;
+                transition: background 0.1s, color 0.1s;
             }
-
+            .dropdown_option:first-child {
+                border-radius: 0.375rem 0.375rem 0 0;
+            }
+            .dropdown_option:last-child {
+                border-radius: 0 0 0.375rem 0.375rem;
+            }
             .dropdown_option:hover {
-                background: #f0f0f0;
+                background: #f0f4ff;
+                color: #0d6efd;
             }
             .copy-btn {
                 position: absolute;
