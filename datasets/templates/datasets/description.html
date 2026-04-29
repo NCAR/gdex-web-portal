@@ -84,6 +84,7 @@
                $(document).ready(function() {
                    $('#onHPC').change(function(){
                        var query = $('#searchBar').val();
+                       showLoadingCode();
                        $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+query, { }, function(data) {
                            update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'))
                        })
@@ -97,6 +98,13 @@
                        });
                    });
                });
+               let _lastCode = null;
+               function showLoadingCode() {
+                   if (_lastCode !== null) {
+                       const loading = _lastCode.replace(/filename = '.*?'/, "filename = 'loading...'");
+                       $('#quickstart').html(hljs.highlight(loading, { language: 'python' }).value);
+                   }
+               }
                function update_quickstart_code(filename, engine, varname, extras, onHPC)
                {
                    if(filename.endsWith('zarr')){
@@ -108,17 +116,15 @@
                    else {
                        filename = filename.replace('/glade/campaign/collections/gdex/data/','https://data.gdex.ucar.edu/');
                    }
-                   code_str = `import xarray
-filename = '${filename}'
-ds = xarray.open_dataset(filename, engine='${engine}')
-ds['${varname}'] # ${extras}`
-                   $('#quickstart').html(hljs.highlight(code_str,  { language: 'python' }).value);
+                   _lastCode = `import xarray\nfilename = '${filename}'\nds = xarray.open_dataset(filename, engine='${engine}')\nds['${varname}'] # ${extras}`;
+                   $('#quickstart').html(hljs.highlight(_lastCode, { language: 'python' }).value);
                }
                const searchInput = document.getElementById('searchBar');
                searchInput.addEventListener('input', (event) => {
                    const query = event.target.value;
 
                    $("#dropdown").html('<div class="dropdown_option text-muted">Loading...</div>').show();
+                   showLoadingCode();
                    $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/'+query, { }, function(data) {
                        update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'));
                        renderOptions(data);
