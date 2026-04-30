@@ -5,9 +5,11 @@ from django.shortcuts import redirect
 from django.urls import reverse
 import login.models as lm
 import api.common as common
- 
- 
+
+
 class CustomSignupForm(SignupForm):
+    """
+    """
     first_name = forms.CharField(max_length=30, label='First Name')
     last_name = forms.CharField(max_length=30, label='Last Name')
     email = forms.EmailField(label='Email Address')
@@ -15,7 +17,7 @@ class CustomSignupForm(SignupForm):
     first_name.widget.attrs.update({"class": "form-control"})
     last_name.widget.attrs.update({"class": "form-control"})
     email.widget.attrs.update({"class": "form-control"})
-    
+
     def __init__(self, *args, **kwargs):
         super(CustomSignupForm, self).__init__(*args, **kwargs)
         first_name = forms.CharField(max_length=30, label='First Name')
@@ -23,7 +25,7 @@ class CustomSignupForm(SignupForm):
         email = forms.EmailField(label='Email Address')
         self.fields['email2'] = forms.EmailField(label='Confirm Email')
         self.fields['email2'].widget.attrs.update({"class": "form-control"})
-        
+
     def save(self, request):
         try:
             user = super(CustomSignupForm, self).save(request)
