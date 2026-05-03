@@ -31,6 +31,7 @@ et_xmlfile==2.0.0
 filetype==1.2.0
 globus-sdk==3.56.0
 html5lib==1.1
+hvac==2.4.0
 idna==3.10
 l18n==2021.3
 laces==0.1.2
