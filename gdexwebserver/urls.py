@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', include(wagtailadmin_urls)),
     path('documents/', include(wagtaildocs_urls)),
     re_path(r'^citations(\..*?){0,1}/', include("apis.citations.urls"), name='output_format'),
+    path('robots.txt', views.robots_txt),
     path('contact-us/', views.contact_us),
     path('error/', views.error),
     path('search/', search_views.search, name='search'),
