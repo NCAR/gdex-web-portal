@@ -11,8 +11,6 @@ urlpatterns = [
     path(r'summary/<dsid>/', views.get_summary ),
     path(r'submit/', views.submit ),
     path(r'submit_json/', views.submit ),
-    path(r'print_help/', views.print_help ),
-    path(r'help/', views.print_help ),
     path(r'control_file_template/<dsid>/', views.get_control_file_template),
     path(r'control_file_template_old/<dsid>/', views.get_control_file_template_old ),
     path(r'status/<rindex>/', views.get_status ),

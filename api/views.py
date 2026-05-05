@@ -40,7 +40,6 @@ from .docs import (
     list_datasets_simple_schema,
     get_summary_schema,
     submit_schema,
-    print_help_schema,
     get_control_file_template_schema,
     get_status_schema,
     get_req_files_schema,
@@ -509,11 +508,6 @@ def submit_json(request):
     json = rdams.main("-submit")
     return JsonResponse(json)
 
-@print_help_schema
-@api_view(['GET'])
-def print_help(request):
-    json = rdams.main("-print_help")
-    return JsonResponse(json)
 
 @get_control_file_template_schema
 @api_view(['GET'])

@@ -381,15 +381,6 @@ submit_schema = extend_schema(
     tags=['requests']
 )
 
-print_help_schema = extend_schema(
-    operation_id='get_api_help',
-    summary='Get API help information',
-    description='Returns help information and documentation for the GDEX data request API.',
-    parameters=[],
-    responses={200: {'type': 'object', 'description': 'API help information'}},
-    tags=['help']
-)
-
 get_control_file_template_schema = extend_schema(
     operation_id='get_control_file_template',
     summary='Get control file template',
