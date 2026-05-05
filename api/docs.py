@@ -109,7 +109,7 @@ get_root_groups_schema = extend_schema(
             }
         }
     },
-    tags=['files']
+    tags=['Dataset-level Metadata']
 )
 
 get_assembled_groups_schema = extend_schema(
@@ -136,7 +136,7 @@ get_assembled_groups_schema = extend_schema(
             'properties': {**_STD_200, 'data': {'type': 'object'}}
         }
     },
-    tags=['files']
+    tags=['Dataset-level Metadata']
 )
 
 get_child_groups_schema = extend_schema(
@@ -154,7 +154,7 @@ get_child_groups_schema = extend_schema(
             'properties': {**_STD_200, 'data': {'type': 'array', 'items': {'type': 'object'}}}
         }
     },
-    tags=['files']
+    tags=['Dataset-level Metadata']
 )
 
 get_web_files_schema = extend_schema(
@@ -172,7 +172,7 @@ get_web_files_schema = extend_schema(
             'properties': {**_STD_200, 'data': {'type': 'array', 'items': {'type': 'object'}}}
         }
     },
-    tags=['files']
+    tags=['Dataset-level Metadata']
 )
 
 # ---------------------------------------------------------------------------
@@ -190,7 +190,7 @@ get_dataset_documentation_schema = extend_schema(
             'properties': {**_STD_200, 'data': {'type': 'array', 'items': {'type': 'object'}}}
         }
     },
-    tags=['documentation']
+    tags=['Dataset-level Metadata']
 )
 
 get_dataset_software_schema = extend_schema(
@@ -204,7 +204,7 @@ get_dataset_software_schema = extend_schema(
             'properties': {**_STD_200, 'data': {'type': 'array', 'items': {'type': 'object'}}}
         }
     },
-    tags=['documentation']
+    tags=['Dataset-level Metadata']
 )
 
 # ---------------------------------------------------------------------------
@@ -353,7 +353,7 @@ get_all_datasets_schema = extend_schema(
             }
         }
     },
-    tags=['all_datasets']
+    tags=['Dataset-level Metadata']
 )
 
 # ---------------------------------------------------------------------------
@@ -690,7 +690,7 @@ get_abstract_schema = extend_schema(
             }
         }
     },
-    tags=['abstract']
+    tags=['Dataset-level Metadata']
 )
 
 get_acknowledgement_schema = extend_schema(
@@ -725,7 +725,7 @@ get_acknowledgement_schema = extend_schema(
             }
         }
     },
-    tags=['acknowledgment']
+    tags=['Dataset-level Metadata']
 )
 
 get_temporal_schema = extend_schema(
@@ -777,7 +777,7 @@ get_temporal_schema = extend_schema(
             }
         }
     },
-    tags=['temporal']
+    tags=['Dataset-level Metadata']
 )
 
 get_variables_schema = extend_schema(
@@ -823,7 +823,7 @@ get_variables_schema = extend_schema(
             }
         }
     },
-    tags=['variables']
+    tags=['Dataset-level Metadata']
 )
 
 get_publications_schema = extend_schema(
@@ -874,7 +874,7 @@ get_publications_schema = extend_schema(
             }
         }
     },
-    tags=['publications']
+    tags=['Dataset-level Metadata']
 )
 
 get_data_license_schema = extend_schema(
@@ -912,7 +912,7 @@ get_data_license_schema = extend_schema(
             }
         }
     },
-    tags=['data_license']
+    tags=['Dataset-level Metadata']
 )
 
 get_data_types_schema = extend_schema(
@@ -950,7 +950,7 @@ get_data_types_schema = extend_schema(
             }
         }
     },
-    tags=['data_types']
+    tags=['Dataset-level Metadata']
 )
 
 get_data_formats_schema = extend_schema(
@@ -997,7 +997,7 @@ get_data_formats_schema = extend_schema(
             }
         }
     },
-    tags=['data_formats']
+    tags=['Dataset-level Metadata']
 )
 
 get_spatial_coverage_schema = extend_schema(
@@ -1071,7 +1071,7 @@ get_spatial_coverage_schema = extend_schema(
             }
         }
     },
-    tags=['spatial']
+    tags=['Dataset-level Metadata']
 )
 
 get_contributors_schema = extend_schema(
@@ -1118,7 +1118,7 @@ get_contributors_schema = extend_schema(
             }
         }
     },
-    tags=['contributors']
+    tags=['Dataset-level Metadata']
 )
 
 get_total_volume_schema = extend_schema(
@@ -1164,7 +1164,7 @@ get_total_volume_schema = extend_schema(
             }
         }
     },
-    tags=['volume']
+    tags=['Dataset-level Metadata']
 )
 
 get_related_resources_schema = extend_schema(
@@ -1209,7 +1209,7 @@ get_related_resources_schema = extend_schema(
             }
         }
     },
-    tags=['resources']
+    tags=['Dataset-level Metadata']
 )
 
 get_related_datasets_schema = extend_schema(
@@ -1254,7 +1254,7 @@ get_related_datasets_schema = extend_schema(
             }
         }
     },
-    tags=['related_datasets']
+    tags=['Dataset-level Metadata']
 )
 
 # ---------------------------------------------------------------------------
