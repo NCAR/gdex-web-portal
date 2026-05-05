@@ -57,16 +57,62 @@ def verify_login(request):
     cookies = request.COOKIES
     return None
 
+@extend_schema(
+    operation_id='get_param_summary',
+    summary='Get parameter summary for a dataset',
+    description='Retrieves a summary of parameters available for subsetting a specific dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={200: {'type': 'object', 'description': 'Parameter summary data'}},
+    tags=['parameters']
+)
+@api_view(['GET'])
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def param_summary(request, dsid):
     json = rdams.main("-get_param_summary",dsid)
     return JsonResponse(json)
 
+@extend_schema(
+    operation_id='get_dataset_metadata',
+    summary='Get dataset metadata',
+    description='Retrieves detailed metadata for a specific dataset including available parameters and data ranges.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={200: {'type': 'object', 'description': 'Dataset metadata'}},
+    tags=['metadata']
+)
+@api_view(['GET'])
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_metadata(request, dsid):
     json = rdams.main("-get_metadata",dsid)
     return JsonResponse(json)
 
+@extend_schema(
+    operation_id='get_staff',
+    summary='Get all staff members',
+    description='Retrieves a list of all RDA staff members.',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {'type': 'array', 'items': {'type': 'object'}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['staff']
+)
+@api_view(['GET'])
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_staff(request):
     json = common.get_staff()
@@ -74,6 +120,30 @@ def get_staff(request):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
+@extend_schema(
+    operation_id='get_staff_by_dataset',
+    summary='Get staff members for a dataset',
+    description='Retrieves the RDA staff members associated with a specific dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {'type': 'array', 'items': {'type': 'object'}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['staff']
+)
+@api_view(['GET'])
 def get_staff_dsid(request, dsid):
     dsid = common.format_dataset_id(dsid)
     json = common.get_staff_dsid(dsid)
@@ -126,6 +196,7 @@ class JiraEventReceiver(APIView):
     renderer_classes = [JSONRenderer] # disable UI rendering, return JSON only
     http_method_names = ['post'] # allow POST only
 
+    @extend_schema(exclude=True)
     def post(self,request, ticket_id=None):
         payload = request.body
         payload_ticket_id = ticket_id if ticket_id else None
@@ -193,6 +264,7 @@ def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
         response.add_data(json_data)
         return JsonResponse(response.get_json())
 
+@extend_schema(exclude=True)
 def clear_cache(request, dsid):
     """Clear cache that matches dsid"""
     assert re.match('d\d\d\d\d\d\d', dsid)
@@ -208,6 +280,30 @@ def clear_cache(request, dsid):
         os.remove(file)
     return JsonResponse({"success": True})
 
+@extend_schema(
+    operation_id='get_dataset_root_groups',
+    summary='Get root file groups for a dataset',
+    description='Retrieves the top-level file groups for a specific dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {'type': 'array', 'items': {'type': 'object'}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['files']
+)
+@api_view(['GET'])
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_root_groups(request, dsid):
     dsid = common.format_dataset_id(dsid)
@@ -218,6 +314,41 @@ def get_root_groups(request, dsid):
 
 
 
+@extend_schema(
+    operation_id='get_assembled_file_groups',
+    summary='Get assembled file listing for a dataset',
+    description='''
+        Returns a paginated table-like representation of files within a dataset.
+        Supports optional group index, page, file name filter, and file list source.
+    ''',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}'),
+        OpenApiParameter(name='gindex', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Group index (optional)', required=False),
+        OpenApiParameter(name='page', type=OpenApiTypes.INT, location=OpenApiParameter.QUERY,
+                         description='Page number for pagination', required=False),
+        OpenApiParameter(name='filter_wfile', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+                         description='Filter files by name pattern', required=False),
+        OpenApiParameter(name='fl', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+                         description='File list source (default: web)', required=False),
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {'type': 'object'},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['files']
+)
+@api_view(['GET'])
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_assembled_groups(request, dsid, gindex=None):
     """ Creates table like representation of webfile data """
@@ -242,7 +373,37 @@ def get_assembled_groups(request, dsid, gindex=None):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
+@extend_schema(
+    operation_id='has_arco_data',
+    summary='Check if ARCO data is available',
+    description='Returns whether Analysis-Ready Cloud-Optimized (ARCO) data is available for a specific dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'has_arco': {'type': 'boolean', 'example': True,
+                                     'description': 'Whether ARCO data is available for the dataset'}
+                    }
+                },
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['arco']
+)
 @cache_page(4 * 24 * 60 * 60) # cache for 4 days
+@api_view(['GET'])
 def has_arco(request, dsid):
     """Return true if arco datasets available"""
     result = common.has_arco(dsid)
@@ -250,13 +411,64 @@ def has_arco(request, dsid):
     response.add_data({'has_arco':result})
     return JsonResponse(response.get_json())
 
+@extend_schema(
+    operation_id='get_arco_variables',
+    summary='Get ARCO variables for a dataset',
+    description='Retrieves the list of variables available in the Analysis-Ready Cloud-Optimized (ARCO) version of a dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {'type': 'object', 'description': 'ARCO variable list and metadata'},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['arco']
+)
 @cache_page(4 * 24 * 60 * 60) # cache for 4 days
+@api_view(['GET'])
 def get_arco_variables(request, dsid):
     result = common.get_arco_variables(dsid)
     response = rda_r.RDA_Response()
     response.add_data({result})
     return JsonResponse(response.get_json())
 
+@extend_schema(
+    operation_id='search_arco_variables',
+    summary='Search ARCO variables for a dataset',
+    description='Searches the ARCO variables for a specific dataset using a case-insensitive text pattern match.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}'),
+        OpenApiParameter(name='search_text', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Text to search for in variable names', required=True),
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {'type': 'array', 'items': {'type': 'array'},
+                         'description': 'Matching ARCO variables'},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['arco']
+)
+@api_view(['GET'])
 def search_arco_variables(request, dsid, search_text):
     data = common.get_arco_variables(dsid)
     header = data[0]
@@ -271,6 +483,32 @@ def search_arco_variables(request, dsid, search_text):
     response.add_data(matches)
     return JsonResponse(response.get_json())
 
+@extend_schema(
+    operation_id='get_dataset_child_groups',
+    summary='Get child file groups',
+    description='Retrieves child file groups nested under a specific parent group for a dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}'),
+        OpenApiParameter(name='gindex', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Parent group index', required=True),
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {'type': 'array', 'items': {'type': 'object'}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['files']
+)
+@api_view(['GET'])
 def get_child_groups(request, dsid, gindex):
     dsid = common.format_dataset_id(dsid)
     json = common.get_child_groups(dsid, gindex)
@@ -281,6 +519,32 @@ def get_child_groups(request, dsid, gindex):
 def dynamic_key_prefix(request):
     return f"section:{request.resolver_match.url_name}"
 
+@extend_schema(
+    operation_id='get_dataset_web_files',
+    summary='Get web-accessible files for a group',
+    description='Retrieves the list of web-accessible files for a specific file group within a dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}'),
+        OpenApiParameter(name='gindex', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Group index', required=True),
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {'type': 'array', 'items': {'type': 'object'}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['files']
+)
+@api_view(['GET'])
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_web_files(request, dsid, gindex, filter_wfile=None):
     dsid = common.format_dataset_id(dsid)
@@ -296,6 +560,30 @@ def assemble_filelist(request, dsid):
     root_groups = common.get_root_groups()
 
 
+@extend_schema(
+    operation_id='get_dataset_documentation',
+    summary='Get dataset documentation',
+    description='Retrieves documentation files and links associated with a specific dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {'type': 'array', 'items': {'type': 'object'}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['documentation']
+)
+@api_view(['GET'])
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_dataset_documentation(request, dsid):
     dsid = common.format_dataset_id(dsid)
@@ -304,6 +592,30 @@ def get_dataset_documentation(request, dsid):
     response.add_data(json)
     return JsonResponse(response.get_json())
 
+@extend_schema(
+    operation_id='get_dataset_software',
+    summary='Get software associated with a dataset',
+    description='Retrieves software tools and utilities associated with a specific dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'status': {'type': 'string', 'example': 'ok'},
+                'http_response': {'type': 'integer', 'example': 200},
+                'error_messages': {'type': 'array', 'items': {'type': 'string'}, 'example': []},
+                'data': {'type': 'array', 'items': {'type': 'object'}},
+                'contact': {'type': 'string', 'example': 'rdahelp@ucar.edu'}
+            }
+        }
+    },
+    tags=['documentation']
+)
+@api_view(['GET'])
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_dataset_software(request, dsid):
     dsid = common.format_dataset_id(dsid)
@@ -314,7 +626,22 @@ def get_dataset_software(request, dsid):
     return JsonResponse(response_json)
 
 
+@extend_schema(
+    operation_id='generate_jupyter_notebook',
+    summary='Generate a Jupyter notebook for downloading data',
+    description='''
+        Generates a Jupyter notebook (.ipynb) for downloading and visualizing a list of dataset files.
+        Submit a POST request with one or more `filelist[]` form fields containing file URLs.
+    ''',
+    parameters=[],
+    responses={
+        200: {'description': 'Jupyter notebook content'},
+        400: {'description': 'Invalid request — missing or incorrectly named filelist parameter'}
+    },
+    tags=['notebook']
+)
 @csrf_exempt
+@api_view(['POST'])
 def generate_notebook(request):
     from . import NBBuilder as nbb
 
@@ -394,16 +721,70 @@ def generate_notebook(request):
     return HttpResponse(str(b))
 
 
+@extend_schema(
+    operation_id='list_datasets_simple',
+    summary='List all datasets (simple format)',
+    description='Retrieves a simple list of all available datasets.',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'data': {
+                    'type': 'array',
+                    'items': {'type': 'object'},
+                    'description': 'List of all datasets'
+                }
+            }
+        }
+    },
+    tags=['datasets']
+)
+@api_view(['GET'])
 def get_datasets(request):
     json = common.get_all_datasets()
     return JsonResponse({'data':json})
 
+@extend_schema(
+    operation_id='get_dataset_summary',
+    summary='Get dataset parameter summary',
+    description='Retrieves a summary of available parameters and data ranges for a specific dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={200: {'type': 'object', 'description': 'Dataset summary'}},
+    tags=['metadata']
+)
+@api_view(['GET'])
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_summary(request, dsid):
     json = rdams.main("-get_summary",dsid)
     return JsonResponse(json)
 
+@extend_schema(
+    operation_id='submit_data_request',
+    summary='Submit a data request',
+    description='''
+        Submits a data subset request for a specific dataset. Requires a user authentication token
+        provided as a query parameter. The request body must be a JSON control file specifying the
+        subset parameters (dataset, parameters, temporal/spatial range, etc.).
+
+        Visit `/accounts/profile/` to obtain your authentication token.
+    ''',
+    parameters=[
+        OpenApiParameter(name='token', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+                         description='User authentication token (from /accounts/profile/)', required=True),
+    ],
+    responses={
+        200: {'type': 'object', 'description': 'Submission result including request index'},
+        400: {'description': 'Invalid token or malformed request body'}
+    },
+    tags=['requests']
+)
 @csrf_exempt
+@api_view(['POST'])
 def submit(request):
     if request.method != 'POST':
         response = rda_r.RDA_Response()
@@ -420,6 +801,7 @@ def submit(request):
     json_response = rdams.main("-submit", request_json, email)
     return JsonResponse(json_response)
 
+@extend_schema(exclude=True)
 @csrf_exempt
 def submit_json(request):
     email = get_email_from_token(request)
@@ -430,20 +812,61 @@ def submit_json(request):
     json = rdams.main("-submit")
     return JsonResponse(json)
 
+@extend_schema(
+    operation_id='get_api_help',
+    summary='Get API help information',
+    description='Returns help information and documentation for the RDAMS data request API.',
+    parameters=[],
+    responses={200: {'type': 'object', 'description': 'API help information'}},
+    tags=['help']
+)
+@api_view(['GET'])
 def print_help(request):
     json = rdams.main("-print_help")
     return JsonResponse(json)
 
+@extend_schema(
+    operation_id='get_control_file_template',
+    summary='Get control file template',
+    description='Retrieves the control file template for submitting data requests for a specific dataset.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={200: {'type': 'object', 'description': 'Control file template with available parameters'}},
+    tags=['requests']
+)
+@api_view(['GET'])
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_control_file_template(request, dsid):
     json = rdams.main("-get_control_file_template", dsid)
     return JsonResponse(json)
 
+@extend_schema(exclude=True)
 #@dynamic_prefix_cache_page(60*60*24*7, get_path)
 def get_control_file_template_old(request, dsid):
     json = rdams.main("-get_control_file_template_old", dsid)
     return JsonResponse(json)
 
+@extend_schema(
+    operation_id='get_request_status',
+    summary='Get data request status',
+    description='''
+        Retrieves the status of one or all data requests for the authenticated user.
+        Omit `rindex` to retrieve status for all requests. Authentication is via token query
+        parameter or session cookie.
+    ''',
+    parameters=[
+        OpenApiParameter(name='rindex', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Request index (omit to retrieve all requests)', required=False),
+        OpenApiParameter(name='token', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+                         description='User authentication token (from /accounts/profile/)', required=False),
+    ],
+    responses={200: {'type': 'object', 'description': 'Request status information'}},
+    tags=['requests']
+)
+@api_view(['GET'])
 def get_status(request, rindex=None):
     email = get_email_from_token(request)
     if email is None:
@@ -451,76 +874,340 @@ def get_status(request, rindex=None):
     json = rdams.main("-get_status", rindex, email)
     return JsonResponse(json)
 
+@extend_schema(
+    operation_id='get_request_files',
+    summary='Get files for a completed data request',
+    description='Retrieves the list of output files available for a completed data request.',
+    parameters=[
+        OpenApiParameter(name='rindex', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Request index', required=True),
+        OpenApiParameter(name='token', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+                         description='User authentication token (from /accounts/profile/)', required=False),
+    ],
+    responses={200: {'type': 'object', 'description': 'List of files for the request'}},
+    tags=['requests']
+)
+@api_view(['GET'])
 def get_req_files(request, rindex):
     email = get_email_from_token(request)
     json = rdams.main("-get_req_files", rindex, email)
     return JsonResponse(json)
 
+@extend_schema(exclude=True)
 def get_req_files_old(request, rindex):
     json = rdams.main("-get_req_files_old", rindex)
     return JsonResponse(json)
 
+@extend_schema(
+    operation_id='metrics_volume_downloaded',
+    summary='Get total volume downloaded',
+    description='Returns the total data volume downloaded from GDEX across all datasets.',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'volume': {'type': 'number', 'description': 'Total volume downloaded in bytes'}
+            }
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(4 * 24 * 60 * 60) # cache for 4 days
+@api_view(['GET'])
 def volume_downloaded(request):
     volume = common.get_volume_downloaded_db()
     return JsonResponse({'volume':volume})
 
+@extend_schema(
+    operation_id='metrics_unique_users',
+    summary='Get number of unique users',
+    description='Returns the count of unique users who have downloaded data from GDEX.',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'ips': {'type': 'integer', 'description': 'Number of unique users'}
+            }
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(4 * 24 * 60 * 60) # cache for 4 days
+@api_view(['GET'])
 def unique_users(request):
     ips = common.get_number_of_unique_users_db()
     return JsonResponse({'ips':ips})
 
+@extend_schema(
+    operation_id='metrics_total_datasets',
+    summary='Get total number of datasets',
+    description='Returns the total number of datasets available in GDEX.',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'value': {'type': 'integer', 'description': 'Total number of datasets'}
+            }
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(24 * 60 * 60)
+@api_view(['GET'])
 def total_datasets(request):
     return JsonResponse({'value': common.get_number_of_datasets()})
 
+@extend_schema(
+    operation_id='metrics_total_citations',
+    summary='Get total number of dataset citations',
+    description='Returns the total number of citations for GDEX datasets.',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'value': {'type': 'integer', 'description': 'Total number of citations'}
+            }
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(24 * 60 * 60)
+@api_view(['GET'])
 def total_citations(request):
     return JsonResponse({'value': common.get_total_citations()})
 
+@extend_schema(
+    operation_id='metrics_gdex_volume',
+    summary='Get total GDEX data volume',
+    description='Returns the total size of all data hosted in GDEX.',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'value': {'type': 'string', 'description': 'Total GDEX data volume with units',
+                          'example': '3.2 PB'}
+            }
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(24 * 60 * 60)
+@api_view(['GET'])
 def gdex_volume(request):
     return JsonResponse({'value': common.get_gdex_volume()})
 
+@extend_schema(
+    operation_id='metrics_total_requests',
+    summary='Get total number of data requests',
+    description='Returns the total number of data subset requests submitted to GDEX.',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'value': {'type': 'integer', 'description': 'Total number of data requests'}
+            }
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(24 * 60 * 60)
+@api_view(['GET'])
 def total_requests(request):
     return JsonResponse({'value': common.get_total_requests()})
 
+@extend_schema(
+    operation_id='metrics_top_datasets',
+    summary='Get most-downloaded datasets',
+    description='Returns a list of the most frequently downloaded datasets in GDEX.',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'top_datasets': {
+                    'type': 'array',
+                    'items': {'type': 'object'},
+                    'description': 'List of top datasets with download statistics'
+                }
+            }
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(24 * 60 * 60)
+@api_view(['GET'])
 def top_datasets(request):
     return JsonResponse({'top_datasets': common.get_top_datasets()})
 
+@extend_schema(
+    operation_id='metrics_ai_datasets',
+    summary='Get AI/ML-relevant datasets',
+    description='Returns datasets that are suitable for or commonly used in AI and machine learning applications.',
+    parameters=[],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'ai_datasets': {
+                    'type': 'array',
+                    'items': {'type': 'array'},
+                    'description': 'List of AI/ML datasets'
+                }
+            }
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(24 * 60 * 60)
+@api_view(['GET'])
 def ai_datasets(request):
     return JsonResponse({'ai_datasets': [list(row) for row in common.get_AI_datasets()]})
 
 TWO_WEEKS = 14 * 24 * 60 * 60
 
+@extend_schema(
+    operation_id='metrics_dataset_users_month',
+    summary='Get dataset unique users in the past 30 days',
+    description='Returns the number of unique users who have downloaded data from a specific dataset in the past 30 days.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'value': {'type': 'integer', 'description': 'Number of unique users in the past 30 days'}
+            }
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(TWO_WEEKS)
+@api_view(['GET'])
 def dataset_users_month(request, dsid):
     since = datetime.now() - timedelta(days=30)
     return JsonResponse({'value': common.get_dataset_users(dsid, since)})
 
+@extend_schema(
+    operation_id='metrics_dataset_users_year',
+    summary='Get dataset unique users in the past year',
+    description='Returns the number of unique users who have downloaded data from a specific dataset in the past 365 days.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'value': {'type': 'integer', 'description': 'Number of unique users in the past year'}
+            }
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(TWO_WEEKS)
+@api_view(['GET'])
 def dataset_users_year(request, dsid):
     since = datetime.now() - timedelta(days=365)
     return JsonResponse({'value': common.get_dataset_users(dsid, since)})
 
+@extend_schema(
+    operation_id='metrics_dataset_volume_month',
+    summary='Get dataset download volume in the past 30 days',
+    description='Returns the total data volume downloaded from a specific dataset in the past 30 days.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'description': 'Volume downloaded in the past 30 days'
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(TWO_WEEKS)
+@api_view(['GET'])
 def dataset_volume_month(request, dsid):
     since = datetime.now() - timedelta(days=30)
     return JsonResponse(common.get_dataset_volume(dsid, since))
 
+@extend_schema(
+    operation_id='metrics_dataset_volume_year',
+    summary='Get dataset download volume in the past year',
+    description='Returns the total data volume downloaded from a specific dataset in the past 365 days.',
+    parameters=[
+        OpenApiParameter(name='dsid', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Dataset identifier in 6-digit format (e.g., d123456)',
+                         required=True, pattern=r'd\d{6}')
+    ],
+    responses={
+        200: {
+            'type': 'object',
+            'description': 'Volume downloaded in the past year'
+        }
+    },
+    tags=['metrics']
+)
 @cache_page(TWO_WEEKS)
+@api_view(['GET'])
 def dataset_volume_year(request, dsid):
     since = datetime.now() - timedelta(days=365)
     return JsonResponse(common.get_dataset_volume(dsid, since))
 
+@extend_schema(
+    operation_id='initiate_globus_download',
+    summary='Initiate a Globus transfer for a request',
+    description='Initiates a Globus transfer of completed request files to a specified Globus endpoint.',
+    parameters=[
+        OpenApiParameter(name='rindex', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Request index', required=True),
+        OpenApiParameter(name='endpoint', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Destination Globus endpoint UUID', required=True),
+    ],
+    responses={200: {'type': 'object', 'description': 'Globus transfer initiation result'}},
+    tags=['globus']
+)
+@api_view(['GET'])
 def globus_download(request, rindex, endpoint):
     json = rdams.main("-globus_download", rindex, endpoint)
     return JsonResponse(json)
 
+@extend_schema(
+    operation_id='purge_data_request',
+    summary='Purge a data request',
+    description='''
+        Deletes a data request and its associated output files. Requires a DELETE HTTP method
+        and a valid user authentication token.
+
+        Visit `/accounts/profile/` to obtain your authentication token.
+    ''',
+    parameters=[
+        OpenApiParameter(name='rindex', type=OpenApiTypes.STR, location=OpenApiParameter.PATH,
+                         description='Request index to purge', required=True),
+        OpenApiParameter(name='token', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+                         description='User authentication token (from /accounts/profile/)', required=True),
+    ],
+    responses={
+        200: {'type': 'object', 'description': 'Purge result'},
+        400: {'description': 'Wrong HTTP method or invalid token'}
+    },
+    tags=['requests']
+)
 @csrf_exempt
+@api_view(['DELETE'])
 def purge(request, rindex):
     if request.method != 'DELETE':
         response = rda_r.RDA_Response()
