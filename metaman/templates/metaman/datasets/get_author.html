@@ -218,7 +218,7 @@ function toggleAuthorView(show, hide) {
                     </div>
                 </div>
                 <center>
-                    <button class="btn btn-primary px-2 py-1 border-1"{% if fname_mutable or mname_mutable %} onclick="document.person_form.submit()"{% else %} disabled{% endif %}>{% if replace_item %}Update{% else %}Add{% endif %} This Author</button>
+                    <button class="btn btn-primary px-2 py-1 border-1"{% if not replace_item or fname_mutable or mname_mutable %} onclick="document.person_form.submit()"{% else %} disabled{% endif %}>{% if replace_item %}Update{% else %}Add{% endif %} This Author</button>
                 </center>
                 <input type="hidden" name="uuid" value="{{ uuid }}">
                 <input type="hidden" name="item_num" value="{{ item_num }}">
