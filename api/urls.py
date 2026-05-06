@@ -1,10 +1,11 @@
-from django.urls import path
+from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from . import views
 from dataaccess.views import DataAccessAPIView
 
 # The api.gdex.ucar.edu subdomain (apis/urls.py) also serves apis/citations/urls.py
 
-urlpatterns = [
+_urlpatterns = [
     path('paramsummary/<dsid>/', views.param_summary, name='paramsummary'),
     path(r'get_staff/', views.get_staff),
     path(r'get_staff/<dsid>/', views.get_staff_dsid),
@@ -76,4 +77,10 @@ urlpatterns = [
 
     #path(r'accept/', views.accept),
     #path(r'reject/', views.reject)
+]
+
+urlpatterns = _urlpatterns + [
+    path('schema/', SpectacularAPIView.as_view(patterns=[path('api/', include((_urlpatterns, 'api')))]), name='schema'),
+    path('documentation/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
