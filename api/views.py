@@ -1,4 +1,5 @@
 import json
+from drf_spectacular.utils import extend_schema
 import os
 import requests
 from datetime import datetime, timedelta
@@ -383,6 +384,7 @@ def get_dataset_software(request, dsid):
     response_json = response.get_json()
     return JsonResponse(response_json)
 
+@extend_schema(exclude=True)
 @csrf_exempt
 @api_view(['POST'])
 def generate_notebook(request):
