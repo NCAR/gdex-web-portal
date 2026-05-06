@@ -4,9 +4,6 @@
 {% if 'error' in matrix %}
 <h3>{{ matrix.error.header }}</h3>
 <p>{{ matrix.error.message|richtext }}</p>
-{% if 'module' in matrix.error %}
-<p>module: {{ matrix.error.module }}</p>
-{% endif %}
 {% else %}
 <link rel="stylesheet" type="text/css" href="{% static 'dataaccess/css/matrix.css' %}">
 <style type="text/css">
@@ -151,7 +148,7 @@
             {% if matrix.columns.web_files %}
             <div class="d-fil o-blk tx-c" style="grid-row: {{ row }}">
                 {% if group.dwebcnt > 0 %}
-                <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}{{ group.index }}/', replace_ds_content)">Web<br>Download</a>
+                <a href="javascript:void(0)" onclick="$.get('{{ group.urls.web }}/', replace_ds_content)">Web<br>Download</a>
                 {% endif %}
             </div>
             {% endif %}
