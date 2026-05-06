@@ -329,19 +329,16 @@ class Matrix:
     class Error:
         header = ""
         message = ""
-        module = ""
 
         def __bool__(self):
             return len(self.message) > 0
 
-        def set(self, header, message, module):
+        def set(self, header, message):
             self.header = header
             self.message = message
-            self.module = module
 
         def to_json(self):
-            return {'error': {'header': self.header, 'message': self.message,
-                              'module': self.module}}
+            return {'error': {'header': self.header, 'message': self.message}}
 
 
 def get_globus_share(duser, dsnum, cursor):
