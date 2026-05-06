@@ -151,7 +151,7 @@
             {% if matrix.columns.web_files %}
             <div class="d-fil o-blk tx-c" style="grid-row: {{ row }}">
                 {% if group.dwebcnt > 0 %}
-                <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}{{ group.index }}/', replace_ds_content)">Web<br>Download</a>
+                <a href="javascript:void(0)" onclick="$.get('{{ group.urls.web }}/', replace_ds_content)">Web<br>Download</a>
                 {% endif %}
             </div>
             {% endif %}
