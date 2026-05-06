@@ -4,9 +4,6 @@
 {% if 'error' in matrix %}
 <h3>{{ matrix.error.header }}</h3>
 <p>{{ matrix.error.message|richtext }}</p>
-{% if 'module' in matrix.error %}
-<p>module: {{ matrix.error.module }}</p>
-{% endif %}
 {% else %}
 <link rel="stylesheet" type="text/css" href="{% static 'dataaccess/css/matrix.css' %}">
 <style type="text/css">
