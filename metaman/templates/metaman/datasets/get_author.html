@@ -26,8 +26,7 @@ function wellFormedOrcidId(o) {
   }
   return true;
 }
-{% if orcid_id or inst_name %}
-{% if orcid_id %}
+
 function doFMLSubmit() {
   var f = document.person_form.first_name.value;
   if (f.length == 0) {
@@ -87,7 +86,7 @@ function doFMLSubmit() {
   hideModalWindow();
   return true;
 }
-{% endif %}
+
 function addAuthor(f, m, l, o, u) {
   var auth_list = document.getElementById("authors_field");
   if (auth_list.value.length > 0 && auth_list.value.charAt(auth_list.value.length-1) != "\n") {
@@ -103,7 +102,7 @@ function addAuthor(f, m, l, o, u) {
   auth_list.scrollTop = auth_list.scrollHeight;
   changed_authors_field = true;
 }
-{% else %}
+
 function doOrcidCheck() {
   if (!wellFormedOrcidId(document.orcid_form.orcid_id.value)) {
     return;
@@ -136,7 +135,6 @@ function toggleAuthorView(show, hide) {
     document.getElementById(show + "_view").classList.replace("d-none", "d-block");
     document.getElementById(hide + "_view").classList.replace("d-block", "d-none");
 }
-{% endif %}
 </script>
 <center>
     <h2>{% if replace_item %}Edit Author{% else %}Add an Author{% endif %}</h2>
