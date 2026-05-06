@@ -231,7 +231,7 @@ has_arco_schema = extend_schema(
             }
         }
     },
-    tags=['arco']
+    tags=['ARCO']
 )
 
 get_arco_variables_schema = extend_schema(
@@ -248,7 +248,7 @@ get_arco_variables_schema = extend_schema(
             }
         }
     },
-    tags=['arco']
+    tags=['ARCO']
 )
 
 search_arco_variables_schema = extend_schema(
@@ -269,7 +269,7 @@ search_arco_variables_schema = extend_schema(
             }
         }
     },
-    tags=['arco']
+    tags=['ARCO']
 )
 
 # ---------------------------------------------------------------------------
