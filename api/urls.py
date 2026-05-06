@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 from dataaccess.views import DataAccessAPIView
 
+# The api.gdex.ucar.edu subdomain (apis/urls.py) also serves apis/citations/urls.py
+
 urlpatterns = [
     path('paramsummary/<dsid>/', views.param_summary, name='paramsummary'),
     path(r'get_staff/', views.get_staff),

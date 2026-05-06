@@ -99,6 +99,7 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
+    'apis.middleware.APISubdomainMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
