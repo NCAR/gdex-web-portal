@@ -66,11 +66,11 @@ class Matrix:
 
         self.columns['glade'] = True
         for db in config.content_metadata_dbs:
-            if os.path.isfile("/data/web/datasets/" + self.dsid + "/metadata/customize." + db):
+            if os.path.isfile(f"/data/web/datasets/{self.dsid}/metadata/customize.{db}"):
                 self.union_urls['web_files'] = fb['web'].substitute(dsid=self.dsid)
                 self.union_urls['glade'] = fb['glade'].substitute(dsid=self.dsid)
 
-        if not 'web_files' in self.union_urls:
+        if 'web_files' not in self.union_urls:
             self.union_urls['web_files'] = sl['web'].substitute(dsid=self.dsid)
             self.union_urls['glade'] = sl['glade'].substitute(dsid=self.dsid)
 
@@ -79,7 +79,7 @@ class Matrix:
     def get_download_file_data(self):
         q = "select dwebcnt, inet_access, locflag from dssdb.dataset as d left join search.datasets as s on s.dsid = d.dsid where s.dsid = %s"
         res_tup = my_execute(self.cursor, q, (self.dsid, ), ResultType.ONE)
-        if not res_tup[1] is None or res_tup[0] is None:
+        if res_tup[1] is not None or res_tup[0] is None:
             self.error.set("Server Error", "Database error", "get_download_file_data")
             return {}
 
@@ -92,13 +92,13 @@ class Matrix:
     def set_custom_request_data(self):
         q = "select url, rqsttype from dssdb.rcrqst where dsid in %s and gindex = 0"
         res_tup = my_execute(self.cursor, q, (tuple(slug_list(self.dsid)), ), ResultType.MANY)
-        if not res_tup[1] is None:
+        if res_tup[1] is not None:
             logger.debug("res_tup: {0}, {1}".format(res_tup[0], res_tup[1]))
             sys.stderr.write("ERROR set_custom_request_data(): '" + res_tup[1] + "' for '" + self.dsid + "'\n")
             self.error.set("Server Error", "Database error", "set_custom_request_data")
             return
 
-        if not res_tup[0] is None:
+        if res_tup[0] is not None:
             for result in res_tup[0]:
                 if result[0]:
                     if result[1] in {"S", "T"}:
@@ -130,9 +130,6 @@ class Matrix:
         for result in results:
             gindex = result[0]
             if gindex in group_dict:
-                if not 'urls' in group_dict[gindex]:
-                    group_dict[gindex]['urls'] = {}
-
                 rtyp = result[1]
                 if rtyp in {"S", "T"}:
                     group_dict[gindex]['urls']['subset'] = result[2]
@@ -161,11 +158,18 @@ class Matrix:
     def fill_group_data(self, results):
         group_dict = {}
         for result in results:
-            group_dict[result[0]] = {'index': result[0], 'title': result[1], 'dwebcnt': result[2], 'nwebcnt': result[3]}
+            group_dict[result[0]] = {'index': result[0], 'title': result[1], 'dwebcnt': result[2], 'nwebcnt': result[3], 'urls': {}}
+            for db in config.content_metadata_dbs:
+                if os.path.isfile(f"/data/web/datasets/{self.dsid}/metadata/customize.{db}.{result[0]}"):
+                    group_dict[result[0]]['urls']['web'] = os.path.join(fb['web'].substitute(dsid=self.dsid), str(result[0]))
+                    break
+
+            if 'web' not in group_dict[result[0]]['urls']:
+                group_dict[result[0]]['urls']['web'] = os.path.join(sl['web'].substitute(dsid=self.dsid), str(result[0]))
 
         q = "select gindex, rqsttype, url from dssdb.rcrqst where dsid in %s and gindex != 0"
         res_tup = my_execute(self.cursor, q, (tuple(slug_list(self.dsid)), ), ResultType.MANY)
-        if not res_tup[1] is None or res_tup[0] is None:
+        if res_tup[1] is not None or res_tup[0] is None:
             self.error.set("Server Error", "Database error", "fill_group_data")
             return {}
 
@@ -182,11 +186,11 @@ class Matrix:
     def get_group_data(self):
         q = "select gindex, title, dwebcnt, nwebcnt from dssdb.dsgroup where dsid in %s and pindex = 0 and ((dwebcnt > 0 or nwebcnt > 0) or gindex < 0) order by gindex"
         res_tup = my_execute(self.cursor, q, (tuple(slug_list(self.dsid)), ), ResultType.MANY)
-        if not res_tup[1] is None:
+        if res_tup[1] is not None:
             self.error.set("Server Error", "Database error", "get_group_data")
             return {}
 
-        if not res_tup[0] is None and len(res_tup[0]) > 1:
+        if res_tup[0] is not None and len(res_tup[0]) > 1:
             """The dataset needs to have more than one group for the matrix to
             have a row for each group.
             """
@@ -293,12 +297,12 @@ def get_globus_share(duser, dsnum, cursor):
     share_data = {}
     q = "select globus_url from dssdb.goshare where email = %s and dsid = concat('ds', %s) and status = 'ACTIVE'"
     res_tup = my_execute(cursor, q, (duser, dsnum), ResultType.ONE)
-    if not res_tup[1] is None:
+    if res_tup[1] is not None:
         share_data['error_header'] = "Server Error"
         share_data['error_message'] = "Database error (get_globus_share)"
         return share_data
 
-    if not res_tup[0] is None:
+    if res_tup[0] is not None:
         result = res_tup[0]
         if result[0]:
             share_data['share'] = result[0]
