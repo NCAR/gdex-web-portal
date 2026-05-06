@@ -32,7 +32,7 @@ param_summary_schema = extend_schema(
     description='Retrieves a summary of parameters available for subsetting a specific dataset.',
     parameters=[_DSID],
     responses={200: {'type': 'object', 'description': 'Parameter summary data'}},
-    tags=['parameters']
+    tags=['requests']
 )
 
 get_metadata_schema = extend_schema(
@@ -41,7 +41,7 @@ get_metadata_schema = extend_schema(
     description='Retrieves detailed metadata for a specific dataset including available parameters and data ranges.',
     parameters=[_DSID],
     responses={200: {'type': 'object', 'description': 'Dataset metadata'}},
-    tags=['metadata']
+    tags=['requests']
 )
 
 get_summary_schema = extend_schema(
@@ -50,7 +50,7 @@ get_summary_schema = extend_schema(
     description='Retrieves a summary of available parameters and data ranges for a specific dataset.',
     parameters=[_DSID],
     responses={200: {'type': 'object', 'description': 'Dataset summary'}},
-    tags=['metadata']
+    tags=['requests']
 )
 
 # ---------------------------------------------------------------------------
@@ -109,7 +109,7 @@ get_root_groups_schema = extend_schema(
             }
         }
     },
-    tags=['Dataset-level Metadata']
+    tags=['Files']
 )
 
 get_assembled_groups_schema = extend_schema(
@@ -136,7 +136,7 @@ get_assembled_groups_schema = extend_schema(
             'properties': {**_STD_200, 'data': {'type': 'object'}}
         }
     },
-    tags=['Dataset-level Metadata']
+    tags=['Files']
 )
 
 get_child_groups_schema = extend_schema(
@@ -154,7 +154,7 @@ get_child_groups_schema = extend_schema(
             'properties': {**_STD_200, 'data': {'type': 'array', 'items': {'type': 'object'}}}
         }
     },
-    tags=['Dataset-level Metadata']
+    tags=['Files']
 )
 
 get_web_files_schema = extend_schema(
@@ -172,7 +172,7 @@ get_web_files_schema = extend_schema(
             'properties': {**_STD_200, 'data': {'type': 'array', 'items': {'type': 'object'}}}
         }
     },
-    tags=['Dataset-level Metadata']
+    tags=['Files']
 )
 
 # ---------------------------------------------------------------------------
@@ -270,25 +270,6 @@ search_arco_variables_schema = extend_schema(
         }
     },
     tags=['arco']
-)
-
-# ---------------------------------------------------------------------------
-# Notebook
-# ---------------------------------------------------------------------------
-
-generate_notebook_schema = extend_schema(
-    operation_id='generate_jupyter_notebook',
-    summary='Generate a Jupyter notebook for downloading data',
-    description='''
-        Generates a Jupyter notebook (.ipynb) for downloading and visualizing a list of dataset files.
-        Submit a POST request with one or more `filelist[]` form fields containing file URLs.
-    ''',
-    parameters=[],
-    responses={
-        200: {'description': 'Jupyter notebook content'},
-        400: {'description': 'Invalid request — missing or incorrectly named filelist parameter'}
-    },
-    tags=['notebook']
 )
 
 # ---------------------------------------------------------------------------

@@ -36,7 +36,6 @@ from .docs import (
     get_web_files_schema,
     get_dataset_documentation_schema,
     get_dataset_software_schema,
-    generate_notebook_schema,
     list_datasets_simple_schema,
     get_summary_schema,
     submit_schema,
@@ -384,7 +383,6 @@ def get_dataset_software(request, dsid):
     response_json = response.get_json()
     return JsonResponse(response_json)
 
-@generate_notebook_schema
 @csrf_exempt
 @api_view(['POST'])
 def generate_notebook(request):
