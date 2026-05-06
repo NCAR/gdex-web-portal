@@ -388,7 +388,6 @@ def check_html(html, spellchecker):
                     "there is content somewhere that is not within a "
                     "paragraph (&amp;lt;p&amp;gt;&amp;lt;/p&amp;gt;)."))
 
-    check_text = "".join([etree.tostring(e).decode("ascii") for e in root])
     spellchecker.check(
             convert_html_to_text(html).encode("utf-8")
                                       .decode("unicode-escape"))
@@ -1285,7 +1284,6 @@ def horizontal_resolution_keyword(res_type, max_res):
         if max_res < 0.005:
             return "H : 250 meters - < 500 meters"
 
-
         if max_res < 0.01:
             return "H : 500 meters - < 1 km"
 
@@ -1395,8 +1393,9 @@ def get_author_from_orcid_id(orcid_id):
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
         cursor.execute(
-                "select uuid, given_name, middle_name, family_name from "
-                "search.authors where pid = %s", (orcid_id, ))
+                "select uuid, given_name, middle_name, family_name, "
+                "unistr(given_name), unistr(family_name) from search.authors "
+                "where pid = %s", (orcid_id, ))
         res = cursor.fetchone()
         if res is not None:
             return res
@@ -1414,14 +1413,15 @@ def get_author_from_orcid_id(orcid_id):
                 "./personal-details:name/personal-details:family-name", ns)
         if lname is None:
             return ({'error': "No last name is available for this ID"}, None,
-                    None)
+                    None, None, None, None)
 
         fname = root.find(
                 "./personal-details:name/personal-details:given-names", ns)
-        return ("", fname.text if fname is not None else "", "", lname.text)
+        return ("", fname.text if fname is not None else "", "", lname.text,
+                fname.text, lname.text)
 
     except Exception as err:
-        return ({'error': err}, None, None)
+        return ({'error': err}, None, None, None, None, None)
     finally:
         if 'conn' in locals():
             conn.close()
