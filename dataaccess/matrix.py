@@ -17,12 +17,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 DataFormatConversionType = Enum('DataFormatConversionType',
-    [
-        ('GLOBAL', 'global'),
-        ('GROUP', 'group'),
-    ]
-)
+                                [('GLOBAL', 'global'), ('GROUP', 'group'),])
 ResultType = Enum('ResultType', 'ONE MANY')
+
 
 class Matrix:
     def __init__(self, dsid, duser):
@@ -50,24 +47,29 @@ class Matrix:
         if result[0] != '0':
             web_data['home'] = config.webhome_path + "/" + self.dsid
 
-        web_data['locflag'] = result[2] 
+        web_data['locflag'] = result[2]
         self.columns['web_files'] = True
         self.columns['globus'] = True
-        logger.debug("dsid: {}, locflag: {}".format(self.dsid, web_data['locflag']))
-        g_dsid = self.dsid;
+        logger.debug(f"dsid: {self.dsid}, locflag: {web_data['locflag']}")
+        g_dsid = self.dsid
         if g_dsid[0] != 'd':
             g_dsid = "ds" + g_dsid
 
         try:
-            self.union_urls['globus'] = get_guest_collection_url(dsid=g_dsid, locflag=web_data['locflag'])
-        except:
+            self.union_urls['globus'] = (
+                    get_guest_collection_url(dsid=g_dsid,
+                                             locflag=web_data['locflag']))
+        except Exception:
             pass
 
         self.columns['glade'] = True
         for db in config.content_metadata_dbs:
-            if os.path.isfile(f"/data/web/datasets/{self.dsid}/metadata/customize.{db}"):
-                self.union_urls['web_files'] = fb['web'].substitute(dsid=self.dsid)
-                self.union_urls['glade'] = fb['glade'].substitute(dsid=self.dsid)
+            if os.path.isfile(
+                    f"/data/web/datasets/{self.dsid}/metadata/customize.{db}"):
+                self.union_urls['web_files'] = (
+                        fb['web'].substitute(dsid=self.dsid))
+                self.union_urls['glade'] = (
+                        fb['glade'].substitute(dsid=self.dsid))
 
         if 'web_files' not in self.union_urls:
             self.union_urls['web_files'] = sl['web'].substitute(dsid=self.dsid)
@@ -76,54 +78,79 @@ class Matrix:
         return web_data
 
     def get_download_file_data(self):
-        q = "select dwebcnt, inet_access, locflag from dssdb.dataset as d left join search.datasets as s on s.dsid = d.dsid where s.dsid = %s"
+        q = ("select dwebcnt, inet_access, locflag from dssdb.dataset as d "
+             "left join search.datasets as s on s.dsid = d.dsid where "
+             "s.dsid = %s")
         res_tup = my_execute(self.cursor, q, (self.dsid, ), ResultType.ONE)
         if res_tup[1] is not None or res_tup[0] is None:
-            self.error.set("Server Error", "Database error", "get_download_file_data")
+            self.error.set("Server Error", "Database error",
+                           "get_download_file_data")
             return {}
 
         if res_tup[0][0] == 0 or res_tup[0][1] == "N":
-            self.error.set("No Public Access", "This dataset contains data files that are not currently publicly accessible. For assistance, please <a href=\"/contact-us/\">submit a request</a> for access to the data in this dataset. Be sure to include the dataset title in your request.", None)
+            self.error.set(
+                    "No Public Access",
+                    ("This dataset contains data files that are not currently "
+                     "publicly accessible. For assistance, please <a "
+                     'href="/contact-us/">submit a request</a> for access to '
+                     "the data in this dataset. Be sure to include the "
+                     "dataset title in your request."),
+                    None)
             return {}
-        
+
         return self.fill_download_file_data(res_tup[0])
 
     def set_custom_request_data(self):
-        q = "select url, rqsttype from dssdb.rcrqst where dsid in %s and gindex = 0"
-        res_tup = my_execute(self.cursor, q, (tuple(slug_list(self.dsid)), ), ResultType.MANY)
+        q = ("select url, rqsttype from dssdb.rcrqst where dsid in %s and "
+             "gindex = 0")
+        res_tup = my_execute(self.cursor, q, (tuple(slug_list(self.dsid)), ),
+                             ResultType.MANY)
         if res_tup[1] is not None:
             logger.debug("res_tup: {0}, {1}".format(res_tup[0], res_tup[1]))
-            sys.stderr.write("ERROR set_custom_request_data(): '" + res_tup[1] + "' for '" + self.dsid + "'\n")
-            self.error.set("Server Error", "Database error", "set_custom_request_data")
+            sys.stderr.write("ERROR set_custom_request_data(): "
+                             f"'{res_tup[1]}' for '{self.dsid}'\n")
+            self.error.set("Server Error", "Database error",
+                           "set_custom_request_data")
             return
 
-        if res_tup[0] is not None:
-            for result in res_tup[0]:
-                if result[0]:
-                    if result[1] in {"S", "T"}:
-                        self.union_urls['subset'] = result[0]
-                        if self.union_urls['subset'].find("/cgi-bin/datasets/getSubset") >= 0:
-                            self.union_urls['subset'] = "/datasets/" + self.dsid + "/facbrowse/subset/customize/"
-                        elif re.search("^/datasets/ds.*\.(php|html).*$", self.union_urls['subset']):
-                            self.union_urls['subset'] = "/php" + self.union_urls['subset']
+        if res_tup[0] is None:
+            return
 
-                        self.columns['subset'] = True
-                    elif result[1] == "N":
-                        self.union_urls['dap'] = result[0]
-                        self.columns['other'] = True
-                    elif result[1] == "F":
-                        """
-                        This means global format conversion with specified URL.
-                        """
-                        self.columns['data_format_conversion'] = DataFormatConversionType.GLOBAL.value
-                        self.union_urls['data_format_conversion'] = result[0]
+        for result in res_tup[0]:
+            if result[0]:
+                if result[1] in {"S", "T"}:
+                    self.union_urls['subset'] = result[0]
+                    if self.union_urls['subset'].find(
+                            "/cgi-bin/datasets/getSubset") >= 0:
+                        self.union_urls['subset'] = (
+                                f"/datasets/{self.dsid}/facbrowse/subset/"
+                                "customize/")
+                    elif re.search(r"^/datasets/ds.*\.(php|html).*$",
+                                   self.union_urls['subset']):
+                        self.union_urls['subset'] = (
+                                f"/php{self.union_urls['subset']}")
 
+                    self.columns['subset'] = True
+                elif result[1] == "N":
+                    self.union_urls['dap'] = result[0]
+                    self.columns['other'] = True
                 elif result[1] == "F":
                     """
-                    This means global format conversion with default URL.
+                    This means global format conversion with specified URL.
                     """
-                    self.columns['data_format_conversion'] = DataFormatConversionType.GLOBAL.value
-                    self.union_urls['data_format_conversion'] = sl['data_format_conversion'].substitute(dsid=self.dsid)
+                    self.columns['data_format_conversion'] = (
+                            DataFormatConversionType.GLOBAL.value)
+                    self.union_urls['data_format_conversion'] = result[0]
+
+            elif result[1] == "F":
+                """
+                This means global format conversion with default URL.
+                """
+                self.columns['data_format_conversion'] = (
+                        DataFormatConversionType.GLOBAL.value)
+                self.union_urls['data_format_conversion'] = (
+                        sl['data_format_conversion'].substitute(
+                                dsid=self.dsid))
 
     def set_group_data(self, results, group_dict):
         for result in results:
@@ -132,15 +159,22 @@ class Matrix:
                 rtyp = result[1]
                 if rtyp in {"S", "T"}:
                     group_dict[gindex]['urls']['subset'] = result[2]
-                    if group_dict[gindex]['urls']['subset'].find("/cgi-bin/datasets/getSubset") >= 0:
-                        group_dict[gindex]['urls']['subset'] = "/datasets/" + self.dsid + "/facbrowse/subset/customize/"
-                    elif re.search("^/datasets/ds.*\.(php|html).*$", group_dict[gindex]['urls']['subset']):
-                        group_dict[gindex]['urls']['subset'] = "/php" + group_dict[gindex]['urls']['subset']
+                    if group_dict[gindex]['urls']['subset'].find(
+                            "/cgi-bin/datasets/getSubset") >= 0:
+                        group_dict[gindex]['urls']['subset'] = (
+                                f"/datasets/{self.dsid}/facbrowse/subset/"
+                                "customize/")
+                    elif re.search(r"^/datasets/ds.*\.(php|html).*$",
+                                   group_dict[gindex]['urls']['subset']):
+                        group_dict[gindex]['urls']['subset'] = (
+                                f"/php{group_dict[gindex]['urls']['subset']}")
 
                     if group_dict[gindex]['urls']['subset'].find("?") >= 0:
-                        group_dict[gindex]['urls']['subset'] += '&gindex=' + str(gindex)
+                        group_dict[gindex]['urls']['subset'] += (
+                                f"&gindex={str(gindex)}")
                     else:
-                        group_dict[gindex]['urls']['subset'] += '?gindex=' + str(gindex)
+                        group_dict[gindex]['urls']['subset'] += (
+                                f"?gindex={str(gindex)}")
 
                     self.columns['subset'] = True
                 elif rtyp == "N":
@@ -151,23 +185,37 @@ class Matrix:
                     This means only group-specific format conversion. 'url'
                     should be null. Use the url from config.
                     """
-                    group_dict[gindex]['urls']['data_format_conversion'] = sl['data_format_conversion'].substitute(dsid=self.dsid) + '/' + str(gindex) + '?converted=True'
-                    self.columns['data_format_conversion'] = DataFormatConversionType.GROUP.value
+                    group_dict[gindex]['urls']['data_format_conversion'] = (
+                            sl['data_format_conversion'].substitute(
+                                    dsid=self.dsid) +
+                            f"/{str(gindex)}?converted=True")
+                    self.columns['data_format_conversion'] = (
+                            DataFormatConversionType.GROUP.value)
 
     def fill_group_data(self, results):
         group_dict = {}
         for result in results:
-            group_dict[result[0]] = {'index': result[0], 'title': result[1], 'dwebcnt': result[2], 'nwebcnt': result[3], 'urls': {}}
+            group_dict[result[0]] = {
+                    'index': result[0], 'title': result[1],
+                    'dwebcnt': result[2], 'nwebcnt': result[3], 'urls': {}}
             for db in config.content_metadata_dbs:
-                if os.path.isfile(f"/data/web/datasets/{self.dsid}/metadata/customize.{db}.{result[0]}"):
-                    group_dict[result[0]]['urls']['web'] = os.path.join(fb['web'].substitute(dsid=self.dsid), str(result[0]))
+                if os.path.isfile(
+                        "/data/web/datasets/{self.dsid}/metadata/customize."
+                        f"{db}.{result[0]}"):
+                    group_dict[result[0]]['urls']['web'] = (
+                            os.path.join(fb['web'].substitute(dsid=self.dsid),
+                                         str(result[0])))
                     break
 
             if 'web' not in group_dict[result[0]]['urls']:
-                group_dict[result[0]]['urls']['web'] = os.path.join(sl['web'].substitute(dsid=self.dsid), str(result[0]))
+                group_dict[result[0]]['urls']['web'] = (
+                        os.path.join(sl['web'].substitute(dsid=self.dsid),
+                                     str(result[0])))
 
-        q = "select gindex, rqsttype, url from dssdb.rcrqst where dsid in %s and gindex != 0"
-        res_tup = my_execute(self.cursor, q, (tuple(slug_list(self.dsid)), ), ResultType.MANY)
+        q = ("select gindex, rqsttype, url from dssdb.rcrqst where dsid in %s "
+             "and gindex != 0")
+        res_tup = my_execute(self.cursor, q, (tuple(slug_list(self.dsid)), ),
+                             ResultType.MANY)
         if res_tup[1] is not None or res_tup[0] is None:
             self.error.set("Server Error", "Database error", "fill_group_data")
             return {}
@@ -179,12 +227,18 @@ class Matrix:
         for key in group_dict:
             group_data.append(group_dict[key])
         # Put ARCO data at end
-        group_data = sorted(group_data, key=lambda group:group['index'] if group['index'] >=0 else group['index'] * -1000000)
+        group_data = sorted(group_data,
+                            key=(lambda group: group['index'] if
+                                 group['index'] >= 0 else group['index'] *
+                                 -1000000))
         return group_data
 
     def get_group_data(self):
-        q = "select gindex, title, dwebcnt, nwebcnt from dssdb.dsgroup where dsid in %s and pindex = 0 and ((dwebcnt > 0 or nwebcnt > 0) or gindex < 0) order by gindex"
-        res_tup = my_execute(self.cursor, q, (tuple(slug_list(self.dsid)), ), ResultType.MANY)
+        q = ("select gindex, title, dwebcnt, nwebcnt from dssdb.dsgroup where "
+             "dsid in %s and pindex = 0 and ((dwebcnt > 0 or nwebcnt > 0) or "
+             "gindex < 0) order by gindex")
+        res_tup = my_execute(self.cursor, q, (tuple(slug_list(self.dsid)), ),
+                             ResultType.MANY)
         if res_tup[1] is not None:
             self.error.set("Server Error", "Database error", "get_group_data")
             return {}
@@ -286,7 +340,8 @@ class Matrix:
             self.module = module
 
         def to_json(self):
-            return {'error': {'header': self.header, 'message': self.message, 'module': self.module}}
+            return {'error': {'header': self.header, 'message': self.message,
+                              'module': self.module}}
 
 
 def get_globus_share(duser, dsnum, cursor):
@@ -294,7 +349,8 @@ def get_globus_share(duser, dsnum, cursor):
     one up.
     """
     share_data = {}
-    q = "select globus_url from dssdb.goshare where email = %s and dsid = concat('ds', %s) and status = 'ACTIVE'"
+    q = ("select globus_url from dssdb.goshare where email = %s and dsid = "
+         "concat('ds', %s) and status = 'ACTIVE'")
     res_tup = my_execute(cursor, q, (duser, dsnum), ResultType.ONE)
     if res_tup[1] is not None:
         share_data['error_header'] = "Server Error"
@@ -307,6 +363,7 @@ def get_globus_share(duser, dsnum, cursor):
             share_data['share'] = result[0]
 
     return share_data
+
 
 def my_execute(cursor, query, params_tuple, result_type):
     """Tries to execute a query with given parameters and ResultType. Returns a
