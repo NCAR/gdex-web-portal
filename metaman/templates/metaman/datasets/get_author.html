@@ -87,26 +87,6 @@ function doFMLSubmit() {
   hideModalWindow();
   return true;
 }
-{% else %}
-function doInstitutionSubmit() {
-  var n = document.institution_form.name.value;
-  if (n.length < 2) {
-    alert("Error: missing or invalid institution name");
-    return false;
-  }
-  n += "[!]" + document.institution_form.uuid.value;
-  {% if replace_item %}
-  new_val = n;
-  if (document.institution_form.uuid.value.length > 0) {
-    new_val += "!";
-  }
-  replaceItemPos('authors_field', document.institution_form.item_num.value, new_val);
-  {% else %}
-  addAuthor(n)
-  {% endif %}
-  hideModalWindow();
-  return true;
-}
 {% endif %}
 function addAuthor(f, m, l, o, u) {
   var auth_list = document.getElementById("authors_field");
@@ -130,6 +110,26 @@ function doOrcidCheck() {
   }
   getAjaxContent('POST', 'edit_dsid={{ dsid }}&check_orcid=' + document.orcid_form.orcid_id.value + '&csrfmiddlewaretoken={{ csrf_token }}', 'get_author/', 'get_author_page');
   document.getElementById('orcid_search').innerHTML = "Searching...";
+}
+
+function doInstitutionSubmit() {
+  var n = document.institution_form.name.value;
+  if (n.length < 2) {
+    alert("Error: missing or invalid institution name");
+    return false;
+  }
+  n += "[!]" + document.institution_form.uuid.value;
+  {% if replace_item %}
+  new_val = n;
+  if (document.institution_form.uuid.value.length > 0) {
+    new_val += "!";
+  }
+  replaceItemPos('authors_field', document.institution_form.item_num.value, new_val);
+  {% else %}
+  addAuthor(n)
+  {% endif %}
+  hideModalWindow();
+  return true;
 }
 
 function toggleAuthorView(show, hide) {
@@ -177,7 +177,7 @@ function toggleAuthorView(show, hide) {
                             <br>
                             <span class="text-muted">(unicode sequences '\uxxxx' allowed)</span>
                             {% else %}
-                            <span class="fs-6 fw-bold">{{ fname }}<span>
+                            <span class="fs-6 fw-bold">{{ fname_display }}<span>
                             <input type="hidden" name="first_name" value="{{ fname }}" />
                             {% endif %}
                         </div>
@@ -202,7 +202,7 @@ function toggleAuthorView(show, hide) {
                             Last Name:
                         </div>
                         <div class="col-12 col-md-6 text-start">
-                            <span class="fs-6 fw-bold">{{ lname }}<span>
+                            <span class="fs-6 fw-bold">{{ lname_display }}<span>
                             <input type="hidden" name="last_name" value="{{ lname }}" />
                         </div>
                     </div>
