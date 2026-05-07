@@ -83,7 +83,8 @@ class Matrix:
              "s.dsid = %s")
         res_tup = my_execute(self.cursor, q, (self.dsid, ), ResultType.ONE)
         if res_tup[1] is not None or res_tup[0] is None:
-            self.error.set("Server Error", "Database error")
+            self.error.set("Server Error", "Database error",
+                           "get_download_file_data")
             return {}
 
         if res_tup[0][0] == 0 or res_tup[0][1] == "N":
