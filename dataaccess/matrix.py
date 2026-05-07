@@ -333,9 +333,9 @@ class Matrix:
         def __bool__(self):
             return len(self.message) > 0
 
-        def set(self, header, message):
+        def set(self, header, *messages):
             self.header = header
-            self.message = message
+            self.message = ' '.join(str(m) for m in messages if m is not None)
 
         def to_json(self):
             return {'error': {'header': self.header, 'message': self.message}}
