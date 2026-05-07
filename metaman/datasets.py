@@ -440,12 +440,13 @@ def commit_changes(request, dsid):
                               "CVS commit")})
         return render(request, "metaman/datasets/commit_msg.html", ctx)
 
-    err = commit_dsoverview(
-            tdir_name, dsid, iuser, request.POST['cvscomment'])
-    if len(err) > 0:
-        ctx.update({'error': err})
-        remove_tempdir(tdir_name)
-        return render(request, "metaman/datasets/commit_msg.html", ctx)
+    if request.POST['cvscomment'] != "fake":
+        err = commit_dsoverview(
+                tdir_name, dsid, iuser, request.POST['cvscomment'])
+        if len(err) > 0:
+            ctx.update({'error': err})
+            remove_tempdir(tdir_name)
+            return render(request, "metaman/datasets/commit_msg.html", ctx)
 
     ctx.update({'overview_committed': True})
     cursor.execute(("delete from metautil.metaman where dsid = %s"),
