@@ -83,8 +83,7 @@ class Matrix:
              "s.dsid = %s")
         res_tup = my_execute(self.cursor, q, (self.dsid, ), ResultType.ONE)
         if res_tup[1] is not None or res_tup[0] is None:
-            self.error.set("Server Error", "Database error",
-                           "get_download_file_data")
+            self.error.set("Server Error", "Database error")
             return {}
 
         if res_tup[0][0] == 0 or res_tup[0][1] == "N":
@@ -333,9 +332,9 @@ class Matrix:
         def __bool__(self):
             return len(self.message) > 0
 
-        def set(self, header, message):
+        def set(self, header, *messages):
             self.header = header
-            self.message = message
+            self.message = ' '.join(str(m) for m in messages if m is not None)
 
         def to_json(self):
             return {'error': {'header': self.header, 'message': self.message}}
