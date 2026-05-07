@@ -4,7 +4,6 @@ import smtplib
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.csrf import csrf_exempt
 from email.message import EmailMessage
 
 from . import utils
@@ -64,16 +63,6 @@ def error(request):
                 "A server error occurred. Please try again later.")
 
     return HttpResponse("Bad request.")
-
-
-@csrf_exempt
-def unlink(request):
-    return utils.unlink(request)
-
-
-@csrf_exempt
-def upload(request):
-    return utils.upload(request)
 
 
 def robots_txt(request):

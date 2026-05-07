@@ -14,4 +14,6 @@ urlpatterns = [
     path('schema/', SpectacularAPIView.as_view(patterns=_public), name='subdomain-schema'),
     path('documentation/', SpectacularSwaggerView.as_view(url_name='subdomain-schema'), name='subdomain-swagger-ui'),
     path('redoc/', SpectacularRedocView.as_view(url_name='subdomain-schema'), name='subdomain-redoc'),
+    path('unlink/', include('apis.unlink.urls')),
+    path('upload/', include('apis.upload.urls')),
 ] + _public
