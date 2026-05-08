@@ -200,7 +200,7 @@ class Matrix:
                     'dwebcnt': result[2], 'nwebcnt': result[3], 'urls': {}}
             for db in config.content_metadata_dbs:
                 if os.path.isfile(
-                        "/data/web/datasets/{self.dsid}/metadata/customize."
+                        f"/data/web/datasets/{self.dsid}/metadata/customize."
                         f"{db}.{result[0]}"):
                     group_dict[result[0]]['urls']['web'] = (
                             os.path.join(fb['web'].substitute(dsid=self.dsid),
