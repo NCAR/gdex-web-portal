@@ -2708,6 +2708,8 @@ def get_all_datasets():
         'datasets': datasets_list
     }
 
+    return response
+
 
 def get_dataset_users(dsid, since):
     """Get number of unique users for a dataset since a given datetime."""
