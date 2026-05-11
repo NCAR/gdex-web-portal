@@ -632,8 +632,6 @@ function reviewRequest()
 // Validate form inputs
    if(!checkDates()) return;
    if(!checkSpatial()) return;
-   if(form.stationdisplayed.value == 1 && !checkStations()) return;
-   if(form.latlondisplayed.value == 1 && !checkLatLon()) return;
 
    rtype = form.rtype.value;
    gindex = form.gindex.value;
