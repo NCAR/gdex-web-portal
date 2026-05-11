@@ -119,7 +119,7 @@ function checkSpatial()
 {
    regionSelection = $('#regionSelectMenu').val();
 
-   if (regionSelection == "-1") {
+   if (regionSelection == "-1" || regionSelection == null) {
       alert("Please select a spatial range option from the dropdown menu.");
       return false;
    }
@@ -153,6 +153,10 @@ function checkStations()
    countValid = 0;   // Count the valid entries
 
    stationInput = document.getElementById("station0").value;
+   if (stationInput == "" || stationInput == null) {
+      alert("Please enter at least one station ID or select a different spatial range option.");
+      return false;
+   }
 
 // trim any leading and/or trailing commas, white space.
    if (stationInput != "") {
@@ -208,6 +212,10 @@ function getLocations()
    countValid = 0;   // Count the valid entries
 
    locationInput = document.getElementById("location0").value;
+   if (locationInput == "" || locationInput == null) {
+      alert("Please enter at least one location name or select a different spatial range option.");
+      return false;
+   }
 
 // trim any leading and/or trailing commas, white space
    if (locationInput != "") {
