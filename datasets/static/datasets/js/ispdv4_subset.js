@@ -114,6 +114,27 @@ function checkDates() {
  return true; 
 } 
 
+/** Validate and process spatial selection */
+function checkSpatial()
+{
+   regionSelection = $('#regionSelectMenu').val();
+
+   if (regionSelection === "") {
+      alert("Please select a spatial range option from the dropdown menu.");
+      return false;
+   }
+   if(regionSelection == "1") {
+      return checkLatLon();
+   }
+   if(regionSelection == "2") {
+      return checkStations();
+   }
+   if(regionSelection == "3") {
+      return getLocations();
+   }
+   return true;
+}
+
 /**
  * Validate location selection
  *
@@ -598,7 +619,7 @@ function displayLocationSelection(action)
 }
 
 /**
- * Review subset selections and submit to dsrqst.php
+ * Review subset selections and submit request
  */
 function reviewRequest()
 {
@@ -610,6 +631,7 @@ function reviewRequest()
    
 // Validate form inputs
    if(!checkDates()) return;
+   if(!checkSpatial()) return;
    if(form.stationdisplayed.value == 1 && !checkStations()) return;
    if(form.latlondisplayed.value == 1 && !checkLatLon()) return;
 
