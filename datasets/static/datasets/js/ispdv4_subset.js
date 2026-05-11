@@ -119,7 +119,7 @@ function checkSpatial()
 {
    regionSelection = $('#regionSelectMenu').val();
 
-   if (regionSelection == "") {
+   if (regionSelection == "-1") {
       alert("Please select a spatial range option from the dropdown menu.");
       return false;
    }
@@ -486,7 +486,7 @@ function regionSelectChange()
 {
    var selectedValue = $('#regionSelectMenu').val();
 
-   if (selectedValue === "") {
+   if (selectedValue === "-1") {
       hideRegionSelection();
    } else if(selectedValue == "1") {
       displayGoogleMap(1);
