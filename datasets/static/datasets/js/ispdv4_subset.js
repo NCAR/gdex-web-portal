@@ -119,7 +119,7 @@ function checkSpatial()
 {
    regionSelection = $('#regionSelectMenu').val();
 
-   if (regionSelection === "") {
+   if (regionSelection == "") {
       alert("Please select a spatial range option from the dropdown menu.");
       return false;
    }
