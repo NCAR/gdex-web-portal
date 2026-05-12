@@ -240,6 +240,17 @@ class AlertMessage(models.Model):
         verbose_name = "Alert Message"
         verbose_name_plural = "Alert Messages"
 
+class HomePageSearchSuggestion(Orderable):
+    page = ParentalKey('HomePage', related_name='search_suggestions', on_delete=models.CASCADE)
+    search_term = models.CharField(max_length=255, verbose_name='Search term')
+    search_term_url = models.URLField(verbose_name='Search term URL')
+
+    panels = [
+        FieldPanel('search_term'),
+        FieldPanel('search_term_url'),
+    ]
+
+
 class HomePage(Page):
     tagline = models.CharField(max_length=100, blank=False, default="")
     welcome = RichTextField(blank=False, default="")
@@ -321,6 +332,9 @@ class HomePage(Page):
             FieldPanel('card_3_footer_text'),
             PageChooserPanel('card_3_footer_page'),
         ], heading="Card 3", classname="collapsible collapsed"),
+        MultiFieldPanel([
+            InlinePanel('search_suggestions', label='Search suggestion'),
+        ], heading="Search suggestions", classname="collapsible collapsed"),
     ]
     is_creatable = False
 
