@@ -8,6 +8,14 @@
                         <input class="form-control" type="search" id="search-input" autocomplete="off" data-provide="typeahead" name="q" placeholder="{{ page.search_box_placeholder }}" value="">
                         <button class="btn btn-primary" type="submit" aria-label="Search"><i class="fas fa-search"></i></button>
                     </form>
+                    <div id="search-suggestions" class="mt-2">
+                        <a href="/gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready">
+                            <span class="badge gsearch-badge rounded">AI Ready Datasets</span>
+                        </a>
+                        <a href="/gsearch/dataset-search/?q=&filter-match-all.format=Zarr">
+                            <span class="badge gsearch-badge rounded">Zarr Format Datasets</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
