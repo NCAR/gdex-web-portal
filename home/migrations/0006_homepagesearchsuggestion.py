@@ -16,8 +16,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('sort_order', models.IntegerField(blank=True, editable=False, null=True)),
-                ('search_term', models.CharField(max_length=255, verbose_name='Search term')),
-                ('search_term_url', models.URLField(verbose_name='Search term URL')),
+                ('search_term', models.CharField(max_length=25, verbose_name='Search term displayed under the home page search bar as a search suggestion badge.  For example, "AI Ready Datasets" or "Zarr Format Datasets".')),
+                ('search_term_url', models.CharField(max_length=255, verbose_name='Search term URL specified as the GDEX Search URL to link to when the search term is clicked.  This can be a relative URL or absolute URL. For example, a relative URL could be /gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready and an absolute URL could be https://gdex.ucar.edu/gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready to link to a search for AI-Ready datasets.')),
                 ('page', modelcluster.fields.ParentalKey(
                     on_delete=django.db.models.deletion.CASCADE,
                     related_name='search_suggestions',
