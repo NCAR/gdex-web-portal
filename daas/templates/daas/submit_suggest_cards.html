@@ -7,14 +7,15 @@
     background: #edf0f7;
     box-shadow: 0 2px 8px rgba(0,0,0,.08);
     position: relative;
-    min-height: 340px;
+    width: 540px;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     transition: box-shadow .3s ease, transform .3s ease, background .3s ease;
 }
 
 .action-card:hover {
     background: #fff;
-    box-shadow: 0 8px 28px rgba(61,90,138,.22);
+    box-shadow: 0 8px 28px rgba(0,87,194,.22);
     transform: translateY(-4px);
 }
 
@@ -48,16 +49,22 @@
     pointer-events: none;
 }
 
+.steps-scroll {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
 .action-card:hover .hover-view {
     opacity: 1;
     pointer-events: auto;
 }
 
 .icon-circle {
-    width: 72px;
-    height: 72px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
-    background: #3d5a8a;
+    background: #0057c2;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -66,26 +73,26 @@
 
 .icon-circle i {
     color: #fff;
-    font-size: 1.6rem;
+    font-size: 3.6rem;
 }
 
 .icon-circle-sm {
-    width: 42px;
-    height: 42px;
+    width: 70px;
+    height: 70px;
 }
 
 .icon-circle-sm i {
-    font-size: 1rem;
+    font-size: 2.3rem;
 }
 
 .step-num {
-    width: 32px;
-    height: 32px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
-    background: #3d5a8a;
+    background: #0057c2;
     color: #fff;
     font-weight: 700;
-    font-size: .9rem;
+    font-size: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -93,29 +100,52 @@
 }
 
 .card-title-blue {
-    color: #3d5a8a;
+    color: #0057c2;
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: 3.3rem;
     margin: 0;
 }
 
 .hint-text {
+    position: absolute;
+    bottom: 1.75rem;
+    left: 0;
+    right: 0;
+    text-align: center;
     color: #b0b8c8;
-    font-size: .9rem;
+    font-size: 1.5rem;
+}
+
+.default-view p {
+    font-size: 2.3rem;
+}
+
+.step-title {
+    font-weight: 600;
+    font-size: 2.3rem;
+    line-height: 1.3;
+}
+
+.step-desc {
+    font-size: 2rem;
+    color: #6c757d;
+    line-height: 1.4;
+    margin-top: .2rem;
 }
 
 .btn-action {
-    background: #3d5a8a;
-    border-color: #3d5a8a;
+    background: #0057c2;
+    border-color: #0057c2;
     border-radius: 8px;
     font-weight: 600;
-    color: #fff;
+    font-size: 1.4rem;
+    color: #fff !important;
 }
 
 .btn-action:hover {
-    background: #2d4570;
-    border-color: #2d4570;
-    color: #fff;
+    background: #004aad;
+    border-color: #004aad;
+    color: #fff !important;
 }
 </style>
 
@@ -123,7 +153,7 @@
     <div class="row g-4 justify-content-center">
 
         <!-- Submit Data Card -->
-        <div class="col-6">
+        <div class="col-auto">
             <div class="card action-card">
 
                 <div class="card-view default-view">
@@ -142,21 +172,32 @@
                         </div>
                         <h3 class="card-title-blue">Submit Data</h3>
                     </div>
+                    <div class="steps-scroll">
                     <div class="d-flex flex-column gap-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="step-num">1</span>
-                            <span>Submit Data</span>
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="step-num mt-1">1</span>
+                            <div>
+                                <div class="step-title">Submit Data</div>
+                                <div class="step-desc">Share basic details about your dataset using a short online form.</div>
+                            </div>
                         </div>
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="step-num">2</span>
-                            <span>Review Process</span>
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="step-num mt-1">2</span>
+                            <div>
+                                <div class="step-title">Review Process</div>
+                                <div class="step-desc">NCAR employee reviews take about 30 minutes; external reviews may take up to one week.</div>
+                            </div>
                         </div>
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="step-num">3</span>
-                            <span>Final Decision</span>
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="step-num mt-1">3</span>
+                            <div>
+                                <div class="step-title">Final Decision</div>
+                                <div class="step-desc">You'll get an email once your submission is approved or rejected.</div>
+                            </div>
                         </div>
                     </div>
-                    <a href="{% slugurl 'submit-data-request' %}" class="btn btn-action w-100 mt-auto py-2">
+                    </div>
+                    <a href="{% slugurl 'submit-data-request' %}" class="btn btn-action w-100 py-2">
                         Start Submission
                     </a>
                 </div>
@@ -165,7 +206,7 @@
         </div>
 
         <!-- Suggest Dataset Card -->
-        <div class="col-6">
+        <div class="col-auto">
             <div class="card action-card">
 
                 <div class="card-view default-view">
@@ -184,21 +225,23 @@
                         </div>
                         <h3 class="card-title-blue">Suggest Dataset</h3>
                     </div>
+                    <div class="steps-scroll">
                     <div class="d-flex flex-column gap-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="step-num">1</span>
-                            <span>Suggest Dataset</span>
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="step-num mt-1">1</span>
+                            <div class="step-title">Suggest Dataset</div>
                         </div>
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="step-num">2</span>
-                            <span>Internal Review</span>
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="step-num mt-1">2</span>
+                            <div class="step-title">Internal Review</div>
                         </div>
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="step-num">3</span>
-                            <span>Follow-up / Added to backlog or catalog</span>
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="step-num mt-1">3</span>
+                            <div class="step-title">Follow-up / Added to backlog or catalog</div>
                         </div>
                     </div>
-                    <a href="{% slugurl 'suggest-dataset' %}" class="btn btn-action w-100 mt-auto py-2">
+                    </div>
+                    <a href="{% slugurl 'suggest-dataset' %}" class="btn btn-action w-100 py-2">
                         Suggest Dataset
                     </a>
                 </div>
