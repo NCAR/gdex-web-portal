@@ -16,15 +16,29 @@
                 {{ page.body|richtext }}
             </div>
 
-            <div class="text-center my-4">
-                <h3>Choose Your Submission Method</h3>
-                <p class="text-muted">Select the option that best fits your needs. Hover over each tile to see the workflow.</p>
-            </div>
-
             {% block grid_cards %}
-            {% include 'daas/submit_suggest_cards.html' %}
+            {% include 'daas/home_grid_cards.html' %}
             {% endblock %}
 
+            <p class="text-center body-font-large">
+            <i> Need a dataset on GDEX that isn't here yet? Suggest it, we'll look into adding it. </i>
+            </p>
+
+            <div class="text-center mt-2 mt-md-3">
+                <div class="d-flex flex-wrap justify-content-center gap-2 align-items-center">
+
+                    <a class="btn btn-primary btn-lg py-1 px-2" style="font-size: 2rem;"
+                        href="{% slugurl 'submit-data-request' %}">
+                        Submit Data
+                    </a>
+
+                    <a class="btn btn-primary btn-lg py-1 px-2" style="font-size: 2rem;"
+                        href="{% slugurl 'suggest-dataset' %}">
+                        Suggest dataset
+                        <span class="d-block fs-6">(NCAR employees only)</span>
+                    </a>
+                </div>
+            </div>
                 <br>
                 <hr>
                 <p class="text-center body-font-large">
