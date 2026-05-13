@@ -8,14 +8,15 @@
                         <input class="form-control" type="search" id="search-input" autocomplete="off" data-provide="typeahead" name="q" placeholder="{{ page.search_box_placeholder }}" value="">
                         <button class="btn btn-primary" type="submit" aria-label="Search"><i class="fas fa-search"></i></button>
                     </form>
+                    {% if page.search_suggestions.all %}
                     <div id="search-suggestions" class="mt-2">
-                        <a href="/gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready">
-                            <span class="badge home-search-badge rounded">AI Ready Datasets</span>
+                        {% for suggestion in page.search_suggestions.all %}
+                        <a href="{{ suggestion.search_term_url }}">
+                            <span class="badge home-search-badge rounded">{{ suggestion.search_term }}</span>
                         </a>
-                        <a href="/gsearch/dataset-search/?q=&filter-match-all.format=Zarr">
-                            <span class="badge home-search-badge rounded">Zarr Format Datasets</span>
-                        </a>
+                        {% endfor %}
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

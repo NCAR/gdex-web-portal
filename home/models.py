@@ -242,8 +242,8 @@ class AlertMessage(models.Model):
 
 class HomePageSearchSuggestion(Orderable):
     page = ParentalKey('HomePage', related_name='search_suggestions', on_delete=models.CASCADE)
-    search_term = models.CharField(max_length=255, verbose_name='Search term')
-    search_term_url = models.URLField(verbose_name='Search term URL')
+    search_term = models.CharField(max_length=25, verbose_name='Search term displayed under the home page search bar as a search suggestion badge.  For example, "AI Ready Datasets" or "Zarr Format Datasets".')
+    search_term_url = models.CharField(max_length=255, verbose_name='Search term URL specified as the GDEX Search URL to link to when the search term is clicked.  This can be a relative URL or absolute URL. For example, a relative URL could be /gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready and an absolute URL could be https://gdex.ucar.edu/gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready to link to a search for AI-Ready datasets.')
 
     panels = [
         FieldPanel('search_term'),
@@ -312,6 +312,9 @@ class HomePage(Page):
             FieldPanel('search_box_placeholder'),
         ], heading="Search Box", classname="collapsible collapsed"),
         MultiFieldPanel([
+            InlinePanel('search_suggestions', label='Search suggestion'),
+        ], heading="Search suggestions", classname="collapsible collapsed"),
+        MultiFieldPanel([
             FieldPanel('card_1_title'),
             FieldPanel('card_1_icon_name'),
             FieldPanel('card_1_text'),
@@ -332,9 +335,6 @@ class HomePage(Page):
             FieldPanel('card_3_footer_text'),
             PageChooserPanel('card_3_footer_page'),
         ], heading="Card 3", classname="collapsible collapsed"),
-        MultiFieldPanel([
-            InlinePanel('search_suggestions', label='Search suggestion'),
-        ], heading="Search suggestions", classname="collapsible collapsed"),
     ]
     is_creatable = False
 
