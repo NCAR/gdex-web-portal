@@ -1,0 +1,210 @@
+{% load wagtailcore_tags %}
+
+<style>
+.action-card {
+    border: none;
+    border-radius: 16px;
+    background: #edf0f7;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    position: relative;
+    min-height: 340px;
+    overflow: hidden;
+    transition: box-shadow .3s ease, transform .3s ease, background .3s ease;
+}
+
+.action-card:hover {
+    background: #fff;
+    box-shadow: 0 8px 28px rgba(61,90,138,.22);
+    transform: translateY(-4px);
+}
+
+.card-view {
+    position: absolute;
+    inset: 0;
+    padding: 2rem 1.75rem;
+    transition: opacity .25s ease;
+}
+
+.default-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: .75rem;
+    opacity: 1;
+}
+
+.action-card:hover .default-view {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.hover-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.action-card:hover .hover-view {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.icon-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #3d5a8a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.icon-circle i {
+    color: #fff;
+    font-size: 1.6rem;
+}
+
+.icon-circle-sm {
+    width: 42px;
+    height: 42px;
+}
+
+.icon-circle-sm i {
+    font-size: 1rem;
+}
+
+.step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #3d5a8a;
+    color: #fff;
+    font-weight: 700;
+    font-size: .9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-title-blue {
+    color: #3d5a8a;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.hint-text {
+    color: #b0b8c8;
+    font-size: .9rem;
+}
+
+.btn-action {
+    background: #3d5a8a;
+    border-color: #3d5a8a;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.btn-action:hover {
+    background: #2d4570;
+    border-color: #2d4570;
+    color: #fff;
+}
+</style>
+
+<div class="container-lg py-4">
+    <div class="row g-4 justify-content-center">
+
+        <!-- Submit Data Card -->
+        <div class="col-6">
+            <div class="card action-card">
+
+                <div class="card-view default-view">
+                    <div class="icon-circle">
+                        <i class="fa-solid fa-file-arrow-up"></i>
+                    </div>
+                    <h3 class="card-title-blue">Submit Data</h3>
+                    <p class="text-muted mb-0">Upload and share your geoscience datasets</p>
+                    <span class="hint-text">Hover to see process</span>
+                </div>
+
+                <div class="card-view hover-view">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <div class="icon-circle icon-circle-sm">
+                            <i class="fa-solid fa-file-arrow-up"></i>
+                        </div>
+                        <h3 class="card-title-blue">Submit Data</h3>
+                    </div>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="step-num">1</span>
+                            <span>Submit Data</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="step-num">2</span>
+                            <span>Review Process</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="step-num">3</span>
+                            <span>Final Decision</span>
+                        </div>
+                    </div>
+                    <a href="{% slugurl 'submit-data-request' %}" class="btn btn-action w-100 mt-auto py-2">
+                        Start Submission
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Suggest Dataset Card -->
+        <div class="col-6">
+            <div class="card action-card">
+
+                <div class="card-view default-view">
+                    <div class="icon-circle">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <h3 class="card-title-blue">Suggest Dataset</h3>
+                    <p class="text-muted mb-0">Recommend datasets for inclusion in our catalog</p>
+                    <span class="hint-text">Hover to see process</span>
+                </div>
+
+                <div class="card-view hover-view">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <div class="icon-circle icon-circle-sm">
+                            <i class="fa-solid fa-lightbulb"></i>
+                        </div>
+                        <h3 class="card-title-blue">Suggest Dataset</h3>
+                    </div>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="step-num">1</span>
+                            <span>Suggest Dataset</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="step-num">2</span>
+                            <span>Internal Review</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="step-num">3</span>
+                            <span>Follow-up / Added to backlog or catalog</span>
+                        </div>
+                    </div>
+                    <a href="{% slugurl 'suggest-dataset' %}" class="btn btn-action w-100 mt-auto py-2">
+                        Suggest Dataset
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
