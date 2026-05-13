@@ -8,7 +8,7 @@
 </div>
 <script>
 $("#applyFilters").on("click", function() {
-    url='/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?filter_wfile='+$("#filterwfile").val();
+    url='/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?filter_wfile='+encodeURIComponent($("#filterwfile").val());
     $.get(url, function(d) {
         replace_ds_content(d);
     });
