@@ -250,7 +250,6 @@ class HomePageSearchSuggestion(Orderable):
         FieldPanel('search_term_url'),
     ]
 
-
 class HomePage(Page):
     tagline = models.CharField(max_length=100, blank=False, default="")
     welcome = RichTextField(blank=False, default="")
