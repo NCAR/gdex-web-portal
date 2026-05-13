@@ -1313,9 +1313,7 @@ def get_total_webfiles_gindex(dsid, gindex, filter_wfile=None):
     dsid = format_dataset_id(dsid)
     con,cur = init_connection_new()
     if filter_wfile:
-        filter_wfile = filter_wfile.replace('*', '%')
-        if '%' not in filter_wfile:
-            filter_wfile = f'%{filter_wfile}%'
+        filter_wfile = f'%{filter_wfile.replace("*", "%")}%'
         if settings.SPLIT_WFILE:
             query = 'SELECT count(wfile) FROM wfile_{} WHERE gindex=%s AND wfile LIKE %s'.format(dsid)
             cur.execute(query, (gindex, filter_wfile))
@@ -1343,9 +1341,7 @@ def get_web_files_from_gindex(dsid, gindex, page=0, filter_wfile=None):
     offset = int(page) * file_limit
 
     if filter_wfile:
-        filter_wfile = filter_wfile.replace('*', '%')
-        if '%' not in filter_wfile:
-            filter_wfile = f'%{filter_wfile}%'
+        filter_wfile = f'%{filter_wfile.replace("*", "%")}%'
         if settings.SPLIT_WFILE:
             query = 'SELECT '+columns_str+' FROM wfile_{} WHERE gindex=%s AND wfile LIKE %s ORDER BY disp_order ASC LIMIT {} OFFSET {}'.format(dsid, file_limit, offset)
             cur.execute(query,(gindex, filter_wfile))
