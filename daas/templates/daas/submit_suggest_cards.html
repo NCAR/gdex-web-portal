@@ -61,8 +61,8 @@
 }
 
 .icon-circle {
-    width: 114px;
-    height: 114px;
+    width: 79px;
+    height: 79px;
     border-radius: 50%;
     background: #0057c2;
     display: flex;
@@ -73,26 +73,26 @@
 
 .icon-circle i {
     color: #fff;
-    font-size: 2.5rem;
+    font-size: 1.75rem;
 }
 
 .icon-circle-sm {
-    width: 58px;
-    height: 58px;
+    width: 42px;
+    height: 42px;
 }
 
 .icon-circle-sm i {
-    font-size: 1.4rem;
+    font-size: 1rem;
 }
 
 .step-num {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: #0057c2;
     color: #fff;
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: .9rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -102,7 +102,7 @@
 .card-title-blue {
     color: #0057c2;
     font-weight: 700;
-    font-size: 2.4rem;
+    font-size: 2.5rem;
     margin: 0;
 }
 
@@ -117,17 +117,31 @@
 }
 
 .default-view p {
+    font-size: 1.4rem;
     margin-top: .75rem;
+}
+
+.badge-restricted {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: #e8f0fb;
+    color: #0057c2;
+    border: 1px solid #b3ccf5;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: .4rem 1rem;
 }
 
 .step-title {
     font-weight: 600;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     line-height: 1.3;
 }
 
 .step-desc {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: #6c757d;
     line-height: 1.4;
     margin-top: .2rem;
@@ -177,29 +191,29 @@ a.btn-action:hover {
                         <h3 class="card-title-blue">Submit Data</h3>
                     </div>
                     <div class="steps-scroll">
-                    <div class="d-flex flex-column gap-3">
-                        <div class="d-flex align-items-start gap-3">
-                            <span class="step-num mt-1">1</span>
-                            <div>
-                                <div class="step-title">Submit Data</div>
-                                <div class="step-desc">Share basic details about your dataset using a short online form.</div>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">1</span>
+                                <div>
+                                    <div class="step-title">Submit Data</div>
+                                    <div class="step-desc">Share basic details about your dataset using a short online form.</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">2</span>
+                                <div>
+                                    <div class="step-title">Review Process</div>
+                                    <div class="step-desc">NCAR employee reviews take about 30 minutes; external reviews may take up to one week.</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">3</span>
+                                <div>
+                                    <div class="step-title">Final Decision</div>
+                                    <div class="step-desc">You'll get an email once your submission is approved or rejected.</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <span class="step-num mt-1">2</span>
-                            <div>
-                                <div class="step-title">Review Process</div>
-                                <div class="step-desc">NCAR employee reviews take about 30 minutes; external reviews may take up to one week.</div>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <span class="step-num mt-1">3</span>
-                            <div>
-                                <div class="step-title">Final Decision</div>
-                                <div class="step-desc">You'll get an email once your submission is approved or rejected.</div>
-                            </div>
-                        </div>
-                    </div>
                     </div>
                     <a href="{% slugurl 'submit-data-request' %}" class="btn btn-action w-100 py-2">
                         Start Submission
@@ -219,6 +233,7 @@ a.btn-action:hover {
                     </div>
                     <h3 class="card-title-blue">Suggest Dataset</h3>
                     <p class="text-muted mb-0">Recommend a dataset for our catalog</p>
+                    <span class="badge-restricted"><i class="fa-solid fa-lock"></i> NCAR Employees Only</span>
                     <span class="hint-text">Hover to see process</span>
                 </div>
 
@@ -230,20 +245,29 @@ a.btn-action:hover {
                         <h3 class="card-title-blue">Suggest Dataset</h3>
                     </div>
                     <div class="steps-scroll">
-                    <div class="d-flex flex-column gap-3">
-                        <div class="d-flex align-items-start gap-3">
-                            <span class="step-num mt-1">1</span>
-                            <div class="step-title">Suggest Dataset</div>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">1</span>
+                                <div>
+                                    <div class="step-title">Suggest Dataset</div>
+                                    <div class="step-desc">Share basic details about the dataset you would like considered for inclusion in GDEX using a short online form.</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">2</span>
+                                <div>
+                                    <div class="step-title">Internal Review</div>
+                                    <div class="step-desc">Our team will review the dataset to determine whether it fits the scope and requirements of GDEX.</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">3</span>
+                                <div>
+                                    <div class="step-title">Final Decision</div>
+                                    <div class="step-desc">You will receive a decision email indicating whether the dataset was approved. If approved, we will also provide information about hosting options and potential costs.</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <span class="step-num mt-1">2</span>
-                            <div class="step-title">Internal Review</div>
-                        </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <span class="step-num mt-1">3</span>
-                            <div class="step-title">Follow-up / Added to backlog or catalog</div>
-                        </div>
-                    </div>
                     </div>
                     <a href="{% slugurl 'suggest-dataset' %}" class="btn btn-action w-100 py-2">
                         Suggest Dataset

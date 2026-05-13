@@ -2,30 +2,23 @@
 {% load wagtailcore_tags %}
 {% block body_class %}{% endblock %}
 {% block content %}
-<figure class="figure full-width">
-    <picture>
-        <img src="/media/images/gdex_submit_data_banner.original.jpg" alt="banner" class="figure-img img-fluid">
-    </picture>
-</figure>
-
 <div class="d-grid d-print-flex">
     <article class="main-content-wrapper">
-        <h2>{{ page.title }}</h2>
+        {% if page.title %}<h2 class="visually-hidden">{{ page.title }}</h2>{% endif %}
         <div class="main-content clearfix">
-            <div>
-                {{ page.body|richtext }}
-            </div>
-
-            <div class="text-center my-4">
-                <h3>Choose Your Submission Method</h3>
-                <p class="text-muted">Select the option that best fits your needs. Hover over each tile to see the workflow.</p>
-            </div>
+            <figure class="figure full-width m-0">
+                <picture>
+                    <img src="/media/images/submit_suggest_data_banner.original.jpg" alt="banner" class="figure-img img-fluid mb-0">
+                </picture>
+            </figure>
+            {% if page.body %}
+            <div>{{ page.body|richtext }}</div>
+            {% endif %}
 
             {% block grid_cards %}
             {% include 'daas/submit_suggest_cards.html' %}
             {% endblock %}
 
-                <br>
                 <hr>
                 <p class="text-center body-font-large">
                     For more information, please refer to the
@@ -39,7 +32,6 @@
                     <br>Questions? Contact datahelp@ucar.edu
                 </p>
             </div>
-        </div>
     </article>
 </div>
 {% endblock %}
