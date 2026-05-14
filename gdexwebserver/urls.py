@@ -37,7 +37,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('datasets/', include('datasets.urls')),
     path('globus/', include('globus.urls')),
-    path('gsearch/', include('gsearch.urls')),
+    path('gsearch/', include('gsearch.urls'), name='gsearch'),
     path('oai/', include("oai.urls")),
     path('metaman/', include('metaman.urls')),
     path('accounts/', include('accounts.urls')),

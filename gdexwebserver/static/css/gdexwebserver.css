@@ -10,3 +10,11 @@
 .grid-card-group:hover .card-title {
     text-decoration: underline;
 }
+
+.home-search-badge {
+    background-color: #f1f0ee;
+    color: #00357a;
+}
+.home-search-badge:hover {
+    color: #42c0ff;
+}
