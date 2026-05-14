@@ -1,0 +1,31 @@
+replicaCount: 1
+
+webapp:
+  name: gdex-web-siparcs26
+  group: gdex-web-siparcs26
+  path: /
+  tls:
+    fqdn: siparcs26-gdex.k8s.ucar.edu
+    fqdnAPI: api.siparcs26-gdex.k8s.ucar.edu
+    secretName: incommon-cert-siparcs26-gdex-web
+  container: 
+    image: hub.k8s.ucar.edu/siparcs26-gdex/gdex-web-portal:latest
+    port: 8080
+    requests:
+      memory: 2Gi
+      cpu: 1
+    limits:
+      memory: 4Gi
+      cpu: 6
+    responseTimeout: 180
+    maxUploadSize: 60m
+  ingress:
+    ingressClassName: nginx-internal
+
+volume:
+  fs:
+    existingClaim: gdexdata
+    name: gdexdata
+    mountPath: /data
+
+testName: siparcs26
