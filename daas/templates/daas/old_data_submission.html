@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+{% block body_class %}{% endblock %}
+{% block content %}
+<figure class="figure full-width">
+    <picture>
+        <img src="/media/images/gdex_submit_data_banner.original.jpg" alt="banner" class="figure-img img-fluid">
+    </picture>
+</figure>
+
+<div class="d-grid d-print-flex">
+    <article class="main-content-wrapper">
+        <h2>{{ page.title }}</h2>
+        <div class="main-content clearfix">
+            <div>
+                {{ page.body|richtext }}
+            </div>
+
+            {% block grid_cards %}
+            {% include 'daas/home_grid_cards.html' %}
+            {% endblock %}
+
+            <p class="text-center body-font-large">
+            <i> Need a dataset on GDEX that isn't here yet? Suggest it, we'll look into adding it. </i>
+            </p>
+
+            <div class="text-center mt-2 mt-md-3">
+                <div class="d-flex flex-wrap justify-content-center gap-2 align-items-center">
+
+                    <a class="btn btn-primary btn-lg py-1 px-2" style="font-size: 2rem;"
+                        href="{% slugurl 'submit-data-request' %}">
+                        Submit Data
+                    </a>
+
+                    <a class="btn btn-primary btn-lg py-1 px-2" style="font-size: 2rem;"
+                        href="{% slugurl 'suggest-dataset' %}">
+                        Suggest dataset
+                        <span class="d-block fs-6">(NCAR employees only)</span>
+                    </a>
+                </div>
+            </div>
+                <br>
+                <hr>
+                <p class="text-center body-font-large">
+                    For more information, please refer to the
+                    <a href="{% slugurl 'gdex-dataset-submission-appraisal-and-selection-process' %}">
+                        <strong>Detailed Workflow Process</strong>
+                    </a>
+                    and the
+                    <a href="{% slugurl 'gdex-terms-conditions' %}">
+                        <strong>Terms & Conditions</strong>
+                    </a>.
+                    <br>Questions? Contact datahelp@ucar.edu
+                </p>
+            </div>
+        </div>
+    </article>
+</div>
+{% endblock %}
