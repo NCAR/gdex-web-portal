@@ -1,4 +1,4 @@
-name: SIPARCS-26 Container Rebuild
+name: SIPARCS-26 Container Build and Helm chart update
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - ".github/**"
       - ".gitignore"
       #- "app-chart/**"
-      
+  workflow_dispatch:
 
 jobs:
   container-rebuild:
@@ -46,19 +46,11 @@ jobs:
           docker push hub.k8s.ucar.edu/siparcs26-gdex/gdex-web-portal:v${{ github.run_id }}
           docker tag hub.k8s.ucar.edu/siparcs26-gdex/gdex-web-portal:v${{ github.run_id }} hub.k8s.ucar.edu/siparcs26-gdex/gdex-web-portal:latest
           docker push hub.k8s.ucar.edu/siparcs26-gdex/gdex-web-portal:latest
-
-          #
-          ##
-          # Just use :latest tag
-          # No need to increment version
-          ##
-          #  - name: Update the Helm chart
-          #    run: |
-          #      git config user.email "${{ secrets.GIT_CONFIG_USER_EMAIL_RILEY }}"
-          #      git config user.name "${{ secrets.GIT_CONFIG_USER_NAME_RILEY }}"
-          #      git branch
-          #      sed -E "/image/s/gdex-web-portal:(.){1,}/gdex-web-portal:v${{ github.run_id }}/" app-chart/values.yaml.riley > app-chart/riley-values.yaml.new
-          #      mv app-chart/riley-values.yaml.new app-chart/values.yaml.riley
-          #      git add app-chart/values.yaml.riley
-          #      git commit -m "increment version"
-          #      git push
+      - name: Update the Helm chart
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          sed -i -E "/image/s/gdex-web-portal:(.){1,}/gdex-web-portal:v${{ github.run_id }}/" app-chart/values.yaml.siparcs26
+          git add app-chart/values.yaml.siparcs26
+          git commit -m "SIParCS26 Build successful: Update siparcs26-gdex image to v${{ github.run_id }}"
+          git push
