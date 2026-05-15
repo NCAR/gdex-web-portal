@@ -12,23 +12,17 @@
 <div class="row">
     <div class="col-12">
         <h1 class="mb-1">GDEX Exchange</h1>
-        <p class="text-muted mb-3">Preprint area for scientific data</p>
+        <p class="text-muted mb-3">Informal community space for sharing data</p>
         <hr class="my-2">
 
-        {# Breadcrumb navigation #}
-        <nav aria-label="breadcrumb" class="mb-3">
-            <ol class="breadcrumb">
-                {% for crumb in breadcrumbs %}
-                    {% if forloop.last %}
-                        <li class="breadcrumb-item active" aria-current="page">{{ crumb.name }}</li>
-                    {% else %}
-                        <li class="breadcrumb-item">
-                            <a href="/exchange/{{ crumb.subpath }}{% if crumb.subpath %}/{% endif %}">{{ crumb.name }}</a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ol>
-        </nav>
+        {# Dataset README metadata #}
+        {% if readme_title or readme_description %}
+            <div class="mb-3">
+                {% if readme_title %}<h2 class="h4">{{ readme_title }}</h2>{% endif %}
+                {% if readme_description %}<p>{{ readme_description|linebreaks }}</p>{% endif %}
+            </div>
+            <hr class="my-2">
+        {% endif %}
 
         {% if error %}
             <div class="alert alert-danger" role="alert">
@@ -44,9 +38,18 @@
             {% endif %}
 
             {% if entries %}
+                <div class="mb-2">
+                    <button id="exchange-filelist-btn" class="btn btn-sm btn-primary" disabled>
+                        <i class="fas fa-list me-1"></i>Get Filelist
+                    </button>
+                </div>
+
                 <table class="table table-sm table-hover exchange-table">
                     <thead class="table-light">
                         <tr>
+                            <th scope="col" class="exchange-cb-col">
+                                <input type="checkbox" id="exchange-select-all" title="Select all files">
+                            </th>
                             <th scope="col">Name</th>
                             <th scope="col" class="text-end">Size</th>
                             <th scope="col">Modified</th>
@@ -55,13 +58,23 @@
                     <tbody>
                         {% for entry in entries %}
                             <tr>
+                                <td class="exchange-cb-col">
+                                    {% if not entry.is_dir and entry.download_url %}
+                                        <input type="checkbox" class="exchange-file-cb"
+                                               data-url="{{ entry.download_url }}">
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if entry.is_dir %}
                                         <i class="fas fa-folder text-warning me-2"></i>
                                         <a href="/exchange/{{ entry.subpath }}/">{{ entry.name }}</a>
                                     {% else %}
                                         <i class="fas fa-file me-2 text-secondary"></i>
-                                        {{ entry.name }}
+                                        {% if entry.download_url %}
+                                            <a href="{{ entry.download_url }}">{{ entry.name }}</a>
+                                        {% else %}
+                                            {{ entry.name }}
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                                 <td class="text-end text-muted small">
@@ -78,4 +91,5 @@
         {% endif %}
     </div>
 </div>
+<script src="{% static 'exchange/js/exchange.js' %}"></script>
 {% endblock %}

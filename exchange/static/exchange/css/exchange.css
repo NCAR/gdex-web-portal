@@ -6,3 +6,8 @@
 .exchange-table tbody tr:hover {
     background-color: rgba(0, 0, 0, 0.03);
 }
+
+.exchange-cb-col {
+    width: 2rem;
+    text-align: center;
+}
