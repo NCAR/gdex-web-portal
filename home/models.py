@@ -255,7 +255,7 @@ class FeaturedCard(Orderable):
     title = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Title", help_text="Title of the card to be displayed on the home page.")
     icon_name = models.CharField(max_length=50, blank=False, default="",
-        verbose_name="Icon", help_text="Icon name class from the fontawesome icon set.  See fontawesome version 5 documentation for more info.")
+        verbose_name="Icon", help_text="Icon name class from the fontawesome icon set, or custom SVG icomoon icon class.  See fontawesome version 5 documentation for more info.  Custom icomoon icons can be viewed and added to the gdex custom icon set by adding the SVG to the static/unity/lib/icomoon2/ directory and including the icon class name here.")
     text = RichTextField(blank=False, default="",
         verbose_name="Body Text", help_text="Body text to be displayed on the home page card.")
     card_url = models.URLField(blank=True, null=True, verbose_name="Card URL", help_text="External URL to link to from the card.  If both Card URL and Card Page are provided, Card Page will take precedence.")
