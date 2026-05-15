@@ -1,4 +1,4 @@
-import re
+import os
 from datetime import datetime
 
 from django.conf import settings
@@ -13,50 +13,45 @@ def _format_size(size_bytes):
     return f"{size_bytes:.1f} PB"
 
 
-def _parse_xrootd_url(url):
-    """Split root://server//path into (server_url, base_path)."""
-    m = re.match(r'(root://[^/]+)(.*)', url)
-    if not m:
-        raise ValueError(f"Invalid XROOTD_EXCHANGE_URL: {url!r}")
-    return m.group(1), m.group(2) or '/'
-
-
 def filelist(request, subpath=''):
-    xrootd_url = getattr(settings, 'XROOTD_EXCHANGE_URL', None)
+    base_path = getattr(settings, 'PELICAN_EXCHANGE_BASE_PATH', None)
+    subpath = subpath.strip('/')
     entries = []
     error = None
 
-    if not xrootd_url:
-        error = 'Exchange area is not configured (XROOTD_EXCHANGE_URL is not set).'
+    if not base_path:
+        error = 'Exchange area is not configured (PELICAN_EXCHANGE_BASE_PATH is not set).'
     else:
         try:
-            from XRootD import client
-            from XRootD.client.flags import DirListFlags, StatInfoFlags
+            import pelicanfs
 
-            server, base_path = _parse_xrootd_url(xrootd_url)
-            subpath = subpath.strip('/')
-            list_path = base_path.rstrip('/') + ('/' + subpath if subpath else '')
+            list_path = base_path.rstrip('/') + ('/' + subpath if subpath else '') + '/'
 
-            fs = client.FileSystem(server)
-            status, listing = fs.dirlist(list_path, DirListFlags.STAT)
+            pelfs = pelicanfs.PelicanFileSystem("pelican://osg-htc.org")
+            listing = pelfs.ls(list_path, detail=True)
 
-            if not status.ok:
-                error = f"Could not list directory: {status.message}"
-            else:
-                for entry in listing.dirlist:
-                    is_dir = bool(entry.statinfo.flags & StatInfoFlags.IS_DIR)
-                    entry_subpath = (subpath + '/' + entry.name).strip('/') if subpath else entry.name
-                    entries.append({
-                        'name': entry.name,
-                        'is_dir': is_dir,
-                        'size': _format_size(entry.statinfo.size) if not is_dir else None,
-                        'modtime': datetime.fromtimestamp(entry.statinfo.modtime),
-                        'subpath': entry_subpath,
-                    })
-                entries.sort(key=lambda e: (not e['is_dir'], e['name'].lower()))
+            for entry in listing:
+                name = os.path.basename(entry['name'].rstrip('/'))
+                if not name:
+                    continue
+                is_dir = entry.get('type') == 'directory'
+                size = entry.get('size', 0)
+                modtime = entry.get('last_modified') or entry.get('modified')
+                if isinstance(modtime, (int, float)):
+                    modtime = datetime.fromtimestamp(modtime)
+
+                entry_subpath = (subpath + '/' + name).strip('/') if subpath else name
+                entries.append({
+                    'name': name,
+                    'is_dir': is_dir,
+                    'size': _format_size(size) if not is_dir else None,
+                    'modtime': modtime,
+                    'subpath': entry_subpath,
+                })
+            entries.sort(key=lambda e: (not e['is_dir'], e['name'].lower()))
 
         except ImportError:
-            error = 'XRootD Python bindings are not installed.'
+            error = 'pelicanfs is not installed.'
         except Exception as exc:
             error = str(exc)
 

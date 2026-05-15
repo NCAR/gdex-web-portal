@@ -99,7 +99,7 @@ INSTALLED_APPS = [
     'exchange',
 ]
 
-XROOTD_EXCHANGE_URL = 'root://osdf-redirector.osg-htc.org:1094//ncar/gdex/exchange'
+PELICAN_EXCHANGE_BASE_PATH = '/ncar/gdex/exchange'
 
 
 MIDDLEWARE = [

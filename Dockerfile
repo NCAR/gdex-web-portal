@@ -34,8 +34,6 @@ COPY --from=intermediate /tmp/version_number /usr/local/gdexweb/static/version
 COPY --from=intermediate /tmp/get_version_number /usr/local/bin/
 COPY --from=intermediate /tmp/gdexweb /usr/local/gdexweb
 
-RUN apt-get update -y && apt-get install -y xrootd-client libxrootd-client-dev python3-xrootd
-
 RUN pip install -r /usr/local/gdexweb/requirements.txt
 
 # set permissions
