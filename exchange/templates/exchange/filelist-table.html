@@ -1,0 +1,49 @@
+{% comment %}
+File listing table with per-file checkboxes for the Get Filelist feature.
+Directories are listed first (no checkbox), then files.
+Checkboxes are only rendered for files that have a download URL.
+{% endcomment %}
+<table class="table table-sm table-hover exchange-table">
+    <thead class="table-light">
+        <tr>
+            {# Select-all checkbox — only meaningful inside a dataset directory #}
+            <th scope="col" class="exchange-cb-col">
+                {% if current_subpath %}
+                    <input type="checkbox" id="exchange-select-all" title="Select all files">
+                {% endif %}
+            </th>
+            <th scope="col">Name</th>
+            <th scope="col" class="text-end">Size</th>
+            <th scope="col">Modified</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in entries %}
+        <tr>
+            <td class="exchange-cb-col">
+                {% if not entry.is_dir and entry.download_url and current_subpath %}
+                    <input type="checkbox" class="exchange-file-cb"
+                           data-url="{{ entry.download_url }}">
+                {% endif %}
+            </td>
+            <td>
+                {% if entry.is_dir %}
+                    <i class="fas fa-folder text-warning me-2"></i>
+                    <a href="/exchange/{{ entry.subpath }}/">{{ entry.name }}</a>
+                {% else %}
+                    <i class="fas fa-file me-2 text-secondary"></i>
+                    {% if entry.download_url %}
+                        <a href="{{ entry.download_url }}">{{ entry.name }}</a>
+                    {% else %}
+                        {{ entry.name }}
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td class="text-end text-muted small">
+                {% if entry.size %}{{ entry.size }}{% else %}&mdash;{% endif %}
+            </td>
+            <td class="text-muted small">{{ entry.modtime|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
