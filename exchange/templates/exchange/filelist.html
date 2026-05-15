@@ -12,8 +12,7 @@
 <div class="row">
     <div class="col-12">
 
-        <h2 class="mb-1">Exchange Space</h1>
-        <p class="text-muted mb-3">Community space for sharing data</p>
+        <h2 class="mb-3">Exchange Space <small class="text-muted fw-normal fs-6">Community space for sharing data</small></h2>
         <hr class="my-2">
 
         {# README title/description — shown on dataset pages that have a README #}
@@ -25,15 +24,7 @@
             </div>
 
         {% else %}
-            {# Navigation: Up button returns to the parent directory #}
-            {% if current_subpath %}
-                <a class="btn btn-sm btn-outline-secondary mb-3"
-                   href="/exchange/{{ parent_subpath }}{% if parent_subpath %}/{% endif %}">
-                    <i class="fas fa-arrow-left me-1"></i>Up
-                </a>
-            {% endif %}
-
-            {# Get Filelist button — only shown inside dataset directories #}
+{# Get Filelist button — only shown inside dataset directories #}
             {% if entries and current_subpath %}
                 <div class="mb-2">
                     <button id="exchange-filelist-btn" class="btn btn-sm btn-primary" disabled>

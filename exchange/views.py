@@ -126,12 +126,9 @@ def filelist(request, subpath=''):
     except Exception as exc:
         error = str(exc)
 
-    parent_subpath = '/'.join(subpath.split('/')[:-1]) if subpath else ''
-
     return render(request, 'exchange/filelist.html', {
         'entries': entries,
         'current_subpath': subpath,
-        'parent_subpath': parent_subpath,
         'readme_title': readme_title,
         'readme_description': readme_description,
         'error': error,
