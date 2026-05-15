@@ -12,8 +12,10 @@
 <div class="row">
     <div class="col-12">
 
+        {% if not current_subpath %}
         <h2 class="mb-3">Exchange Space <small class="text-muted fw-normal fs-6">Community space for sharing data</small></h2>
         <hr class="my-2">
+        {% endif %}
 
         {# README title/description — shown on dataset pages that have a README #}
         {% include "exchange/filelist-readme.html" %}
