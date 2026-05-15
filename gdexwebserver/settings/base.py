@@ -95,7 +95,11 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'drf_spectacular',
+
+    'exchange',
 ]
+
+XROOTD_EXCHANGE_URL = 'root://osdf-redirector.osg-htc.org:1094//ncar/gdex/exchange'
 
 
 MIDDLEWARE = [

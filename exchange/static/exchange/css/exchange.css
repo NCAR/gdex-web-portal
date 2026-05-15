@@ -1,0 +1,8 @@
+.exchange-table td,
+.exchange-table th {
+    vertical-align: middle;
+}
+
+.exchange-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
