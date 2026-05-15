@@ -99,7 +99,7 @@ def _read_dataset_readme(pelfs, base_path, subpath):
 
 def filelist(request, subpath=''):
     base_path = getattr(settings, 'PELICAN_EXCHANGE_BASE_PATH', None)
-    osdf_data_path = getattr(settings, 'OSDF_DIRECTOR_BASE_URL', '').rstrip('/')
+    osdf_data_path = getattr(settings, 'OSDF_DIRECTOR_URL', '').rstrip('/')
     subpath = subpath.strip('/')
 
     entries = []

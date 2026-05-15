@@ -7,6 +7,10 @@
     background-color: rgba(0, 0, 0, 0.03);
 }
 
+.exchange-row-dim {
+    opacity: 0.35;
+}
+
 .exchange-cb-col {
     width: 2rem;
     text-align: center;

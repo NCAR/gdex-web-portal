@@ -12,8 +12,8 @@
 <div class="row">
     <div class="col-12">
 
-        <h1 class="mb-1">GDEX Exchange</h1>
-        <p class="text-muted mb-3">Informal community space for sharing data</p>
+        <h2 class="mb-1">Exchange Space</h1>
+        <p class="text-muted mb-3">Community space for sharing data</p>
         <hr class="my-2">
 
         {# README title/description — shown on dataset pages that have a README #}
@@ -42,9 +42,19 @@
                 </div>
             {% endif %}
 
-            {# File/directory listing table #}
+            {# File/directory listing table — root uses a simpler project-focused layout #}
             {% if entries %}
-                {% include "exchange/filelist-table.html" %}
+                <div class="mb-2">
+                    <input type="text" id="exchange-search"
+                           class="form-control form-control-sm"
+                           placeholder="Filter…"
+                           autocomplete="off">
+                </div>
+                {% if current_subpath %}
+                    {% include "exchange/filelist-table.html" %}
+                {% else %}
+                    {% include "exchange/filelist-root-table.html" %}
+                {% endif %}
             {% else %}
                 <p class="text-muted">This directory is empty.</p>
             {% endif %}
