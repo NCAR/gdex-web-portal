@@ -250,6 +250,33 @@ class HomePageSearchSuggestion(Orderable):
         FieldPanel('search_term_url'),
     ]
 
+class FeaturedCard(Orderable):
+    page = ParentalKey('HomePage', related_name='featured_cards', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255, blank=False, default="",
+        verbose_name="Title", help_text="Title of the card to be displayed on the home page.")
+    icon_name = models.CharField(max_length=50, blank=False, default="",
+        verbose_name="Icon", help_text="Icon name class from the fontawesome icon set.  See fontawesome version 5 documentation for more info.")
+    text = RichTextField(blank=False, default="",
+        verbose_name="Body Text", help_text="Body text to be displayed on the home page card.")
+    card_url = models.URLField(blank=True, null=True, verbose_name="Card URL", help_text="External URL to link to from the card.  If both Card URL and Card Page are provided, Card Page will take precedence.")
+    card_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=False,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name="Card Page",
+        help_text="Internal page to link to from the card. If both Card Page and Card URL are provided, Card Page will take precedence.",
+    )
+
+    panels = [
+        FieldPanel('title'),
+        FieldPanel('icon_name'),
+        FieldPanel('text'),
+        FieldPanel('card_url'),
+        PageChooserPanel('card_page'),
+    ]
+
 class HomePage(Page):
     tagline = models.CharField(max_length=100, blank=False, default="")
     welcome = RichTextField(blank=False, default="")
@@ -257,6 +284,7 @@ class HomePage(Page):
         verbose_name="Search Box Title")
     search_box_placeholder = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Search Box Placeholder")
+    
     card_1_title = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Title")
     card_1_icon_name = models.CharField(max_length=50, blank=False, default="",
@@ -313,6 +341,9 @@ class HomePage(Page):
         MultiFieldPanel([
             InlinePanel('search_suggestions', label='Search suggestion'),
         ], heading="Search suggestions", classname="collapsible collapsed"),
+        MultiFieldPanel([
+            InlinePanel('featured_cards', label='Featured card'),
+        ], heading="Featured cards", classname="collapsible collapsed"),
         MultiFieldPanel([
             FieldPanel('card_1_title'),
             FieldPanel('card_1_icon_name'),
