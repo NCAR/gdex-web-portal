@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -262,7 +263,7 @@ class FeaturedCard(Orderable):
     card_page = models.ForeignKey(
         'wagtailcore.Page',
         null=True,
-        blank=False,
+        blank=True,
         on_delete=models.SET_NULL,
         related_name='+',
         verbose_name="Card Page",
@@ -276,6 +277,11 @@ class FeaturedCard(Orderable):
         FieldPanel('card_url'),
         PageChooserPanel('card_page'),
     ]
+
+    def clean(self):
+        super().clean()
+        if not self.card_page and not self.card_url:
+            raise ValidationError('Either Card Page or Card URL must be set.')
 
 class HomePage(Page):
     tagline = models.CharField(max_length=100, blank=False, default="")
