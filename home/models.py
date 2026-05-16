@@ -255,8 +255,9 @@ class FeaturedCard(Orderable):
     page = ParentalKey('HomePage', related_name='featured_cards', on_delete=models.CASCADE)
     title = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Title", help_text="Title of the card to be displayed on the home page.")
-    icon_name = models.CharField(max_length=50, blank=False, default="",
-        verbose_name="Icon", help_text="Icon name class from the fontawesome icon set, or custom SVG icomoon icon class.  See fontawesome version 6 documentation for more info.  Custom icomoon icons can be viewed and added to the gdex custom icon set by adding the SVG to the static/unity/lib/icomoon2/ directory and including the icon class name here.")
+    icon_name = models.CharField(max_length=50, blank=True, default="",
+        verbose_name="Icon", help_text="Icon name class from the fontawesome icon set. See fontawesome version 6 documentation for more info. Either Icon or Icomoon Icon Name can be used to specify an icon for the card.  If both are specified, Icon will take precedence over Icomoon Icon Name.")
+    icomoon_icon_name = models.CharField(max_length=50, blank=True, default="", verbose_name="Icomoon Icon Name", help_text="(Optional) If using a custom SVG icon from the gdex icomoon set, specify the icon class name here.  Custom icomoon icons can be viewed and added to the gdex custom icon set by adding the SVG to the static/unity/lib/icomoon2/ directory and including the icon class name here. This field is only necessary if the desired icon is not available in the fontawesome icon set.")   
     text = RichTextField(blank=False, default="",
         verbose_name="Body Text", help_text="Body text to be displayed on the home page card.")
     card_url = models.URLField(blank=True, null=True, verbose_name="Card URL", help_text="External URL to link to from the card.  If both Card URL and Card Page are provided, Card Page will take precedence.")
@@ -282,6 +283,8 @@ class FeaturedCard(Orderable):
         super().clean()
         if not self.card_page and not self.card_url:
             raise ValidationError('Either Card Page or Card URL must be set.')
+        if not self.icon_name and not self.icomoon_icon_name:
+            raise ValidationError('Either Icon or Icomoon Icon Name must be set.')
 
 class HomePage(Page):
     tagline = models.CharField(max_length=100, blank=False, default="")
