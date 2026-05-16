@@ -7,7 +7,7 @@
                 {% for card in page.featured_cards.all %}
                 <div class="col">
                     <div class="card h-100 grid-card-group">
-                        <a href="{% if card.card_page %}{{ card.card_page.url }}{% else %}{{ card.card_url }}{% endif %}" class="stretched-link" {% if not card.card_page and card.card_url %}target="_blank"{% endif %}></a>
+                        <a href="{% if card.card_page %}{{ card.card_page.url }}{% else %}{{ card.card_url }}{% endif %}" class="stretched-link" {% if not card.card_page and card.card_url %}target="_blank" rel="noopener noreferrer"{% endif %}></a>
                         <div class="card-body">
                             <div class="icon py-2 text-center">
                                 <i class="fa-solid fa-{{ card.icon_name }} fa-2x"></i>
