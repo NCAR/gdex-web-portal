@@ -255,12 +255,32 @@ class FeaturedCard(Orderable):
     page = ParentalKey('HomePage', related_name='featured_cards', on_delete=models.CASCADE)
     title = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Title", help_text="Title of the card to be displayed on the home page.")
-    icon_name = models.CharField(max_length=50, blank=True, default="",
-        verbose_name="Icon", help_text="Icon name class from the fontawesome icon set. See fontawesome version 6 documentation for more info. Either Icon or Icomoon Icon Name can be used to specify an icon for the card.  If both are specified, Icon will take precedence over Icomoon Icon Name.")
-    icomoon_icon_name = models.CharField(max_length=50, blank=True, default="", verbose_name="Icomoon Icon Name", help_text="(Optional) If using a custom SVG icon from the gdex icomoon set, specify the icon class name here.  Custom icomoon icons can be viewed and added to the gdex custom icon set by adding the SVG to the static/unity/lib/icomoon2/ directory and including the icon class name here. This field is only necessary if the desired icon is not available in the fontawesome icon set.")   
-    text = RichTextField(blank=False, default="",
-        verbose_name="Body Text", help_text="Body text to be displayed on the home page card.")
-    card_url = models.URLField(blank=True, null=True, verbose_name="Card URL", help_text="External URL to link to from the card.  If both Card URL and Card Page are provided, Card Page will take precedence.")
+    icon_name = models.CharField(
+        max_length=50, 
+        blank=True, 
+        default="",
+        verbose_name="Icon", 
+        help_text="Icon name class from the fontawesome icon set. See fontawesome version 6 documentation for more info. Either Icon or Icomoon Icon Name can be used to specify an icon for the card.  If both are specified, Icon will take precedence over Icomoon Icon Name."
+        )
+    icomoon_icon_name = models.CharField(
+        max_length=50, 
+        blank=True, 
+        default="", 
+        verbose_name="Icomoon Icon Name", 
+        help_text="(Optional) If using a custom SVG icon from the gdex icomoon set, specify the icon class name here.  Custom icomoon icons can be viewed and added to the gdex custom icon set by adding the SVG to the static/unity/lib/icomoon2/ directory and including the icon class name here. This field is only necessary if the desired icon is not available in the fontawesome icon set."
+        ) 
+    text = RichTextField(
+        blank=False, 
+        default="",
+        verbose_name="Body Text", 
+        help_text="Body text to be displayed on the home page card."
+        )
+    card_url = models.URLField(
+        blank=True, 
+        null=True, 
+        verbose_name="Card URL", 
+        help_text="External URL to link to from the card.  If both Card URL and Card Page are provided, Card Page will take precedence."
+        )
     card_page = models.ForeignKey(
         'wagtailcore.Page',
         null=True,
@@ -274,6 +294,7 @@ class FeaturedCard(Orderable):
     panels = [
         FieldPanel('title'),
         FieldPanel('icon_name'),
+        FieldPanel('icomoon_icon_name'),
         FieldPanel('text'),
         FieldPanel('card_url'),
         PageChooserPanel('card_page'),
