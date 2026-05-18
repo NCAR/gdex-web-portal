@@ -7,6 +7,16 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 
+def good_path(key_path, spec_path):
+    if len(key_path) == 0 and spec_path[0] != '/':
+        return False
+
+    if len(key_path) > 0 and spec_path[0] == '/':
+        return False
+
+    return True
+
+
 @csrf_exempt
 def unlink(request):
     parts = request.META['HTTP_HOST'].split(".")
@@ -23,20 +33,30 @@ def unlink(request):
     if 'path' not in request.POST:
         return HttpResponse("Missing path.", status=400, reason="Bad Request")
 
-    if not os.path.exists(request.POST['path']):
+    is_good_path = good_path(
+            (settings.LOCAL_API_KEYS['unlink']
+             [request.headers['API-key']]), request.POST['path'])
+    if not is_good_path:
+        return HttpResponse("Invalid path.", status=400,
+                            reason="Bad Request")
+
+    path = os.path.join(
+            settings.LOCAL_API_KEYS['unlink'][request.headers['API-key']],
+            request.POST['path'])
+    if not os.path.exists(path):
         return HttpResponse("Path does not exist.", status=400,
                             reason="Bad Request")
 
-    if request.POST['path'][-1] == '/':
+    if path[-1] == '/':
         try:
-            shutil.rmtree(request.POST['path'])
+            shutil.rmtree(path)
         except Exception as err:
             return HttpResponse("Remove failed: {}".format(err), status=500,
                                 reason="Internal Server Error")
 
     else:
         try:
-            os.remove(request.POST['path'])
+            os.remove(path)
         except Exception as err:
             return HttpResponse("Remove failed: {}".format(err), status=500,
                                 reason="Internal Server Error")
