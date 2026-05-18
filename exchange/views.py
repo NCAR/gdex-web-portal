@@ -77,6 +77,7 @@ def _list_directory(pelfs, list_path, subpath, base_path, osdf_data_path, hide_r
             'size': _format_size(size) if not is_dir else None,
             'modtime': modtime,
             'subpath': entry_subpath,
+            'file_path': full_path if not is_dir else None,
             'download_url': (osdf_data_path + full_path) if (not is_dir and osdf_data_path) else None,
         })
 

@@ -23,7 +23,8 @@ Checkboxes are only rendered for files that have a download URL.
             <td class="exchange-cb-col">
                 {% if not entry.is_dir and entry.download_url and current_subpath %}
                     <input type="checkbox" class="exchange-file-cb"
-                           data-url="{{ entry.download_url }}">
+                           data-url="{{ entry.download_url }}"
+                           data-path="{{ entry.file_path }}">
                 {% endif %}
             </td>
             <td>

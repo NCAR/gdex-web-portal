@@ -33,7 +33,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         btn.addEventListener('click', function () {
-            const urls = getChecked().map(function (cb) { return cb.dataset.url; });
+            const hpcToggle = document.getElementById('exchange-hpc-toggle');
+            const useHpcPath = hpcToggle && hpcToggle.checked;
+            const urls = getChecked().map(function (cb) {
+                return useHpcPath ? cb.dataset.path : cb.dataset.url;
+            });
             const escaped = urls.join('\n').replace(/&/g, '&amp;').replace(/</g, '&lt;');
             const html = '<div style="padding:8px">'
                 + '<p class="mb-1"><strong>' + urls.length + ' file' + (urls.length !== 1 ? 's' : '') + ' selected:</strong></p>'
