@@ -12,9 +12,9 @@ from django.views.decorators.csrf import csrf_exempt
 def good_path(key_path, spec_path):
     if len(key_path) == 0 and spec_path[0] != '/':
         return False
-    else:
-        if len(key_path) > 0 and spec_path[0] == '/':
-            return False
+
+    if len(key_path) > 0 and spec_path[0] == '/':
+        return False
 
     return True
 
