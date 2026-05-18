@@ -17,7 +17,7 @@
                                 {% endif %}
                             </div>
                             <h4 class="card-title text-center text-white">{{ card.title }}{% if not card.card_page and card.card_url %} <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i>{% endif %}</h4>
-                            <p class="card-text text-center pt-2">{{ card.text }}</p>
+                            <p class="card-text text-center pt-2">{{ card.text|richtext }}</p>
                         </div>
                     </div>
                 </div>
