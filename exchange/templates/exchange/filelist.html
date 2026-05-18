@@ -29,13 +29,17 @@
 {# Get Filelist button — only shown inside dataset directories #}
             {% if entries and current_subpath %}
                 <div class="mb-2 d-flex align-items-center gap-3">
-                    <button id="exchange-filelist-btn" class="btn btn-sm btn-primary" disabled>
+                    <button id="exchange-filelist-btn" class="btn btn-sm btn-primary" disabled
+                            data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Get a list of the checked files">
                         <i class="fas fa-list me-1"></i>Get Filelist
                     </button>
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" id="exchange-hpc-toggle" role="switch">
-                        <label class="form-check-label" for="exchange-hpc-toggle">On NCAR HPC?</label>
-                    </div>
+                    <button id="exchange-hpc-toggle" type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            data-bs-toggle="button" aria-pressed="false"
+                            title="Get full directory paths for Casper/Derecho">
+                        On NCAR HPC?
+                    </button>
                 </div>
             {% endif %}
 

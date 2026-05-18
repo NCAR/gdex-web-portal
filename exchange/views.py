@@ -1,6 +1,7 @@
 import os
 import re
 from datetime import datetime
+from urllib.parse import urlparse
 
 import pelicanfs
 from django.conf import settings
@@ -71,14 +72,16 @@ def _list_directory(pelfs, list_path, subpath, base_path, osdf_data_path, hide_r
 
         entry_subpath = (subpath + '/' + name).strip('/') if subpath else name
         full_path = base_path.rstrip('/') + '/' + entry_subpath
+        download_url = (osdf_data_path + full_path) if (not is_dir and osdf_data_path) else None
+        file_path = urlparse(download_url).path if download_url else None
         entries.append({
             'name': name,
             'is_dir': is_dir,
             'size': _format_size(size) if not is_dir else None,
             'modtime': modtime,
             'subpath': entry_subpath,
-            'file_path': full_path if not is_dir else None,
-            'download_url': (osdf_data_path + full_path) if (not is_dir and osdf_data_path) else None,
+            'file_path': file_path,
+            'download_url': download_url,
         })
 
     entries.sort(key=lambda e: (not e['is_dir'], e['name'].lower()))

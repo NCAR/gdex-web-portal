@@ -49,3 +49,30 @@
     border-left: none;
     transform: rotate(45deg);
 }
+
+.exchange-copy-path {
+    background: none;
+    border: none;
+    padding: 0 0 0 0.35rem;
+    color: #6c757d;
+    cursor: pointer;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.exchange-copy-path:hover {
+    color: #0d6efd;
+}
+
+#exchange-hpc-toggle.active {
+    background-color: #198754;
+    border-color: #198754;
+    color: #fff;
+}
+
+#exchange-hpc-toggle.active:hover,
+#exchange-hpc-toggle.active:focus {
+    background-color: #157347;
+    border-color: #146c43;
+    color: #fff;
+}

@@ -1,5 +1,32 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    // Bootstrap tooltips must be initialized explicitly
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+        new bootstrap.Tooltip(el);
+    });
+    // HPC toggle uses data-bs-toggle="button", so initialize its tooltip separately
+    var hpcToggleEl = document.getElementById('exchange-hpc-toggle');
+    if (hpcToggleEl) { new bootstrap.Tooltip(hpcToggleEl); }
+
+    // --- Per-file copy-path buttons ---
+
+    var copyPathBtns = document.querySelectorAll('.exchange-copy-path');
+
+    if (hpcToggleEl) {
+        hpcToggleEl.addEventListener('click', function () {
+            var active = this.classList.contains('active');
+            copyPathBtns.forEach(function (btn) {
+                btn.classList.toggle('d-none', !active);
+            });
+        });
+    }
+
+    copyPathBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            navigator.clipboard.writeText(this.dataset.path);
+        });
+    });
+
     // --- Get Filelist button ---
 
     const btn = document.getElementById('exchange-filelist-btn');
@@ -34,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         btn.addEventListener('click', function () {
             const hpcToggle = document.getElementById('exchange-hpc-toggle');
-            const useHpcPath = hpcToggle && hpcToggle.checked;
+            const useHpcPath = hpcToggle && hpcToggle.classList.contains('active');
             const urls = getChecked().map(function (cb) {
                 return useHpcPath ? cb.dataset.path : cb.dataset.url;
             });

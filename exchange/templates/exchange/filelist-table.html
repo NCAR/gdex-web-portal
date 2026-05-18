@@ -35,6 +35,11 @@ Checkboxes are only rendered for files that have a download URL.
                     <i class="fas fa-file me-2 text-secondary"></i>
                     {% if entry.download_url %}
                         <a href="{{ entry.download_url }}">{{ entry.name }}</a>
+                        <button class="exchange-copy-path d-none"
+                                data-path="{{ entry.file_path }}"
+                                title="Copy path to clipboard">
+                            <i class="fas fa-copy"></i>
+                        </button>
                     {% else %}
                         {{ entry.name }}
                     {% endif %}
