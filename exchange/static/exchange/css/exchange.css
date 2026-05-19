@@ -1,0 +1,78 @@
+.exchange-table td,
+.exchange-table th {
+    vertical-align: middle;
+}
+
+.exchange-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.exchange-row-dim {
+    opacity: 0.35;
+}
+
+.exchange-cb-col {
+    width: 2rem;
+    text-align: center;
+}
+
+.exchange-file-cb,
+#exchange-select-all {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #6c757d;
+    border-radius: 3px;
+    background-color: #fff;
+    cursor: pointer;
+    vertical-align: middle;
+    position: relative;
+}
+
+.exchange-file-cb:checked,
+#exchange-select-all:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.exchange-file-cb:checked::after,
+#exchange-select-all:checked::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 0px;
+    width: 5px;
+    height: 9px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+}
+
+.exchange-copy-path {
+    background: none;
+    border: none;
+    padding: 0 0 0 0.35rem;
+    color: #6c757d;
+    cursor: pointer;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.exchange-copy-path:hover {
+    color: #0d6efd;
+}
+
+#exchange-hpc-toggle.active {
+    background-color: #198754;
+    border-color: #198754;
+    color: #fff;
+}
+
+#exchange-hpc-toggle.active:hover,
+#exchange-hpc-toggle.active:focus {
+    background-color: #157347;
+    border-color: #146c43;
+    color: #fff;
+}

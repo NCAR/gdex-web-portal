@@ -461,26 +461,43 @@ def supersede(request, dsid):
         try:
             conn = psycopg2.connect(**settings.RDADB['dssdb_config_pg'])
             cursor = conn.cursor()
-            cursor.execute((
+            cursor.execute(
                     "update dssdb.dsvrsn set note = '' where dsid = %s and "
-                    "doi = %s"), (dsid, request.POST['adoi']))
+                    "doi = %s", (dsid, request.POST['adoi']))
             if cursor.rowcount != 1:
                 raise psycopg2.Error(("Incorrect row count for update: '{}'")
                                      .format(cursor.rowcount))
 
             conn.commit()
+            conn.close()
         except psycopg2.Error as err:
             errs.append("database error: '{}'".format(err))
 
         return render(request, "metaman/dois/doi_msg.html", ctx)
     elif 'passedTest' in request.POST and request.POST['passedTest'] == "true":
-        dsarch_command = (
-                bin_utils['rdadatarun'] + " /usr/local/decs/bin/dsarch -sv "
-                "-ds " + dsid + " -nv -dn X -md")
-        o = subprocess.run(dsarch_command, capture_output=True, shell=True)
-        if o.stderr:
-            ctx.update({'error': str(o.stderr, encoding="utf-8")})
+        # make a temporary DOI entry in dssdb.dsvrsn for the dataset, making
+        #  sure there isn't already one from a previous failed test run
+        try:
+            conn = psycopg2.connect(**settings.RDADB['dssdb_config_pg'])
+            cursor = conn.cursor()
+            cursor.execute(
+                    "select vindex from dssdb.dsvrsn where dsid = %s and doi "
+                    "== 'X'", (dsid, ))
+            vindex, = cursor.fetchone() or (None, )
+            conn.close()
+        except psycopg2.Error as err:
+            ctx.update({'error': "Error while checking for temporary "
+                                 f"entry: '{err}'"})
             return render(request, "metaman/dois/doi_msg.html", ctx)
+
+        if vindex is None:
+            dsarch_command = (
+                    bin_utils['rdadatarun'] + " /usr/local/decs/bin/dsarch "
+                    "-sv -ds " + dsid + " -nv -dn X -md")
+            o = subprocess.run(dsarch_command, capture_output=True, shell=True)
+            if o.stderr:
+                ctx.update({'error': str(o.stderr, encoding="utf-8")})
+                return render(request, "metaman/dois/doi_msg.html", ctx)
 
         ctx.update({'adoi': request.POST['adoi']})
         ctx = create_a_real_doi(request, dsid, iuser, ctx)
