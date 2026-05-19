@@ -1,0 +1,15 @@
+{% comment %}
+Displays the title and description parsed from a dataset's README.md.
+Only rendered on top-level dataset pages where a README exists.
+{% endcomment %}
+{% if readme_title or readme_description %}
+<div class="mb-3">
+    {% if readme_title %}
+        <h2 class="h4">{{ readme_title }}</h2>
+    {% endif %}
+    {% if readme_description %}
+        {{ readme_description|linebreaks }}
+    {% endif %}
+</div>
+<hr class="my-2">
+{% endif %}

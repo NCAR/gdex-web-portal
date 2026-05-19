@@ -11,7 +11,7 @@
         {% if forloop.last %}
           {{ url_part.0|dsid_dash_to_dot }}
         {% else %}
-          <a href='{{ url_part.1 }}'> {{ url_part.0|dsid_dash_to_dot }}</a>
+          <a href='{{ url_part.1 }}/'> {{ url_part.0|dsid_dash_to_dot }}</a>
         {% endif %}
         </li>
       {% endfor %}

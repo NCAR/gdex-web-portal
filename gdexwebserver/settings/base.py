@@ -95,7 +95,11 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'drf_spectacular',
+
+    'exchange',
 ]
+
+PELICAN_EXCHANGE_BASE_PATH = '/ncar/gdex/exchange'
 
 
 MIDDLEWARE = [

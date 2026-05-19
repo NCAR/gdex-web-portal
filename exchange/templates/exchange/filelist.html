@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}GDEX Exchange{% endblock %}
+
+{% block base_styling %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'exchange/css/exchange.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+
+        {% if not current_subpath %}
+        <h2 class="mb-3">Exchange Space <small class="text-muted fw-normal fs-6">Community space for sharing data</small></h2>
+        <hr class="my-2">
+        {% endif %}
+
+        {# README title/description — shown on dataset pages that have a README #}
+        {% include "exchange/filelist-readme.html" %}
+
+        {% if error %}
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+            </div>
+
+        {% else %}
+            <div class="mb-2 d-flex align-items-center gap-3">
+                {# Get Filelist + HPC toggle — only inside dataset directories #}
+                {% if entries and current_subpath %}
+                    <button id="exchange-filelist-btn" class="btn btn-sm btn-primary" disabled
+                            data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Get a list of the checked files">
+                        <i class="fas fa-list me-1"></i>Get Filelist
+                    </button>
+                    <button id="exchange-hpc-toggle" type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            data-bs-toggle="button" aria-pressed="false"
+                            title="Get full directory paths for Casper/Derecho">
+                        On NCAR HPC?
+                    </button>
+                {% endif %}
+                <a href="{{ globus_url }}" target="_blank" rel="noopener noreferrer"
+                   class="btn btn-sm btn-success ms-auto"
+                   title="Browse this directory in Globus">
+                    <i class="fas fa-exchange-alt me-1"></i>Globus Access
+                </a>
+            </div>
+
+            {# File/directory listing table — root uses a simpler project-focused layout #}
+            {% if entries %}
+                <div class="mb-2">
+                    <input type="text" id="exchange-search"
+                           class="form-control form-control-sm"
+                           placeholder="Filter…"
+                           autocomplete="off">
+                </div>
+                {% if current_subpath %}
+                    {% include "exchange/filelist-table.html" %}
+                {% else %}
+                    {% include "exchange/filelist-root-table.html" %}
+                {% endif %}
+            {% else %}
+                <p class="text-muted">This directory is empty.</p>
+            {% endif %}
+
+        {% endif %}
+
+    </div>
+</div>
+<script src="{% static 'exchange/js/exchange.js' %}"></script>
+{% endblock %}
