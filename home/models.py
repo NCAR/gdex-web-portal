@@ -329,7 +329,7 @@ class HomePage(Page):
             InlinePanel('search_suggestions', label='Search suggestion'),
         ], heading="Search suggestions", classname="collapsible collapsed"),
         MultiFieldPanel([
-            InlinePanel('featured_cards', label='Featured card'),
+            InlinePanel('featured_cards', label='Cards highlighting popular content with links'),
         ], heading="Featured cards", classname="collapsible collapsed"),
     ]
     is_creatable = False
