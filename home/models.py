@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -241,6 +242,7 @@ class AlertMessage(models.Model):
         verbose_name_plural = "Alert Messages"
 
 class HomePageSearchSuggestion(Orderable):
+    """ Search suggestions for the home page search bar """
     page = ParentalKey('HomePage', related_name='search_suggestions', on_delete=models.CASCADE)
     search_term = models.CharField(max_length=25, verbose_name='Search Term', help_text='Search term displayed under the home page search bar as a search suggestion badge.  For example, "AI Ready Datasets" or "Zarr Format Datasets".')
     search_term_url = models.CharField(max_length=255, verbose_name='Search Term URL', help_text='Search term URL specified as the GDEX Search URL to link to when the search term is clicked.  This can be a relative URL or absolute URL. For example, a relative URL could be /gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready and an absolute URL could be https://gdex.ucar.edu/gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready to link to a search for AI-Ready datasets.')
@@ -250,59 +252,72 @@ class HomePageSearchSuggestion(Orderable):
         FieldPanel('search_term_url'),
     ]
 
+class FeaturedCard(Orderable):
+    """ Featured cards for the home page highlighting popular content with links """
+    page = ParentalKey('HomePage', related_name='featured_cards', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255, blank=False, default="",
+        verbose_name="Title", help_text="Title of the card to be displayed on the home page.")
+    icon_name = models.CharField(
+        max_length=50, 
+        blank=True, 
+        default="",
+        verbose_name="Icon", 
+        help_text="Icon name class from the fontawesome icon set. See fontawesome version 6 documentation for more info. Either Icon or Icomoon Icon Name can be used to specify an icon for the card.  If both are specified, Icon will take precedence over Icomoon Icon Name."
+        )
+    icomoon_icon_name = models.CharField(
+        max_length=50, 
+        blank=True, 
+        default="", 
+        verbose_name="Icomoon Icon Name", 
+        help_text="(Optional) If using a custom SVG icon from the gdex icomoon set, specify the icon class name here.  Custom icomoon icons can be viewed and added to the gdex custom icon set by adding the SVG to the static/unity/lib/icomoon2/ directory and including the icon class name here. This field is only necessary if the desired icon is not available in the fontawesome icon set."
+        ) 
+    text = RichTextField(
+        blank=False, 
+        default="",
+        verbose_name="Body Text", 
+        help_text="Body text to be displayed on the home page card."
+        )
+    card_url = models.URLField(
+        blank=True, 
+        null=True, 
+        verbose_name="Card URL", 
+        help_text="External URL to link to from the card.  If both Card URL and Card Page are provided, Card Page will take precedence."
+        )
+    card_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name="Card Page",
+        help_text="Internal page to link to from the card. If both Card Page and Card URL are provided, Card Page will take precedence.",
+    )
+
+    panels = [
+        FieldPanel('title'),
+        FieldPanel('icon_name'),
+        FieldPanel('icomoon_icon_name'),
+        FieldPanel('text'),
+        FieldPanel('card_url'),
+        PageChooserPanel('card_page'),
+    ]
+
+    def clean(self):
+        super().clean()
+        if not self.card_page and not self.card_url:
+            raise ValidationError('Either Card Page or Card URL must be set.')
+        if not self.icon_name and not self.icomoon_icon_name:
+            raise ValidationError('Either Icon or Icomoon Icon Name must be set.')
+
 class HomePage(Page):
+    """ Home page model with fields for the home page search box and featured cards """
     tagline = models.CharField(max_length=100, blank=False, default="")
     welcome = RichTextField(blank=False, default="")
     search_box_title = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Search Box Title")
     search_box_placeholder = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Search Box Placeholder")
-    card_1_title = models.CharField(max_length=255, blank=False, default="",
-        verbose_name="Title")
-    card_1_icon_name = models.CharField(max_length=50, blank=False, default="",
-        verbose_name="Icon")
-    card_1_text = RichTextField(blank=False, default="",
-        verbose_name="Body Text")
-    card_1_footer_text = models.CharField(max_length=255, blank=False,
-        default="", verbose_name="Footer Text")
-    card_1_footer_page = models.ForeignKey(
-        'wagtailcore.Page',
-        null=True,
-        blank=False,
-        on_delete=models.SET_NULL,
-        related_name='+',
-    )
-    card_2_title = models.CharField(max_length=255, blank=False, default="",
-        verbose_name="title")
-    card_2_icon_name = models.CharField(max_length=50, blank=False, default="",
-        verbose_name="Icon")
-    card_2_text = RichTextField(blank=False, default="",
-         verbose_name="Body Text")
-    card_2_footer_text = models.CharField(max_length=255, blank=False,
-        default="", verbose_name="Footer Text")
-    card_2_footer_page = models.ForeignKey(
-        'wagtailcore.Page',
-        null=True,
-        blank=False,
-        on_delete=models.SET_NULL,
-        related_name='+',
-    )
-    card_3_title = models.CharField(max_length=255, blank=False, default="",
-        verbose_name="Title")
-    card_3_icon_name = models.CharField(max_length=50, blank=False, default="",
-        verbose_name="Icon")
-    card_3_text = RichTextField(blank=False, default="",
-        verbose_name="Body Text")
-    card_3_footer_text = models.CharField(max_length=255, blank=False,
-        default="", verbose_name="Footer Text")
-    card_3_footer_page = models.ForeignKey(
-        'wagtailcore.Page',
-        null=True,
-        blank=False,
-        on_delete=models.SET_NULL,
-        related_name='+',
-    )
-
+    
     content_panels = Page.content_panels + [
         FieldPanel('tagline', classname="collapsible collapsed"),
         FieldPanel('welcome', classname="collapsible collapsed"),
@@ -314,26 +329,8 @@ class HomePage(Page):
             InlinePanel('search_suggestions', label='Search suggestion'),
         ], heading="Search suggestions", classname="collapsible collapsed"),
         MultiFieldPanel([
-            FieldPanel('card_1_title'),
-            FieldPanel('card_1_icon_name'),
-            FieldPanel('card_1_text'),
-            FieldPanel('card_1_footer_text'),
-            PageChooserPanel('card_1_footer_page'),
-        ], heading="Card 1", classname="collapsible collapsed"),
-        MultiFieldPanel([
-            FieldPanel('card_2_title'),
-            FieldPanel('card_2_icon_name'),
-            FieldPanel('card_2_text'),
-            FieldPanel('card_2_footer_text'),
-            PageChooserPanel('card_2_footer_page'),
-        ], heading="Card 2", classname="collapsible collapsed"),
-        MultiFieldPanel([
-            FieldPanel('card_3_title'),
-            FieldPanel('card_3_icon_name'),
-            FieldPanel('card_3_text'),
-            FieldPanel('card_3_footer_text'),
-            PageChooserPanel('card_3_footer_page'),
-        ], heading="Card 3", classname="collapsible collapsed"),
+            InlinePanel('featured_cards', label='Featured card'),
+        ], heading="Featured cards", classname="collapsible collapsed"),
     ]
     is_creatable = False
 
@@ -347,6 +344,7 @@ class TaxonomyTerm(Orderable):
     ]
 
 class Card(Orderable, ClusterableModel):
+    """ Card model for generic page sections """
     page = ParentalKey('GenericPage', on_delete=models.CASCADE, related_name='cards')
     title = models.CharField(max_length=255, blank=True, default="",
         verbose_name="title")
