@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Per-file copy-path buttons ---
 
-    var copyPathBtns = document.querySelectorAll('.exchange-copy-path');
+    // File copy buttons (hidden until HPC toggle on); excludes always-visible zarr buttons
+    var copyPathBtns = document.querySelectorAll('.exchange-copy-path:not(.exchange-copy-zarr)');
 
     if (hpcToggleEl) {
         hpcToggleEl.addEventListener('click', function () {
@@ -21,9 +22,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    copyPathBtns.forEach(function (btn) {
+    // Shared click handler: zarr buttons carry both data-url and data-path
+    document.querySelectorAll('.exchange-copy-path').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            navigator.clipboard.writeText(this.dataset.path);
+            var hpcActive = hpcToggleEl && hpcToggleEl.classList.contains('active');
+            var text = hpcActive ? this.dataset.path : (this.dataset.url || this.dataset.path);
+            navigator.clipboard.writeText(text);
         });
     });
 

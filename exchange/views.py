@@ -1,7 +1,7 @@
 import os
 import re
 from datetime import datetime
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import pelicanfs
 from django.conf import settings
@@ -65,6 +65,7 @@ def _list_directory(pelfs, list_path, subpath, base_path, osdf_data_path, hide_r
             has_readme = True
 
         is_dir = entry.get('type') == 'directory'
+        is_zarr = is_dir and name.endswith('.zarr')
         size = entry.get('size', 0)
         modtime = entry.get('last_modified') or entry.get('modified')
         if isinstance(modtime, (int, float)):
@@ -72,11 +73,12 @@ def _list_directory(pelfs, list_path, subpath, base_path, osdf_data_path, hide_r
 
         entry_subpath = (subpath + '/' + name).strip('/') if subpath else name
         full_path = base_path.rstrip('/') + '/' + entry_subpath
-        download_url = (osdf_data_path + full_path) if (not is_dir and osdf_data_path) else None
-        file_path = urlparse(download_url).path if download_url else None
+        download_url = (osdf_data_path + full_path) if ((not is_dir or is_zarr) and osdf_data_path) else None
+        file_path = urlparse(download_url).path.removeprefix('/ncar') if download_url else None
         entries.append({
             'name': name,
             'is_dir': is_dir,
+            'is_zarr': is_zarr,
             'size': _format_size(size) if not is_dir else None,
             'modtime': modtime,
             'subpath': entry_subpath,
@@ -130,10 +132,18 @@ def filelist(request, subpath=''):
     except Exception as exc:
         error = str(exc)
 
+    exchange_path = '/exchange/' + (subpath.strip('/') + '/' if subpath else '')
+    globus_url = (
+        'https://app.globus.org/file-manager'
+        '?origin_id=c4e40965-a024-43d7-bef4-6010f3731b61'
+        '&origin_path=' + quote(exchange_path, safe='')
+    )
+
     return render(request, 'exchange/filelist.html', {
         'entries': entries,
         'current_subpath': subpath,
         'readme_title': readme_title,
         'readme_description': readme_description,
         'error': error,
+        'globus_url': globus_url,
     })
