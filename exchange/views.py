@@ -132,10 +132,11 @@ def filelist(request, subpath=''):
     except Exception as exc:
         error = str(exc)
 
+    globus_endpoint_id = getattr(settings, 'GLOBUS_DATA_ENDPOINT_ID', '')
     exchange_path = '/exchange/' + (subpath.strip('/') + '/' if subpath else '')
     globus_url = (
         'https://app.globus.org/file-manager'
-        '?origin_id=c4e40965-a024-43d7-bef4-6010f3731b61'
+        '?origin_id=' + globus_endpoint_id +
         '&origin_path=' + quote(exchange_path, safe='')
     )
 
