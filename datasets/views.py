@@ -708,3 +708,7 @@ def example_view(request, dsid):
         return HttpResponse(example_obj.get_code())
     example_obj = CodeExample(dsid)
     return render(request, "datasets/code_example.html", {'ctx':example_obj})
+
+
+def markup_view(request, dsid, markup_type, file):
+    return HttpResponse(f"hello {dsid} {markup_type} {file}")
