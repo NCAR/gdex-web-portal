@@ -22,14 +22,19 @@ def transform_grml(request, dsid, markup_type, file, ctx):
         if file_code is not None:
             ctx['transform']['data_format'] = snake_to_capital(data_format)
             cursor.execute(
-                    f'select distinct t.time_range from "{markup_type}".'
-                    f'{dsid}_grids2 as g left join "{markup_type}".'
-                    'time_ranges as t on t.code = g.time_range_code where '
-                    'file_code = %s', (file_code, ))
+                    'select distinct t.time_range, g.grid_definition_code '
+                    f'from "{markup_type}".{dsid}_grids2 as g left join '
+                    f'"{markup_type}".time_ranges as t on t.code = g.'
+                    'time_range_code where file_code = %s', (file_code, ))
             res = cursor.fetchall()
-            products = [e[0] for e in res]
-            ctx['transform']['products'] = (
-                    sorted(products, key=cmp_to_key(compare_time_ranges)))
+            tranges = [e[0] for e in res]
+            s_tranges = sorted(tranges, key=cmp_to_key(compare_time_ranges))
+            ctx['transform']['products'] = []
+            for t in s_tranges:
+                grids = [e[1] for e in res if e[0] == t]
+                ctx['transform']['products'].append(
+                        {'time_range': t, 'grids': grids})
+
         else:
             ctx['transform']['error'] = "File does not exist"
 
