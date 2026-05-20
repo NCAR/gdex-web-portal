@@ -8,7 +8,6 @@ from . import views
 
 
 def transform_grml(request, dsid, markup_type, file, ctx):
-    grml = {}
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
@@ -18,27 +17,26 @@ def transform_grml(request, dsid, markup_type, file, ctx):
                 "code = w.format_code where w.id = %s", (file, ))
         data_format, file_code = cursor.fetchone() or (None, None)
         if file_code is not None:
-            grml['data_format'] = snake_to_capital(data_format)
+            ctx['transform']['data_format'] = snake_to_capital(data_format)
             cursor.execute(
                     f'select distinct time_range_code from "{markup_type}".'
                     f'{dsid}_grids2 where file_code = %s', (file_code, ))
             res = cursor.fetchall()
-            grml['num_products'] = len(res)
+            ctx['transform']['num_products'] = len(res)
         else:
-            grml['error'] = "File does not exist"
+            ctx['transform']['error'] = "File does not exist"
     except Exception:
-        grml['error'] = "Database error"
+        ctx['transform']['error'] = "Database error"
     finally:
         if 'conn' in locals():
             conn.close()
 
-    ctx.update({'transform': grml})
     return render(request, "datasets/transform/grml.html", ctx)
 
 
 def transform(request, dsid, markup_type, file):
     d = views.get_dataset_description_context(dsid)
-    ctx = {'page': d}
+    ctx = {'page': d, 'transform': {'file': file}}
     if markup_type[-4:] == "GrML":
         return transform_grml(request, dsid, markup_type, file, ctx)
 
