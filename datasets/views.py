@@ -21,6 +21,7 @@ from wagtail.models import Page
 from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
                                 iso_19139, json_ld)
 
+from .transform import transform
 from .utils import get_custom_subset_context, get_hostname, ng_gdex_id
 from .CodeExample import CodeExample
 from api.common import (format_dataset_id, get_request_info,
@@ -711,4 +712,7 @@ def example_view(request, dsid):
 
 
 def markup_view(request, dsid, markup_type, file):
-    return HttpResponse(f"hello {dsid} {markup_type} {file}")
+    #if "HTTP_X_REQUESTED_WITH" not in request.META:
+    #    return render(request, "404.html")
+
+    return transform(dsid, markup_type, file)
