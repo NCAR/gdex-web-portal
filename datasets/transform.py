@@ -24,7 +24,7 @@ def transform_grml(request, dsid, markup_type, file, ctx):
                     'time_ranges as t on t.code = g.time_range_code where '
                     'file_code = %s', (file_code, ))
             res = cursor.fetchall()
-            ctx['transform']['num_products'] = len(res)
+            ctx['transform']['products'] = [e[0] for e in res]
         else:
             ctx['transform']['error'] = "File does not exist"
 
