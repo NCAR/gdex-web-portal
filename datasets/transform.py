@@ -19,12 +19,15 @@ def transform_grml(request, dsid, markup_type, file, ctx):
         if file_code is not None:
             ctx['transform']['data_format'] = snake_to_capital(data_format)
             cursor.execute(
-                    f'select distinct time_range_code from "{markup_type}".'
-                    f'{dsid}_grids2 where file_code = %s', (file_code, ))
+                    f'select distinct t.time_range from "{markup_type}".'
+                    f'{dsid}_grids2 as g left join "{markup_type}".'
+                    'time_ranges as t on t.code = g.time_range_code where '
+                    'file_code = %s', (file_code, ))
             res = cursor.fetchall()
             ctx['transform']['num_products'] = len(res)
         else:
             ctx['transform']['error'] = "File does not exist"
+
     except Exception:
         ctx['transform']['error'] = "Database error"
     finally:
