@@ -5,9 +5,12 @@
 </div>
 <center>
     {% for product in transform.products %}
-    <div class="border border-1 border-primary mt-2 mb-3 p-1" style="width: 93%">
-        <span class="fs-5 fw-bold">Product:</span>&nbsp;{{ product }}</span>
-    </div>
+        {% for grid in product.grids %}
+        <div class="border border-1 border-primary mt-2 mb-3 p-1" style="width: 93%">
+            <span class="fs-5 fw-bold">Product:</span>&nbsp;{{ product.time_range }}</span>
+            <span class="fs-5 fw-bold">Grid:</span>&nbsp;{{ grid }}</span>
+        </div>
+        {% endfor %}
     {% endfor %}
 </center>
 {% endblock %}
