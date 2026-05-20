@@ -1,7 +1,10 @@
 import psycopg2
 
+from functools import cmp_to_key
+
 from django.conf import settings
 from django.shortcuts import render
+from libpkg.metacompares import compare_time_ranges
 from libpkg.strutils import snake_to_capital
 
 from . import views
@@ -24,7 +27,9 @@ def transform_grml(request, dsid, markup_type, file, ctx):
                     'time_ranges as t on t.code = g.time_range_code where '
                     'file_code = %s', (file_code, ))
             res = cursor.fetchall()
-            ctx['transform']['products'] = [e[0] for e in res]
+            products = [e[0] for e in res]
+            ctx['transform']['products'] = (
+                    sorted(products, key=cmp_to_key(compare_time_ranges)))
         else:
             ctx['transform']['error'] = "File does not exist"
 
