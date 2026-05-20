@@ -11,7 +11,7 @@
                 <span class="fs-5 fw-bold">Product:</span>&nbsp;{{ product.time_range }}</span>
             </div>
             <div>
-                <span class="fs-5 fw-bold">Grid:</span>&nbsp;{{ grid }}</span>
+                <span class="fs-5 fw-bold">Grid:</span>&nbsp;{{ grid|safe }}</span>
             </div>
         </div>
         {% endfor %}
