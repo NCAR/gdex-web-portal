@@ -22,10 +22,12 @@ def transform_grml(request, dsid, markup_type, file, ctx):
         if file_code is not None:
             ctx['transform']['data_format'] = snake_to_capital(data_format)
             cursor.execute(
-                    'select distinct t.time_range, g.grid_definition_code '
-                    f'from "{markup_type}".{dsid}_grids2 as g left join '
-                    f'"{markup_type}".time_ranges as t on t.code = g.'
-                    'time_range_code where file_code = %s', (file_code, ))
+                    "select distinct t.time_range, concat(d.definition, '+', "
+                    f'd.def_params) from "{markup_type}".{dsid}_grids2 as g '
+                    f'left join "{markup_type}".time_ranges as t on t.code = '
+                    f'g.time_range_code left join "{markup_type}".'
+                    "grid_definitions as d on d.code = g.grid_definition_code "
+                    "where g.file_code = %s", (file_code, ))
             res = cursor.fetchall()
             tranges = [e[0] for e in res]
             s_tranges = sorted(tranges, key=cmp_to_key(compare_time_ranges))
