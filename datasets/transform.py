@@ -1,5 +1,5 @@
-from django.http import HttpResponse
+from django.shortcuts import render
 
 
-def transform(dsid, markup_type, file):
-    return HttpResponse(f"Hello! {dsid} {markup_type} {file}") 
+def transform(request, dsid, markup_type, file):
+    return render(request, "datasets/transform/grml.html")

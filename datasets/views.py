@@ -712,7 +712,4 @@ def example_view(request, dsid):
 
 
 def markup_view(request, dsid, markup_type, file):
-    #if "HTTP_X_REQUESTED_WITH" not in request.META:
-    #    return render(request, "404.html")
-
-    return transform(dsid, markup_type, file)
+    return transform(request, dsid, markup_type, file)
