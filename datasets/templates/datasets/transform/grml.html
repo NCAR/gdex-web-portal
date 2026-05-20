@@ -1,6 +1,13 @@
 {% extends "datasets/transform/transform_base.html" %}
 {% block transform_content %}
 <div>
-    <span class="fs-5 fw-bold">Number of Products:</span>&nbsp;{{ transform.num_products }}
+    <span class="fs-5 fw-bold">Number of Products:</span>&nbsp;{{ transform.products|length }}
 </div>
+<center>
+    {% for product in transform.products %}
+    <div class="border border-1 mt-2 mb-3 p-1" style="width: 93%">
+        <span class="fs-5 fw-bold">Product:</span>&nbsp;{{ product }}</span>
+    </div>
+    {% endfor %}
+</center>
 {% endblock %}
