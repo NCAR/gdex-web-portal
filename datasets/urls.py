@@ -17,7 +17,7 @@ urlpatterns = [
     re_path(r"^(d[0-9]{6})/filelist/(.*)/$", views.get_filelist_table),
     re_path(r"^(d[0-9]{6})/detailed_metadata/$", views.get_detailed_metadata),
     re_path(r"^(d[0-9]{6})/metadata_view/$", views.metadata_view),
-    re_path(r"^(d[0-9]{6})/metadata_view/(^\w+ML$)/(\w+$)", views.markup_view),
+    re_path(r"^(d[0-9]{6})/metadata_view/(\w+ML)/(.*)$", views.markup_view),
     re_path(r"^(d[0-9]{6})/metrics/$", views.get_metrics),
     re_path(r"^(d[0-9]{6})/example/$", views.example_view),
     re_path(r"^(d[0-9]{6})/facbrowse/", include("facbrowse.urls")),
