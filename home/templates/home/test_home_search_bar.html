@@ -1,0 +1,24 @@
+<div class="component featured-work container-lg">
+    <div class="row gx-0 pt-md-4 justify-content-center">
+        <div class="col-8 primary text-center">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title mb-md-2">{{ page.search_box_title }}</h3>
+                    <form id="search-form" class="d-flex" name="search_form" action="/gsearch/dataset-search/">
+                        <input class="form-control" type="search" id="search-input" autocomplete="off" data-provide="typeahead" name="q" placeholder="{{ page.search_box_placeholder }}" value="">
+                        <button class="btn btn-primary" type="submit" aria-label="Search"><i class="fas fa-search"></i></button>
+                    </form>
+                    {% if page.search_suggestions.all %}
+                    <div id="search-suggestions" class="mt-2">
+                        {% for suggestion in page.search_suggestions.all %}
+                        <a href="{{ suggestion.search_term_url }}">
+                            <span class="badge home-search-badge rounded">{{ suggestion.search_term }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
