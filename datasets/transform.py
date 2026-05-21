@@ -25,37 +25,42 @@ def transform_grml(request, dsid, markup_type, file, ctx):
             ctx['transform']['data_format'] = snake_to_capital(data_format)
             cursor.execute(
                     "select distinct t.time_range, concat(d.definition, '+', "
-                    "d.def_params),string_agg(distinct level_type_codes, ',') "
-                    f'from "{markup_type}".{dsid}_grids2 as g left join '
+                    "d.def_params), level_type_codes, string_agg(parameter, "
+                    f"',') from "
+                    f'"{markup_type}".{dsid}_grids2 as g left join '
                     f'"{markup_type}".time_ranges as t on t.code = g.'
                     f'time_range_code left join "{markup_type}".'
                     "grid_definitions as d on d.code = g.grid_definition_code "
                     "where g.file_code = %s group by t.time_range, concat(d."
-                    "definition, '+', d.def_params)", (file_code, ))
+                    "definition, '+', d.def_params), level_type_codes",
+                    (file_code, ))
             res = cursor.fetchall()
             tranges = [e[0] for e in res]
             s_tranges = sorted(tranges, key=cmp_to_key(compare_time_ranges))
-            ctx['transform']['products'] = []
+            gdefs = {}
+            prods = []
             for t in s_tranges:
-                grids = []
+                prods[t] = {}
                 for e in res:
                     if e[0] == t:
-                        codes = []
-                        bitmaps = e[2].split(",")
-                        for bitmap in bitmaps:
-                            codes.extend(
-                                    [code for code in
-                                     uncompress_bitmap_values(bitmap) if code
-                                     not in codes])
+                        if e[1] not in gdefs:
+                            gdefs[e[1]] = (
+                                    convert_grid_definition(e[1].split("+")))
 
-                        grids.append(
-                                {'description': convert_grid_definition(
-                                        e[1].split("+")),
-                                 'num_levels': len(codes)})
+                        g = gdefs[e[1]]
+                        if g not in prods[t]:
+                            prods[t][g] = {'level_codes': [],
+                                           'parameters': []}
 
-                ctx['transform']['products'].append(
-                        {'time_range': t, 'grids': grids})
+                        prods[t][g]['level_codes'].extend(
+                                [code for code in
+                                 uncompress_bitmap_values(e[2]) if code not in
+                                 prods[t][g]['level_codes']])
+                        prods[t][g]['parameters'].extend(
+                                [param for param in e[3].split(",") if param
+                                 not in prods[t][g]['parameters']])
 
+            ctx['transform']['products'] = prods
         else:
             ctx['transform']['error'] = "File does not exist"
 
