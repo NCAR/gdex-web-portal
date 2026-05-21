@@ -3,6 +3,7 @@ import psycopg2
 from functools import cmp_to_key
 
 from django.conf import settings
+from django.html import HttpResponse
 from django.shortcuts import render
 from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
@@ -80,3 +81,8 @@ def transform(request, dsid, markup_type, file):
         return transform_grml(request, dsid, markup_type, file, ctx)
 
     return render(request, "404.html")
+
+
+def product_detail(dsid, markup_type, time_range_code, grid_definition_code,
+                   file):
+    return HttpResponse("Hello product_detail")
