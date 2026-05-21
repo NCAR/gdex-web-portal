@@ -88,6 +88,35 @@ def transform(request, dsid, markup_type, file):
 def grml_product_detail(request, dsid, markup_type, time_range_code,
                         grid_definition_code, file):
     ctx = {'detail': {}}
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        cursor.execute(
+                f'select g.level_type_codes, g.parameter, g.start_date, g.'
+                f'end_date, g.nsteps from "{markup_type}".{dsid}_grids2 as g '
+                f'left join "{markup_type}".{dsid}_webfiles2 as w on w.code = '
+                "g.file_code where w.id = %s and g.time_range_code = %s and g."
+                "grid_definition_code = %s",
+                (file, time_range_code, grid_definition_code))
+        res = cursor.fetchall()
+        levels = {}
+        for e in res:
+            level_codes = uncompress_bitmap_values(e[0])
+            for code in level_codes:
+                if code not in levels:
+                    levels[code] = []
+
+                levels[code].append({'name': e[1],
+                                     'datetime_range': " to ".join([e[2:4]),
+                                     'num_grids': e[4]})
+
+        ctx['detail'] = levels
+    except Exception:
+        ctx['detail']['error'] = "Database error"
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
     return render(request, "datasets/transform/grml_product_detail.html", ctx)
 
 
