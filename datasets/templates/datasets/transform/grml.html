@@ -4,17 +4,25 @@
     <span class="fs-5 fw-bold">Number of Products:</span>&nbsp;{{ transform.products|length }}
 </div>
 <center>
-    {% for product in transform.products %}
-        {% for grid in product.grids %}
+    {% for key, grids in transform.products.items %}
+        {% for gkey, grid in grids.items %}
         <div class="border border-1 border-primary mt-2 mb-3 p-1" style="width: 93%">
             <div>
-                <span class="fs-5 fw-bold">Product:</span>&nbsp;{{ product.time_range }}</span>
+                <span class="fs-5 fw-bold">Product:</span>&nbsp;{{ key }}</span>
             </div>
             <div>
-                <span class="fs-5 fw-bold">Grid:</span>&nbsp;{{ grid.description|safe }}</span>
+                <span class="fs-5 fw-bold">Grid:</span>&nbsp;{{ gkey|safe }}</span>
             </div>
             <div>
-                <span class="fs-5 fw-bold">Number of vertical levels/layers:</span>&nbsp;{{ grid.num_levels }}</span>
+                <span class="fs-5 fw-bold">Number of vertical levels/layers:</span>&nbsp;{{ grid.level_codes|length }}</span>
+            </div>
+            <div>
+                <span class="fs-5 fw-bold">Parameters:</span>
+                <ul>
+                    {% for param in grid.parameters %}
+                    <li>{{ param }}</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
         {% endfor %}
