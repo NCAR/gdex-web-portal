@@ -13,12 +13,12 @@
         </tr>
     </thead>
     <tbody>
-        {% for key, value in detail.items %}
+        {% for key, parameters in detail.items %}
         {% with even=forloop.counter0|divisibleby:"2" %}
-        {% for param in value.parameters %}
+        {% for param in parameters %}
         <tr class="transform-grml-bg{% if even %}0{% else %}1{% endif %}">
             {% if forloop.counter0 == 0 %}
-            <td align="center" rowspan="{{ value.parameters|length }}">{{ key }}</td>
+            <td align="center" rowspan="{{ parameters|length }}">{{ key }}</td>
             {% endif %}
             <td align="center">{{ param.name }}</td>
             <td align="center">{{ param.datetime_range }}</td>
