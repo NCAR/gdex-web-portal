@@ -4,11 +4,11 @@
     <span class="fs-5 fw-bold">Number of Products:</span>&nbsp;{{ transform.products|length }}
 </div>
 <center>
-    {% for key, grids in transform.products.items %}
+    {% for pkey, grids in transform.products.items %}
         {% for gkey, grid in grids.items %}
         <div class="border border-1 border-primary mt-2 mb-3 p-1" style="width: 93%">
             <div>
-                <span class="fs-5 fw-bold">Product:</span>&nbsp;{{ key }}
+                <span class="fs-5 fw-bold">Product:</span>&nbsp;{{ pkey }}
             </div>
             <div>
                 <span class="fs-5 fw-bold">Grid:</span>&nbsp;{{ gkey|safe }}
