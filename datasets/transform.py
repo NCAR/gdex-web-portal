@@ -29,7 +29,8 @@ def transform_grml(request, dsid, markup_type, file, ctx):
                     f'"{markup_type}".time_ranges as t on t.code = g.'
                     f'time_range_code left join "{markup_type}".'
                     "grid_definitions as d on d.code = g.grid_definition_code "
-                    "where g.file_code = %s", (file_code, ))
+                    "where g.file_code = %s group by t.time_range, concat(d."
+                    "definition, '+', d.def_params)", (file_code, ))
             res = cursor.fetchall()
             tranges = [e[0] for e in res]
             s_tranges = sorted(tranges, key=cmp_to_key(compare_time_ranges))
