@@ -24,9 +24,10 @@ def transform_grml(request, dsid, markup_type, file, ctx):
             ctx['transform']['data_format'] = snake_to_capital(data_format)
             cursor.execute(
                     "select distinct t.time_range, concat(d.definition, '+', "
-                    f'd.def_params) from "{markup_type}".{dsid}_grids2 as g '
-                    f'left join "{markup_type}".time_ranges as t on t.code = '
-                    f'g.time_range_code left join "{markup_type}".'
+                    "d.def_params),string_agg(distinct level_type_codes, ',') "
+                    f'from "{markup_type}".{dsid}_grids2 as g left join '
+                    f'"{markup_type}".time_ranges as t on t.code = g.'
+                    f'time_range_code left join "{markup_type}".'
                     "grid_definitions as d on d.code = g.grid_definition_code "
                     "where g.file_code = %s", (file_code, ))
             res = cursor.fetchall()
@@ -34,8 +35,10 @@ def transform_grml(request, dsid, markup_type, file, ctx):
             s_tranges = sorted(tranges, key=cmp_to_key(compare_time_ranges))
             ctx['transform']['products'] = []
             for t in s_tranges:
-                grids = [convert_grid_definition(e[1].split("+")) for e in res
-                         if e[0] == t]
+                grids = [
+                        {'description': convert_grid_definition(
+                                e[1].split("+")),
+                         'num_levels': 0} for e in res if e[0] == t]
                 ctx['transform']['products'].append(
                         {'time_range': t, 'grids': grids})
 
