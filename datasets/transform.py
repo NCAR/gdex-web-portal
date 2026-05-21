@@ -92,10 +92,11 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
         cursor.execute(
-                f'select g.level_type_codes, g.parameter, g.start_date, g.'
-                f'end_date, g.nsteps from "{markup_type}".{dsid}_grids2 as g '
-                f'left join "{markup_type}".{dsid}_webfiles2 as w on w.code = '
-                "g.file_code where w.id = %s and g.time_range_code = %s and g."
+                f'select g.level_type_codes, g.parameter, cast(g.start_date '
+                "as text), cast(g.end_date as text), g.nsteps from "
+                f'"{markup_type}".{dsid}_grids2 as g left join '
+                f'"{markup_type}".{dsid}_webfiles2 as w on w.code = g.'
+                "file_code where w.id = %s and g.time_range_code = %s and g."
                 "grid_definition_code = %s",
                 (file, time_range_code, grid_definition_code))
         res = cursor.fetchall()
@@ -106,8 +107,15 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
                 if code not in levels:
                     levels[code] = []
 
+                start = [e[2][0:4], "-", e[2][4:6], "-", e[2][6:8], " ",
+                         e[2][8:10], ":", e[2][10:12], " +0000"]
+                start = "".join(start)
+                end = [e[3][0:4], "-", e[3][4:6], "-", e[3][6:8], " ",
+                       e[3][8:10], ":", e[3][10:12], " +0000"]
+                end = "".join(end)
                 levels[code].append({'name': e[1],
-                                     'datetime_range': " to ".join([e[2:4]),
+                                     'datetime_range': " to ".join(
+                                             [start, end]),
                                      'num_grids': e[4]})
 
         ctx['detail'] = levels
