@@ -11,7 +11,10 @@
                 <span class="fs-5 fw-bold">Product:</span>&nbsp;{{ product.time_range }}</span>
             </div>
             <div>
-                <span class="fs-5 fw-bold">Grid:</span>&nbsp;{{ grid|safe }}</span>
+                <span class="fs-5 fw-bold">Grid:</span>&nbsp;{{ grid.description|safe }}</span>
+            </div>
+            <div>
+                <span class="fs-5 fw-bold">Number of vertical levels/layers:</span>&nbsp;{{ grid.num_levels }}</span>
             </div>
         </div>
         {% endfor %}
