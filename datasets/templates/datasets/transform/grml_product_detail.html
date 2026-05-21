@@ -6,10 +6,10 @@
 <table class="w-100">
     <thead>
         <tr>
-            <th align="center">Level/Layer</th>
-            <th align="center">Parameter</th>
-            <th align="center">Valid Date/Time Range</th>
-            <th align="center"># Grids</th>
+            <th class="text-center">Level/Layer</th>
+            <th class="text-center">Parameter</th>
+            <th class="text-center">Valid Date/Time Range</th>
+            <th class="text-center"># Grids</th>
         </tr>
     </thead>
     <tbody>
@@ -18,11 +18,11 @@
         {% for param in parameters %}
         <tr class="transform-grml-bg{% if even %}0{% else %}1{% endif %}">
             {% if forloop.counter0 == 0 %}
-            <td align="center" rowspan="{{ parameters|length }}">{{ key }}</td>
+            <td class="text-center" rowspan="{{ parameters|length }}">{{ key }}</td>
             {% endif %}
-            <td align="center">{{ param.name }}</td>
-            <td align="center">{{ param.datetime_range }}</td>
-            <td align="center">{{ param.num_grids }}</td>
+            <td class="text-center">{{ param.name }}</td>
+            <td class="text-center">{{ param.datetime_range }}</td>
+            <td class="text-center">{{ param.num_grids }}</td>
         </tr>
         {% endfor %}
         {% endwith %}
