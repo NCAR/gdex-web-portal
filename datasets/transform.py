@@ -93,11 +93,12 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
         cursor = conn.cursor()
         cursor.execute(
                 f'select g.level_type_codes, g.parameter, cast(g.start_date '
-                "as text), cast(g.end_date as text), g.nsteps from "
+                "as text), cast(g.end_date as text), g.nsteps, f.format from "
                 f'"{markup_type}".{dsid}_grids2 as g left join '
                 f'"{markup_type}".{dsid}_webfiles2 as w on w.code = g.'
-                "file_code where w.id = %s and g.time_range_code = %s and g."
-                "grid_definition_code = %s",
+                f'file_code left join "{markup_type}.formats as f on f.code = '
+                "w.format_code where w.id = %s and g.time_range_code = %s and "
+                "g.grid_definition_code = %s",
                 (file, time_range_code, grid_definition_code))
         res = cursor.fetchall()
         levels = {}
