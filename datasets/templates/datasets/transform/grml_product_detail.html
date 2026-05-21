@@ -14,8 +14,9 @@
     </thead>
     <tbody>
         {% for key, value in detail.items %}
+        {% with even=forloop.counter0|divisibleby:"2" %}
         {% for param in value.parameters %}
-        <tr class="transform-grml-bg{{ value.bg }}">
+        <tr class="transform-grml-bg{% if even %}0{% else %}1{% endif %}">
             {% if forloop.counter0 == 0 %}
             <td align="center" rowspan="{{ value.parameters|length }}">{{ key }}</td>
             {% endif %}
@@ -24,6 +25,7 @@
             <td align="center">{{ param.num_grids }}</td>
         </tr>
         {% endfor %}
+        {% endwith %}
         {% endfor %}
     </tbody>
 </table>
