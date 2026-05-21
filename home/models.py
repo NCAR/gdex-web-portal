@@ -425,7 +425,6 @@ class TestHomePage(Page):
             InlinePanel('featured_cards', label='Featured card'),
         ], heading="Featured cards", classname="collapsible collapsed"),
     ]
-    is_creatable = False
 
 class TaxonomyTerm(Orderable):
     card = ParentalKey('Card', related_name='taxonomyterm', on_delete=models.CASCADE)
