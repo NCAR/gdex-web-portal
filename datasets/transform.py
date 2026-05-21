@@ -4,6 +4,7 @@ from functools import cmp_to_key
 
 from django.conf import settings
 from django.shortcuts import render
+from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
 from libpkg.metacompares import compare_time_ranges
 from libpkg.strutils import snake_to_capital
@@ -36,10 +37,22 @@ def transform_grml(request, dsid, markup_type, file, ctx):
             s_tranges = sorted(tranges, key=cmp_to_key(compare_time_ranges))
             ctx['transform']['products'] = []
             for t in s_tranges:
-                grids = [
-                        {'description': convert_grid_definition(
-                                e[1].split("+")),
-                         'num_levels': 0} for e in res if e[0] == t]
+                grids = []
+                for e in res:
+                    if e[0] == t:
+                        codes = []
+                        bitmaps = e[2].split(",")
+                        for bitmap in bitmaps:
+                            codes.extend(
+                                    [code for code in
+                                     uncompress_bitmap_values(bitmap) if code
+                                     not in codes])
+
+                        grids.append(
+                                {'description': convert_grid_definition(
+                                        e[1].split("+")),
+                                 'num_levels': len(codes)})
+
                 ctx['transform']['products'].append(
                         {'time_range': t, 'grids': grids})
 
