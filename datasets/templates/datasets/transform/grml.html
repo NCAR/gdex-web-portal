@@ -5,6 +5,7 @@
 </div>
 <center>
     {% for pkey, grids in transform.products.items %}
+        {% with n=forloop.counter %}
         {% for gkey, grid in grids.items %}
         <div class="border border-1 border-primary mt-2 mb-3 p-1" style="width: 93%">
             <div>
@@ -19,8 +20,12 @@
             <div>
                 <span class="fs-5 fw-bold">Number of Parameters:</span>&nbsp;{{ grid.parameters|length }}
             </div>
+            <div id="product{{ n }}">
+                <a href="javascript:void(0)" onclick="getContent('product{{ n }}', '/datasets/{{ page.dsid }}/product_detail/{{ markup_type }}/{{ grid.tr_code }}/{{ grid.gd_code }}/{{ file }}>(show levels/layers + variables)</a>
+            </div>
         </div>
         {% endfor %}
+        {% endwith %}
     {% endfor %}
 </center>
 {% endblock %}
