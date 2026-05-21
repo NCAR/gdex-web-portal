@@ -25,15 +25,15 @@ def transform_grml(request, dsid, markup_type, file, ctx):
             ctx['transform']['data_format'] = snake_to_capital(data_format)
             cursor.execute(
                     "select distinct t.time_range, concat(d.definition, '+', "
-                    "d.def_params), level_type_codes, string_agg(parameter, "
+                    "d.def_params), g.level_type_codes, string_agg(parameter, "
                     "','), g.time_range_code, g.grid_definition_code from "
                     f'"{markup_type}".{dsid}_grids2 as g left join '
                     f'"{markup_type}".time_ranges as t on t.code = g.'
                     f'time_range_code left join "{markup_type}".'
                     "grid_definitions as d on d.code = g.grid_definition_code "
                     "where g.file_code = %s group by t.time_range, concat(d."
-                    "definition, '+', d.def_params), level_type_codes",
-                    (file_code, ))
+                    "definition, '+', d.def_params), g.level_type_codes, "
+                    "g.time_range_code, g.grid_definition_code", (file_code, ))
             res = cursor.fetchall()
             tranges = [e[0] for e in res]
             s_tranges = sorted(tranges, key=cmp_to_key(compare_time_ranges))
