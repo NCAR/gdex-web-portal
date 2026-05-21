@@ -10,6 +10,7 @@
                     </form>
                     {% if page.search_suggestions.all %}
                     <div id="search-suggestions" class="mt-2">
+                        Suggestions:
                         {% for suggestion in page.search_suggestions.all %}
                         <a href="{{ suggestion.search_term_url }}">
                             <span class="badge home-search-badge rounded">{{ suggestion.search_term }}</span>
