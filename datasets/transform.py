@@ -13,7 +13,9 @@ from libpkg.strutils import snake_to_capital
 from . import views
 
 
-def transform_grml(request, dsid, markup_type, file, ctx):
+def transform_grml(request, dsid, ctx):
+    markup_type = ctx['transform']['markup_type']
+    file = ctx['transform']['file']
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
@@ -78,7 +80,7 @@ def transform(request, dsid, markup_type, file):
     d = views.get_dataset_description_context(dsid)
     ctx = {'page': d, 'transform': {'markup_type': markup_type, 'file': file}}
     if markup_type[-4:] == "GrML":
-        return transform_grml(request, dsid, markup_type, file, ctx)
+        return transform_grml(request, dsid, ctx)
 
     return render(request, "404.html")
 
