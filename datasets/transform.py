@@ -83,7 +83,16 @@ def transform(request, dsid, markup_type, file):
     return render(request, "404.html")
 
 
-def product_detail(request, dsid, markup_type, time_range_code,
-                   grid_definition_code, file):
+def grml_product_detail(request, dsid, markup_type, time_range_code,
+                        grid_definition_code, file):
     ctx = {'detail': {}}
     return render(request, "datasets/transform/grml_product_detail.html", ctx)
+
+
+def product_detail(request, dsid, markup_type, time_range_code,
+                   grid_definition_code, file):
+    if markup_type[-4:] == "GrML":
+        return grml_product_detail(request, dsid, markup_type, time_range_code,
+                                   grid_definition_code, file)
+
+    return HttpResponse("Bad request.")
