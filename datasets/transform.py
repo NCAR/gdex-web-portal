@@ -3,7 +3,7 @@ import psycopg2
 from functools import cmp_to_key
 
 from django.conf import settings
-from django.html import HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render
 from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
