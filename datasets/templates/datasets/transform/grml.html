@@ -17,12 +17,7 @@
                 <span class="fs-5 fw-bold">Number of vertical levels/layers:</span>&nbsp;{{ grid.level_codes|length }}
             </div>
             <div>
-                <span class="fs-5 fw-bold">Parameters:</span>
-                <ul>
-                    {% for param in grid.parameters %}
-                    <li>{{ param }}</li>
-                    {% endfor %}
-                </ul>
+                <span class="fs-5 fw-bold">Number of Parameters:</span>&nbsp;{{ grid.parameters|length }}
             </div>
         </div>
         {% endfor %}
