@@ -38,7 +38,7 @@ def transform_grml(request, dsid, markup_type, file, ctx):
             tranges = [e[0] for e in res]
             s_tranges = sorted(tranges, key=cmp_to_key(compare_time_ranges))
             gdefs = {}
-            prods = []
+            prods = {}
             for t in s_tranges:
                 prods[t] = {}
                 for e in res:
