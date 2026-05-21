@@ -334,6 +334,99 @@ class HomePage(Page):
     ]
     is_creatable = False
 
+class TestHomePageSearchSuggestion(Orderable):
+    """ Search suggestions for the TestHomePage search bar """
+    page = ParentalKey('TestHomePage', related_name='search_suggestions', on_delete=models.CASCADE)
+    search_term = models.CharField(max_length=25, verbose_name='Search Term', help_text='Search term displayed under the home page search bar as a search suggestion badge.  For example, "AI Ready Datasets" or "Zarr Format Datasets".')
+    search_term_url = models.CharField(max_length=255, verbose_name='Search Term URL', help_text='Search term URL specified as the GDEX Search URL to link to when the search term is clicked.  This can be a relative URL or absolute URL. For example, a relative URL could be /gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready and an absolute URL could be https://gdex.ucar.edu/gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready to link to a search for AI-Ready datasets.')
+
+    panels = [
+        FieldPanel('search_term'),
+        FieldPanel('search_term_url'),
+    ]
+
+class TestHomePageFeaturedCard(Orderable):
+    """ Featured cards for the TestHomePage highlighting popular content with links """
+    page = ParentalKey('TestHomePage', related_name='featured_cards', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255, blank=False, default="",
+        verbose_name="Title", help_text="Title of the card to be displayed on the home page.")
+    icon_name = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        verbose_name="Icon",
+        help_text="Icon name class from the fontawesome icon set. See fontawesome version 6 documentation for more info. Either Icon or Icomoon Icon Name can be used to specify an icon for the card.  If both are specified, Icon will take precedence over Icomoon Icon Name."
+        )
+    icomoon_icon_name = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        verbose_name="Icomoon Icon Name",
+        help_text="(Optional) If using a custom SVG icon from the gdex icomoon set, specify the icon class name here.  Custom icomoon icons can be viewed and added to the gdex custom icon set by adding the SVG to the static/unity/lib/icomoon2/ directory and including the icon class name here. This field is only necessary if the desired icon is not available in the fontawesome icon set."
+        )
+    text = RichTextField(
+        blank=False,
+        default="",
+        verbose_name="Body Text",
+        help_text="Body text to be displayed on the home page card."
+        )
+    card_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="Card URL",
+        help_text="External URL to link to from the card.  If both Card URL and Card Page are provided, Card Page will take precedence."
+        )
+    card_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name="Card Page",
+        help_text="Internal page to link to from the card. If both Card Page and Card URL are provided, Card Page will take precedence.",
+    )
+
+    panels = [
+        FieldPanel('title'),
+        FieldPanel('icon_name'),
+        FieldPanel('icomoon_icon_name'),
+        FieldPanel('text'),
+        FieldPanel('card_url'),
+        PageChooserPanel('card_page'),
+    ]
+
+    def clean(self):
+        super().clean()
+        if not self.card_page and not self.card_url:
+            raise ValidationError('Either Card Page or Card URL must be set.')
+        if not self.icon_name and not self.icomoon_icon_name:
+            raise ValidationError('Either Icon or Icomoon Icon Name must be set.')
+
+class TestHomePage(Page):
+    """ Home page test model for development testing purposes - identical to HomePage """
+    tagline = models.CharField(max_length=100, blank=False, default="")
+    welcome = RichTextField(blank=False, default="")
+    search_box_title = models.CharField(max_length=255, blank=False, default="",
+        verbose_name="Search Box Title")
+    search_box_placeholder = models.CharField(max_length=255, blank=False, default="",
+        verbose_name="Search Box Placeholder")
+
+    content_panels = Page.content_panels + [
+        FieldPanel('tagline', classname="collapsible collapsed"),
+        FieldPanel('welcome', classname="collapsible collapsed"),
+        MultiFieldPanel([
+            FieldPanel('search_box_title'),
+            FieldPanel('search_box_placeholder'),
+        ], heading="Search Box", classname="collapsible collapsed"),
+        MultiFieldPanel([
+            InlinePanel('search_suggestions', label='Search suggestion'),
+        ], heading="Search suggestions", classname="collapsible collapsed"),
+        MultiFieldPanel([
+            InlinePanel('featured_cards', label='Featured card'),
+        ], heading="Featured cards", classname="collapsible collapsed"),
+    ]
+    is_creatable = False
+
 class TaxonomyTerm(Orderable):
     card = ParentalKey('Card', related_name='taxonomyterm', on_delete=models.CASCADE)
     term = models.CharField(max_length=255, blank=True, default="")

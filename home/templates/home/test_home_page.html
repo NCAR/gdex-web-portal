@@ -1,0 +1,26 @@
+{% load wagtailcore_tags %}
+
+{% block content %}
+<div class="d-grid d-print-flex">
+    <article class="main-content-wrapper">
+        {% block welcome_message %}
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="text-center">
+                    <h3 class="display-6 text-black mb-2">{{ page.tagline|richtext }}</h3>
+                    <p class="text-black-50">{{ page.welcome|richtext }}</p>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+
+        {% block home_search_bar %}
+        {% include 'home/test_home_search_bar.html' %}
+        {% endblock %}
+
+        {% block grid_cards %}
+        {% include 'home/test_home_grid_cards.html' %}
+        {% endblock %}
+    </article>
+</div>
+{% endblock %}
