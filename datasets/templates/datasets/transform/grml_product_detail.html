@@ -1,3 +1,8 @@
+{% if detail.error %}
+<p>
+    <b>An error occurred: </b><font color="red">{{ detail.error }}</font>
+</p>
+{% else %}
 <table class="w-100">
     <thead>
         <tr>
@@ -22,3 +27,4 @@
         {% endfor %}
     </tbody>
 </table>
+{% endif %}
