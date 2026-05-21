@@ -717,5 +717,6 @@ def markup_view(request, dsid, markup_type, file):
 
 def product_detail(request, dsid, markup_type, time_range_code,
                    grid_definition_code, file):
-    return transform.product_detail(dsid, markup_type, time_range_code,
-                                    grid_definition_code, file)
+    return transform.product_detail(request, dsid, markup_type,
+                                    time_range_code, grid_definition_code,
+                                    file)
