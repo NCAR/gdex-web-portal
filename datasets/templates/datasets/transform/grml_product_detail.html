@@ -1,0 +1,24 @@
+<table class="w-100">
+    <thead>
+        <tr>
+            <th>Level/Layer</th>
+            <th>Parameter</th>
+            <th>Valid Date/Time Range</th>
+            <th># Grids</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for key, value in detail.items %}
+        {% for param in value.parameters %}
+        <tr class="transform-grml-bg{{ value.bg }}">
+            {% if forloop.counter0 == 0 %}
+            <td align="center" rowspan="{{ value.parameters|length }}">{{ key }}</td>
+            {% endif %}
+            <td align="center">{{ param.name }}</td>
+            <td align="center">{{ param.datetime_range }}</td>
+            <td align="center">{{ param.num_grids }}</td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
