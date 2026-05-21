@@ -26,7 +26,7 @@ def transform_grml(request, dsid, markup_type, file, ctx):
             cursor.execute(
                     "select distinct t.time_range, concat(d.definition, '+', "
                     "d.def_params), level_type_codes, string_agg(parameter, "
-                    f"',') from "
+                    "','), g.time_range_code, g.grid_definition_code from "
                     f'"{markup_type}".{dsid}_grids2 as g left join '
                     f'"{markup_type}".time_ranges as t on t.code = g.'
                     f'time_range_code left join "{markup_type}".'
@@ -49,8 +49,8 @@ def transform_grml(request, dsid, markup_type, file, ctx):
 
                         g = gdefs[e[1]]
                         if g not in prods[t]:
-                            prods[t][g] = {'level_codes': [],
-                                           'parameters': []}
+                            prods[t][g] = {'level_codes': [], 'parameters': [],
+                                           'tr_code': e[4], 'gd_code': e[5]}
 
                         prods[t][g]['level_codes'].extend(
                                 [code for code in
