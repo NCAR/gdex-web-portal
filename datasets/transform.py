@@ -75,7 +75,7 @@ def transform_grml(request, dsid, markup_type, file, ctx):
 
 def transform(request, dsid, markup_type, file):
     d = views.get_dataset_description_context(dsid)
-    ctx = {'page': d, 'transform': {'file': file}}
+    ctx = {'page': d, 'transform': {'markup_type': markup_type, 'file': file}}
     if markup_type[-4:] == "GrML":
         return transform_grml(request, dsid, markup_type, file, ctx)
 
