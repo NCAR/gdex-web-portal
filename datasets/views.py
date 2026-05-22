@@ -21,6 +21,7 @@ from wagtail.models import Page
 from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
                                 iso_19139, json_ld)
 
+from . import transform
 from .utils import get_custom_subset_context, get_hostname, ng_gdex_id
 from .CodeExample import CodeExample
 from api.common import (format_dataset_id, get_request_info,
@@ -708,3 +709,14 @@ def example_view(request, dsid):
         return HttpResponse(example_obj.get_code())
     example_obj = CodeExample(dsid)
     return render(request, "datasets/code_example.html", {'ctx':example_obj})
+
+
+def markup_view(request, dsid, markup_type, file):
+    return transform.transform(request, dsid, markup_type, file)
+
+
+def product_detail(request, dsid, markup_type, time_range_code,
+                   grid_definition_code, file):
+    return transform.product_detail(request, dsid, markup_type,
+                                    time_range_code, grid_definition_code,
+                                    file)
