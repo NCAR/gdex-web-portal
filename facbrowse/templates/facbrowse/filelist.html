@@ -52,7 +52,15 @@ function createTableBody(page_start) {
         '<td class="text-center">' + e[6] + '</td>' +
         {% endif %}
         '<td class="text-center">' + e[7] + '</td>' +
-        '<td class="text-center"><a href="/ajax/#cgi-bin/transform?xml=/datasets/{{ dsid }}/metadata/wfmd/' + e[0] + '.{% if db|slice:"0:1" == "W" %}{{ db|slice:"1:" }}{% else %}{{ db }}{% endif %}" target="_blank" title="Detailed file metadata view" alt="Detailed file metadata view"><i class="pe-1 fas fa-info-circle"></i></a></td>' +
+        '<td class="text-center"><a href="' +
+        {% with db2=db|slice:"1:" %}
+        {% if db == "GrML" or db2 == "GrML" %}
+        '/datasets/{{ dsid }}/metadata_view/{{ db }}/' + e[0] +
+        {% else %}
+        '/ajax/#cgi-bin/transform?xml=/datasets/{{ dsid }}/metadata/wfmd/' + e[0] + '.{% if db|slice:"0:1" == "W" %}{{ db|slice:"1:" }}{% else %}{{ db }}{% endif %}' +
+        {% endif %}
+        {% endwith %}
+        '" target="_blank" title="Detailed file metadata view" alt="Detailed file metadata view"><i class="pe-1 fas fa-info-circle"></i></a></td>' +
         '</tr>';
   }
   document.getElementById("file_table_body").innerHTML = body;
