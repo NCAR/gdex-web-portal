@@ -146,42 +146,64 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
                 level_maps[lmap_key] = etree.parse(os.path.join(
                         "/data/web/metadata/LevelTables", lmap_key)).getroot()
 
-            tree = level_maps[lmap_key].find(f"./level[@code='{e[2]}']")
-            if tree is None:
-                tree = level_maps[lmap_key].find(f"./layer[@code='{e[2]}']")
+            types = e[2].split("-")
+            if len(types) == 1:
+                tree = level_maps[lmap_key].find(f"./level[@code='{e[2]}']")
+                if tree is None:
+                    tree = level_maps[lmap_key].find(
+                            f"./layer[@code='{e[2]}']")
 
-            if tree is not None:
-                ldesc = tree.find("./description")
-                if ldesc is not None:
-                    values = e[3].split("-")
-                    lunits = tree.find("./units")
-                    if lunits is not None:
-                        if len(values) == 1:
+                if tree is None:
+                    decoded_levels[e[0]] = e[0]
+                else:
+                    ldesc = tree.find("./description")
+                    if ldesc is None:
+                        decoded_levels[e[0]] = e[0]
+                    else:
+                        lunits = tree.find("./units")
+                        if lunits is None:
+                            if e[3] == "0":
+                                decoded_levels[ldesc.text] = e[0]
+                            else:
+                                ldesc = "".join([ldesc.text, ": ", e[3]])
+
+                        else:
                             ldesc = "".join([ldesc.text, ": ", e[3], " ",
                                              lunits.text])
-                        else:
-                            ldesc = "".join(["Layer between two '", ldesc.text,
-                                             "': ", values[0], " ",
-                                             lunits.text, ", ", values[1], " ",
-                                             lunits.text])
 
-                    else:
-                        if e[3] != "0":
-                            values = e[3].split("-")
-                            if len(values) == 1:
-                                ldesc = "".join([ldesc.text, ": ", e[3]])
-                            else:
-                                ldesc = "".join(["Layer between two '",
-                                                 ldesc.text, ",: ", values[0],
-                                                 ", ", values[1]])
+                        decoded_levels[ldesc] = e[0]
 
-                        else:
-                            ldesc = ldesc.text
-
-            if 'ldesc' in locals() and ldesc is not None:
-                decoded_levels[ldesc] = e[0]
             else:
-                decoded_levels[e[0]] = e[0]
+                tree1 = level_maps[lmap_key].find(
+                        f"./level[@code='{type[0]}']")
+                tree2 = level_maps[lmap_key].find(
+                        f"./level[@code='{type[1]}']")
+                if tree1 is None or tree2 is None:
+                    decoded_levels[e[0]] = e[0]
+                else:
+                    ldesc1 = tree1.find("./description")
+                    ldesc2 = tree2.find("./description")
+                    if ldesc1 is None or ldesc2 is None:
+                        decoded_levels[e[0]] = e[0]
+                    else:
+                        values = e[3].split(",")
+                        lunits1 = tree1.find("./units")
+                        if lunits1 is not None:
+                            values[0] = "".join([values[0], " ", lunits1.text])
+
+                        lunits2 = tree2.find("./units")
+                        if lunits2 is not None:
+                            values[1] = "".join([values[0], " ", lunits2.text])
+
+                        if ldesc1 == ldesc2:
+                            ldesc = "".join(["Layer between two '",
+                                             ldesc1.text,
+                                             "': ", values[0], ", ",
+                                             values[1]])
+                        else:
+                            ldesc = "".join(["Layer between '", ldesc1.text,
+                                             "': ", values[0], " and '",
+                                             ldesc2.text, "': ", values[1]])
 
         l = [k for k, v in decoded_levels.items()]
         s_l = sorted(l, key=cmp_to_key(compare_levels))
