@@ -1,6 +1,6 @@
 {% extends "dataset_description/dataset_description_page.html" %}
 {% block ds_content %}
-<div class="fs-3 fw-bolder mb-2">Content View for {{ transform.file }}</div>
+<div class="fs-3 fw-bolder mb-2">Content View for data file {{ transform.file }}</div>
 {% if transform.error %}
 <p>
     <b>An error occurred: </b><font color="red">{{ transform.error }}</font>
