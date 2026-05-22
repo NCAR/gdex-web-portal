@@ -29,7 +29,7 @@
                 <span class="fs-5 fw-bold">Number of Parameters:</span>&nbsp;{{ grid.parameters|length }}
             </div>
             <div id="product{{ n }}">
-                <a href="javascript:void(0)" onclick="getAjaxContent('GET', null, '/datasets/{{ page.dsid }}/metadata_product_detail/{{ transform.markup_type }}/{{ grid.tr_code }}/{{ grid.gd_code }}/{{ transform.file }}', 'product{{ n }}')">(show levels/layers + variables)</a>
+                <a href="javascript:void(0)" onclick="this.style.setProperty('pointer-events', 'none');getAjaxContent('GET', null, '/datasets/{{ page.dsid }}/metadata_product_detail/{{ transform.markup_type }}/{{ grid.tr_code }}/{{ grid.gd_code }}/{{ transform.file }}', 'product{{ n }}')">(show levels/layers + variables)</a>
             </div>
         </div>
         {% endfor %}
