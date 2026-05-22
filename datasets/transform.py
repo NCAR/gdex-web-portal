@@ -134,6 +134,11 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
                                      'num_grids': e[4]})
 
         level_codes = [key for key, value in levels.items()]
+        # make sure tuple has at least two entries by duplicating the first if
+        #  necessary
+        if len(level_codes) == 1:
+            level_codes.append(level_codes[0])
+
         cursor.execute(
                 f'select code, map, type, value from "{markup_type}".levels '
                 f"where code in {tuple(level_codes)}")
