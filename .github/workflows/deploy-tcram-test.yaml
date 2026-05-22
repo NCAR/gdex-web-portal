@@ -1,3 +1,4 @@
+name: Deploy tcram Test Container
 on:
   workflow_dispatch:
     inputs:
