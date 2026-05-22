@@ -106,6 +106,7 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
         parameter_maps = {}
         levels = {}
         for e in res:
+            data_format = e[5]
             level_codes = uncompress_bitmap_values(e[0])
             for code in level_codes:
                 if code not in levels:
@@ -131,6 +132,36 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
                                      'datetime_range': " to ".join(
                                              [start, end]),
                                      'num_grids': e[4]})
+
+        level_codes = [key for key, value in levels.items()]
+        cursor.execute(
+                f'select code, map, type, value from "{markup_type}".levels '
+                f"where code in {tuple(level_codes)}")
+        res = cursor.fetchall()
+        level_maps = {}
+        decoded_levels = {}
+        for e in res:
+            lmap_key = ".".join([data_format, e[1], "xml"])
+            if lmap_key not in level_maps:
+                level_maps[lmap_key] = etree.parse(os.path.join(
+                        "/data/web/metadata/LevelTables", lmap_key)).getroot()
+
+            tree = level_maps[lmap_key].find(f"./level[@code='{e[2]}']")
+            if tree is None:
+                tree = level_maps[lmap_key].find(f"./layer[@code='{e[2]}']")
+
+            if tree is not None:
+                ldesc = tree.find("./description")
+                if ldesc is not None:
+                    ldesc = ldesc.text
+                    lunits = tree.find("./units")
+                    if lunits is not None:
+                        ldesc += ": " + e[3] + lunits.text
+
+            if 'ldesc' in locals() and ldesc is not None:
+                decoded_levels[ldesc] = e[0]
+            else:
+                decoded_levels[e[0]] = e[0]
 
         ctx['detail'] = levels
     except Exception:
