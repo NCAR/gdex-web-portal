@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
-from libpkg.metacompares import compare_time_ranges
+from libpkg.metacompares import compare_levels, compare_time_ranges
 from libpkg.strutils import snake_to_capital
 
 from . import views
@@ -153,17 +153,42 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
             if tree is not None:
                 ldesc = tree.find("./description")
                 if ldesc is not None:
-                    ldesc = ldesc.text
+                    values = e[3].split("-")
                     lunits = tree.find("./units")
                     if lunits is not None:
-                        ldesc += ": " + e[3] + lunits.text
+                        if len(values) == 1:
+                            ldesc = "".join([ldesc.text, ": ", e[3], " ",
+                                             lunits.text])
+                        else:
+                            ldesc = "".join(["Layer between two '", ldesc.text,
+                                             "': ", values[0], " ",
+                                             lunits.text, ", ", values[1], " ",
+                                             lunits.text])
+
+                    else:
+                        if e[3] != "0":
+                            values = e[3].split("-")
+                            if len(values) == 1:
+                                ldesc = "".join([ldesc.text, ": ", e[3]])
+                            else:
+                                ldesc = "".join(["Layer between two '",
+                                                 ldesc.text, ",: ", values[0],
+                                                 ", ", values[1]])
+
+                        else:
+                            ldesc = ldesc.text
 
             if 'ldesc' in locals() and ldesc is not None:
                 decoded_levels[ldesc] = e[0]
             else:
                 decoded_levels[e[0]] = e[0]
 
-        ctx['detail'] = levels
+        l = [k for k, v in decoded_levels.items()]
+        s_l = sorted(l, key=cmp_to_key(compare_levels))
+        for lev in s_l:
+            code = decoded_levels[lev]
+            ctx['detail'].update({lev: levels[code]})
+
     except Exception:
         ctx['detail']['error'] = "Database error"
     finally:
