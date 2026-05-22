@@ -1,0 +1,227 @@
+{{- /*
+Nightly backup of the gdex-web PVC to the GDEX S3 appliance using rclone.
+
+Disabled by default. Enable with `backup.enabled: true` in values.
+Skipped entirely for test deployments (when .Values.testName is set)
+since test pods share the production PVC and shouldn't double-write
+to the same backup prefix.
+
+Values consumed:
+
+  backup:
+    enabled: false                          # set true to deploy CronJob
+    prefix: gdex-web-data                   # destination prefix in s3://gdex/
+    schedule: "17 2 * * *"                  # cron schedule (UTC)
+    # Everything below has sensible defaults; override only if needed.
+    image: docker.io/rclone/rclone:1.74
+    endpoint: https://boreas.hpc.ucar.edu:6443
+    bucket: gdex
+    credentialsSecret: backup-s3-creds
+    logLevel: NOTICE                        # NOTICE | INFO | DEBUG
+    rclone:
+      transfers: 8
+      checkers: 16
+      chunkSizeMB: 64
+      uploadConcurrency: 4
+      extraFlags: []                        # e.g. ["--exclude", "*.tmp"]
+    runAsUser: 33                           # match PVC ownership
+    resources:
+      requests: { cpu: 200m, memory: 256Mi }
+      limits:   { cpu: "2",  memory: 6Gi }
+
+Behavior:
+  - `rclone copy` (NOT sync) — deletions on source never propagate to S3.
+  - `--links` stores symlinks as `.rclonelink` placeholder files so
+    they restore as actual symlinks (not as copies of target content).
+  - Permission-denied paths and broken symlinks are tolerated; rclone
+    exits 6, the wrapper extracts them into a report uploaded to
+    s3://<bucket>/<prefix>/_reports/<run-id>.txt, and the Job exits 0.
+  - Any OTHER rclone error fails the Job loudly so Alertmanager fires.
+*/ -}}
+{{- if and .Values.backup.enabled (not .Values.testName) }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.webapp.name }}-backup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.webapp.name }}
+    group: {{ .Values.webapp.group }}
+spec:
+  schedule: {{ .Values.backup.schedule | default "17 2 * * *" | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  startingDeadlineSeconds: 3600
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 21600
+      template:
+        metadata:
+          labels:
+            app: {{ .Values.webapp.name }}-backup
+            group: {{ .Values.webapp.group }}
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: {{ .Values.backup.runAsUser | default 33 }}
+            runAsGroup: {{ .Values.backup.runAsUser | default 33 }}
+            fsGroup: {{ .Values.backup.runAsUser | default 33 }}
+          containers:
+            - name: rclone
+              image: {{ .Values.backup.image | default "docker.io/rclone/rclone:1.74" | quote }}
+              imagePullPolicy: IfNotPresent
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -u
+
+                  export RCLONE_CONFIG=/tmp/rclone.conf
+                  cat > "${RCLONE_CONFIG}" <<EOF
+                  [dest]
+                  type = s3
+                  provider = Other
+                  endpoint = ${S3_ENDPOINT}
+                  force_path_style = true
+                  env_auth = true
+                  EOF
+
+                  RUN_ID="$(date -u +%Y-%m-%dT%H%M%SZ)"
+                  LOG="/tmp/rclone-${RUN_ID}.log"
+                  SKIPPED="/tmp/skipped-${RUN_ID}.txt"
+                  REPORT_KEY="${DEST_PREFIX}/_reports/${RUN_ID}.txt"
+
+                  echo "Backup run ${RUN_ID} starting"
+                  echo "Source: ${SOURCE_DIR}"
+                  echo "Dest:   dest:${DEST_BUCKET}/${DEST_PREFIX}"
+                  echo "Report: dest:${DEST_BUCKET}/${REPORT_KEY}"
+
+                  rclone copy \
+                    --links \
+                    --log-level "${RCLONE_LOG_LEVEL}" \
+                    --log-file "${LOG}" \
+                    --transfers "${RCLONE_TRANSFERS}" \
+                    --checkers "${RCLONE_CHECKERS}" \
+                    --s3-chunk-size "${RCLONE_CHUNK_SIZE}" \
+                    --s3-upload-concurrency "${RCLONE_UPLOAD_CONCURRENCY}" \
+                    --stats 1m \
+                    --stats-one-line \
+                    --metadata \
+                    {{- range .Values.backup.rclone.extraFlags }}
+                    {{ . | quote }} \
+                    {{- end }}
+                    "${SOURCE_DIR}" \
+                    "dest:${DEST_BUCKET}/${DEST_PREFIX}"
+                  RC=$?
+
+                  # Permission-denied paths
+                  grep 'ERROR : ' "${LOG}" 2>/dev/null \
+                    | grep 'permission denied' \
+                    | sed -E 's@^.*open ([^:]+): permission denied.*$@\1@' \
+                    | sort -u > "${SKIPPED}.perms" || true
+
+                  # Broken symlinks
+                  grep -E 'NOTICE.*Can.t follow symlink|ERROR.*no such file or directory' "${LOG}" 2>/dev/null \
+                    | sed -E 's@^[0-9/]+ [0-9:]+ (NOTICE|ERROR) *: ([^:]+):.*$@\2@' \
+                    | sort -u > "${SKIPPED}.symlinks" || true
+
+                  cat "${SKIPPED}.perms" "${SKIPPED}.symlinks" | sort -u > "${SKIPPED}"
+                  PERMS_COUNT=$(wc -l < "${SKIPPED}.perms" 2>/dev/null || echo 0)
+                  SYMLINK_COUNT=$(wc -l < "${SKIPPED}.symlinks" 2>/dev/null || echo 0)
+                  SKIPPED_COUNT=$(wc -l < "${SKIPPED}" 2>/dev/null || echo 0)
+
+                  OTHER_ERRORS=$(grep 'ERROR : ' "${LOG}" 2>/dev/null \
+                    | grep -v 'permission denied' \
+                    | grep -v "Can't retry any of the errors" \
+                    | grep -v 'Failed to copy with' \
+                    | grep -v 'Failed to copy: failed to open' \
+                    | wc -l)
+
+                  {
+                    echo "Backup run:        ${RUN_ID}"
+                    echo "Source:            ${SOURCE_DIR}"
+                    echo "Destination:       dest:${DEST_BUCKET}/${DEST_PREFIX}"
+                    echo "rclone exit code:  ${RC}"
+                    echo "Permission denied: ${PERMS_COUNT}"
+                    echo "Broken symlinks:   ${SYMLINK_COUNT}"
+                    echo "Other errors:      ${OTHER_ERRORS}"
+                    echo
+                    echo "=== Final rclone summary ==="
+                    tail -10 "${LOG}" 2>/dev/null || echo "(no log)"
+                    echo
+                    echo "=== Permission-denied paths ==="
+                    cat "${SKIPPED}.perms" 2>/dev/null || echo "(none)"
+                    echo
+                    echo "=== Broken symlinks ==="
+                    cat "${SKIPPED}.symlinks" 2>/dev/null || echo "(none)"
+                  } | rclone rcat "dest:${DEST_BUCKET}/${REPORT_KEY}" || \
+                      echo "WARNING: failed to upload report"
+
+                  echo
+                  echo "Backup run ${RUN_ID} finished"
+                  echo "  rclone exit:       ${RC}"
+                  echo "  permission denied: ${PERMS_COUNT}"
+                  echo "  broken symlinks:   ${SYMLINK_COUNT}"
+                  echo "  other errors:      ${OTHER_ERRORS}"
+
+                  if [ "${RC}" = "0" ]; then
+                    exit 0
+                  elif [ "${RC}" = "6" ] && [ "${OTHER_ERRORS}" = "0" ]; then
+                    echo "Tolerating ${SKIPPED_COUNT} expected errors; see report."
+                    exit 0
+                  else
+                    echo "Failing job: rclone=${RC} other_errors=${OTHER_ERRORS}"
+                    exit 1
+                  fi
+              env:
+                - name: SOURCE_DIR
+                  value: {{ .Values.volume.fs.mountPath | quote }}
+                - name: DEST_BUCKET
+                  value: {{ .Values.backup.bucket | default "gdex" | quote }}
+                - name: DEST_PREFIX
+                  value: {{ .Values.backup.prefix | quote }}
+                - name: S3_ENDPOINT
+                  value: {{ .Values.backup.endpoint | default "https://boreas.hpc.ucar.edu:6443" | quote }}
+                - name: RCLONE_LOG_LEVEL
+                  value: {{ .Values.backup.logLevel | default "NOTICE" | quote }}
+                - name: RCLONE_TRANSFERS
+                  value: {{ (.Values.backup.rclone | default dict).transfers | default 8 | quote }}
+                - name: RCLONE_CHECKERS
+                  value: {{ (.Values.backup.rclone | default dict).checkers | default 16 | quote }}
+                - name: RCLONE_CHUNK_SIZE
+                  value: {{ printf "%dM" (int ((.Values.backup.rclone | default dict).chunkSizeMB | default 64)) | quote }}
+                - name: RCLONE_UPLOAD_CONCURRENCY
+                  value: {{ (.Values.backup.rclone | default dict).uploadConcurrency | default 4 | quote }}
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backup.credentialsSecret | default "backup-s3-creds" | quote }}
+                      key: access_key
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backup.credentialsSecret | default "backup-s3-creds" | quote }}
+                      key: secret_key
+              resources:
+                {{- if .Values.backup.resources }}
+                {{- toYaml .Values.backup.resources | nindent 16 }}
+                {{- else }}
+                requests:
+                  cpu: "200m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "2"
+                  memory: "6Gi"
+                {{- end }}
+              volumeMounts:
+                - name: {{ .Values.volume.fs.name }}
+                  mountPath: {{ .Values.volume.fs.mountPath }}
+                  readOnly: true
+          volumes:
+            - name: {{ .Values.volume.fs.name }}
+              persistentVolumeClaim:
+                claimName: {{ .Values.volume.fs.name }}
+                readOnly: true
+{{- end }}
