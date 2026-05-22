@@ -163,7 +163,7 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
                         lunits = tree.find("./units")
                         if lunits is None:
                             if e[3] == "0":
-                                decoded_levels[ldesc.text] = e[0]
+                                ldesc = ldesc.text
                             else:
                                 ldesc = "".join([ldesc.text, ": ", e[3]])
 
@@ -175,9 +175,9 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
 
             else:
                 tree1 = level_maps[lmap_key].find(
-                        f"./level[@code='{type[0]}']")
+                        f"./level[@code='{types[0]}']")
                 tree2 = level_maps[lmap_key].find(
-                        f"./level[@code='{type[1]}']")
+                        f"./level[@code='{types[1]}']")
                 if tree1 is None or tree2 is None:
                     decoded_levels[e[0]] = e[0]
                 else:
@@ -193,9 +193,9 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
 
                         lunits2 = tree2.find("./units")
                         if lunits2 is not None:
-                            values[1] = "".join([values[0], " ", lunits2.text])
+                            values[1] = "".join([values[1], " ", lunits2.text])
 
-                        if ldesc1 == ldesc2:
+                        if ldesc1.text == ldesc2.text:
                             ldesc = "".join(["Layer between two '",
                                              ldesc1.text,
                                              "': ", values[0], ", ",
@@ -204,6 +204,8 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
                             ldesc = "".join(["Layer between '", ldesc1.text,
                                              "': ", values[0], " and '",
                                              ldesc2.text, "': ", values[1]])
+
+                        decoded_levels[ldesc] = e[0]
 
         l = [k for k, v in decoded_levels.items()]
         s_l = sorted(l, key=cmp_to_key(compare_levels))
