@@ -166,7 +166,7 @@ def grml_product_detail(request, dsid, markup_type, time_range_code,
                         decoded_levels[e[0]] = e[0]
                     else:
                         lunits = tree.find("./units")
-                        if lunits is None:
+                        if lunits is None or lunits.text is None:
                             if e[3] == "0":
                                 ldesc = ldesc.text
                             else:
