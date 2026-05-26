@@ -1,7 +1,7 @@
 {% load wagtailcore_tags %}
 
 <div class="p-1">
-    {% if page.events|length > 0 %}
+    {% if events|length > 0 %}
         <div class="table-responsive mt-2">
             <table class="table">
                 <thead>
@@ -18,7 +18,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                {% for event in page.events %}
+                {% for event in events %}
                     <tr>
                         <td>
                             {{ event.start_date }}{% if event.end_date %} to {{ event.end_date }}{% endif %}
