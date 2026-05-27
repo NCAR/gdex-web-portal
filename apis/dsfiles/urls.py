@@ -5,5 +5,5 @@ from . import views
 
 urlpatterns = [
     path('', views.swagger),
-    path('<dsid>/selections/', views.selections),
+    path('<dsid>/filters/', views.filters),
 ]
