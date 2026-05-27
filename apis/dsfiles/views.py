@@ -10,7 +10,5 @@ def swagger(request, output=None):
 
 def filters(request, dsid):
     response = {'DSID': dsid,
-                'filters': {
-                        'valid-dates': {
-                                'min': "", 'max': ""}}}
+                'filters': {}}
     return HttpResponse(json.dumps(response))
