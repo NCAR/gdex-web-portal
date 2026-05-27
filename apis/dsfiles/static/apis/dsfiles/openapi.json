@@ -1,0 +1,109 @@
+{
+  "openapi": "3.1.2",
+  "info": {
+    "title": "GDEX Data File API",
+    "description": "This API allows users to discover files in a specified dataset based on user selections.",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.gdex.ucar.edu/dsfiles",
+      "description": "(JSON responses)"
+    }
+  ],
+  "paths": {
+    "/{DSID}/selections": {
+      "get": {
+        "summary": "Get dataset-specific selections.",
+        "description": "This operation returns the selections that are available for the specified dataset using its GDEX DSID.",
+        "operationId": "getDatasetSelections",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetSelectionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "dsid": {
+        "name": "DSID",
+        "in": "path",
+        "description": "Retrieve data for dataset identified by DSID",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schema_defs": {
+      "DatasetSelectionsResponse": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "object",
+            "properties": {
+              "ID": {
+                "type": "string"
+              },
+              "selections": {
+                "type": "object",
+                "description": "List of selections available for this dataset",
+                "properties": {
+                  "valid-dates": {
+                    "type": "object",
+                    "description": "Date range for which data are valid",
+                    "properties": {
+                      "min": {
+                        "type": "string"
+                      },
+                      "max": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "type": "object",
+        "properties": {
+          "error_message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "400": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schema_defs/BadRequest"
+            }
+          }
+        }
+      }
+    }
+  }
+}
