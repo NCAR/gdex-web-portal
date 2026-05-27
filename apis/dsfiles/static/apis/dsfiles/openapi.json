@@ -2,7 +2,7 @@
   "openapi": "3.1.2",
   "info": {
     "title": "GDEX Data File API",
-    "description": "This API allows users to discover files in a specified dataset based on user selections.",
+    "description": "This API allows users to discover files in a specified dataset based on specified filters.",
     "version": "2.0.0"
   },
   "servers": [
@@ -12,11 +12,11 @@
     }
   ],
   "paths": {
-    "/{DSID}/selections": {
+    "/{DSID}/filters": {
       "get": {
-        "summary": "Get dataset-specific selections.",
-        "description": "This operation returns the selections that are available for the specified dataset using its GDEX DSID.",
-        "operationId": "getDatasetSelections",
+        "summary": "Get dataset-specific filters.",
+        "description": "This operation returns the filters that are available for the specified dataset using its GDEX DSID.",
+        "operationId": "getDatasetFilters",
         "parameters": [
           {
             "$ref": "#/components/parameters/dsid"
@@ -31,7 +31,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schema_defs/DatasetSelectionsResponse"
+                  "$ref": "#/components/schema_defs/DatasetFiltersResponse"
                 }
               }
             }
@@ -70,18 +70,18 @@
       }
     },
     "schema_defs": {
-      "DatasetSelectionsResponse": {
+      "DatasetFiltersResponse": {
         "type": "object",
         "properties": {
           "dataset": {
             "type": "object",
             "properties": {
-              "ID": {
+              "DSID": {
                 "type": "string"
               },
-              "selections": {
+              "filters": {
                 "type": "object",
-                "description": "List of selections available for this dataset",
+                "description": "List of filters available for this dataset",
                 "properties": {
                   "valid-dates": {
                     "type": "object",
