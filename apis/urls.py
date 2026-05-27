@@ -11,6 +11,7 @@ _public = [
 
 urlpatterns = [
     re_path(r'^citations(\..*?){0,1}/', include('apis.citations.urls')),
+    re_path(r'^dsfiles(\..*?){0,1}/', include('apis.dsfiles.urls')),
     path('schema/', SpectacularAPIView.as_view(patterns=_public), name='subdomain-schema'),
     path('documentation/', SpectacularSwaggerView.as_view(url_name='subdomain-schema'), name='subdomain-swagger-ui'),
     path('redoc/', SpectacularRedocView.as_view(url_name='subdomain-schema'), name='subdomain-redoc'),
