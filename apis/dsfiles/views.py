@@ -35,15 +35,15 @@ def get_grml_filters(dsid):
         for e in res:
             if e[0] not in param_set:
                 param_set.add(e[0])
-                filters['parameters'].append({'code': e[0], 'description': ""})
+                filters['parameters'].append({'name': "", 'code': e[0]})
 
             if e[1] not in tr_set:
                 tr_set.add(e[1])
-                filters['products'].append({'code': e[1], 'description': e[2]})
+                filters['products'].append({'name': e[2], 'code': e[1]})
 
             if e[3] not in gd_set:
                 gd_set.add(e[3])
-                filters['grids'].append({'code': e[3], 'description': e[4]})
+                filters['grids'].append({'name': e[4], 'code': e[3]})
 
     except Exception:
         return HttpResponse("Server error.", status_code=500)
