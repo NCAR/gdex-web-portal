@@ -14,7 +14,7 @@ def swagger(request, output=None):
     return render(request, "dsfiles/swagger.html", {})
 
 
-def get_grml_filters(dsid):
+def get_grml_filters(dsid, **kwargs):
     filters = {'parameters': [],
                'products': [],
                'grids': [],
@@ -22,16 +22,25 @@ def get_grml_filters(dsid):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
-        cursor.execute(
-                "select concat(s.format_code, '!', s.parameter), s."
-                "time_range_code, t.time_range, s.grid_definition_code, "
-                "concat(g.definition, '!', g.def_params), s.level_type_codes, "
-                'f.format from "WGrML".summary as s left join "WGrML".'
-                "time_ranges as t on t.code = s.time_range_code left join "
-                '"WGrML".grid_definitions as g on g.code = s.'
-                'grid_definition_code left join "WGrML".formats as f on f.'
-                "code = s.format_code where s.dsid = %s", (dsid, ))
+        query = ("select concat(s.format_code, '!', s.parameter), s."
+                 "time_range_code, t.time_range, s.grid_definition_code, "
+                 "concat(g.definition, '!', g.def_params), s."
+                 'level_type_codes, f.format from "WGrML".summary as s left '
+                 'join "WGrML".time_ranges as t on t.code = s.time_range_code '
+                 'left join "WGrML".grid_definitions as g on g.code = s.'
+                 'grid_definition_code left join "WGrML".formats as f on f.'
+                 "code = s.format_code where s.dsid = %s")
+        qparams = [dsid]
+        if 'parameters' in kwargs:
+            query += " and concat(s.format_code, '!', s.parameter) in %s"
+            qparams.append(tuple(kwargs['parameters']))
+            del filters['parameters']
+
+        cursor.execute(query, tuple(qparams))
         res = cursor.fetchall()
+        if len(res) == 0:
+            return filters
+
         param_set = set()
         param_maps = {}
         tr_set = set()
@@ -39,12 +48,13 @@ def get_grml_filters(dsid):
         lbmp_set = set()
         lev_fmts = {}
         for e in res:
-            if e[0] not in param_set:
-                param_set.add(e[0])
-                fmt, param = e[0].split("!")
-                param_name = decode_parameter(e[6], param, param_maps)
-                filters['parameters'].append({'name': param_name,
-                                              'code': e[0]})
+            if 'parameters' not in kwargs:
+                if e[0] not in param_set:
+                    param_set.add(e[0])
+                    fmt, param = e[0].split("!")
+                    param_name = decode_parameter(e[6], param, param_maps)
+                    filters['parameters'].append({'name': param_name,
+                                                  'code': e[0]})
 
             if e[1] not in tr_set:
                 tr_set.add(e[1])
@@ -87,9 +97,17 @@ def get_grml_filters(dsid):
 
 def filters(request, dsid):
     response = {'DSID': dsid,
+                'restrictions': {},
                 'filters': {}}
     services = service_list(dsid)
     if "GrML" in services:
-        response['filters'] = get_grml_filters(dsid)
+        if 'parameters' in request.GET:
+            response['restrictions']['parameters'] = (
+                    request.GET.getlist('parameters'))
+
+        response['filters'] = get_grml_filters(dsid,
+                                               **response['restrictions'])
+        if len(response['restrictions']) == 0:
+            del response['restrictions']
 
     return HttpResponse(json.dumps(response), content_type="application/json")
