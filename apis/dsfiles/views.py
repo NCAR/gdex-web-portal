@@ -45,6 +45,14 @@ def get_grml_filters(dsid):
                 gd_set.add(e[3])
                 filters['grids'].append({'name': e[4], 'code': e[3]})
 
+            if e[5] not in lbmp_set:
+                lbmp_set.add(e[5])
+                vals = uncompress_bitmap_values(e[5])
+                for val in vals:
+                    if val not in lev_set:
+                        lev_set.add(val)
+                        filters['levels'].append({'name': "", 'code': val})
+
     except Exception:
         return HttpResponse("Server error.", status_code=500)
     finally:
