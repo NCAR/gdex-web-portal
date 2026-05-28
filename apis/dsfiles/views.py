@@ -2,10 +2,11 @@ import json
 import psycopg2
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render
-from facbrowse.grml_query import parse_grml_query
 from facbrowse.utils import service_list
+from libpkg.codemaps import decode_level
+from libpkg.dbutils import uncompress_bitmap_values
 
 
 def swagger(request, output=None):
@@ -23,15 +24,18 @@ def get_grml_filters(dsid):
         cursor.execute(
                 "select concat(s.format_code, '!', s.parameter), s."
                 "time_range_code, t.time_range, s.grid_definition_code, "
-                "concat(g.definition, '!', g.def_params), s.level_type_codes "
-                'from "WGrML".summary as s left join "WGrML".time_ranges as t '
-                'on t.code = s.time_range_code left join "WGrML".'
-                "grid_definitions as g on g.code = s.grid_definition_code "
-                "where s.dsid = %s", (dsid, ))
+                "concat(g.definition, '!', g.def_params), s.level_type_codes, "
+                'f.format from "WGrML".summary as s left join "WGrML".'
+                "time_ranges as t on t.code = s.time_range_code left join "
+                '"WGrML".grid_definitions as g on g.code = s.'
+                'grid_definition_code left join "WGrML".formats as f on f.'
+                "code = s.format_code where s.dsid = %s", (dsid, ))
         res = cursor.fetchall()
         param_set = set()
         tr_set = set()
         gd_set = set()
+        lbmp_set = set()
+        lev_fmts = {}
         for e in res:
             if e[0] not in param_set:
                 param_set.add(e[0])
@@ -49,9 +53,21 @@ def get_grml_filters(dsid):
                 lbmp_set.add(e[5])
                 vals = uncompress_bitmap_values(e[5])
                 for val in vals:
-                    if val not in lev_set:
-                        lev_set.add(val)
-                        filters['levels'].append({'name': "", 'code': val})
+                    if val not in lev_fmts.keys():
+                        lev_fmts[val] = e[6]
+
+        lev_codes = [k for k in lev_fmts.keys()]
+        if len(lev_codes) == 1:
+            lev_codes.append(lev_codes[0])
+
+        cursor.execute(
+                'select distinct map, type, value, code from "WGrML".levels '
+                "where code in %s", (tuple(lev_codes), ))
+        res = cursor.fetchall()
+        level_maps = {}
+        for e in res:
+            lev_name = decode_level(lev_fmts[e[3]], *e[0:3], level_maps)
+            filters['levels'].append({'name': lev_name, 'code': e[3]})
 
     except Exception:
         return HttpResponse("Server error.", status_code=500)
