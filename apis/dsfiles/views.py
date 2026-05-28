@@ -5,8 +5,9 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
 from facbrowse.utils import service_list
-from libpkg.codemaps import decode_level
+from libpkg.codemaps import decode_level, decode_parameter
 from libpkg.dbutils import uncompress_bitmap_values
+from libpkg.gridutils import convert_grid_definition
 
 
 def swagger(request, output=None):
@@ -32,6 +33,7 @@ def get_grml_filters(dsid):
                 "code = s.format_code where s.dsid = %s", (dsid, ))
         res = cursor.fetchall()
         param_set = set()
+        param_maps = {}
         tr_set = set()
         gd_set = set()
         lbmp_set = set()
@@ -39,7 +41,10 @@ def get_grml_filters(dsid):
         for e in res:
             if e[0] not in param_set:
                 param_set.add(e[0])
-                filters['parameters'].append({'name': "", 'code': e[0]})
+                fmt, param = e[0].split("!")
+                param_name = decode_parameter(e[6], param, param_maps)
+                filters['parameters'].append({'name': param_name,
+                                              'code': e[0]})
 
             if e[1] not in tr_set:
                 tr_set.add(e[1])
@@ -47,7 +52,9 @@ def get_grml_filters(dsid):
 
             if e[3] not in gd_set:
                 gd_set.add(e[3])
-                filters['grids'].append({'name': e[4], 'code': e[3]})
+                grid_name = convert_grid_definition(e[4].split("!"),
+                                                    output="text")
+                filters['grids'].append({'name': grid_name, 'code': e[3]})
 
             if e[5] not in lbmp_set:
                 lbmp_set.add(e[5])
