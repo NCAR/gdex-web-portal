@@ -22,7 +22,7 @@
             "$ref": "#/components/parameters/dsid"
           },
           {
-            "$ref": "#/components/parameters/variable"
+            "$ref": "#/components/parameters/parameters_filter"
           }
         ],
         "responses": {
@@ -33,6 +33,33 @@
                 "schema": {
                   "$ref": "#/components/schema_defs/DatasetFiltersResponse"
                 }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    },
+    "/{DSID}/files": {
+      "get": {
+        "summary": "Get a list of data files.",
+        "description": "This operation returns a list of data files for the specified dataset, optionally restricted by user-specified filters.",
+        "operationId": "getDatasetFiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "$ref": "#/components/parameters/parameters_filter"
+          }
+        ],
+        "response": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
               }
             }
           },
@@ -54,8 +81,8 @@
           "type": "string"
         }
       },
-      "variable": {
-        "name": "parameter",
+      "parameters_filter": {
+        "name": "parameters",
         "in": "query",
         "description": "Restrict to specified parameter code(s)",
         "required": false,
@@ -73,32 +100,42 @@
       "DatasetFiltersResponse": {
         "type": "object",
         "properties": {
-          "dataset": {
+          "DSID": {
+            "type": "string"
+          },
+          "restrictions": {
             "type": "object",
+            "description": "List of user-specified restrictions for limiting available filters",
             "properties": {
-              "DSID": {
-                "type": "string"
-              },
-              "filters": {
+              "parameters": {
+                "type": "array",
+                "description": "List of parameters to which filters should be limited"
+              }
+            }
+          },
+          "filters": {
+            "type": "object",
+            "description": "List of filters available for this dataset",
+            "properties": {
+              "valid-dates": {
                 "type": "object",
-                "description": "List of filters available for this dataset",
+                "description": "Date range for which data are valid",
                 "properties": {
-                  "valid-dates": {
-                    "type": "object",
-                    "description": "Date range for which data are valid",
-                    "properties": {
-                      "min": {
-                        "type": "string"
-                      },
-                      "max": {
-                        "type": "string"
-                      }
-                    }
+                  "min": {
+                    "type": "string"
+                  },
+                  "max": {
+                    "type": "string"
                   }
                 }
               }
             }
           }
+        }
+      },
+      "DatasetFilesResponse": {
+        "type": "object",
+        "properties": {
         }
       },
       "BadRequest": {
