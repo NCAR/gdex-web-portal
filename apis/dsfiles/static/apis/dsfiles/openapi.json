@@ -61,6 +61,20 @@
             "$ref": "#/components/parameters/dsid"
           },
           {
+            "name": "valid-datetime-min",
+            "in": "query",
+            "description", "Restrict to data valid on or after specified date/time",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "valid-datetime-max",
+            "in": "query",
+            "description", "Restrict to data valid on or prior to specified date/time",
+            "type": "string",
+            "required": false
+          },
+          {
             "name": "parameters",
             "in": "query",
             "description": "Restrict to specified parameter code(s)",
@@ -72,6 +86,45 @@
             },
             "collectionFormat": "multi",
             "required": true
+          },
+          {
+            "name": "products",
+            "in": "query",
+            "description": "Restrict to specified product code(s)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "collectionFormat": "multi",
+            "required": false
+          },
+          {
+            "name": "grids",
+            "in": "query",
+            "description": "Restrict to specified grid code(s)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "collectionFormat": "multi",
+            "required": false
+          },
+          {
+            "name": "levels",
+            "in": "query",
+            "description": "Restrict to specified vertical level code(s)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "collectionFormat": "multi",
+            "required": false
           }
         ],
         "responses": {
