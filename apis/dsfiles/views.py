@@ -15,7 +15,9 @@ def swagger(request, output=None):
 
 
 def get_grml_filters(dsid, **kwargs):
-    filters = {'parameters': [],
+    filters = {'valid-datetime-min': 999999999999,
+               'valid-datetime-max': 0,
+               'parameters': [],
                'products': [],
                'grids': [],
                'levels': []}
@@ -25,11 +27,12 @@ def get_grml_filters(dsid, **kwargs):
         query = ("select concat(s.format_code, '!', s.parameter), s."
                  "time_range_code, t.time_range, s.grid_definition_code, "
                  "concat(g.definition, '!', g.def_params), s."
-                 'level_type_codes, f.format from "WGrML".summary as s left '
-                 'join "WGrML".time_ranges as t on t.code = s.time_range_code '
-                 'left join "WGrML".grid_definitions as g on g.code = s.'
-                 'grid_definition_code left join "WGrML".formats as f on f.'
-                 "code = s.format_code where s.dsid = %s")
+                 "level_type_codes, f.format, s.start_date, s.end_date from "
+                 '"WGrML".summary as s left join "WGrML".time_ranges as t on '
+                 't.code = s.time_range_code left join "WGrML".'
+                 "grid_definitions as g on g.code = s.grid_definition_code "
+                 'left join "WGrML".formats as f on f.code = s.format_code '
+                 "where s.dsid = %s")
         qparams = [dsid]
         if 'parameters' in kwargs:
             query += " and concat(s.format_code, '!', s.parameter) in %s"
@@ -73,6 +76,11 @@ def get_grml_filters(dsid, **kwargs):
                     if val not in lev_fmts.keys():
                         lev_fmts[val] = e[6]
 
+            filters['valid-datetime-min'] = (
+                    min(e[7], filters['valid-datetime-min']))
+            filters['valid-datetime-max'] = (
+                    max(e[8], filters['valid-datetime-max']))
+
         lev_codes = [k for k in lev_fmts.keys()]
         if len(lev_codes) == 1:
             lev_codes.append(lev_codes[0])
@@ -92,6 +100,12 @@ def get_grml_filters(dsid, **kwargs):
         if 'conn' in locals():
             conn.close()
 
+    s = str(filters['valid-datetime-min'])
+    filters['valid-datetime-min'] = (
+            f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
+    s = str(filters['valid-datetime-max'])
+    filters['valid-datetime-max'] = (
+            f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
     return filters
 
 
