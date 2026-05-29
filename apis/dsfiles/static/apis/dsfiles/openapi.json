@@ -126,14 +126,14 @@
     "valid-datetime-min": {
       "name": "valid-datetime-min",
       "in": "query",
-      "description", "Restrict to data valid on or after specified date/time",
+      "description": "Restrict to data valid on or after specified date/time",
       "type": "string",
       "required": false
     },
     "valid-datetime-max": {
       "name": "valid-datetime-max",
       "in": "query",
-      "description", "Restrict to data valid on or prior to specified date/time",
+      "description": "Restrict to data valid on or prior to specified date/time",
       "type": "string",
       "required": false
     },
