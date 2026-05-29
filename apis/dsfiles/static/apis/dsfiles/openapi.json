@@ -130,28 +130,28 @@
             "properties": {
               "parameters": {
                 "type": "array",
-                "description", "Parameter names and filter codes",
+                "description": "Parameter names and filter codes",
                 "items": {
                   "type": "string"
                 }
               },
               "products": {
                 "type": "array",
-                "description", "Product names and filter codes",
+                "description": "Product names and filter codes",
                 "items": {
                   "type": "string"
                 }
               },
               "grids": {
                 "type": "array",
-                "description", "Grid names and filter codes",
+                "description": "Grid names and filter codes",
                 "items": {
                   "type": "string"
                 }
               },
               "levels": {
                 "type": "array",
-                "description", "Vertical level names and filter codes",
+                "description": "Vertical level names and filter codes",
                 "items": {
                   "type": "string"
                 }
