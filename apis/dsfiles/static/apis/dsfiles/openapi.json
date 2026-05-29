@@ -28,8 +28,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "type": "string",
-                "default": ""
+                "type": "string"
               }
             },
             "collectionFormat": "multi"
@@ -68,8 +67,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "type": "string",
-                "default": ""
+                "type": "string"
               }
             },
             "collectionFormat": "multi",
@@ -119,7 +117,10 @@
             "properties": {
               "parameters": {
                 "type": "array",
-                "description": "List of parameters to which filters should be limited"
+                "description": "List of parameters to which filters should be limited",
+                "items": {
+                  "type": "string"
+                }
               }
             }
           },
@@ -155,15 +156,17 @@
             "properties": {
               "parameters": {
                 "type": "array",
-                "description": "List of parameters to which filters should be limited"
+                "description": "List of parameters to which filters should be limited",
+                "items": {
+                  "type": "string"
+                }
               }
             }
           },
           "files": {
             "type": "array",
             "items": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         }
