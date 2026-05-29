@@ -22,7 +22,17 @@
             "$ref": "#/components/parameters/dsid"
           },
           {
-            "$ref": "#/components/parameters/parameters_filter"
+            "name": "parameters",
+            "in": "query",
+            "description": "Restrict to specified parameter code(s)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "default": ""
+              }
+            },
+            "collectionFormat": "multi"
           }
         ],
         "responses": {
@@ -52,7 +62,18 @@
             "$ref": "#/components/parameters/dsid"
           },
           {
-            "$ref": "#/components/parameters/parameters_filter"
+            "name": "parameters",
+            "in": "query",
+            "description": "Restrict to specified parameter code(s)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "default": ""
+              }
+            },
+            "collectionFormat": "multi",
+            "required": true
           }
         ],
         "response": {
@@ -80,20 +101,6 @@
         "schema": {
           "type": "string"
         }
-      },
-      "parameters_filter": {
-        "name": "parameters",
-        "in": "query",
-        "description": "Restrict to specified parameter code(s)",
-        "required": false,
-        "schema": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "default": ""
-          }
-        },
-        "collectionFormat": "multi"
       }
     },
     "schema_defs": {
