@@ -128,6 +128,14 @@
             "type": "object",
             "description": "List of data file filters available for this dataset",
             "properties": {
+              "valid-datetime-min": {
+                "type": "string",
+                "description": "Earliest valid date/time as YYYY-MM-DD HH:MM"
+              },
+              "valid-datetime-max": {
+                "type": "string",
+                "description": "Latest valid date/time as YYYY-MM-DD HH:MM"
+              },
               "parameters": {
                 "type": "array",
                 "description": "Parameter names and filter codes",
@@ -155,14 +163,6 @@
                 "items": {
                   "type": "string"
                 }
-              },
-              "valid-datetime-min": {
-                "type": "string",
-                "description": "Earliest valid date/time as YYYY-MM-DD HH:MM"
-              },
-              "valid-datetime-max": {
-                "type": "string",
-                "description": "Latest valid date/time as YYYY-MM-DD HH:MM"
               }
             }
           }
