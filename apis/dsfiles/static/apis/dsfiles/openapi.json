@@ -81,6 +81,9 @@
             "description": "Success",
             "content": {
               "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFilesResponse"
+                }
               }
             }
           },
@@ -143,6 +146,26 @@
       "DatasetFilesResponse": {
         "type": "object",
         "properties": {
+          "DSID": {
+            "type": "string"
+          },
+          "restrictions": {
+            "type": "object",
+            "description": "List of user-specified restrictions for limiting available filters",
+            "properties": {
+              "parameters": {
+                "type": "array",
+                "description": "List of parameters to which filters should be limited"
+              }
+            }
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "default": ""
+            }
+          }
         }
       },
       "BadRequest": {
