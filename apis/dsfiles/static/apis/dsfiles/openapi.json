@@ -158,11 +158,11 @@
               },
               "valid-datetime-min": {
                 "type": "string",
-                "description": "Earliest valid date/time"
+                "description": "Earliest valid date/time as YYYY-MM-DD HH:MM"
               },
               "valid-datetime-max": {
                 "type": "string",
-                "description": "Latest valid date/time"
+                "description": "Latest valid date/time as YYYY-MM-DD HH:MM"
               }
             }
           }
