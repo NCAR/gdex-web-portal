@@ -113,5 +113,5 @@ def filters(request, dsid):
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
-def files(request, dsid)
+def files(request, dsid):
     return HttpResponse("files")
