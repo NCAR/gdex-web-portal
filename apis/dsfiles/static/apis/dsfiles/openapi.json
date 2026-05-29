@@ -126,19 +126,43 @@
           },
           "filters": {
             "type": "object",
-            "description": "List of filters available for this dataset",
+            "description": "List of data file filters available for this dataset",
             "properties": {
-              "valid-dates": {
-                "type": "object",
-                "description": "Date range for which data are valid",
-                "properties": {
-                  "min": {
-                    "type": "string"
-                  },
-                  "max": {
-                    "type": "string"
-                  }
+              "parameters": {
+                "type": "array",
+                "description", "Parameter names and filter codes",
+                "items": {
+                  "type": "string"
                 }
+              },
+              "products": {
+                "type": "array",
+                "description", "Product names and filter codes",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "grids": {
+                "type": "array",
+                "description", "Grid names and filter codes",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "levels": {
+                "type": "array",
+                "description", "Vertical level names and filter codes",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "valid-datetime-min": {
+                "type": "string",
+                "description": "Earliest valid date/time"
+              },
+              "valid-datetime-max": {
+                "type": "string",
+                "description": "Latest valid date/time"
               }
             }
           }
