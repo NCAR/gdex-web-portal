@@ -111,3 +111,7 @@ def filters(request, dsid):
             del response['restrictions']
 
     return HttpResponse(json.dumps(response), content_type="application/json")
+
+
+def files(request, dsid)
+    return HttpResponse("files")
