@@ -121,8 +121,9 @@ def filters(request, dsid):
 
         response['filters'] = get_grml_filters(dsid,
                                                **response['restrictions'])
-        if len(response['restrictions']) == 0:
-            del response['restrictions']
+
+    if len(response['restrictions']) == 0:
+        del response['restrictions']
 
     return HttpResponse(json.dumps(response), content_type="application/json")
 
