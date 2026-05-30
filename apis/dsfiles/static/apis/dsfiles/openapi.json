@@ -123,58 +123,69 @@
     }
   },
   "components": {
-    "valid-datetime-min": {
-      "name": "valid-datetime-min",
-      "in": "query",
-      "description": "Restrict to data valid on or after specified date/time",
-      "type": "string",
-      "required": false
-    },
-    "valid-datetime-max": {
-      "name": "valid-datetime-max",
-      "in": "query",
-      "description": "Restrict to data valid on or prior to specified date/time",
-      "type": "string",
-      "required": false
-    },
-    "products": {
-      "name": "products",
-      "in": "query",
-      "description": "Restrict to specified product code(s)",
-      "schema": {
-        "type": "array",
-        "items": {
+    "parameters": {
+      "dsid": {
+        "name": "DSID",
+        "in": "path",
+        "description": "Retrieve data for dataset identified by DSID",
+        "required": true,
+        "schema": {
           "type": "string"
         }
       },
-      "collectionFormat": "multi",
-      "required": false
-    },
-    "grids": {
-      "name": "grids",
-      "in": "query",
-      "description": "Restrict to specified grid code(s)",
-      "schema": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
+      "valid-datetime-min": {
+        "name": "valid-datetime-min",
+        "in": "query",
+        "description": "Restrict to data valid on or after specified date/time",
+        "type": "string",
+        "required": false
       },
-      "collectionFormat": "multi",
-      "required": false
-    },
-    "levels": {
-      "name": "levels",
-      "in": "query",
-      "description": "Restrict to specified vertical level code(s)",
-      "schema": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
+      "valid-datetime-max": {
+        "name": "valid-datetime-max",
+        "in": "query",
+        "description": "Restrict to data valid on or prior to specified date/time",
+        "type": "string",
+        "required": false
       },
-      "collectionFormat": "multi",
-      "required": false
+      "products": {
+        "name": "products",
+        "in": "query",
+        "description": "Restrict to specified product code(s)",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "collectionFormat": "multi",
+        "required": false
+      },
+      "grids": {
+        "name": "grids",
+        "in": "query",
+        "description": "Restrict to specified grid code(s)",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "collectionFormat": "multi",
+        "required": false
+      },
+      "levels": {
+        "name": "levels",
+        "in": "query",
+        "description": "Restrict to specified vertical level code(s)",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "collectionFormat": "multi",
+        "required": false
+      },
     },
     "schema_defs": {
       "DatasetFiltersResponse": {
