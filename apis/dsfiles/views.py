@@ -1,8 +1,7 @@
-import json
 import psycopg2
 
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 from facbrowse.utils import service_list
 from libpkg.codemaps import decode_level, decode_parameter
@@ -14,7 +13,15 @@ def swagger(request, output=None):
     return render(request, "dsfiles/swagger.html", {})
 
 
-def get_grml_filters(dsid, **kwargs):
+def valid_dsid(dsid, cursor):
+    cursor.execute(
+            "select dsid from search.datasets where dsid = %s and type in "
+            "('P', 'H')", (dsid, ))
+    dsid, = cursor.fetchone() or (None, )
+    return dsid is not None
+
+
+def get_grml_filters(dsid, cursor, **kwargs):
     filters = {'valid-datetime-min': 999999999999,
                'valid-datetime-max': 0,
                'parameters': [],
@@ -22,8 +29,6 @@ def get_grml_filters(dsid, **kwargs):
                'grids': [],
                'levels': []}
     try:
-        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
-        cursor = conn.cursor()
         query = ("select concat(s.format_code, '!', s.parameter), s."
                  "time_range_code, t.time_range, s.grid_definition_code, "
                  "concat(g.definition, '!', g.def_params), s."
@@ -95,10 +100,7 @@ def get_grml_filters(dsid, **kwargs):
             filters['levels'].append({'name': lev_name, 'code': e[3]})
 
     except Exception:
-        return HttpResponse("Server error.", status_code=500)
-    finally:
-        if 'conn' in locals():
-            conn.close()
+        return JsonResponse({'error_message': "Server error."}, status=500)
 
     s = str(filters['valid-datetime-min'])
     filters['valid-datetime-min'] = (
@@ -109,7 +111,7 @@ def get_grml_filters(dsid, **kwargs):
     return filters
 
 
-def filters(request, dsid):
+def filters(request, dsid, cursor):
     response = {'DSID': dsid,
                 'restrictions': {},
                 'filters': {}}
@@ -119,14 +121,48 @@ def filters(request, dsid):
             response['restrictions']['parameters'] = (
                     request.GET.getlist('parameters'))
 
-        response['filters'] = get_grml_filters(dsid,
-                                               **response['restrictions'])
+        response['filters'] = (
+                get_grml_filters(dsid, cursor, **response['restrictions']))
 
     if len(response['restrictions']) == 0:
         del response['restrictions']
 
-    return HttpResponse(json.dumps(response), content_type="application/json")
+    return JsonResponse(response)
 
 
-def files(request, dsid):
-    return HttpResponse("files")
+def files(request, dsid, cursor):
+    services = service_list(dsid)
+    if len(services) == 0:
+        return JsonResponse(
+                {'error_message': "API file discovery is not available for "
+                                  "this dataset"},
+                status=400)
+
+    return JsonResponse({'files': True})
+
+
+def respond_to_request(request, dsid, operation):
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        if not valid_dsid(dsid, cursor):
+            return JsonResponse(
+                    {'error_message': f"'{dsid}' is not a valid dataset "
+                                      "identifier."},
+                    status=400)
+
+        if operation == "filters":
+            return filters(request, dsid, cursor)
+        elif operation == "files":
+            return files(request, dsid, cursor)
+        else:
+            return JsonResponse(
+                    {'error_message': f"'{operation}' is not a valid "
+                                      "operation."},
+                    status=400)
+
+    except Exception:
+        return JsonResponse({'error_message': "Server error."}, status=500)
+    finally:
+        if 'conn' in locals():
+            conn.close()
