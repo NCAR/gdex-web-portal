@@ -76,12 +76,6 @@
             "$ref": "#/components/parameters/dsid"
           },
           {
-            "$ref": "#/components/parameters/valid-datetime-min"
-          },
-          {
-            "$ref": "#/components/parameters/valid-datetime-max"
-          },
-          {
             "name": "parameters",
             "in": "query",
             "description": "Restrict to specified parameter code(s)",
@@ -93,6 +87,12 @@
             },
             "collectionFormat": "multi",
             "required": true
+          },
+          {
+            "$ref": "#/components/parameters/valid-datetime-min"
+          },
+          {
+            "$ref": "#/components/parameters/valid-datetime-max"
           },
           {
             "$ref": "#/components/parameters/products"
