@@ -140,7 +140,7 @@
       "dsid": {
         "name": "DSID",
         "in": "path",
-        "description": "Retrieve data for dataset identified by DSID",
+        "description": "Retrieve response for dataset identified by DSID",
         "required": true,
         "schema": {
           "type": "string"
@@ -149,14 +149,14 @@
       "valid-datetime-min": {
         "name": "valid-datetime-min",
         "in": "query",
-        "description": "Restrict to data valid on or after specified date/time",
+        "description": "Restrict to data valid on or after date/time specified as \"YYYY-MM-DD HH:MM\"",
         "type": "string",
         "required": false
       },
       "valid-datetime-max": {
         "name": "valid-datetime-max",
         "in": "query",
-        "description": "Restrict to data valid on or prior to specified date/time",
+        "description": "Restrict to data valid on or prior to date/time specified as \"YYYY-MM-DD HH:MM\"",
         "type": "string",
         "required": false
       },
