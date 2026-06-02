@@ -82,8 +82,8 @@
             "schema": {
               "type": "string",
               "enum": [
-                "grids",
-                "observations"
+                "gridded",
+                "observation"
               ]
             },
             "required": true
