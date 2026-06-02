@@ -34,7 +34,8 @@
             "schema": {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": "string",
+                "default": ""
               }
             },
             "collectionFormat": "multi"
@@ -95,7 +96,8 @@
             "schema": {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": "string",
+                "default": ""
               }
             },
             "collectionFormat": "multi",
@@ -167,7 +169,8 @@
         "schema": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "default": ""
           }
         },
         "collectionFormat": "multi",
@@ -180,7 +183,8 @@
         "schema": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "default": ""
           }
         },
         "collectionFormat": "multi",
@@ -193,12 +197,13 @@
         "schema": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "default": ""
           }
         },
         "collectionFormat": "multi",
         "required": false
-      },
+      }
     },
     "schema_defs": {
       "DatasetFiltersResponse": {
