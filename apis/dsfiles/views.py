@@ -1,8 +1,9 @@
 import psycopg2
 
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse, QueryDict
 from django.shortcuts import render
+from facbrowse.grml_query import parse_grml_query
 from facbrowse.utils import service_list
 from libpkg.codemaps import decode_level, decode_parameter
 from libpkg.dbutils import uncompress_bitmap_values
@@ -138,12 +139,34 @@ def filters(request, dsid, cursor):
 
 def files(request, dsid, data_type, cursor):
     services = service_list(dsid)
-    if data_type == "gridded" and "GrML" not in services:
-        return JsonResponse(
-                {'error_message': "API file discovery is not available for "
-                                  f"data-type '{data_type}'"},
-                status=400)
-    return JsonResponse({'files': True})
+    if data_type == "gridded" and "GrML" in services:
+        grml_req = HttpRequest()
+        grml_req.method = "POST"
+        grml_req.POST = QueryDict(mutable=True)
+        grml_req.POST.setlist('parameter', request.GET.getlist('parameters'))
+        if 'valid-datetime-min' in request.GET:
+            parts = request.GET['valid-datetime-min'].split()
+            grml_req.POST['startDate'] = parts[0]
+            grml_req.POST['startTime'] = parts[1]
+        else:
+            grml_req.POST['startDate'] = "1000-01-01"
+            grml_req.POST['startTime'] = "00:00"
+
+        if 'valid-datetime-max' in request.GET:
+            parts = request.GET['valid-datetime-max'].split()
+            grml_req.POST['endDate'] = parts[0]
+            grml_req.POST['endTime'] = parts[1]
+        else:
+            grml_req.POST['endDate'] = ""
+            grml_req.POST['endTime'] = ""
+
+        grml = parse_grml_query(cursor, dsid, "weblist", grml_req)
+        return JsonResponse({'files': grml['fcodes']})
+
+    return JsonResponse(
+            {'error_message': "API file discovery is not available for "
+                              f"data-type '{data_type}'"},
+            status=400)
 
 
 def respond_to_request(request, dsid, operation, data_type):
