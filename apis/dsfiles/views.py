@@ -124,7 +124,7 @@ def filters(request, dsid, cursor):
         response['filters'] = (
                 get_grml_filters(dsid, cursor, **response['restrictions']))
 
-    if len(filters) == 0:
+    if len(response['filters']) == 0:
         return JsonResponse(
                 {'error_message': "API file discovery is not available for "
                                   "this dataset"},
