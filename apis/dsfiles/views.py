@@ -138,7 +138,7 @@ def filters(request, dsid, cursor):
 
 def files(request, dsid, data_type, cursor):
     services = service_list(dsid)
-    if data_type == "grids" and "GrML" not in services:
+    if data_type == "gridded" and "GrML" not in services:
         return JsonResponse(
                 {'error_message': "API file discovery is not available for "
                                   f"data-type '{data_type}'"},
