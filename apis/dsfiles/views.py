@@ -124,24 +124,29 @@ def filters(request, dsid, cursor):
         response['filters'] = (
                 get_grml_filters(dsid, cursor, **response['restrictions']))
 
+    if len(filters) == 0:
+        return JsonResponse(
+                {'error_message': "API file discovery is not available for "
+                                  "this dataset"},
+                status=400)
+
     if len(response['restrictions']) == 0:
         del response['restrictions']
 
     return JsonResponse(response)
 
 
-def files(request, dsid, cursor):
+def files(request, dsid, data_type, cursor):
     services = service_list(dsid)
-    if len(services) == 0:
+    if data_type == "grids" and "GrML" not in services:
         return JsonResponse(
                 {'error_message': "API file discovery is not available for "
-                                  "this dataset"},
+                                  f"data-type '{data_type}'"},
                 status=400)
-
     return JsonResponse({'files': True})
 
 
-def respond_to_request(request, dsid, operation):
+def respond_to_request(request, dsid, operation, data_type):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
@@ -154,7 +159,7 @@ def respond_to_request(request, dsid, operation):
         if operation == "filters":
             return filters(request, dsid, cursor)
         elif operation == "files":
-            return files(request, dsid, cursor)
+            return files(request, dsid, data_type, cursor)
         else:
             return JsonResponse(
                     {'error_message': f"'{operation}' is not a valid "
