@@ -51,6 +51,7 @@ def get_grml_filters(dsid, cursor, **kwargs):
             return filters
 
         param_set = set()
+        param_names = {}
         param_maps = {}
         tr_set = set()
         gd_set = set()
@@ -62,8 +63,10 @@ def get_grml_filters(dsid, cursor, **kwargs):
                     param_set.add(e[0])
                     fmt, param = e[0].split("!")
                     param_name = decode_parameter(e[6], param, param_maps)
-                    filters['parameters'].append({'name': param_name,
-                                                  'code': e[0]})
+                    if param_name not in param_names:
+                        param_names[param_name] = e[0]
+                    else:
+                        param_names[param_name] += "," + e[0]
 
             if e[1] not in tr_set:
                 tr_set.add(e[1])
@@ -87,6 +90,9 @@ def get_grml_filters(dsid, cursor, **kwargs):
             filters['valid-datetime-max'] = (
                     max(e[8], filters['valid-datetime-max']))
 
+        filters['parameters'] = (
+                [{'name': name, 'code': code} for name, code in
+                 param_names.items()])
         lev_codes = [k for k in lev_fmts.keys()]
         if len(lev_codes) == 1:
             lev_codes.append(lev_codes[0])
