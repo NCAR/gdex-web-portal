@@ -95,7 +95,8 @@
             "schema": {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": "string",
+                "default": ""
               }
             },
             "collectionFormat": "multi",
