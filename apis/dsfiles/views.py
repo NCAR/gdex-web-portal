@@ -111,9 +111,11 @@ def get_grml_filters(dsid, cursor, **kwargs):
             filters['valid_datetime_max'] = (
                     max(e[8], filters['valid_datetime_max']))
 
-        filters['parameters'] = (
-                [{'name': name, 'code': code} for name, code in
-                 param_names.items()])
+        if len(param_names) > 0:
+            filters['parameters'] = (
+                    [{'name': name, 'code': code} for name, code in
+                     param_names.items()])
+
         lev_codes = [k for k in lev_fmts.keys()]
         if len(lev_codes) == 1:
             lev_codes.append(lev_codes[0])
@@ -147,7 +149,8 @@ def filters(request, dsid, datatype, cursor):
     if "GrML" in services:
         if 'parameters' in request.GET:
             response['restrictions']['parameters'] = (
-                    request.GET.getlist('parameters'))
+                    [part for e in request.GET.getlist('parameters') for part
+                     in e.split(",")])
 
         response['filters'] = (
                 get_grml_filters(dsid, cursor, **response['restrictions']))
