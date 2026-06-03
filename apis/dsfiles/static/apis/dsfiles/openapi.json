@@ -359,6 +359,10 @@
           "DSID": {
             "type": "string"
           },
+          "datatype": {
+            "type": "string",
+            "const": "gridded"
+          },
           "restrictions": {
             "type": "object",
             "description": "List of user-specified restrictions for limiting available filters",
