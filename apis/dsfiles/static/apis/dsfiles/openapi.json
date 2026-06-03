@@ -56,14 +56,14 @@
         }
       }
     },
-    "/{DSID}/filters": {
+    "/{DSID}/filters/gridded": {
       "get": {
         "tags": [
           "Filters"
         ],
-        "summary": "Get dataset-specific filters.",
-        "description": "This operation returns the filters that are available for the specified dataset using its GDEX DSID.",
-        "operationId": "getDatasetFilters",
+        "summary": "Get dataset-specific filters for the \"gridded\" data type.",
+        "description": "This operation returns the filters that are available for the \"gridded\" data files in the specified dataset using its GDEX DSID.",
+        "operationId": "getDatasetFiltersGridded",
         "parameters": [
           {
             "$ref": "#/components/parameters/dsid"
@@ -102,7 +102,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schema_defs/DatasetFiltersResponse"
+                  "$ref": "#/components/schema_defs/DatasetFiltersGriddedResponse"
                 }
               }
             }
@@ -113,30 +113,17 @@
         }
       }
     },
-    "/{DSID}/files/{DATATYPE}": {
+    "/{DSID}/files/gridded": {
       "get": {
         "tags": [
           "Data Files"
         ],
-        "summary": "Get a list of data files.",
-        "description": "This operation returns a list of data files for the specified dataset, optionally restricted by user-specified filters.",
+        "summary": "Get a list of data files containing data type \"gridded\" data.",
+        "description": "This operation returns a list of \"gridded\" data files for the specified dataset, optionally restricted by user-specified filters.",
         "operationId": "getDatasetFiles",
         "parameters": [
           {
             "$ref": "#/components/parameters/dsid"
-          },
-          {
-            "name": "DATATYPE",
-            "in": "path",
-            "description": "Find files for specified data type",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "gridded",
-                "observation"
-              ]
-            },
-            "required": true
           },
           {
             "name": "parameters",
@@ -174,7 +161,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schema_defs/DatasetFilesResponse"
+                  "$ref": "#/components/schema_defs/DatasetFilesGriddedResponse"
                 }
               }
             }
@@ -267,11 +254,15 @@
           }
         }
       },
-      "DatasetFiltersResponse": {
+      "DatasetFiltersGriddedResponse": {
         "type": "object",
         "properties": {
           "DSID": {
             "type": "string"
+          },
+          "datatype": {
+            "type": "string",
+            "const": "gridded"
           },
           "restrictions": {
             "type": "object",
@@ -282,24 +273,6 @@
                 "description": "List of parameters to which filters should be limited",
                 "items": {
                   "type": "string"
-                }
-              }
-            }
-          },
-          "datatypes": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "description": "List of data types in the specified dataset",
-              "properties": {
-                "DATATYPE": {
-                  "type": "string"
-                },
-                "filters": {
-                  "type": "object",
-                  "description": "List of data file filters for this DATATYPE",
-                  "properties": {
-                  }
                 }
               }
             }
@@ -331,52 +304,47 @@
                   }
                 }
               },
-              "gridded": {
-                "type": "object",
-                "properties": {
-                  "products": {
-                    "type": "array",
-                    "description": "Product names and filter codes",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string"
-                        },
-                        "code": {
-                          "type": "string"
-                        }
-                      }
+              "products": {
+                "type": "array",
+                "description": "Product names and filter codes",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
                     }
-                  },
-                  "grids": {
-                    "type": "array",
-                    "description": "Grid names and filter codes",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string"
-                        },
-                        "code": {
-                          "type": "string"
-                        }
-                      }
+                  }
+                }
+              },
+              "grids": {
+                "type": "array",
+                "description": "Grid names and filter codes",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
                     }
-                  },
-                  "levels": {
-                    "type": "array",
-                    "description": "Vertical level names and filter codes",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string"
-                        },
-                        "code": {
-                          "type": "string"
-                        }
-                      }
+                  }
+                }
+              },
+              "levels": {
+                "type": "array",
+                "description": "Vertical level names and filter codes",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
                     }
                   }
                 }
@@ -385,7 +353,7 @@
           }
         }
       },
-      "DatasetFilesResponse": {
+      "DatasetFilesGriddedResponse": {
         "type": "object",
         "properties": {
           "DSID": {
