@@ -35,7 +35,7 @@ def datatypes(dsid, cursor):
     if len(services) == 0:
         return JsonResponse(
                 {'error_message': "API file discovery is not available for "
-                                  "this dataset"},
+                                  "this dataset."},
                 status=400)
 
     response = {'DSID': dsid,
@@ -44,12 +44,6 @@ def datatypes(dsid, cursor):
 
 
 def get_grml_filters(dsid, cursor, **kwargs):
-    filters = {'valid_datetime_min': 999999999999,
-               'valid_datetime_max': 0,
-               'parameters': [],
-               'products': [],
-               'grids': [],
-               'levels': []}
     try:
         query = ("select concat(s.format_code, '!', s.parameter), s."
                  "time_range_code, t.time_range, s.grid_definition_code, "
@@ -69,8 +63,14 @@ def get_grml_filters(dsid, cursor, **kwargs):
         cursor.execute(query, tuple(qparams))
         res = cursor.fetchall()
         if len(res) == 0:
-            return filters
+            return {}
 
+        filters = {'valid_datetime_min': 999999999999,
+                   'valid_datetime_max': 0,
+                   'parameters': [],
+                   'products': [],
+                   'grids': [],
+                   'levels': []}
         param_set = set()
         param_names = {}
         param_maps = {}
@@ -145,8 +145,7 @@ def filters(request, dsid, datatype, cursor):
     response = {'DSID': dsid,
                 'restrictions': {},
                 'filters': {}}
-    services = service_list(dsid)
-    if "GrML" in services:
+    if datatype == "gridded":
         if 'parameters' in request.GET:
             response['restrictions']['parameters'] = (
                     [part for e in request.GET.getlist('parameters') for part
@@ -158,7 +157,7 @@ def filters(request, dsid, datatype, cursor):
     if len(response['filters']) == 0:
         return JsonResponse(
                 {'error_message': "API file discovery is not available for "
-                                  "this dataset"},
+                                  "data type '{datatype}'."},
                 status=400)
 
     if len(response['restrictions']) == 0:
@@ -195,7 +194,7 @@ def files(request, dsid, datatype, cursor):
 
     return JsonResponse(
             {'error_message': "API file discovery is not available for "
-                              f"data-type '{datatype}'"},
+                              f"data type '{datatype}'."},
             status=400)
 
 
