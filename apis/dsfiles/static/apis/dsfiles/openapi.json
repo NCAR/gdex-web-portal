@@ -22,10 +22,10 @@
             "$ref": "#/components/parameters/dsid"
           },
           {
-            "$ref": "#/components/parameters/valid-datetime-min"
+            "$ref": "#/components/parameters/valid_datetime_min"
           },
           {
-            "$ref": "#/components/parameters/valid-datetime-max"
+            "$ref": "#/components/parameters/valid_datetime_max"
           },
           {
             "name": "parameters",
@@ -103,10 +103,10 @@
             "required": true
           },
           {
-            "$ref": "#/components/parameters/valid-datetime-min"
+            "$ref": "#/components/parameters/valid_datetime_min"
           },
           {
-            "$ref": "#/components/parameters/valid-datetime-max"
+            "$ref": "#/components/parameters/valid_datetime_max"
           },
           {
             "$ref": "#/components/parameters/products"
@@ -147,15 +147,15 @@
           "type": "string"
         }
       },
-      "valid-datetime-min": {
-        "name": "valid-datetime-min",
+      "valid_datetime_min": {
+        "name": "valid_datetime_min",
         "in": "query",
         "description": "Restrict to data valid on or after date/time specified as \"YYYY-MM-DD HH:MM\"",
         "type": "string",
         "required": false
       },
-      "valid-datetime-max": {
-        "name": "valid-datetime-max",
+      "valid_datetime_max": {
+        "name": "valid_datetime_max",
         "in": "query",
         "description": "Restrict to data valid on or prior to date/time specified as \"YYYY-MM-DD HH:MM\"",
         "type": "string",
@@ -226,11 +226,11 @@
             "type": "object",
             "description": "List of data file filters available for this dataset",
             "properties": {
-              "valid-datetime-min": {
+              "valid_datetime_min": {
                 "type": "string",
                 "description": "Earliest valid date/time as YYYY-MM-DD HH:MM"
               },
-              "valid-datetime-max": {
+              "valid_datetime_max": {
                 "type": "string",
                 "description": "Latest valid date/time as YYYY-MM-DD HH:MM"
               },
