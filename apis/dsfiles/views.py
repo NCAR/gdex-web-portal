@@ -45,6 +45,12 @@ def datatypes(dsid, cursor):
 
 def get_grml_filters(dsid, cursor, **kwargs):
     try:
+        filters = {'valid_datetime_min': 999999999999,
+                   'valid_datetime_max': 0,
+                   'parameters': [],
+                   'products': [],
+                   'grids': [],
+                   'levels': []}
         query = ("select concat(s.format_code, '!', s.parameter), s."
                  "time_range_code, t.time_range, s.grid_definition_code, "
                  "concat(g.definition, '!', g.def_params), s."
@@ -65,12 +71,6 @@ def get_grml_filters(dsid, cursor, **kwargs):
         if len(res) == 0:
             return {}
 
-        filters = {'valid_datetime_min': 999999999999,
-                   'valid_datetime_max': 0,
-                   'parameters': [],
-                   'products': [],
-                   'grids': [],
-                   'levels': []}
         param_set = set()
         param_names = {}
         param_maps = {}
@@ -157,7 +157,9 @@ def filters(request, dsid, datatype, cursor):
     if len(response['filters']) == 0:
         return JsonResponse(
                 {'error_message': "API file discovery is not available for "
-                                  f"data type '{datatype}'."},
+                                  f"data type '{datatype}'. See the "
+                                  "{DSID}/datatypes endpoint for the valid "
+                                  "data types for this dataset."},
                 status=400)
 
     if len(response['restrictions']) == 0:
@@ -194,7 +196,9 @@ def files(request, dsid, datatype, cursor):
 
     return JsonResponse(
             {'error_message': "API file discovery is not available for "
-                              f"data type '{datatype}'."},
+                              f"data type '{datatype}'. See the "
+                              "{DSID}/datatypes endpoint for the valid data "
+                              "types for this dataset."},
             status=400)
 
 
