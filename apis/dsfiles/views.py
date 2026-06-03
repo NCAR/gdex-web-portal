@@ -23,8 +23,8 @@ def valid_dsid(dsid, cursor):
 
 
 def get_grml_filters(dsid, cursor, **kwargs):
-    filters = {'valid-datetime-min': 999999999999,
-               'valid-datetime-max': 0,
+    filters = {'valid_datetime_min': 999999999999,
+               'valid_datetime_max': 0,
                'parameters': [],
                'products': [],
                'grids': [],
@@ -85,10 +85,10 @@ def get_grml_filters(dsid, cursor, **kwargs):
                     if val not in lev_fmts.keys():
                         lev_fmts[val] = e[6]
 
-            filters['valid-datetime-min'] = (
-                    min(e[7], filters['valid-datetime-min']))
-            filters['valid-datetime-max'] = (
-                    max(e[8], filters['valid-datetime-max']))
+            filters['valid_datetime_min'] = (
+                    min(e[7], filters['valid_datetime_min']))
+            filters['valid_datetime_max'] = (
+                    max(e[8], filters['valid_datetime_max']))
 
         filters['parameters'] = (
                 [{'name': name, 'code': code} for name, code in
@@ -109,11 +109,11 @@ def get_grml_filters(dsid, cursor, **kwargs):
     except Exception:
         return JsonResponse({'error_message': "Server error."}, status=500)
 
-    s = str(filters['valid-datetime-min'])
-    filters['valid-datetime-min'] = (
+    s = str(filters['valid_datetime_min'])
+    filters['valid_datetime_min'] = (
             f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
-    s = str(filters['valid-datetime-max'])
-    filters['valid-datetime-max'] = (
+    s = str(filters['valid_datetime_max'])
+    filters['valid_datetime_max'] = (
             f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
     return filters
 
@@ -150,16 +150,16 @@ def files(request, dsid, data_type, cursor):
         grml_req.method = "POST"
         grml_req.POST = QueryDict(mutable=True)
         grml_req.POST.setlist('parameter', request.GET.getlist('parameters'))
-        if 'valid-datetime-min' in request.GET:
-            parts = request.GET['valid-datetime-min'].split()
+        if 'valid_datetime_min' in request.GET:
+            parts = request.GET['valid_datetime_min'].split()
             grml_req.POST['startDate'] = parts[0]
             grml_req.POST['startTime'] = parts[1]
         else:
             grml_req.POST['startDate'] = "1000-01-01"
             grml_req.POST['startTime'] = "00:00"
 
-        if 'valid-datetime-max' in request.GET:
-            parts = request.GET['valid-datetime-max'].split()
+        if 'valid_datetime_max' in request.GET:
+            parts = request.GET['valid_datetime_max'].split()
             grml_req.POST['endDate'] = parts[0]
             grml_req.POST['endTime'] = parts[1]
         else:
