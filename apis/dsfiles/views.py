@@ -139,7 +139,7 @@ def get_grml_filters(dsid, cursor, **kwargs):
     return filters
 
 
-def filters(request, dsid, cursor):
+def filters(request, dsid, datatype, cursor):
     response = {'DSID': dsid,
                 'restrictions': {},
                 'filters': {}}
@@ -188,7 +188,7 @@ def files(request, dsid, datatype, cursor):
             grml_req.POST['endTime'] = ""
 
         grml = parse_grml_query(cursor, dsid, "weblist", grml_req)
-        return JsonResponse({'files': grml['fcodes']})
+        return JsonResponse({'files': len(grml['fcodes'])})
 
     return JsonResponse(
             {'error_message': "API file discovery is not available for "
@@ -196,7 +196,7 @@ def files(request, dsid, datatype, cursor):
             status=400)
 
 
-def respond_to_request(request, dsid, operation, datatype):
+def respond_to_request(request, dsid, operation, datatype=None):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
@@ -209,7 +209,7 @@ def respond_to_request(request, dsid, operation, datatype):
         if operation == "datatypes":
             return datatypes(dsid, cursor)
         elif operation == "filters":
-            return filters(request, dsid, cursor)
+            return filters(request, dsid, datatype, cursor)
         elif operation == "files":
             return files(request, dsid, datatype, cursor)
         else:

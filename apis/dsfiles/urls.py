@@ -1,9 +1,10 @@
-from django.urls import path, re_path
+from django.urls import path
 
 from . import views
 
 
 urlpatterns = [
     path('', views.swagger),
-    re_path(r'^(?P<dsid>d[0-9]{6})/(?P<operation>([^/]*){1})/(?P<data_type>([^/]*){0,})$', views.respond_to_request),
+    path('<dsid>/datatypes/', views.respond_to_request),
+    path('<dsid>/<operation>/<datatype>/', views.respond_to_request),
 ]
