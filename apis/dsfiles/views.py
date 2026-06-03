@@ -10,6 +10,14 @@ from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
 
 
+datatypes_map = {
+    'FixML': "cyclone_fix",
+    'GrML': "gridded",
+    'ObML': "observation",
+    'SatML': "satellite",
+}
+
+
 def swagger(request, output=None):
     return render(request, "dsfiles/swagger.html", {})
 
@@ -20,6 +28,19 @@ def valid_dsid(dsid, cursor):
             "('P', 'H')", (dsid, ))
     dsid, = cursor.fetchone() or (None, )
     return dsid is not None
+
+
+def datatypes(dsid, cursor):
+    services = service_list(dsid)
+    if len(services) == 0:
+        return JsonResponse(
+                {'error_message': "API file discovery is not available for "
+                                  "this dataset"},
+                status=400)
+
+    response = {'DSID': dsid,
+                'datatypes': [datatypes_map[e] for e in services]}
+    return JsonResponse(response)
 
 
 def get_grml_filters(dsid, cursor, **kwargs):
@@ -185,7 +206,9 @@ def respond_to_request(request, dsid, operation, data_type):
                                       "identifier."},
                     status=400)
 
-        if operation == "filters":
+        if operation == "datatypes":
+            return datatypes(dsid, cursor)
+        elif operation == "filters":
             return filters(request, dsid, cursor)
         elif operation == "files":
             return files(request, dsid, data_type, cursor)
