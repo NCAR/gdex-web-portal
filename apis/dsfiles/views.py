@@ -164,9 +164,9 @@ def filters(request, dsid, cursor):
     return JsonResponse(response)
 
 
-def files(request, dsid, data_type, cursor):
+def files(request, dsid, datatype, cursor):
     services = service_list(dsid)
-    if data_type == "gridded" and "GrML" in services:
+    if datatype == "gridded" and "GrML" in services:
         grml_req = HttpRequest()
         grml_req.method = "POST"
         grml_req.POST = QueryDict(mutable=True)
@@ -192,11 +192,11 @@ def files(request, dsid, data_type, cursor):
 
     return JsonResponse(
             {'error_message': "API file discovery is not available for "
-                              f"data-type '{data_type}'"},
+                              f"data-type '{datatype}'"},
             status=400)
 
 
-def respond_to_request(request, dsid, operation, data_type):
+def respond_to_request(request, dsid, operation, datatype):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
@@ -211,7 +211,7 @@ def respond_to_request(request, dsid, operation, data_type):
         elif operation == "filters":
             return filters(request, dsid, cursor)
         elif operation == "files":
-            return files(request, dsid, data_type, cursor)
+            return files(request, dsid, datatype, cursor)
         else:
             return JsonResponse(
                     {'error_message': f"'{operation}' is not a valid "
