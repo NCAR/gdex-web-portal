@@ -157,7 +157,7 @@ def filters(request, dsid, datatype, cursor):
     if len(response['filters']) == 0:
         return JsonResponse(
                 {'error_message': "API file discovery is not available for "
-                                  "data type '{datatype}'."},
+                                  f"data type '{datatype}'."},
                 status=400)
 
     if len(response['restrictions']) == 0:
