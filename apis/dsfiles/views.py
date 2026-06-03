@@ -66,6 +66,13 @@ def get_grml_filters(dsid, cursor, **kwargs):
             qparams.append(tuple(kwargs['parameters']))
             del filters['parameters']
 
+        if 'levels' in kwargs:
+            lvals = [int(e) for e in kwargs['levels']]
+            query += (" and cast((string_to_array(level_type_codes, ':'))[1] "
+                      "as integer) <= %s")
+            qparams.append(max(lvals))
+            del filters['levels']
+
         cursor.execute(query, tuple(qparams))
         res = cursor.fetchall()
         if len(res) == 0:
@@ -103,7 +110,8 @@ def get_grml_filters(dsid, cursor, **kwargs):
                 lbmp_set.add(e[5])
                 vals = uncompress_bitmap_values(e[5])
                 for val in vals:
-                    if val not in lev_fmts.keys():
+                    if (val not in lev_fmts.keys() and
+                            ('lvals' not in locals() or val in lvals)):
                         lev_fmts[val] = e[6]
 
             filters['valid_datetime_min'] = (
@@ -116,18 +124,19 @@ def get_grml_filters(dsid, cursor, **kwargs):
                     [{'name': name, 'code': code} for name, code in
                      param_names.items()])
 
-        lev_codes = [k for k in lev_fmts.keys()]
-        if len(lev_codes) == 1:
-            lev_codes.append(lev_codes[0])
+        if 'levels' in filters:
+            lev_codes = [k for k in lev_fmts.keys()]
+            if len(lev_codes) == 1:
+                lev_codes.append(lev_codes[0])
 
-        cursor.execute(
-                'select distinct map, type, value, code from "WGrML".levels '
-                "where code in %s", (tuple(lev_codes), ))
-        res = cursor.fetchall()
-        level_maps = {}
-        for e in res:
-            lev_name = decode_level(lev_fmts[e[3]], *e[0:3], level_maps)
-            filters['levels'].append({'name': lev_name, 'code': e[3]})
+            cursor.execute(
+                    'select distinct map, type, value, code from "WGrML".'
+                    "levels where code in %s", (tuple(lev_codes), ))
+            res = cursor.fetchall()
+            level_maps = {}
+            for e in res:
+                lev_name = decode_level(lev_fmts[e[3]], *e[0:3], level_maps)
+                filters['levels'].append({'name': lev_name, 'code': e[3]})
 
     except Exception:
         return JsonResponse({'error_message': "Server error."}, status=500)
@@ -150,6 +159,11 @@ def filters(request, dsid, datatype, cursor):
             response['restrictions']['parameters'] = (
                     [part for e in request.GET.getlist('parameters') for part
                      in e.split(",")])
+
+        if 'levels' in request.GET:
+            response['restrictions']['levels'] = (
+                    [part for e in request.GET.getlist('levels') for part in
+                     e.split(",")])
 
         response['filters'] = (
                 get_grml_filters(dsid, cursor, **response['restrictions']))
