@@ -22,7 +22,7 @@
     },
     {
       "name": "Data Files",
-      "description": "Filtered list of data files by categorical data type"
+      "description": "Filtered lists of data files by categorical data type"
     }
   ],
   "paths": {
