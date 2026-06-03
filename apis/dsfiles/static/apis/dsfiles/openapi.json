@@ -323,9 +323,45 @@
             }
           },
           "files": {
-            "type": "array",
-            "items": {
-              "type": "string"
+            "type": "object",
+            "description": "Data file information",
+            "properties": {
+              "https_base": {
+                "type": "string"
+              },
+              "ncar_hpc_base": {
+                "type": "string"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "description": "Metadata for result pagination",
+            "properties": {
+              "total_count": {
+                "type": "integer"
+              },
+              "num_pages": {
+                "type": "integer"
+              },
+              "num_per_page": {
+                "type": "integer"
+              },
+              "current_page": {
+                "type": "integer"
+              },
+              "next_page": {
+                "type": "integer"
+              },
+              "result_ID" : {
+                "type": "string"
+              }
             }
           }
         }
