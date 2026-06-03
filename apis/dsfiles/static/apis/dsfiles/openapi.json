@@ -14,7 +14,7 @@
   "tags": [
     {
       "name": "Data Types",
-      "description": "Categorical data types in the GDEX archive"
+      "description": "Categorical data types in the GDEX archive, to be used in the paths for filter and file queries"
     },
     {
       "name": "Filters",
