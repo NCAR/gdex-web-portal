@@ -11,9 +11,26 @@
       "description": "(JSON responses)"
     }
   ],
+  "tags": [
+    {
+      "name": "Data Types",
+      "description": "Categorical data types in the GDEX archive"
+    },
+    {
+      "name": "Filters",
+      "description": "Filters by categorical data type that can be used to limit a query for data files"
+    },
+    {
+      "name": "Data Files",
+      "description": "Filtered list of data files by categorical data type"
+    }
+  ],
   "paths": {
     "/{DSID}/datatypes": {
       "get": {
+        "tags": [
+          "Data Types"
+        ],
         "summary": "Get dataset-specific data types.",
         "description": "This operation returns a list of data types that exist in the specified dataset using its GDEX DSID.",
         "operationId": "getDatasetDatatypes",
@@ -41,6 +58,9 @@
     },
     "/{DSID}/filters": {
       "get": {
+        "tags": [
+          "Filters"
+        ],
         "summary": "Get dataset-specific filters.",
         "description": "This operation returns the filters that are available for the specified dataset using its GDEX DSID.",
         "operationId": "getDatasetFilters",
@@ -95,6 +115,9 @@
     },
     "/{DSID}/files/{DATATYPE}": {
       "get": {
+        "tags": [
+          "Data Files"
+        ],
         "summary": "Get a list of data files.",
         "description": "This operation returns a list of data files for the specified dataset, optionally restricted by user-specified filters.",
         "operationId": "getDatasetFiles",
