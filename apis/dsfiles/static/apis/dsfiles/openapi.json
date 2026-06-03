@@ -12,6 +12,33 @@
     }
   ],
   "paths": {
+    "/{DSID}/datatypes": {
+      "get": {
+        "summary": "Get dataset-specific data types.",
+        "description": "This operation returns a list of data types that exist in the specified dataset using its GDEX DSID.",
+        "operationId": "getDatasetDatatypes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetDatatypesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    },
     "/{DSID}/filters": {
       "get": {
         "summary": "Get dataset-specific filters.",
@@ -203,6 +230,20 @@
       }
     },
     "schema_defs": {
+      "DatasetDatatypesResponse": {
+        "type": "object",
+        "properties": {
+          "DSID": {
+            "type": "string"
+          },
+          "datatypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "DatasetFiltersResponse": {
         "type": "object",
         "properties": {
@@ -218,6 +259,24 @@
                 "description": "List of parameters to which filters should be limited",
                 "items": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "datatypes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "List of data types in the specified dataset",
+              "properties": {
+                "DATATYPE": {
+                  "type": "string"
+                },
+                "filters": {
+                  "type": "object",
+                  "description": "List of data file filters for this DATATYPE",
+                  "properties": {
+                  }
                 }
               }
             }
