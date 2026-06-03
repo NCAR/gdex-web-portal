@@ -158,7 +158,7 @@ def filters(request, dsid, datatype, cursor):
         return JsonResponse(
                 {'error_message': "API file discovery is not available for "
                                   f"data type '{datatype}'. See the "
-                                  "{DSID}/datatypes endpoint for the valid "
+                                  "/{DSID}/datatypes endpoint for the valid "
                                   "data types for this dataset."},
                 status=400)
 
@@ -197,7 +197,7 @@ def files(request, dsid, datatype, cursor):
     return JsonResponse(
             {'error_message': "API file discovery is not available for "
                               f"data type '{datatype}'. See the "
-                              "{DSID}/datatypes endpoint for the valid data "
+                              "/{DSID}/datatypes endpoint for the valid data "
                               "types for this dataset."},
             status=400)
 
