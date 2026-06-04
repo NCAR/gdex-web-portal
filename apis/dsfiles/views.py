@@ -66,6 +66,11 @@ def get_grml_filters(dsid, cursor, **kwargs):
             qparams.append(tuple(kwargs['parameters']))
             del filters['parameters']
 
+        if 'products' in kwargs:
+            query += " and s.time_range_code in %s"
+            qparams.append(tuple([int(e) for e in kwargs['products']]))
+            del filters['products']
+
         if 'levels' in kwargs:
             lvals = [int(e) for e in kwargs['levels']]
             query += (" and cast((string_to_array(level_type_codes, ':'))[1] "
@@ -96,9 +101,10 @@ def get_grml_filters(dsid, cursor, **kwargs):
                     else:
                         param_names[param_name] += "," + e[0]
 
-            if e[1] not in tr_set:
-                tr_set.add(e[1])
-                filters['products'].append({'name': e[2], 'code': e[1]})
+            if 'products' not in kwargs:
+                if e[1] not in tr_set:
+                    tr_set.add(e[1])
+                    filters['products'].append({'name': e[2], 'code': e[1]})
 
             if e[3] not in gd_set:
                 gd_set.add(e[3])
@@ -155,12 +161,17 @@ def filters(request, dsid, datatype, cursor):
                 'restrictions': {},
                 'filters': {}}
     if datatype == "gridded":
-        if 'parameters' in request.GET:
+        if 'parameters' in request.GET and len(request.GET['parameters']) > 0:
             response['restrictions']['parameters'] = (
                     [part for e in request.GET.getlist('parameters') for part
                      in e.split(",")])
 
-        if 'levels' in request.GET:
+        if 'products' in request.GET and len(request.GET['products']) > 0:
+            response['restrictions']['products'] = (
+                    [part for e in request.GET.getlist('products') for part in
+                     e.split(",")])
+
+        if 'levels' in request.GET and len(request.GET['levels']) > 0:
             response['restrictions']['levels'] = (
                     [part for e in request.GET.getlist('levels') for part in
                      e.split(",")])
