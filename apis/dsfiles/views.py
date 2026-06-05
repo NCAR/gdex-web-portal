@@ -92,11 +92,13 @@ def parse_gridded_filters_request(request, dsid, cursor):
                                 request.GET['valid_datetime_min']):
                 return ({}, {}, "Invalid format for 'valid_datetime_min'", 400)
 
+            restrictions['valid_datetime_min'] = (
+                    request.GET['valid_datetime_min'])
             query += " and s.end_date >= %s"
             qparams.append(int(request.GET['valid_datetime_min']
                                .replace("-", "").replace(":", "")
                                .replace(" ", "")))
-            del restrictions['valid_datetime_min']
+            del filters['valid_datetime_min']
 
         if ('valid_datetime_max' in request.GET and
                 len(request.GET['valid_datetime_max']) > 0):
@@ -104,11 +106,13 @@ def parse_gridded_filters_request(request, dsid, cursor):
                                 request.GET['valid_datetime_max']):
                 return ({}, {}, "Invalid format for 'valid_datetime_max'", 400)
 
+            restrictions['valid_datetime_max'] = (
+                    request.GET['valid_datetime_max'])
             query += " and s.start_date <= %s"
             qparams.append(int(request.GET['valid_datetime_max']
                                .replace("-", "").replace(":", "")
                                .replace(" ", "")))
-            del restrictions['valid_datetime_max']
+            del filters['valid_datetime_max']
 
         if 'request_parameters' in locals():
             query += " and concat(s.format_code, '!', s.parameter) in %s"
