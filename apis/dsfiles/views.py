@@ -270,6 +270,11 @@ def filters(request, dsid, datatype, cursor):
 
 
 def files(request, dsid, datatype, cursor):
+    response = {'DSID': dsid, 'datatype': datatype, 'restrictions': {},
+                'files': {
+                    'https_base': settings.RDA_DATA_BASE_URL,
+                    'ncar_hpc_base': settings.GDEX_CANONICAL_DATA_PATH},
+                'pagination': {}}
     services = service_list(dsid)
     if datatype == "gridded" and "GrML" in services:
         grml_req = HttpRequest()
@@ -323,7 +328,23 @@ def files(request, dsid, datatype, cursor):
                      in e.split(",")])
 
         grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
-        return JsonResponse({'files': len(grml['fcodes'])})
+        response['pagination']['total_count'] = len(grml['fcodes'])
+        response['pagination']['num_pages'] = (
+                response['pagination']['total_count'] // 1000 + 1)
+        response['pagination']['num_per_page'] = (
+                min(response['pagination']['total_count'], 1000))
+        if response['pagination']['num_per_page'] <= 1000:
+            response['pagination']['current_page'] = 1
+            response['pagination']['next_page'] = None
+            response['pagination']['result_ID'] = None
+            cursor.execute(
+                    f'select id from "WGrML".{dsid}_webfiles2 where code in '
+                    "%s order by id", (tuple(grml['fcodes']), ))
+            response['files']['paths'] = [e[0] for e in cursor.fetchall()]
+        else:
+            pass
+
+        return JsonResponse(response, status=200)
 
     return JsonResponse(
             {'error_message': "API file discovery is not available for "
