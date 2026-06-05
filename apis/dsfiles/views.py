@@ -202,10 +202,13 @@ def parse_gridded_filters_request(request, dsid, cursor):
                             ('lvals' not in locals() or val in lvals)):
                         lev_fmts[val] = e[6]
 
-            filters['valid_datetime_min'] = (
-                    min(e[7], filters['valid_datetime_min']))
-            filters['valid_datetime_max'] = (
-                    max(e[8], filters['valid_datetime_max']))
+            if 'valid_datetime_min' in filters:
+                filters['valid_datetime_min'] = (
+                        min(e[7], filters['valid_datetime_min']))
+
+            if 'valid_datetime_max' in filters:
+                filters['valid_datetime_max'] = (
+                        max(e[8], filters['valid_datetime_max']))
 
         param_list = [{'name': name, 'code': code} for name, code in
                       param_names.items()]
@@ -230,17 +233,20 @@ def parse_gridded_filters_request(request, dsid, cursor):
             else:
                 filters['levels'].append({'name': lev_name, 'code': e[3]})
 
+        if 'valid_datetime_min' in filters:
+            s = str(filters['valid_datetime_min'])
+            filters['valid_datetime_min'] = (
+                    f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
+
+        if 'valid_datetime_max' in filters:
+            s = str(filters['valid_datetime_max'])
+            filters['valid_datetime_max'] = (
+                    f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
+
+        return (restrictions, filters, "", 200)
     except Exception as err:
         print(f"DSFILES API: parse_gridded_filters_request(): '{err}'")
         return ({}, {}, "Server error.", 500)
-
-    s = str(filters['valid_datetime_min'])
-    filters['valid_datetime_min'] = (
-            f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
-    s = str(filters['valid_datetime_max'])
-    filters['valid_datetime_max'] = (
-            f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
-    return (restrictions, filters, "", 200)
 
 
 def filters(request, dsid, datatype, cursor):
