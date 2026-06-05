@@ -277,6 +277,13 @@ def files(request, dsid, datatype, cursor):
         grml_req.POST = QueryDict(mutable=True)
         grml_req.POST.setlist('parameter', request.GET.getlist('parameters'))
         if 'valid_datetime_min' in request.GET:
+            if not re.fullmatch(gridded_date_re,
+                                request.GET['valid_datetime_min']):
+                return JsonResponse(
+                        {'error_message':
+                         "Invalid format for 'valid_datetime_min'"},
+                        status=400)
+
             parts = request.GET['valid_datetime_min'].split()
             grml_req.POST['startDate'] = parts[0]
             grml_req.POST['startTime'] = parts[1]
@@ -285,6 +292,13 @@ def files(request, dsid, datatype, cursor):
             grml_req.POST['startTime'] = "00:00"
 
         if 'valid_datetime_max' in request.GET:
+            if not re.fullmatch(gridded_date_re,
+                                request.GET['valid_datetime_max']):
+                return JsonResponse(
+                        {'error_message':
+                         "Invalid format for 'valid_datetime_max'"},
+                        status=400)
+
             parts = request.GET['valid_datetime_max'].split()
             grml_req.POST['endDate'] = parts[0]
             grml_req.POST['endTime'] = parts[1]
@@ -305,8 +319,8 @@ def files(request, dsid, datatype, cursor):
 
         if 'levels' in request.GET:
             kwargs['lcodes'] = (
-                    [part for e in request.GET.getlist('levels') for part in
-                     e.split(",")])
+                    [int(part) for e in request.GET.getlist('levels') for part
+                     in e.split(",")])
 
         grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
         return JsonResponse({'files': len(grml['fcodes'])})
