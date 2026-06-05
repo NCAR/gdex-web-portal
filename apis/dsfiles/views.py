@@ -292,7 +292,23 @@ def files(request, dsid, datatype, cursor):
             grml_req.POST['endDate'] = ""
             grml_req.POST['endTime'] = ""
 
-        grml = parse_grml_query(cursor, dsid, "weblist", grml_req)
+        kwargs = {}
+        if 'products' in request.GET:
+            kwargs['pcodes'] = (
+                    [part for e in request.GET.getlist('products') for part in
+                     e.split(",")])
+
+        if 'grids' in request.GET:
+            kwargs['gcodes'] = (
+                    [part for e in request.GET.getlist('grids') for part in
+                     e.split(",")])
+
+        if 'levels' in request.GET:
+            kwargs['lcodes'] = (
+                    [part for e in request.GET.getlist('levels') for part in
+                     e.split(",")])
+
+        grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
         return JsonResponse({'files': len(grml['fcodes'])})
 
     return JsonResponse(
