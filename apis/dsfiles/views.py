@@ -230,7 +230,8 @@ def parse_gridded_filters_request(request, dsid, cursor):
             else:
                 filters['levels'].append({'name': lev_name, 'code': e[3]})
 
-    except Exception:
+    except Exception as err:
+        print(f"DSFILES API: parse_gridded_filters_request(): '{err}'")
         return ({}, {}, "Server error.", 500)
 
     s = str(filters['valid_datetime_min'])
