@@ -1,4 +1,6 @@
+import copy
 import psycopg2
+import re
 
 from django.conf import settings
 from django.http import HttpRequest, JsonResponse, QueryDict
@@ -16,6 +18,8 @@ datatypes_map = {
     'ObML': "observation",
     'SatML': "satellite",
 }
+
+gridded_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}"
 
 
 def swagger(request, output=None):
@@ -43,14 +47,35 @@ def datatypes(dsid, cursor):
     return JsonResponse(response)
 
 
-def get_grml_filters(dsid, cursor, **kwargs):
+def parse_gridded_filters_request(request, dsid, cursor):
     try:
-        filters = {'valid_datetime_min': 999999999999,
-                   'valid_datetime_max': 0,
-                   'parameters': [],
-                   'products': [],
-                   'grids': [],
-                   'levels': []}
+        if 'parameters' in request.GET and len(request.GET['parameters']) > 0:
+            request_parameters = (
+                    [part for e in request.GET.getlist('parameters') for part
+                     in e.split(",")])
+
+        if 'products' in request.GET and len(request.GET['products']) > 0:
+            request_products = (
+                    [part for e in request.GET.getlist('products') for part in
+                     e.split(",")])
+
+        if 'grids' in request.GET and len(request.GET['grids']) > 0:
+            request_grids = (
+                    [part for e in request.GET.getlist('grids') for part in
+                     e.split(",")])
+
+        if 'levels' in request.GET and len(request.GET['levels']) > 0:
+            request_levels = (
+                    [part for e in request.GET.getlist('levels') for part in
+                     e.split(",")])
+
+        restrictions = {'valid_datetime_min': 999999999999,
+                        'valid_datetime_max': 0,
+                        'parameters': [],
+                        'products': [],
+                        'grids': [],
+                        'levels': []}
+        filters = copy.deepcopy(restrictions)
         query = ("select concat(s.format_code, '!', s.parameter), s."
                  "time_range_code, t.time_range, s.grid_definition_code, "
                  "concat(g.definition, '!', g.def_params), s."
@@ -61,27 +86,74 @@ def get_grml_filters(dsid, cursor, **kwargs):
                  'left join "WGrML".formats as f on f.code = s.format_code '
                  "where s.dsid = %s")
         qparams = [dsid]
-        if 'parameters' in kwargs:
+        if ('valid_datetime_min' in request.GET and
+                len(request.GET['valid_datetime_min']) > 0):
+            if not re.fullmatch(gridded_date_re,
+                                request.GET['valid_datetime_min']):
+                return ({}, {}, "Invalid format for 'valid_datetime_min'", 400)
+
+            query += " and s.end_date >= %s"
+            qparams.append(int(request.GET['valid_datetime_min']
+                               .replace("-", "").replace(":", "")
+                               .replace(" ", "")))
+            del restrictions['valid_datetime_min']
+
+        if ('valid_datetime_max' in request.GET and
+                len(request.GET['valid_datetime_max']) > 0):
+            if not re.fullmatch(gridded_date_re,
+                                request.GET['valid_datetime_max']):
+                return ({}, {}, "Invalid format for 'valid_datetime_max'", 400)
+
+            query += " and s.start_date <= %s"
+            qparams.append(int(request.GET['valid_datetime_max']
+                               .replace("-", "").replace(":", "")
+                               .replace(" ", "")))
+            del restrictions['valid_datetime_max']
+
+        if 'request_parameters' in locals():
             query += " and concat(s.format_code, '!', s.parameter) in %s"
-            qparams.append(tuple(kwargs['parameters']))
+            qparams.append(tuple(request_parameters))
             del filters['parameters']
+        else:
+            del restrictions['parameters']
 
-        if 'products' in kwargs:
+        if 'request_products' in locals():
             query += " and s.time_range_code in %s"
-            qparams.append(tuple([int(e) for e in kwargs['products']]))
+            qparams.append(tuple([int(e) for e in request_products]))
             del filters['products']
+        else:
+            del restrictions['products']
 
-        if 'levels' in kwargs:
-            lvals = [int(e) for e in kwargs['levels']]
+        if 'request_grids' in locals():
+            query += " and s.grid_definition_code in %s"
+            qparams.append(tuple([int(e) for e in request_grids]))
+            del filters['grids']
+        else:
+            del restrictions['grids']
+
+        if 'request_levels' in locals():
+            lvals = [int(e) for e in request_levels]
             query += (" and cast((string_to_array(level_type_codes, ':'))[1] "
                       "as integer) <= %s")
             qparams.append(max(lvals))
             del filters['levels']
+        else:
+            del restrictions['levels']
 
         cursor.execute(query, tuple(qparams))
         res = cursor.fetchall()
         if len(res) == 0:
-            return {}
+            if len(request.GET) > 0:
+                err = ("No filters were identified. Perhaps an invalid query "
+                       "parameter was specified. See the "
+                       "'/{DSID}/filters/gridded' endpoint for valid "
+                       "parameter values for this dataset.")
+                return ({}, {}, err, 400)
+
+            err = ("API file discovery is not available for data type "
+                   "'gridded'. See the '/{{DSID}}/datatypes' endpoint for the "
+                   "valid data types for this dataset.")
+            return ({}, {}, err, 400)
 
         param_set = set()
         param_names = {}
@@ -91,26 +163,32 @@ def get_grml_filters(dsid, cursor, **kwargs):
         lbmp_set = set()
         lev_fmts = {}
         for e in res:
-            if 'parameters' not in kwargs:
-                if e[0] not in param_set:
-                    param_set.add(e[0])
-                    fmt, param = e[0].split("!")
-                    param_name = decode_parameter(e[6], param, param_maps)
-                    if param_name not in param_names:
-                        param_names[param_name] = e[0]
-                    else:
-                        param_names[param_name] += "," + e[0]
+            if e[0] not in param_set:
+                param_set.add(e[0])
+                fmt, param = e[0].split("!")
+                param_name = decode_parameter(e[6], param, param_maps)
+                if param_name not in param_names:
+                    param_names[param_name] = e[0]
+                else:
+                    param_names[param_name] += "," + e[0]
 
-            if 'products' not in kwargs:
-                if e[1] not in tr_set:
-                    tr_set.add(e[1])
+            if e[1] not in tr_set:
+                tr_set.add(e[1])
+                if 'request_products' in locals():
+                    restrictions['products'].append(
+                            {'name': e[2], 'code': e[1]})
+                else:
                     filters['products'].append({'name': e[2], 'code': e[1]})
 
             if e[3] not in gd_set:
                 gd_set.add(e[3])
                 grid_name = convert_grid_definition(e[4].split("!"),
                                                     output="text")
-                filters['grids'].append({'name': grid_name, 'code': e[3]})
+                if 'request_grids' in locals():
+                    restrictions['grids'].append(
+                            {'name': grid_name, 'code': e[3]})
+                else:
+                    filters['grids'].append({'name': grid_name, 'code': e[3]})
 
             if e[5] not in lbmp_set:
                 lbmp_set.add(e[5])
@@ -125,27 +203,31 @@ def get_grml_filters(dsid, cursor, **kwargs):
             filters['valid_datetime_max'] = (
                     max(e[8], filters['valid_datetime_max']))
 
-        if len(param_names) > 0:
-            filters['parameters'] = (
-                    [{'name': name, 'code': code} for name, code in
-                     param_names.items()])
+        param_list = [{'name': name, 'code': code} for name, code in
+                      param_names.items()]
+        if 'request_parameters' in locals():
+            restrictions['parameters'] = param_list
+        else:
+            filters['parameters'] = param_list
 
-        if 'levels' in filters:
-            lev_codes = [k for k in lev_fmts.keys()]
-            if len(lev_codes) == 1:
-                lev_codes.append(lev_codes[0])
+        lev_codes = [k for k in lev_fmts.keys()]
+        if len(lev_codes) == 1:
+            lev_codes.append(lev_codes[0])
 
-            cursor.execute(
-                    'select distinct map, type, value, code from "WGrML".'
-                    "levels where code in %s", (tuple(lev_codes), ))
-            res = cursor.fetchall()
-            level_maps = {}
-            for e in res:
-                lev_name = decode_level(lev_fmts[e[3]], *e[0:3], level_maps)
+        cursor.execute(
+                'select distinct map, type, value, code from "WGrML".'
+                "levels where code in %s", (tuple(lev_codes), ))
+        res = cursor.fetchall()
+        level_maps = {}
+        for e in res:
+            lev_name = decode_level(lev_fmts[e[3]], *e[0:3], level_maps)
+            if 'request_levels' in locals():
+                restrictions['levels'].append({'name': lev_name, 'code': e[3]})
+            else:
                 filters['levels'].append({'name': lev_name, 'code': e[3]})
 
     except Exception:
-        return JsonResponse({'error_message': "Server error."}, status=500)
+        return ({}, {}, "Server error.", 500)
 
     s = str(filters['valid_datetime_min'])
     filters['valid_datetime_min'] = (
@@ -153,44 +235,27 @@ def get_grml_filters(dsid, cursor, **kwargs):
     s = str(filters['valid_datetime_max'])
     filters['valid_datetime_max'] = (
             f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
-    return filters
+    return (restrictions, filters, "", 200)
 
 
 def filters(request, dsid, datatype, cursor):
-    response = {'DSID': dsid,
-                'restrictions': {},
-                'filters': {}}
+    response = {'DSID': dsid}
     if datatype == "gridded":
-        if 'parameters' in request.GET and len(request.GET['parameters']) > 0:
-            response['restrictions']['parameters'] = (
-                    [part for e in request.GET.getlist('parameters') for part
-                     in e.split(",")])
+        restrictions, filters, err, status = (
+                parse_gridded_filters_request(request, dsid, cursor))
+        if len(err) > 0:
+            return JsonResponse({'error_message': err}, status=status)
 
-        if 'products' in request.GET and len(request.GET['products']) > 0:
-            response['restrictions']['products'] = (
-                    [part for e in request.GET.getlist('products') for part in
-                     e.split(",")])
+        if len(restrictions) > 0:
+            response['restrictions'] = restrictions
 
-        if 'levels' in request.GET and len(request.GET['levels']) > 0:
-            response['restrictions']['levels'] = (
-                    [part for e in request.GET.getlist('levels') for part in
-                     e.split(",")])
+        response['filters'] = filters
+        return JsonResponse(response)
 
-        response['filters'] = (
-                get_grml_filters(dsid, cursor, **response['restrictions']))
-
-    if len(response['filters']) == 0:
-        return JsonResponse(
-                {'error_message': "API file discovery is not available for "
-                                  f"data type '{datatype}'. See the "
-                                  "'/{DSID}/datatypes' endpoint for the valid "
-                                  "data types for this dataset."},
-                status=400)
-
-    if len(response['restrictions']) == 0:
-        del response['restrictions']
-
-    return JsonResponse(response)
+    msg = (f"API file discovery is not available for data type '{datatype}'. "
+           "See the '/{{DSID}}/datatypes' endpoint for the valid data types "
+           "for this dataset.")
+    return JsonResponse({'error_message': msg}, status=400)
 
 
 def files(request, dsid, datatype, cursor):
