@@ -21,6 +21,8 @@ datatypes_map = {
 
 gridded_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}"
 
+PAGE_SIZE = 1000
+
 
 def swagger(request, output=None):
     return render(request, "dsfiles/swagger.html", {})
@@ -330,10 +332,10 @@ def files(request, dsid, datatype, cursor):
         grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
         response['pagination']['total_count'] = len(grml['fcodes'])
         response['pagination']['num_pages'] = (
-                response['pagination']['total_count'] // 1000 + 1)
+                response['pagination']['total_count'] // PAGE_SIZE + 1)
         response['pagination']['num_per_page'] = (
-                min(response['pagination']['total_count'], 1000))
-        if response['pagination']['num_per_page'] <= 1000:
+                min(response['pagination']['total_count'], PAGE_SIZE))
+        if response['pagination']['num_per_page'] <= PAGE_SIZE:
             response['pagination']['current_page'] = 1
             response['pagination']['next_page'] = None
             response['pagination']['result_ID'] = None
