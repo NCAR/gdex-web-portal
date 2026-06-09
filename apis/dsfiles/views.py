@@ -353,19 +353,23 @@ def files(request, dsid, datatype, db_conn):
                     "%s order by id", (tuple(grml['fcodes']), ))
             response['files']['paths'] = [e[0] for e in cursor.fetchall()]
         else:
-            request_ID = (
-                    request.GET['request_ID'] if 'request_ID' in request.GET
+            response['pagination']['result_ID'] = (
+                    request.GET['result_ID'] if 'result_ID' in request.GET
                     else strand(20))
-            if 'request_ID' not in request.GET:
+            if 'result_ID' not in request.GET:
                 now = datetime.now(pytz.utc)
                 expires = now + timedelta(hours=3)
                 cursor.execute(
                         "insert into metautil.dsfiles_api_ids values (%s, %s, "
                         "%s, %s, %s)",
-                        (request_ID,
+                        (response['pagination']['result_ID'],
                          expires.astimezone(tz.gettz("US/Mountain")),
                          len(file_codes), schema_name, dsid))
                 db_conn.commit()
+                response['pagination']['current_page'] = 1
+                response['pagination']['next_page'] = 2
+            else:
+                pass
 
         return JsonResponse(response, status=200)
 
