@@ -331,7 +331,10 @@ def files(request, dsid, datatype, cursor):
                      in e.split(",")])
 
         grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
-        response['pagination']['total_count'] = len(grml['fcodes'])
+        file_codes = grml['fcodes']
+
+    if 'file_codes' in locals():
+        response['pagination']['total_count'] = len(file_codes)
         response['pagination']['num_pages'] = (
                 response['pagination']['total_count'] // PAGE_SIZE + 1)
         response['pagination']['num_per_page'] = (
