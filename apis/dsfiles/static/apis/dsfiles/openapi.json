@@ -414,10 +414,10 @@
                 "type": "integer"
               },
               "next_page": {
-                "type": "integer"
+                "type": ["integer", "null"]
               },
               "result_ID" : {
-                "type": "string"
+                "type": ["string", "null"]
               }
             }
           }
