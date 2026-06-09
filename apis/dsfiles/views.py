@@ -10,6 +10,7 @@ from facbrowse.utils import service_list
 from libpkg.codemaps import decode_level, decode_parameter
 from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
+from libpkg.strutils import strand
 
 
 datatypes_map = {
@@ -344,7 +345,11 @@ def files(request, dsid, datatype, cursor):
                     "%s order by id", (tuple(grml['fcodes']), ))
             response['files']['paths'] = [e[0] for e in cursor.fetchall()]
         else:
-            pass
+            request_ID = (
+                    request.GET['request_ID'] if 'request_ID' in request.GET
+                    else strand(20))
+            if 'request_ID' not in request.GET:
+                pass
 
         return JsonResponse(response, status=200)
 
