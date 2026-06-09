@@ -1,7 +1,10 @@
 import copy
 import psycopg2
+import pytz
 import re
 
+from datetime import datetime, timedelta
+from dateutil import tz
 from django.conf import settings
 from django.http import HttpRequest, JsonResponse, QueryDict
 from django.shortcuts import render
@@ -272,13 +275,14 @@ def filters(request, dsid, datatype, cursor):
     return JsonResponse({'error_message': msg}, status=400)
 
 
-def files(request, dsid, datatype, cursor):
+def files(request, dsid, datatype, db_conn):
     response = {'DSID': dsid, 'datatype': datatype, 'restrictions': {},
                 'files': {
                     'https_base': settings.RDA_DATA_BASE_URL,
                     'ncar_hpc_base': settings.GDEX_CANONICAL_DATA_PATH},
                 'pagination': {}}
     services = service_list(dsid)
+    cursor = db_conn.cursor()
     if datatype == "gridded" and "GrML" in services:
         grml_req = HttpRequest()
         grml_req.method = "POST"
@@ -332,6 +336,7 @@ def files(request, dsid, datatype, cursor):
 
         grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
         file_codes = grml['fcodes']
+        schema_name = "WGrML"
 
     if 'file_codes' in locals():
         response['pagination']['total_count'] = len(file_codes)
@@ -352,7 +357,15 @@ def files(request, dsid, datatype, cursor):
                     request.GET['request_ID'] if 'request_ID' in request.GET
                     else strand(20))
             if 'request_ID' not in request.GET:
-                pass
+                now = datetime.now(pytz.utc)
+                expires = now + timedelta(hours=3)
+                cursor.execute(
+                        "insert into metautil.dsfiles_api_ids values (%s, %s, "
+                        "%s, %s, %s)",
+                        (request_ID,
+                         expires.astimezone(tz.gettz("US/Mountain")),
+                         len(file_codes), schema_name, dsid))
+                db_conn.commit()
 
         return JsonResponse(response, status=200)
 
@@ -379,7 +392,7 @@ def respond_to_request(request, dsid, operation, datatype=None):
         elif operation == "filters":
             return filters(request, dsid, datatype, cursor)
         elif operation == "files":
-            return files(request, dsid, datatype, cursor)
+            return files(request, dsid, datatype, conn)
         else:
             return JsonResponse(
                     {'error_message': f"'{operation}' is not a valid "
