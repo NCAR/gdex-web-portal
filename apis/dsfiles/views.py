@@ -344,7 +344,7 @@ def files(request, dsid, datatype, db_conn):
                 response['pagination']['total_count'] // PAGE_SIZE + 1)
         response['pagination']['num_per_page'] = (
                 min(response['pagination']['total_count'], PAGE_SIZE))
-        if response['pagination']['num_per_page'] <= PAGE_SIZE:
+        if response['pagination']['total_count'] <= PAGE_SIZE:
             response['pagination']['current_page'] = 1
             response['pagination']['next_page'] = None
             response['pagination']['result_ID'] = None
