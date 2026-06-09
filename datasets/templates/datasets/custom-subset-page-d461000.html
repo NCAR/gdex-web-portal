@@ -1,0 +1,362 @@
+{% load wagtailcore_tags static %}
+
+<link rel="stylesheet" href="{% static 'datasets/css/subset.css' %}">
+<link rel="stylesheet" href="{% static 'datasets/css/gmap.css' %}">
+
+{{ gmap_api_key|safe|json_script:"gmap_api_key" }}
+{{ gmap_api_url|safe|json_script:"gmap_api_url" }}
+
+<script id="gmaps3_script" type="text/javascript" src="{% static 'datasets/js/gmaps3.js' %}"></script>
+<script id="gmapkey3_script" type="text/javascript" src="{% static 'datasets/js/gmapkey3.js' %}"></script>
+<script id="drawboxmap_script" type="text/javascript" src="{% static 'js/gmap_drawbox.js' %}"></script>
+
+<script id="adp_subset_script" type="text/javascript" src="{% static 'datasets/js/ADP_subset.js' %}"></script>
+<script id="custom_subset_script" type="text/javascript" src="{% static 'datasets/js/custom_subset.js' %}"></script>
+
+<div id="subset-form-div">
+
+   {% comment %}
+   Summary description of the subset request form
+   {% endcomment %}
+
+   <h2>Dataset {{ subset.dsid }} - Submit a Subset Data Request</h2>
+   <div class="p-2 bg-light">
+      <p class="mb-0">This form allows a user to request a temporal and spatial subset from the following dataset:
+         <ul>
+            <li>{{ subset.dstitle }}</li>
+            <li>Valid date range: <span class="fw-bold">{{ subset.date_start }}</span>&nbsp;to&nbsp;<span class="fw-bold">{{ subset.date_end }}</span></li>
+         </ul>
+         Also included is the option to select data by record type and individual parameters.
+         Once this form is completed and submitted you will be notified via email when the
+         data are ready for download. The output data is converted from BUFR format to an
+         RDA flat ASCII format.
+      </p>
+   </div>
+
+   {% comment %}
+   Begin subset request form
+   {% endcomment %}
+
+   <div id="request-form" class="component webform yellow-orange-border p-2 mb-4">
+
+   <form id="subset-form" name="form">
+   <input type="hidden" name="dsid" value="{{ subset.dsid }}">
+   <input type="hidden" name="gindex" value="{{ subset.gindex|default:'1' }}">
+   <input type="hidden" name="rtype" value="S">
+   <input type="hidden" id="minDate" value="{{ subset.date_start }}">
+   <input type="hidden" id="maxDate" value="{{ subset.date_end }}">
+   <input type="hidden" name="mapdisplayed" value=0>
+   <input type="hidden" name="latlondisplayed" value=0>
+   <input type="hidden" name="stationdisplayed" value=0>
+   <input type="hidden" name="tlat" value="">
+   <input type="hidden" name="blat" value="">
+   <input type="hidden" name="llon" value="">
+   <input type="hidden" name="rlon" value="">
+
+<!-- Temporal range selection -->
+<div class="py-2" id="dateSelect">
+   <h4 class="py-1">
+      <i class="fa-solid fa-calendar-days"></i>
+      Temporal Range
+   </h4>
+   <div class="mb-1">
+      Select the start and end dates for your data request. Please limit your request
+      to one year to avoid processing delays caused by the large volume of data per year.
+   </div>
+
+   <fieldset class="py-2">
+      <div class="form-group row py-1">
+         <label class="form-label" for="startDate">
+            Start Date
+         </label>
+         <input type="text" value="{{ subset.date_start }}" id="startDate" name="startDate" size="10" maxlength="10" placeholder="YYYY-MM-DD" aria-describedby="startDateHelp">
+         <small class="form-text text-muted" id="startDateHelp">
+            (Format: YYYY-MM-DD)
+         </small>
+      </div>
+      <div class="form-group row py-1">
+         <label class="form-label" for="endDate">
+            End Date
+         </label>
+         <input type="text" value="{{ subset.date_end }}" id="endDate" name="endDate" size="10" maxlength="10" placeholder="YYYY-MM-DD" aria-describedby="endDateHelp">
+         <small class="form-text text-muted" id="endDateHelp">
+            (Format: YYYY-MM-DD)
+         </small>
+      </div>
+      <div class="mt-2">
+         <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear dates" id="cleardates" onClick="clearTemporalRange()">
+      </div>
+   </fieldset>
+</div>
+
+<hr class="my-1">
+
+<!-- Spatial range selection -->
+
+<div class="py-2" id="regionSelect">
+   <h4 class="py-1">
+      <i class="fa-solid fa-globe"></i>
+      Spatial Range
+   </h4>
+   <div class="mb-1">
+      Select a spatial subsetting option for your data request.
+   </div>
+   <select class="custom-select" id="gridSelection" name="gridSelection" onchange="displayGridSelection(document.form.gridSelection.value)" required>
+      <option value="-1" disabled selected>&nbsp;</option>
+      <option value="0" id="mapOption">Select latitude/longitude region via map</option>
+      <option value="1" id="stationOption">Select location by station ID</option>
+   </select>
+</div>
+
+<!-- Spatial range selection via Google map -->
+
+<div class="py-1" style="display: none" id="mapselect">
+   {% include "datasets/google-map.html" %}
+</div>
+
+<!-- Hidden placeholder required by ADP_subset.js displayGoogleMap() -->
+<div id="manselect" style="display: none"></div>
+
+<!-- Select location by station ID -->
+
+<div class="py-2" style="display: none" id="stationSelect">
+   <div class="pb-2">
+      Please enter one or more station identifiers to retain from the dataset,
+      given as the 5-digit WMO index number (e.g., enter &quot;72565&quot; to
+      select Denver International Airport). A blank entry will retain all stations
+      in the database. A maximum of 20 stations may be entered.
+      Click <a href="https://oscar.wmo.int/surface/#/" target="_blank">here</a>
+      to search for station information in the WMO Oscar/Surface WIGOS metadata repository.
+   </div>
+   <div class="row g-2" id="stationTable">
+      <div class="col-6 col-md-3">
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 1</span><input type="text" class="form-control stns" name="station0" id="station0" size="5" maxlength="5" tabindex="1"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 2</span><input type="text" class="form-control stns" name="station1" id="station1" size="5" maxlength="5" tabindex="2"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 3</span><input type="text" class="form-control stns" name="station2" id="station2" size="5" maxlength="5" tabindex="3"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 4</span><input type="text" class="form-control stns" name="station3" id="station3" size="5" maxlength="5" tabindex="4"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 5</span><input type="text" class="form-control stns" name="station4" id="station4" size="5" maxlength="5" tabindex="5"></div>
+      </div>
+      <div class="col-6 col-md-3">
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 6</span><input type="text" class="form-control stns" name="station5" id="station5" size="5" maxlength="5" tabindex="6"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 7</span><input type="text" class="form-control stns" name="station6" id="station6" size="5" maxlength="5" tabindex="7"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 8</span><input type="text" class="form-control stns" name="station7" id="station7" size="5" maxlength="5" tabindex="8"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 9</span><input type="text" class="form-control stns" name="station8" id="station8" size="5" maxlength="5" tabindex="9"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 10</span><input type="text" class="form-control stns" name="station9" id="station9" size="5" maxlength="5" tabindex="10"></div>
+      </div>
+      <div class="col-6 col-md-3">
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 11</span><input type="text" class="form-control stns" name="station10" id="station10" size="5" maxlength="5" tabindex="11"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 12</span><input type="text" class="form-control stns" name="station11" id="station11" size="5" maxlength="5" tabindex="12"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 13</span><input type="text" class="form-control stns" name="station12" id="station12" size="5" maxlength="5" tabindex="13"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 14</span><input type="text" class="form-control stns" name="station13" id="station13" size="5" maxlength="5" tabindex="14"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 15</span><input type="text" class="form-control stns" name="station14" id="station14" size="5" maxlength="5" tabindex="15"></div>
+      </div>
+      <div class="col-6 col-md-3">
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 16</span><input type="text" class="form-control stns" name="station15" id="station15" size="5" maxlength="5" tabindex="16"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 17</span><input type="text" class="form-control stns" name="station16" id="station16" size="5" maxlength="5" tabindex="17"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 18</span><input type="text" class="form-control stns" name="station17" id="station17" size="5" maxlength="5" tabindex="18"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 19</span><input type="text" class="form-control stns" name="station18" id="station18" size="5" maxlength="5" tabindex="19"></div>
+         <div class="input-group input-group-sm mb-1"><span class="input-group-text">Station 20</span><input type="text" class="form-control stns" name="station19" id="station19" size="5" maxlength="5" tabindex="20"></div>
+      </div>
+   </div>
+</div>
+
+<hr class="my-1">
+
+<!-- Record type selection -->
+
+<div id="rectypeSelect" class="py-2">
+   <h4 class="py-1">
+      <i class="fa-solid fa-list-check"></i>
+      Record Types
+   </h4>
+   <div class="mb-1">
+      Select BUFR record types to retain in your data request. All will be retained if none
+      are selected. Detailed descriptors of record types can be found at
+      <a href="https://www.emc.ncep.noaa.gov/mmb/data_processing/data_dumping.doc/table_1.htm" target="_blank">
+      www.emc.ncep.noaa.gov/mmb/data_processing/data_dumping.doc/table_1.htm</a>.
+   </div>
+
+   <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="rectypes" value="ADPSFC" id="ADPSFC">
+      <label class="form-check-label" for="ADPSFC">
+         ADPSFC &mdash; <em>Observations from Land Surface Stations</em>
+      </label>
+   </div>
+   <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="rectypes" value="SFCSHP" id="SFCSHP">
+      <label class="form-check-label" for="SFCSHP">
+         SFCSHP &mdash; <em>Observations from Marine Platforms (ships, buoys, etc.)</em>
+      </label>
+   </div>
+   <div class="mt-2">
+      <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" id="allrectypes" onClick="selectAllRectypes()">
+      <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" id="clearrectypes" onClick="selectNoRectypes()">
+   </div>
+</div>
+
+<hr class="my-1">
+
+<!-- Parameter selection -->
+
+<div id="paramSelect" class="py-2">
+   <h4 class="py-1">
+      <i class="fa-solid fa-sliders"></i>
+      Parameters
+   </h4>
+   <div class="mb-1">
+      Select parameters to retain in your data request. All will be retained if none
+      are selected. Detailed descriptors of parameters can be found at
+      <a href="https://www.emc.ncep.noaa.gov/emc/pages/infrastructure/bufrlib/tables/bufrtab_tableb.html" target="_blank">
+      www.emc.ncep.noaa.gov/emc/pages/infrastructure/bufrlib/tables/bufrtab_tableb.html</a>.
+   </div>
+
+   <div class="row">
+      <div class="col-12 col-md-6">
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="PRES" id="PRES">
+            <label class="form-check-label" for="PRES">
+               PRES &mdash; <em>Station Pressure</em>
+            </label>
+         </div>
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="PMSL" id="PMSL">
+            <label class="form-check-label" for="PMSL">
+               PMSL &mdash; <em>Mean Sea Level Pressure</em>
+            </label>
+         </div>
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="TMDB" id="TMDB">
+            <label class="form-check-label" for="TMDB">
+               TMDB &mdash; <em>Air Temperature</em>
+            </label>
+         </div>
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="ALSE" id="ALSE">
+            <label class="form-check-label" for="ALSE">
+               ALSE &mdash; <em>Altimeter Setting</em>
+            </label>
+         </div>
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="TMDP" id="TMDP">
+            <label class="form-check-label" for="TMDP">
+               TMDP &mdash; <em>Dewpoint Temperature</em>
+            </label>
+         </div>
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="REHU" id="REHU">
+            <label class="form-check-label" for="REHU">
+               REHU &mdash; <em>Relative Humidity</em>
+            </label>
+         </div>
+      </div>
+      <div class="col-12 col-md-6">
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="WDIR" id="WDIR">
+            <label class="form-check-label" for="WDIR">
+               WDIR &mdash; <em>Wind Direction</em>
+            </label>
+         </div>
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="WSPD" id="WSPD">
+            <label class="form-check-label" for="WSPD">
+               WSPD &mdash; <em>Wind Speed</em>
+            </label>
+         </div>
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="TP03" id="TP03">
+            <label class="form-check-label" for="TP03">
+               TP03 &mdash; <em>Total Precipitation, Past 3 Hours</em>
+            </label>
+         </div>
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="TP24" id="TP24">
+            <label class="form-check-label" for="TP24">
+               TP24 &mdash; <em>Total Precipitation, Past 24 Hours</em>
+            </label>
+         </div>
+         <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="parms" value="HOVI" id="HOVI">
+            <label class="form-check-label" for="HOVI">
+               HOVI &mdash; <em>Horizontal Visibility</em>
+            </label>
+         </div>
+      </div>
+   </div>
+   <div class="mt-2">
+      <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" id="allparms" onClick="selectAllParms()">
+      <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" id="clearparms" onClick="selectNoParms()">
+   </div>
+</div>
+
+<hr class="my-1">
+
+<!-- File compression selection -->
+
+<div id="compressionSelect" class="py-2">
+   <h4 class="py-1">
+      <i class="fa-solid fa-file-zipper"></i>
+      File Compression
+   </h4>
+   <div class="mb-1">
+      File compression is recommended to minimize the network transfer time required to move your data files to your host computer.
+   </div>
+
+   <div class="form-check">
+      <input class="form-check-input" type="radio" name="compr" id="gzinput" value="gz" checked>
+      <label class="form-check-label" for="gzinput">
+         .gz (GNU Zip)
+      </label>
+   </div>
+   <div class="form-check">
+      <input class="form-check-input" type="radio" name="compr" id="nocompinput" value="no">
+      <label class="form-check-label" for="nocompinput">
+         No compression
+      </label>
+   </div>
+</div>
+
+<hr class="my-1">
+
+<div class="py-2" id="review-button">
+   <h4 class="py-1">
+      <i class="fa-solid fa-file-circle-check"></i>
+      Review and Submit
+   </h4>
+   <div class="mb-2">
+      Click the 'Review selections' button to review your subset request options before submitting the request.
+   </div>
+   <div>
+      <button type="button" class="btn btn-primary mx-1 p-1 rounded" style="font-size:1rem" onClick="reviewRequest()"><b>Review selections</b></button>
+      <button type="reset" class="btn btn-outline-primary mx-1 p-1 rounded" style="font-size:1rem">Reset Form</button>
+   </div>
+</div>
+
+</form>
+</div>
+</div>
+
+<div id="subset-review-div" class="d-none">
+   <h2 class="py-2">NCEP ADP PREPBUFR Surface Observations Data Request</h2>
+   <div>
+      Following is a summary of your data request selections.  Click the 'Submit Request' button below
+      if the information is <span class="fw-bold">correct</span>, otherwise select
+      'Cancel' to modify your selections or start over.
+   </div>
+   <div class="py-2">
+      <pre><code id="rnote-text"></code></pre>
+   </div>
+   <div id="submit-form-container">
+      <form action="{% url 'submit_web_data_request' subset.dsid %}" id="submit-form" method="post">
+         <div id="submit-buttons" class="mt-1">
+            <button class="btn btn-primary mt-1 p-1 rounded" type="submit" style="font-size:1rem" id="submit_request">Submit request</button>
+            <button class="btn btn-outline-primary mt-1 p-1 rounded" type="button" style="font-size:1rem" id="cancel_request" onclick="cancelRequest();">Cancel</button>
+         </div>
+      </form>
+   </div>
+</div>
+<div id="loading-button" class="d-none">
+   <button class="btn btn-primary mt-1 p-1" type="button" disabled>
+      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      Loading...
+   </button>
+</div>

@@ -697,15 +697,13 @@ function get_compress_info()
 }
 
 /**
- * Review subset selections and submit to dsrqst.php
+ * Review subset selections and submit request
  */
 function reviewRequest()
 {
    var dsid, rindex, rtype;
    var rnote;
    var form = document.form;
-   var specialist = document.form.specialist.value;
-   var email = document.form.email.value;
 
 // Validate form inputs
    if(!checkSpatialPref()) return;
@@ -750,6 +748,10 @@ function reviewRequest()
 }
 
 $(document).ready(function() {
+   initvals();
+   selectAllRectypes();
+   selectAllParms();
+
    $("#submit-form").on("submit", function(event) {
       event.preventDefault();
 

@@ -37,7 +37,7 @@ from globus.views import get_guest_collection_url
 from gdexwebserver.utils import make_tempdir, remove_tempdir
 from dashboard.utils import get_user_email, is_internal_user
 
-from .forms import DatasetRequestForm
+from .forms import DatasetRequestForm, BUFRD351SubsetForm
 from rda_python_dsrqst.PgRDARqst import rda_request
 
 import logging
@@ -651,9 +651,11 @@ def custom_subset(request, dsid):
          - dataset period context (date_start, time_start, date_end, time_end)
 
     """
+    _DATASET_SPECIFIC_TEMPLATES = {'d132002', 'd351000', 'd461000'}
+
     d = None
     if "HTTP_X_REQUESTED_WITH" in request.META:
-        if dsid in ['d132002']:
+        if dsid in _DATASET_SPECIFIC_TEMPLATES:
             template = f"datasets/custom-subset-page-{dsid}.html"
         else:
             template = "datasets/custom-subset-page-base.html"
@@ -683,6 +685,21 @@ def custom_subset(request, dsid):
 
     if d:
         ctx.update({'page': d})
+
+    if dsid == 'd351000':
+        ctx['form'] = BUFRD351SubsetForm(
+            auto_id='%s',
+            initial={
+                'dsid':      dsid,
+                'gindex':    subset_context.get('gindex', 1),
+                'rtype':     'S',
+                'startDate': subset_context.get('date_start', ''),
+                'endDate':   subset_context.get('date_end', ''),
+                'compr':     'gz',
+                'rectypes':  [c[0] for c in BUFRD351SubsetForm.RECTYPE_CHOICES],
+                'parms':     [c[0] for c in BUFRD351SubsetForm.PARM_CHOICES],
+            },
+        )
 
     return render(request, template, ctx)
 
