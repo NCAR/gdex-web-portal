@@ -365,6 +365,15 @@ def files(request, dsid, datatype, db_conn):
                         (response['pagination']['result_ID'],
                          expires.astimezone(tz.gettz("US/Mountain")),
                          len(file_codes), schema_name, dsid))
+                rows = (list(
+                        zip([response['pagination']['result_ID'] for x in
+                             range(0, len(file_codes))], file_codes)))
+                for x in range(0, len(rows), 10000):
+                    rowins = ", ".join([str(t) for t in rows[x:x+10000]])
+                    cursor.execute(
+                            "insert into metautil.dsfiles_api_file_codes "
+                            f"values {rowins}")
+
                 db_conn.commit()
                 response['pagination']['current_page'] = 1
                 response['pagination']['next_page'] = 2
