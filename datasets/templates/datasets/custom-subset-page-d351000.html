@@ -194,13 +194,13 @@
 <div id="compressionSelect" class="py-2">
    <h4 class="py-1">
       <i class="fa-solid fa-file-zipper"></i>
-      {{ form.compr.label }}
+      {{ form.compression.label }}
    </h4>
    <div class="mb-1">
       File compression is recommended to minimize the network transfer time required to move your data files to your host computer.
    </div>
 
-   {% for widget in form.compr %}
+   {% for widget in form.compression %}
    <div class="form-check">
       {{ widget.tag }}
       <label class="form-check-label" for="{{ widget.id_for_label }}">

@@ -5,7 +5,7 @@ from facbrowse.utils import get_groups
 
 
 # ---------------------------------------------------------------------------
-# BUFR upper-air subset form (ds351.0 / d351000)
+# BUFR upper-air subset form (d351000)
 # ---------------------------------------------------------------------------
 
 class BUFRD351SubsetForm(forms.Form):
@@ -35,9 +35,9 @@ class BUFRD351SubsetForm(forms.Form):
         ('REHU', 'REHU — Relative humidity'),
     ]
 
-    COMPR_CHOICES = [
-        ('gz', '.gz (GNU Zip)'),
-        ('no', 'No compression'),
+    COMPRESSION_CHOICES = [
+        ('gz', '.gz (Gzip)'),
+        ('None', 'No compression'),
     ]
 
     # ------------------------------------------------------------------
@@ -119,9 +119,9 @@ class BUFRD351SubsetForm(forms.Form):
     # ------------------------------------------------------------------
     # File compression
     # ------------------------------------------------------------------
-    compr = forms.ChoiceField(
+    compression = forms.ChoiceField(
         required=False,
-        choices=COMPR_CHOICES,
+        choices=COMPRESSION_CHOICES,
         label='File Compression',
         initial='gz',
         widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
