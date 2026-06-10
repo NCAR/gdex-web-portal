@@ -281,8 +281,42 @@ def files(request, dsid, datatype, db_conn):
                     'https_base': settings.RDA_DATA_BASE_URL,
                     'ncar_hpc_base': settings.GDEX_CANONICAL_DATA_PATH},
                 'pagination': {}}
-    services = service_list(dsid)
     cursor = db_conn.cursor()
+    if 'result_ID' in request.GET:
+        cursor.execute(
+                "select total_count from metautil.dsfiles_api_request_ids "
+                "where dsid = %s and datatype = %s", (dsid, datatype))
+        response['pagination']['result_ID'] = request.GET['result_ID']
+        response['pagination']['total_count'], = cursor.fetchone() or (None, )
+        response['pagination']['num_pages'] = (
+                response['pagination']['total_count'] // PAGE_SIZE + 1)
+        if response['pagination']['total_count'] is None:
+            return JsonResponse(
+                        {'error_message': "Invalid or expired 'result_ID'"},
+                        status=400)
+
+        service = (
+                {value: key for key, value in datatypes_map.items()}[datatype])
+        offset = (((request.GET['page_num'] - 1) * PAGE_SIZE) if 'page_num' in
+                  request.GET else 0)
+        cursor.execute(
+                "select w.id from metautil.dsfiles_api_file_codes as f left "
+                f'join "W{service}".{dsid}_webfiles2 as w on w.code = f.'
+                "file_code where f.result_id = %s order by w.id limit "
+                f"{PAGE_SIZE} offset {offset}", (request.GET['result_ID'], ))
+        res = cursor.fetchall()
+        response['files']['paths'] = [e[0] for e in res]
+        response['pagination']['num_per_page'] = min(len(res), PAGE_SIZE)
+        response['pagination']['current_page'] = offset // PAGE_SIZE + 1
+        if len(res) == PAGE_SIZE:
+            response['pagination']['next_page'] = (
+                    response['pagination']['current_page'] + 1)
+        else:
+            response['pagination']['next_page'] = None
+
+        return JsonResponse(response, status=200)
+
+    services = service_list(dsid)
     if datatype == "gridded" and "GrML" in services:
         grml_req = HttpRequest()
         grml_req.method = "POST"
@@ -336,7 +370,6 @@ def files(request, dsid, datatype, db_conn):
 
         grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
         file_codes = grml['fcodes']
-        schema_name = "WGrML"
 
     if 'file_codes' in locals():
         response['pagination']['total_count'] = len(file_codes)
@@ -353,32 +386,27 @@ def files(request, dsid, datatype, db_conn):
                     "%s order by id", (tuple(grml['fcodes']), ))
             response['files']['paths'] = [e[0] for e in cursor.fetchall()]
         else:
-            response['pagination']['result_ID'] = (
-                    request.GET['result_ID'] if 'result_ID' in request.GET
-                    else strand(20))
-            if 'result_ID' not in request.GET:
-                now = datetime.now(pytz.utc)
-                expires = now + timedelta(hours=3)
+            response['pagination']['result_ID'] = strand(20)
+            now = datetime.now(pytz.utc)
+            expires = now + timedelta(hours=3)
+            cursor.execute(
+                    "insert into metautil.dsfiles_api_ids values (%s, %s, %s, "
+                    "%s, %s)",
+                    (response['pagination']['result_ID'],
+                     expires.astimezone(tz.gettz("US/Mountain")),
+                     len(file_codes), datatype, dsid))
+            rows = (list(
+                    zip([response['pagination']['result_ID'] for x in
+                         range(0, len(file_codes))], file_codes)))
+            for x in range(0, len(rows), 10000):
+                rowins = ", ".join([str(t) for t in rows[x:x+10000]])
                 cursor.execute(
-                        "insert into metautil.dsfiles_api_ids values (%s, %s, "
-                        "%s, %s, %s)",
-                        (response['pagination']['result_ID'],
-                         expires.astimezone(tz.gettz("US/Mountain")),
-                         len(file_codes), schema_name, dsid))
-                rows = (list(
-                        zip([response['pagination']['result_ID'] for x in
-                             range(0, len(file_codes))], file_codes)))
-                for x in range(0, len(rows), 10000):
-                    rowins = ", ".join([str(t) for t in rows[x:x+10000]])
-                    cursor.execute(
-                            "insert into metautil.dsfiles_api_file_codes "
-                            f"values {rowins}")
+                        "insert into metautil.dsfiles_api_file_codes values "
+                        f"{rowins}")
 
-                db_conn.commit()
-                response['pagination']['current_page'] = 1
-                response['pagination']['next_page'] = 2
-            else:
-                pass
+            db_conn.commit()
+            response['pagination']['current_page'] = 1
+            response['pagination']['next_page'] = 2
 
         return JsonResponse(response, status=200)
 
