@@ -105,6 +105,8 @@ def parse_gridded_filters_request(request, dsid, cursor):
                                .replace("-", "").replace(":", "")
                                .replace(" ", "")))
             del filters['valid_datetime_min']
+        else:
+            del restrictions['valid_datetime_min']
 
         if ('valid_datetime_max' in request.GET and
                 len(request.GET['valid_datetime_max']) > 0):
@@ -119,6 +121,8 @@ def parse_gridded_filters_request(request, dsid, cursor):
                                .replace("-", "").replace(":", "")
                                .replace(" ", "")))
             del filters['valid_datetime_max']
+        else:
+            del restrictions['valid_datetime_max']
 
         if 'request_parameters' in locals():
             query += " and concat(s.format_code, '!', s.parameter) in %s"
