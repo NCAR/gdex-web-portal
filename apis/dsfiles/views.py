@@ -27,6 +27,12 @@ gridded_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}"
 
 PAGE_SIZE = 1000
 
+files_response = {'DSID': "", 'datatype': "", 'restrictions': {},
+                  'files': {
+                      'https_base': settings.RDA_DATA_BASE_URL,
+                      'ncar_hpc_base': settings.GDEX_CANONICAL_DATA_PATH},
+                  'pagination': {}}
+
 
 def swagger(request, output=None):
     return render(request, "dsfiles/swagger.html", {})
@@ -280,46 +286,9 @@ def filters(request, dsid, datatype, cursor):
 
 
 def files(request, dsid, datatype, db_conn):
-    response = {'DSID': dsid, 'datatype': datatype, 'restrictions': {},
-                'files': {
-                    'https_base': settings.RDA_DATA_BASE_URL,
-                    'ncar_hpc_base': settings.GDEX_CANONICAL_DATA_PATH},
-                'pagination': {}}
+    files_response['DSID'] = dsid
+    files_response['datatype'] = datatype
     cursor = db_conn.cursor()
-    if 'result_ID' in request.GET:
-        cursor.execute(
-                "select total_count from metautil.dsfiles_api_result_ids "
-                "where dsid = %s and datatype = %s", (dsid, datatype))
-        response['pagination']['result_ID'] = request.GET['result_ID']
-        response['pagination']['total_count'], = cursor.fetchone() or (None, )
-        response['pagination']['num_pages'] = (
-                response['pagination']['total_count'] // PAGE_SIZE + 1)
-        if response['pagination']['total_count'] is None:
-            return JsonResponse(
-                        {'error_message': "Invalid or expired 'result_ID'"},
-                        status=400)
-
-        service = (
-                {value: key for key, value in datatypes_map.items()}[datatype])
-        offset = (((request.GET['page_num'] - 1) * PAGE_SIZE) if 'page_num' in
-                  request.GET else 0)
-        cursor.execute(
-                "select w.id from metautil.dsfiles_api_file_codes as f left "
-                f'join "W{service}".{dsid}_webfiles2 as w on w.code = f.'
-                "file_code where f.result_id = %s order by w.id limit "
-                f"{PAGE_SIZE} offset {offset}", (request.GET['result_ID'], ))
-        res = cursor.fetchall()
-        response['files']['paths'] = [e[0] for e in res]
-        response['pagination']['num_per_page'] = min(len(res), PAGE_SIZE)
-        response['pagination']['current_page'] = offset // PAGE_SIZE + 1
-        if len(res) == PAGE_SIZE:
-            response['pagination']['next_page'] = (
-                    response['pagination']['current_page'] + 1)
-        else:
-            response['pagination']['next_page'] = None
-
-        return JsonResponse(response, status=200)
-
     services = service_list(dsid)
     if datatype == "gridded" and "GrML" in services:
         grml_req = HttpRequest()
@@ -376,20 +345,20 @@ def files(request, dsid, datatype, db_conn):
         file_codes = grml['fcodes']
 
     if 'file_codes' in locals():
-        response['pagination']['total_count'] = len(file_codes)
-        response['pagination']['num_pages'] = (
-                response['pagination']['total_count'] // PAGE_SIZE + 1)
-        response['pagination']['num_per_page'] = (
-                min(response['pagination']['total_count'], PAGE_SIZE))
-        if response['pagination']['total_count'] <= PAGE_SIZE:
-            response['pagination']['current_page'] = 1
-            response['pagination']['next_page'] = None
-            response['pagination']['result_ID'] = None
+        files_response['pagination']['total_count'] = len(file_codes)
+        files_response['pagination']['num_pages'] = (
+                files_response['pagination']['total_count'] // PAGE_SIZE + 1)
+        files_response['pagination']['num_per_page'] = (
+                min(files_response['pagination']['total_count'], PAGE_SIZE))
+        if files_response['pagination']['total_count'] <= PAGE_SIZE:
+            files_response['pagination']['current_page'] = 1
+            files_response['pagination']['next_page'] = None
+            files_response['pagination']['result_ID'] = None
             cursor.execute(
                     f'select id from "WGrML".{dsid}_webfiles2 where code in '
                     "%s order by id", (tuple(grml['fcodes']), ))
         else:
-            response['pagination']['result_ID'] = strand(20)
+            files_response['pagination']['result_ID'] = strand(20)
             now = datetime.now(pytz.utc)
             expires = ((datetime.now(pytz.utc) + timedelta(hours=3))
                        .replace(tzinfo=tz.tzutc())
@@ -397,10 +366,10 @@ def files(request, dsid, datatype, db_conn):
             cursor.execute(
                     "insert into metautil.dsfiles_api_result_ids values (%s, "
                     "%s, %s, %s, %s)",
-                    (response['pagination']['result_ID'],
+                    (files_response['pagination']['result_ID'],
                      expires, len(file_codes), datatype, dsid))
             rows = (list(
-                    zip([response['pagination']['result_ID'] for x in
+                    zip([files_response['pagination']['result_ID'] for x in
                          range(0, len(file_codes))], file_codes)))
             for x in range(0, len(rows), 10000):
                 rowins = ", ".join([str(t) for t in rows[x:x+10000]])
@@ -409,17 +378,17 @@ def files(request, dsid, datatype, db_conn):
                         f"{rowins}")
 
             db_conn.commit()
-            response['pagination']['current_page'] = 1
-            response['pagination']['next_page'] = 2
+            files_response['pagination']['current_page'] = 1
+            files_response['pagination']['next_page'] = 2
             cursor.execute(
                     "select w.id from metautil.dsfiles_api_file_codes as f "
                     f'left join "WGrML".{dsid}_webfiles2 as w on w.code = f.'
                     "file_code where f.result_id = %s order by w.id limit "
                     f"{PAGE_SIZE} offset 0",
-                    (response['pagination']['result_ID'], ))
+                    (files_response['pagination']['result_ID'], ))
 
-        response['files']['paths'] = [e[0] for e in cursor.fetchall()]
-        return JsonResponse(response, status=200)
+        files_response['files']['paths'] = [e[0] for e in cursor.fetchall()]
+        return JsonResponse(files_response, status=200)
 
     return JsonResponse(
             {'error_message': "API file discovery is not available for "
@@ -464,6 +433,61 @@ def respond_to_request(request, dsid, operation, datatype=None):
                                       "operation."},
                     status=400)
 
+    except Exception:
+        return JsonResponse({'error_message': "Server error."}, status=500)
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+
+def serve_result_set(request, dsid, result_ID, page_num):
+    if len(result_ID) != 20:
+        return JsonResponse(
+                    {'error_message': "Invalid 'result_ID' - must be 20 "
+                                      "characters."}, status=400)
+
+    if page_num <= 0:
+        return JsonResponse(
+                    {'error_message': "Page numbers must be positive integers "
+                                      "beginning at '1'."}, status=400)
+
+    try:
+        files_response['DSID'] = dsid
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        cursor.execute(
+                "select total_count, datatype from metautil."
+                "dsfiles_api_result_ids where dsid = %s", (dsid, ))
+        total_count, datatype = cursor.fetchone() or (None, None)
+        if total_count is None:
+            return JsonResponse(
+                        {'error_message': "Invalid or expired 'result_ID'."},
+                        status=400)
+
+        files_response['datatype'] = datatype
+        files_response['pagination']['result_ID'] = result_ID
+        files_response['pagination']['total_count'] = total_count
+        files_response['pagination']['num_pages'] = (
+                files_response['pagination']['total_count'] // PAGE_SIZE + 1)
+        service = (
+                {value: key for key, value in datatypes_map.items()}[datatype])
+        offset = (page_num - 1) * PAGE_SIZE
+        cursor.execute(
+                "select w.id from metautil.dsfiles_api_file_codes as f left "
+                f'join "W{service}".{dsid}_webfiles2 as w on w.code = f.'
+                "file_code where f.result_id = %s order by w.id limit "
+                f"{PAGE_SIZE} offset {offset}", (result_ID, ))
+        res = cursor.fetchall()
+        files_response['files']['paths'] = [e[0] for e in res]
+        files_response['pagination']['num_per_page'] = min(len(res), PAGE_SIZE)
+        files_response['pagination']['current_page'] = offset // PAGE_SIZE + 1
+        if len(res) == PAGE_SIZE:
+            files_response['pagination']['next_page'] = (
+                    files_response['pagination']['current_page'] + 1)
+        else:
+            files_response['pagination']['next_page'] = None
+
+        return JsonResponse(files_response, status=200)
     except Exception:
         return JsonResponse({'error_message': "Server error."}, status=500)
     finally:

@@ -7,4 +7,5 @@ urlpatterns = [
     path('', views.swagger),
     re_path(r'^(?P<dsid>d[0-9]{6})/(?P<operation>datatypes)/$', views.respond_to_request),
     path('<dsid>/<operation>/<datatype>/', views.respond_to_request),
+    path('<dsid>/files/<result_ID>/<int:page_num>/', views.serve_result_set),
 ]
