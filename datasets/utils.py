@@ -58,8 +58,8 @@ def get_dataset_period(dsid, gindex=None):
     # Get the dataset period from the database
     query = "SELECT MIN(CONCAT(date_start, ' ', time_start)) as datetime_start, MAX(CONCAT(date_end, ' ', time_end)) as datetime_end FROM dsperiod WHERE dsid = %s"
     if gindex is not None:
-        query += " AND gindex = %s"
-        cond = (dsid, gindex)
+        query += " AND gindex::text LIKE %s"
+        cond = (dsid, f"{gindex}%")
     else:
         cond = (dsid,)
 
