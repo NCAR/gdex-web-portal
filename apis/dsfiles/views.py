@@ -284,7 +284,7 @@ def files(request, dsid, datatype, db_conn):
     cursor = db_conn.cursor()
     if 'result_ID' in request.GET:
         cursor.execute(
-                "select total_count from metautil.dsfiles_api_request_ids "
+                "select total_count from metautil.dsfiles_api_result_ids "
                 "where dsid = %s and datatype = %s", (dsid, datatype))
         response['pagination']['result_ID'] = request.GET['result_ID']
         response['pagination']['total_count'], = cursor.fetchone() or (None, )
@@ -384,17 +384,17 @@ def files(request, dsid, datatype, db_conn):
             cursor.execute(
                     f'select id from "WGrML".{dsid}_webfiles2 where code in '
                     "%s order by id", (tuple(grml['fcodes']), ))
-            response['files']['paths'] = [e[0] for e in cursor.fetchall()]
         else:
             response['pagination']['result_ID'] = strand(20)
             now = datetime.now(pytz.utc)
-            expires = now + timedelta(hours=3)
+            expires = ((datetime.now(pytz.utc) + timedelta(hours=3))
+                       .replace(tzinfo=tz.tzutc())
+                       .strftime("%Y-%m-%d %H:%M:%S"))
             cursor.execute(
-                    "insert into metautil.dsfiles_api_ids values (%s, %s, %s, "
-                    "%s, %s)",
+                    "insert into metautil.dsfiles_api_result_ids values (%s, "
+                    "%s, %s, %s, %s)",
                     (response['pagination']['result_ID'],
-                     expires.astimezone(tz.gettz("US/Mountain")),
-                     len(file_codes), datatype, dsid))
+                     expires, len(file_codes), datatype, dsid))
             rows = (list(
                     zip([response['pagination']['result_ID'] for x in
                          range(0, len(file_codes))], file_codes)))
@@ -407,7 +407,14 @@ def files(request, dsid, datatype, db_conn):
             db_conn.commit()
             response['pagination']['current_page'] = 1
             response['pagination']['next_page'] = 2
+            cursor.execute(
+                    "select w.id from metautil.dsfiles_api_file_codes as f "
+                    f'left join "WGrML".{dsid}_webfiles2 as w on w.code = f.'
+                    "file_code where f.result_id = %s order by w.id limit "
+                    f"{PAGE_SIZE} offset 0",
+                    (response['pagination']['result_ID'], ))
 
+        response['files']['paths'] = [e[0] for e in cursor.fetchall()]
         return JsonResponse(response, status=200)
 
     return JsonResponse(
@@ -433,6 +440,19 @@ def respond_to_request(request, dsid, operation, datatype=None):
         elif operation == "filters":
             return filters(request, dsid, datatype, cursor)
         elif operation == "files":
+            cursor.execute((
+                    "select result_id from metautil.dsfiles_api_result_ids "
+                    "where expiration < %s"), (datetime.now(), ))
+            res = cursor.fetchall()
+            for e in res:
+                cursor.execute((
+                        "delete from metautil.dsfiles_api_file_codes where "
+                        "result_id = %s"), (e[0], ))
+                cursor.execute((
+                        "delete from metautil.dsfiles_api_result_ids where "
+                        "result_id = %s"), (e[0], ))
+                conn.commit()
+
             return files(request, dsid, datatype, conn)
         else:
             return JsonResponse(
