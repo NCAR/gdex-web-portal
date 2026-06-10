@@ -256,7 +256,7 @@
         }
       },
       "page_num": {
-        "name": "result_ID",
+        "name": "page_num",
         "in": "query",
         "description": "The page number of the result set to retrieve",
         "schema": {
