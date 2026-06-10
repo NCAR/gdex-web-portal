@@ -154,12 +154,6 @@
           },
           {
             "$ref": "#/components/parameters/levels"
-          },
-          {
-            "$ref": "#/components/parameters/result_ID"
-          },
-          {
-            "$ref": "#/components/parameters/page_num"
           }
         ],
         "responses": {
@@ -169,6 +163,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schema_defs/DatasetFilesGriddedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          }
+        }
+      }
+    },
+    "/{DSID}/files/{RESULT_ID}/{PAGE_NUM}": {
+      "get": {
+        "tags": [
+          "Data Files"
+        ],
+        "summary": "Get a list of data files from a previously-created result set.",
+        "description": "This operation returns a list of data files for the specified dataset and previously-created result set.",
+        "operationId": "getDatasetFilesFromResultSet",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "name": "RESULT_ID",
+            "in": "path",
+            "description": "The result set ID for pagination",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "PAGE_NUM",
+            "in": "path",
+            "description": "The page number of the result set to retrieve",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    "$ref": "#/components/schema_defs/DatasetFilesGriddedResponse"
+                  ]
                 }
               }
             }
@@ -246,22 +290,6 @@
         },
         "collectionFormat": "multi",
         "required": false
-      },
-      "result_ID": {
-        "name": "result_ID",
-        "in": "query",
-        "description": "The result set ID for pagination",
-        "schema": {
-          "type": "string"
-        }
-      },
-      "page_num": {
-        "name": "page_num",
-        "in": "query",
-        "description": "The page number of the result set to retrieve",
-        "schema": {
-          "type": "integer"
-        }
       }
     },
     "schema_defs": {
