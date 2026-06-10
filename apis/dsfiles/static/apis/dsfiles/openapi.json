@@ -154,6 +154,12 @@
           },
           {
             "$ref": "#/components/parameters/levels"
+          },
+          {
+            "$ref": "#/components/parameters/result_ID"
+          },
+          {
+            "$ref": "#/components/parameters/page_num"
           }
         ],
         "responses": {
@@ -240,6 +246,22 @@
         },
         "collectionFormat": "multi",
         "required": false
+      },
+      "result_ID": {
+        "name": "result_ID",
+        "in": "query",
+        "description": "The result set ID for pagination",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "page_num": {
+        "name": "result_ID",
+        "in": "query",
+        "description": "The page number of the result set to retrieve",
+        "schema": {
+          "type": "integer"
+        }
       }
     },
     "schema_defs": {
