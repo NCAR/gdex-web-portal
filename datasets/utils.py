@@ -70,8 +70,15 @@ def get_dataset_period(dsid, gindex=None):
     conn.close()
 
     format_str = "%Y-%m-%d %H:%M:%S"  # The format
-    datetime_start = datetime.strptime(result[0], format_str) if result[0] else None
-    datetime_end = datetime.strptime(result[1], format_str) if result[1] else None
+
+    # if dsid = 'd351000' enforce datetime_start = 1999-10-01 and datetime_end to be the current datetime
+    if dsid == 'd351000':
+        datetime_start = datetime.strptime('1999-10-01 00:00:00', format_str)
+        datetime_end = datetime.now()
+    else:
+        datetime_start = datetime.strptime(result[0], format_str) if result[0] else None
+        datetime_end = datetime.strptime(result[1], format_str) if result[1] else None
+
 
     date_start = datetime_start.date().strftime("%Y-%m-%d") if datetime_start else None
     date_end = datetime_end.date().strftime("%Y-%m-%d") if datetime_end else None
