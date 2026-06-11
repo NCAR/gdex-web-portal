@@ -59,6 +59,27 @@
         }
       }
     },
+    "/{DSID}/filters/cyclone_fix": {
+      "get": {
+        "tags": [
+          "Filters"
+        ],
+        "summary": "Get dataset-specific filters for the \"cyclone_fix\" data type.",
+        "description": "This operation returns the filters that are available for the \"cyclone_fix\" data files in the specified dataset using its GDEX DSID.",
+        "operationId": "getDatasetCycloneFixFilters",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_min"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_max"
+          }
+        ]
+      }
+    },
     "/{DSID}/filters/grid": {
       "get": {
         "tags": [
@@ -66,7 +87,7 @@
         ],
         "summary": "Get dataset-specific filters for the \"grid\" data type.",
         "description": "This operation returns the filters that are available for the \"grid\" data files in the specified dataset using its GDEX DSID.",
-        "operationId": "getDatasetFiltersGridded",
+        "operationId": "getDatasetGridFilters",
         "parameters": [
           {
             "$ref": "#/components/parameters/dsid"
@@ -118,6 +139,34 @@
             "$ref": "#/components/responses/500"
           }
         }
+      }
+    },
+    "/{DSID}/filters/observation": {
+      "get": {
+        "tags": [
+          "Filters"
+        ],
+        "summary": "Get dataset-specific filters for the \"observation\" data type.",
+        "description": "This operation returns the filters that are available for the \"observation\" data files in the specified dataset using its GDEX DSID.",
+        "operationId": "getDatasetObservationFilters",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "$ref": "#/components/parameters/valid_date_min"
+          },
+          {
+            "$ref": "#/components/parameters/valid_date_max"
+          }
+        ]
+      }
+    },
+    "/{DSID}/files/cylone_fix": {
+      "get": {
+        "tags": [
+          "Data Files"
+        ]
       }
     },
     "/{DSID}/files/grid": {
@@ -180,6 +229,13 @@
             "$ref": "#/components/responses/500"
           }
         }
+      }
+    },
+    "/{DSID}/files/observation": {
+      "get": {
+        "tags": [
+          "Data Files"
+        ]
       }
     },
     "/{DSID}/files/{RESULT_ID}/{PAGE_NUM}": {
@@ -254,10 +310,24 @@
         "type": "string",
         "required": false
       },
+      "valid_date_min": {
+        "name": "valid_date_min",
+        "in": "query",
+        "description": "Restrict to data valid on or after date specified as \"YYYY-MM-DD\"",
+        "type": "string",
+        "required": false
+      },
       "valid_datetime_max": {
         "name": "valid_datetime_max",
         "in": "query",
         "description": "Restrict to data valid on or prior to date/time specified as \"YYYY-MM-DD HH:MM\"",
+        "type": "string",
+        "required": false
+      },
+      "valid_date_max": {
+        "name": "valid_date_max",
+        "in": "query",
+        "description": "Restrict to data valid on or prior to date specified as \"YYYY-MM-DD\"",
         "type": "string",
         "required": false
       },
