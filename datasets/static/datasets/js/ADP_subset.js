@@ -242,10 +242,6 @@ function checkStations()
      }
    }   
    
-// Set subsetting bit flag for partial spatial selection
-   if(countValid > 0) {
-     sflag |= 4;
-   }
    return true;
 }
 
