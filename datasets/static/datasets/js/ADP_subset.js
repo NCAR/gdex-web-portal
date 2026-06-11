@@ -12,8 +12,6 @@
 
 // var dates, stations, rectypes, allbasic, parms, xparms, compr, vars, flts, rinfo;
 var dates, stations, rectypes, parms, compr, rinfo, allbasic;
-var stationCounter = 1;
-var stationLimit = 20;
 var stationNum, countValid;
 var ivals, evals;
 
@@ -197,43 +195,56 @@ function checkDates()
  */
 function checkStations()
 {
-   var i, j;
-   var form = document.form;
-   var stationSubmit;
-   var countEmpty;
-
-   // check station IDs
+   var i;
+   var stationInput;
+   var countEmpty, countValid;
+   var stns, stn;
+   var patt = new RegExp(/^\s*$/);
+   
+   stations = "";
+   
+   // check stations
    countValid = 0;   // Count the valid entries
-   countEmpty = 0;   // Count the empty entries
-//   for($i=1; $i<=stationCounter; $i++) {
-   for($i=1; $i<=stationLimit; $i++) {
-     stationNum = "station"+String($i-1);
-     stationSubmit = document.getElementById(stationNum).value;
-     if (stationSubmit == "") {
-         countEmpty++;
-     } else if (stationSubmit.length < 4) {
-         alert("Invalid value entered for station "+($i)+" - must be 4 or 5 characters");
-         return false;
-     } else {
-         countValid++;
-     }
+
+   stationInput = document.getElementById("station0").value;
+   if (stationInput == "" || stationInput == null) {
+      alert("Please enter at least one station ID or select a different spatial range option.");
+      return false;
    }
 
-   // Fill stations field
-   stations = "";
-//   for($i=1; $i<=stationCounter; $i++) {
-   for($i=1; $i<=stationLimit; $i++) {
-       stationNum = "station"+String($i-1);
-     if (countValid == 0) {
-         stations = "ALL";
-     } else if (document.getElementById(stationNum).value != "") {
-         var stationstr = document.getElementById(stationNum).value;
-         if(!stations) {
-           stations = stationstr.toUpperCase();
-         } else {
-           stations += " " + stationstr.toUpperCase();
-         }
+// trim any leading and/or trailing commas, white space.
+   if (stationInput != "") {
+     stationInput = stationInput.replace(/(^\s*)|(,\s*$)/g, "");
+     stationInput = stationInput.replace(/(^,)|(,$)/g, "");
+     countValid++;
+   }
+
+// Validate input for 5 or 6 character length
+   stns = stationInput.split(",");
+   for(i=0; i<=stns.length-1; i++) {
+     stn = stns[i].trim();
+
+     // skip if blank string
+     if (patt.test(stn)) {
+       continue;
      }
+     
+     // return false if invalid value
+     if (stn.length < 5 || stn.length > 6) {
+       alert("Invalid value entered for station "+stn+" - must be 5 or 6 digits");
+       return false;
+     }
+     
+     if (!stations) {
+       stations = stn;
+     } else {
+       stations += "," + stn;
+     }
+   }   
+   
+// Set subsetting bit flag for partial spatial selection
+   if(countValid > 0) {
+     sflag |= 4;
    }
    return true;
 }
@@ -685,7 +696,7 @@ function gather_request_info()
 function get_compress_info()
 {
    var i, idx;
-   var comprs = document.form.elements['compr'];
+   var comprs = document.form.elements['compression'];
    
    idx = 0;
    for(i = 0; i < comprs.length; i++) {
@@ -693,7 +704,7 @@ function get_compress_info()
          return comprs[i].value;
       }
    }
-   return "no";
+   return "None";
 }
 
 /**
@@ -735,7 +746,7 @@ function reviewRequest()
       rinfo: rinfo,
       rnote: rnote
    };
-   if (compr != "no") {
+   if (compr != "None") {
       postData.afmt = compr;
    }
    for (var key in postData) {
@@ -774,59 +785,6 @@ function cancelRequest()
    $("#subset-review-div").addClass("d-none");
    $(document).scrollTop(0);
 }
-
-/**
- * Add additional fields to station ID form input
- */
-function addStation()
-{
-  if (stationCounter == stationLimit) {
-    alert("You have reached the limit of " + stationCounter + " station inputs");
-  } else if (stationCounter < stationLimit/2) {
-    var tbl = document.getElementById('stationTable');
-    var lastRow = tbl.rows.length;
-    var row = tbl.insertRow(lastRow);
-
-    // Left cell
-    var cellLeft = row.insertCell(0);
-    cellLeft.className="body";
-    cellLeft.style.textAlign="left";
-    cellLeft.appendChild(document.createTextNode('Station '+(stationCounter+1)+' '));
-
-    // Right cell
-    var cellRight = row.insertCell(1);
-    var elem = document.createElement('input');
-    elem.type = 'text';
-    elem.name = 'station' + stationCounter;
-    elem.id = 'station' + stationCounter;
-    elem.className = 'stns';
-    elem.size = 5;
-    elem.maxlength = 5;
-    cellRight.appendChild(elem);
-
-    // Add two more blank cells
-    var cellThree = row.insertCell(2);
-    cellThree.className="body";
-    cellThree.style.textAlign="left";
-    var cellFour  = row.insertCell(3);
-
-    stationCounter++;
-  } else {
-    var tbl = document.getElementById('stationTable');
-    var thisRow = stationCounter-(stationLimit/2);
-    tbl.rows[thisRow].cells[2].appendChild(document.createTextNode('Station '+(stationCounter+1)+' '));
-    var elem = document.createElement('input');
-    elem.type = 'text';
-    elem.name = 'station' + stationCounter;
-    elem.id = 'station' + stationCounter;
-    elem.className = 'stns';
-    elem.size = 5;
-    elem.maxlength = 5;
-    tbl.rows[thisRow].cells[3].appendChild(elem);
-    stationCounter++;
-  }
-}
-
 
 /**
  * Select all parms

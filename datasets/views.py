@@ -75,7 +75,6 @@ def get_result_list(config, query):
 
     return res_list
 
-
 def description(request, dsid):
     qs = Page.objects.type(DatasetDescriptionPage).filter(
                            slug__in=slug_list(dsid)).live().specific()
