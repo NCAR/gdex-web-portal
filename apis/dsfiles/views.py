@@ -20,7 +20,6 @@ datatypes_map = {
     'FixML': "cyclone_fix",
     'GrML': "gridded",
     'ObML': "observation",
-    'SatML': "satellite",
 }
 
 gridded_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}"
@@ -261,7 +260,8 @@ def parse_gridded_filters_request(request, dsid, cursor):
 
         return (restrictions, filters, "", 200)
     except Exception as err:
-        print(f"DSFILES API: parse_gridded_filters_request(): '{err}'")
+        print("DSFILES API SERVER ERROR: parse_gridded_filters_request(): "
+              f"'{err}'")
         return ({}, {}, "Server error.", 500)
 
 
@@ -433,7 +433,8 @@ def respond_to_request(request, dsid, operation, datatype=None):
                                       "operation."},
                     status=400)
 
-    except Exception:
+    except Exception as err:
+        print(f"DSFILES API SERVER ERROR: respond_to_request(): '{err}'")
         return JsonResponse({'error_message': "Server error."}, status=500)
     finally:
         if 'conn' in locals():
@@ -488,7 +489,8 @@ def serve_result_set(request, dsid, result_ID, page_num):
             files_response['pagination']['next_page'] = None
 
         return JsonResponse(files_response, status=200)
-    except Exception:
+    except Exception as err:
+        print(f"DSFILES API SERVER ERROR: serve_result_set(): '{err}'")
         return JsonResponse({'error_message': "Server error."}, status=500)
     finally:
         if 'conn' in locals():
