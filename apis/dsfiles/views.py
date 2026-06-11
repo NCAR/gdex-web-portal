@@ -195,10 +195,10 @@ def parse_gridded_filters_request(request, dsid, cursor):
                 tr_set.add(e[1])
                 if 'request_products' in locals():
                     restrictions['products'].append(
-                            {'name': e[2], 'code': e[1]})
+                            {'name': e[2], 'code': str(e[1])})
                 else:
-                    filters['products'].append({'name': e[2],
-                                                'code': str(e[1])})
+                    filters['products'].append(
+                            {'name': e[2], 'code': str(e[1])})
 
             if e[3] not in gd_set:
                 gd_set.add(e[3])
@@ -206,10 +206,10 @@ def parse_gridded_filters_request(request, dsid, cursor):
                                                     output="text")
                 if 'request_grids' in locals():
                     restrictions['grids'].append(
-                            {'name': grid_name, 'code': e[3]})
+                            {'name': grid_name, 'code': str(e[3])})
                 else:
-                    filters['grids'].append({'name': grid_name,
-                                             'code': str(e[3])})
+                    filters['grids'].append(
+                            {'name': grid_name, 'code': str(e[3])})
 
             if e[5] not in lbmp_set:
                 lbmp_set.add(e[5])
@@ -246,10 +246,11 @@ def parse_gridded_filters_request(request, dsid, cursor):
         for e in res:
             lev_name = decode_level(lev_fmts[e[3]], *e[0:3], level_maps)
             if 'request_levels' in locals():
-                restrictions['levels'].append({'name': lev_name, 'code': e[3]})
+                restrictions['levels'].append(
+                        {'name': lev_name, 'code': str(e[3])})
             else:
-                filters['levels'].append({'name': lev_name,
-                                          'code': str(e[3])})
+                filters['levels'].append(
+                        {'name': lev_name, 'code': str(e[3])})
 
         if 'valid_datetime_min' in filters:
             s = str(filters['valid_datetime_min'])
