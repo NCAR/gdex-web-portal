@@ -52,6 +52,9 @@
           },
           "400": {
             "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         }
       }
@@ -110,6 +113,9 @@
           },
           "400": {
             "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         }
       }
@@ -169,6 +175,9 @@
           },
           "400": {
             "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         }
       }
@@ -219,6 +228,9 @@
           },
           "400": {
             "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         }
       }
@@ -473,7 +485,7 @@
           }
         }
       },
-      "BadRequest": {
+      "ErrorResponse": {
         "type": "object",
         "properties": {
           "error_message": {
@@ -488,7 +500,17 @@
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schema_defs/BadRequest"
+              "$ref": "#/components/schema_defs/ErrorResponse"
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schema_defs/ErrorResponse"
             }
           }
         }
