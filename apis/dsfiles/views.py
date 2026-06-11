@@ -197,7 +197,8 @@ def parse_gridded_filters_request(request, dsid, cursor):
                     restrictions['products'].append(
                             {'name': e[2], 'code': e[1]})
                 else:
-                    filters['products'].append({'name': e[2], 'code': e[1]})
+                    filters['products'].append({'name': e[2],
+                                                'code': str(e[1])})
 
             if e[3] not in gd_set:
                 gd_set.add(e[3])
@@ -207,7 +208,8 @@ def parse_gridded_filters_request(request, dsid, cursor):
                     restrictions['grids'].append(
                             {'name': grid_name, 'code': e[3]})
                 else:
-                    filters['grids'].append({'name': grid_name, 'code': e[3]})
+                    filters['grids'].append({'name': grid_name,
+                                             'code': str(e[3])})
 
             if e[5] not in lbmp_set:
                 lbmp_set.add(e[5])
@@ -246,7 +248,8 @@ def parse_gridded_filters_request(request, dsid, cursor):
             if 'request_levels' in locals():
                 restrictions['levels'].append({'name': lev_name, 'code': e[3]})
             else:
-                filters['levels'].append({'name': lev_name, 'code': e[3]})
+                filters['levels'].append({'name': lev_name,
+                                          'code': str(e[3])})
 
         if 'valid_datetime_min' in filters:
             s = str(filters['valid_datetime_min'])
@@ -303,6 +306,8 @@ def files(request, dsid, datatype, db_conn):
                          "Invalid format for 'valid_datetime_min'"},
                         status=400)
 
+            files_response['restrictions']['valid_datetime_min'] = (
+                    request.GET['valid_datetime_min'])
             parts = request.GET['valid_datetime_min'].split()
             grml_req.POST['startDate'] = parts[0]
             grml_req.POST['startTime'] = parts[1]
@@ -318,6 +323,8 @@ def files(request, dsid, datatype, db_conn):
                          "Invalid format for 'valid_datetime_max'"},
                         status=400)
 
+            files_response['restrictions']['valid_datetime_max'] = (
+                    request.GET['valid_datetime_max'])
             parts = request.GET['valid_datetime_max'].split()
             grml_req.POST['endDate'] = parts[0]
             grml_req.POST['endTime'] = parts[1]
@@ -325,21 +332,29 @@ def files(request, dsid, datatype, db_conn):
             grml_req.POST['endDate'] = ""
             grml_req.POST['endTime'] = ""
 
+        files_response['restrictions']['parameters'] = (
+                request.GET.getlist('parameters'))
         kwargs = {}
         if 'products' in request.GET:
             kwargs['pcodes'] = (
                     [part for e in request.GET.getlist('products') for part in
                      e.split(",")])
+            files_response['restrictions']['products'] = (
+                    request.GET.getlist('products'))
 
         if 'grids' in request.GET:
             kwargs['gcodes'] = (
                     [part for e in request.GET.getlist('grids') for part in
                      e.split(",")])
+            files_response['restrictions']['grids'] = (
+                    request.GET.getlist('grids'))
 
         if 'levels' in request.GET:
             kwargs['lcodes'] = (
                     [int(part) for e in request.GET.getlist('levels') for part
                      in e.split(",")])
+            files_response['restrictions']['levels'] = (
+                    request.GET.getlist('levels'))
 
         grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
         file_codes = grml['fcodes']
