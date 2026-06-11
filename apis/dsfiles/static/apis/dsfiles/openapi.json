@@ -500,7 +500,12 @@
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schema_defs/ErrorResponse"
+              "type": "object",
+              "properties": {
+                "error_message": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
@@ -510,7 +515,13 @@
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schema_defs/ErrorResponse"
+              "type": "object",
+              "properties": {
+                "error_message": {
+                  "type": "string",
+                  "const": "Server error."
+                }
+              }
             }
           }
         }
