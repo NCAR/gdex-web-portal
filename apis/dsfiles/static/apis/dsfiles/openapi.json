@@ -59,13 +59,13 @@
         }
       }
     },
-    "/{DSID}/filters/gridded": {
+    "/{DSID}/filters/grid": {
       "get": {
         "tags": [
           "Filters"
         ],
-        "summary": "Get dataset-specific filters for the \"gridded\" data type.",
-        "description": "This operation returns the filters that are available for the \"gridded\" data files in the specified dataset using its GDEX DSID.",
+        "summary": "Get dataset-specific filters for the \"grid\" data type.",
+        "description": "This operation returns the filters that are available for the \"grid\" data files in the specified dataset using its GDEX DSID.",
         "operationId": "getDatasetFiltersGridded",
         "parameters": [
           {
@@ -120,13 +120,13 @@
         }
       }
     },
-    "/{DSID}/files/gridded": {
+    "/{DSID}/files/grid": {
       "get": {
         "tags": [
           "Data Files"
         ],
-        "summary": "Get a list of data files containing data type \"gridded\" data.",
-        "description": "This operation returns a list of \"gridded\" data files for the specified dataset, optionally restricted by user-specified filters.",
+        "summary": "Get a list of data files containing data type \"grid\" data.",
+        "description": "This operation returns a list of \"grid\" data files for the specified dataset, optionally restricted by user-specified filters.",
         "operationId": "getDatasetFiles",
         "parameters": [
           {
@@ -327,7 +327,7 @@
           },
           "datatype": {
             "type": "string",
-            "const": "gridded"
+            "const": "grid"
           },
           "restrictions": {
             "type": "object",
@@ -426,7 +426,7 @@
           },
           "datatype": {
             "type": "string",
-            "const": "gridded"
+            "const": "grid"
           },
           "restrictions": {
             "type": "object",

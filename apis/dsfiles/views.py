@@ -18,11 +18,11 @@ from libpkg.strutils import strand
 
 datatypes_map = {
     'FixML': "cyclone_fix",
-    'GrML': "gridded",
+    'GrML': "grid",
     'ObML': "observation",
 }
 
-gridded_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}"
+grid_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}"
 
 PAGE_SIZE = 1000
 
@@ -58,7 +58,7 @@ def datatypes(dsid, cursor):
     return JsonResponse(response)
 
 
-def parse_gridded_filters_request(request, dsid, cursor):
+def parse_grid_filters_request(request, dsid, cursor):
     try:
         if 'parameters' in request.GET and len(request.GET['parameters']) > 0:
             request_parameters = (
@@ -99,7 +99,7 @@ def parse_gridded_filters_request(request, dsid, cursor):
         qparams = [dsid]
         if ('valid_datetime_min' in request.GET and
                 len(request.GET['valid_datetime_min']) > 0):
-            if not re.fullmatch(gridded_date_re,
+            if not re.fullmatch(grid_date_re,
                                 request.GET['valid_datetime_min']):
                 return ({}, {}, "Invalid format for 'valid_datetime_min'", 400)
 
@@ -115,7 +115,7 @@ def parse_gridded_filters_request(request, dsid, cursor):
 
         if ('valid_datetime_max' in request.GET and
                 len(request.GET['valid_datetime_max']) > 0):
-            if not re.fullmatch(gridded_date_re,
+            if not re.fullmatch(grid_date_re,
                                 request.GET['valid_datetime_max']):
                 return ({}, {}, "Invalid format for 'valid_datetime_max'", 400)
 
@@ -165,12 +165,12 @@ def parse_gridded_filters_request(request, dsid, cursor):
             if len(request.GET) > 0:
                 err = ("No filters were identified. Perhaps an invalid query "
                        "parameter was specified. See the "
-                       "'/{DSID}/filters/gridded' endpoint for valid "
-                       "parameter values for this dataset.")
+                       "'/{DSID}/filters/grid' endpoint for valid parameter "
+                       "values for this dataset.")
                 return ({}, {}, err, 400)
 
             err = ("API file discovery is not available for data type "
-                   "'gridded'. See the '/{{DSID}}/datatypes' endpoint for the "
+                   "'grid'. See the '/{{DSID}}/datatypes' endpoint for the "
                    "valid data types for this dataset.")
             return ({}, {}, err, 400)
 
@@ -264,16 +264,16 @@ def parse_gridded_filters_request(request, dsid, cursor):
 
         return (restrictions, filters, "", 200)
     except Exception as err:
-        print("DSFILES API SERVER ERROR: parse_gridded_filters_request(): "
+        print("DSFILES API SERVER ERROR: parse_grid_filters_request(): "
               f"'{err}'")
         return ({}, {}, "Server error.", 500)
 
 
 def filters(request, dsid, datatype, cursor):
     response = {'DSID': dsid}
-    if datatype == "gridded":
+    if datatype == "grid":
         restrictions, filters, err, status = (
-                parse_gridded_filters_request(request, dsid, cursor))
+                parse_grid_filters_request(request, dsid, cursor))
         if len(err) > 0:
             return JsonResponse({'error_message': err}, status=status)
 
@@ -294,13 +294,13 @@ def files(request, dsid, datatype, db_conn):
     files_response['datatype'] = datatype
     cursor = db_conn.cursor()
     services = service_list(dsid)
-    if datatype == "gridded" and "GrML" in services:
+    if datatype == "grid" and "GrML" in services:
         grml_req = HttpRequest()
         grml_req.method = "POST"
         grml_req.POST = QueryDict(mutable=True)
         grml_req.POST.setlist('parameter', request.GET.getlist('parameters'))
         if 'valid_datetime_min' in request.GET:
-            if not re.fullmatch(gridded_date_re,
+            if not re.fullmatch(grid_date_re,
                                 request.GET['valid_datetime_min']):
                 return JsonResponse(
                         {'error_message':
@@ -317,7 +317,7 @@ def files(request, dsid, datatype, db_conn):
             grml_req.POST['startTime'] = "00:00"
 
         if 'valid_datetime_max' in request.GET:
-            if not re.fullmatch(gridded_date_re,
+            if not re.fullmatch(grid_date_re,
                                 request.GET['valid_datetime_max']):
                 return JsonResponse(
                         {'error_message':
