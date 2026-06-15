@@ -77,7 +77,25 @@
           {
             "$ref": "#/components/parameters/valid_datetime_max"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFiltersCycloneFixResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
       }
     },
     "/{DSID}/filters/grid": {
@@ -127,7 +145,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schema_defs/DatasetFiltersGriddedResponse"
+                  "$ref": "#/components/schema_defs/DatasetFiltersGridResponse"
                 }
               }
             }
@@ -159,14 +177,64 @@
           {
             "$ref": "#/components/parameters/valid_date_max"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFiltersObservationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
       }
     },
     "/{DSID}/files/cylone_fix": {
       "get": {
         "tags": [
           "Data Files"
-        ]
+        ],
+        "summary": "Get a list of data files containing data type \"cyclone_fix\" data.",
+        "description": "This operation returns a list of \"cyclone_fix\" data files for the specified dataset, optionally restricted by user-specified filters.",
+        "operationId": "getDatasetCycloneFixFiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_min"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_max"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFilesCycloneFixResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
       }
     },
     "/{DSID}/files/grid": {
@@ -176,7 +244,7 @@
         ],
         "summary": "Get a list of data files containing data type \"grid\" data.",
         "description": "This operation returns a list of \"grid\" data files for the specified dataset, optionally restricted by user-specified filters.",
-        "operationId": "getDatasetFiles",
+        "operationId": "getDatasetGridFiles",
         "parameters": [
           {
             "$ref": "#/components/parameters/dsid"
@@ -217,7 +285,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schema_defs/DatasetFilesGriddedResponse"
+                  "$ref": "#/components/schema_defs/DatasetFilesGridResponse"
                 }
               }
             }
@@ -235,7 +303,39 @@
       "get": {
         "tags": [
           "Data Files"
-        ]
+        ],
+        "summary": "Get a list of data files containing data type \"observation\" data.",
+        "description": "This operation returns a list of \"observation\" data files for the specified dataset, optionally restricted by user-specified filters.",
+        "operationId": "getDatasetObservationFiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "$ref": "#/components/parameters/valid_date_min"
+          },
+          {
+            "$ref": "#/components/parameters/valid_date_max"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFilesObservationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
       }
     },
     "/{DSID}/files/{RESULT_ID}/{PAGE_NUM}": {
@@ -276,7 +376,7 @@
               "application/json": {
                 "schema": {
                   "oneOf": [
-                    "$ref": "#/components/schema_defs/DatasetFilesGriddedResponse"
+                    "$ref": "#/components/schema_defs/DatasetFilesGridResponse"
                   ]
                 }
               }
@@ -389,7 +489,7 @@
           }
         }
       },
-      "DatasetFiltersGriddedResponse": {
+      "DatasetFiltersGridResponse": {
         "type": "object",
         "properties": {
           "DSID": {
@@ -488,7 +588,7 @@
           }
         }
       },
-      "DatasetFilesGriddedResponse": {
+      "DatasetFilesGridResponse": {
         "type": "object",
         "properties": {
           "DSID": {
