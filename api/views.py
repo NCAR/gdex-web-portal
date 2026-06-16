@@ -16,6 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from . import rdams
 from . import common
 from . import RDA_Response as rda_r
+from . import filesearch
 
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.response import Response
@@ -71,6 +72,7 @@ from .docs import (
     get_related_resources_schema,
     get_related_datasets_schema,
     get_all_datasets_schema,
+    filesearch_datatypes_schema,
     exclude_schema,
 )
 
@@ -834,3 +836,8 @@ def get_all_datasets(request):
     response = rda_r.RDA_Response()
     response.add_data(json)
     return JsonResponse(response.get_json())
+
+@filesearch_datatypes_schema
+@api_view(['GET'])
+def filesearch_datatypes(request, dsid):
+    return filesearch.datatypes(dsid)
