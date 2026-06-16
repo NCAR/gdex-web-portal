@@ -26,7 +26,7 @@ grid_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}"
 
 PAGE_SIZE = 1000
 
-files_response = {'DSID': "", 'datatype': "", 'restrictions': {},
+files_response = {'dsid': "", 'datatype': "", 'restrictions': {},
                   'files': {
                       'https_base': settings.RDA_DATA_BASE_URL,
                       'ncar_hpc_base': settings.GDEX_CANONICAL_DATA_PATH},
@@ -62,7 +62,7 @@ def datatypes(dsid):
                                       "for this dataset."},
                     status=400)
 
-        response = {'DSID': dsid,
+        response = {'dsid': dsid,
                     'datatypes': [datatypes_map[e] for e in services]}
         return JsonResponse(response)
     except Exception as err:
@@ -181,13 +181,14 @@ def parse_grid_filters_request(request, dsid, cursor):
             if len(request.GET) > 0:
                 err = ("No filters were identified. Perhaps an invalid query "
                        "parameter was specified. See the "
-                       "'/{DSID}/filters/grid' endpoint for valid parameter "
-                       "values for this dataset.")
+                       f"'/api/datasets/{dsid}/filesearch/filters/grid' "
+                       "endpoint for valid parameter values for this dataset.")
                 return ({}, {}, err, 400)
 
             err = ("API file discovery is not available for data type "
-                   "'grid'. See the '/{{DSID}}/datatypes' endpoint for the "
-                   "valid data types for this dataset.")
+                   "'grid'. See the "
+                   f"'/api/datasets/{dsid}/filesearch/datatypes' endpoint "
+                   "for the valid data types for this dataset.")
             return ({}, {}, err, 400)
 
         param_set = set()
@@ -285,28 +286,54 @@ def parse_grid_filters_request(request, dsid, cursor):
         return ({}, {}, "Server error.", 500)
 
 
-def filters(request, dsid, datatype, cursor):
-    response = {'DSID': dsid}
-    if datatype == "grid":
-        restrictions, filters, err, status = (
-                parse_grid_filters_request(request, dsid, cursor))
-        if len(err) > 0:
-            return JsonResponse({'error_message': err}, status=status)
+def filters(request, dsid, datatype):
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        if not valid_dsid(dsid, cursor):
+            return JsonResponse(
+                    {'error_message': f"'{dsid}' is not a valid dataset "
+                                      "identifier."},
+                    status=400)
 
-        if len(restrictions) > 0:
-            response['restrictions'] = restrictions
+        response = {'dsid': dsid}
+        if datatype == "cyclone_fix":
+            return JsonResponse({'error_message': "Not yet implemented."},
+                                status=500)
 
-        response['filters'] = filters
-        return JsonResponse(response)
+        if datatype == "grid":
+            restrictions, filters, err, status = (
+                    parse_grid_filters_request(request, dsid, cursor))
+            if len(err) > 0:
+                return JsonResponse({'error_message': err}, status=status)
 
-    msg = (f"API file discovery is not available for data type '{datatype}'. "
-           "See the '/{{DSID}}/datatypes' endpoint for the valid data types "
-           "for this dataset.")
-    return JsonResponse({'error_message': msg}, status=400)
+            if len(restrictions) > 0:
+                response['restrictions'] = restrictions
+
+            response['filters'] = filters
+            return JsonResponse(response)
+
+        if datatype == "observation":
+            return JsonResponse({'error_message': "Not yet implemented."},
+                                status=500)
+
+        msg = ("API file discovery is not available for data type "
+               f"'{datatype}'. See the "
+               f"'/api/datasets/{dsid}/filesearch/datatypes/' endpoint for "
+               "the valid data types for this dataset.")
+        return JsonResponse({'error_message': msg}, status=400)
+    except Exception as err:
+        # log the error in the Apache error log
+        print(f"FILESEARCH API SERVER ERROR: filters(dsid={dsid}, "
+              f"datatype={datatype}): '{err}'")
+        return JsonResponse({'error_message': "Server error."}, status=500)
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 
 def files(request, dsid, datatype, db_conn):
-    files_response['DSID'] = dsid
+    files_response['dsid'] = dsid
     files_response['datatype'] = datatype
     cursor = db_conn.cursor()
     services = service_list(dsid)
@@ -423,10 +450,11 @@ def files(request, dsid, datatype, db_conn):
         return JsonResponse(files_response, status=200)
 
     return JsonResponse(
-            {'error_message': "API file discovery is not available for "
-                              f"data type '{datatype}'. See the "
-                              "'/{DSID}/datatypes' endpoint for the valid "
-                              "data types for this dataset."},
+            {'error_message': (
+                    "API file discovery is not available for data type "
+                    f"'{datatype}'. See the "
+                    "'/api/datasets/{dsid}/filesearch/datatypes/' endpoint "
+                    "for the valid data types for this dataset.")},
             status=400)
 
 
@@ -485,7 +513,7 @@ def serve_result_set(request, dsid, result_ID, page_num):
                                       "beginning at '1'."}, status=400)
 
     try:
-        files_response['DSID'] = dsid
+        files_response['dsid'] = dsid
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
         cursor.execute(
