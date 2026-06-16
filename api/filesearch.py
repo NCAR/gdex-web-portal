@@ -46,16 +46,32 @@ def valid_dsid(dsid, cursor):
 
 
 def datatypes(dsid, cursor):
-    services = service_list(dsid)
-    if len(services) == 0:
-        return JsonResponse(
-                {'error_message': "API file discovery is not available for "
-                                  "this dataset."},
-                status=400)
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        if not valid_dsid(dsid, cursor):
+            return JsonResponse(
+                    {'error_message': f"'{dsid}' is not a valid dataset "
+                                      "identifier."},
+                    status=400)
 
-    response = {'DSID': dsid,
-                'datatypes': [datatypes_map[e] for e in services]}
-    return JsonResponse(response)
+        services = service_list(dsid)
+        if len(services) == 0:
+            return JsonResponse(
+                    {'error_message': "API file discovery is not available "
+                                      "for this dataset."},
+                    status=400)
+
+        response = {'DSID': dsid,
+                    'datatypes': [datatypes_map[e] for e in services]}
+        return JsonResponse(response)
+    except Exception as err:
+        # log the error in the Apache error log
+        print(f"FILESEARCH API SERVER ERROR: datatypes(): '{err}'")
+        return JsonResponse({'error_message': "Server error."}, status=500)
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 
 def parse_grid_filters_request(request, dsid, cursor):
