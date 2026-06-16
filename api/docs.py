@@ -175,6 +175,32 @@ get_web_files_schema = extend_schema(
     tags=['Files']
 )
 
+filesearch_datatypes_schema = extend_schema(
+    tags = ["Files"],
+    operation_id = "get_filesearch_datatypes",
+    summary = "Get data types (required for a file search) for a dataset",
+    description = (
+            "This operation returns a list of data types (required for a file "
+            "search) that exist for a dataset."),
+    parameters = [_DSID],
+    responses = {
+        200: {
+            'type': "object",
+            'properties': {'dsid': {'type': "string"},
+                           'datatypes': {'type': "array",
+                                         'items': {'type': "string"}}}
+        },
+        400: {
+            'type': "object",
+            'properties': {'error_message': {'type': "string"}}
+        },
+        500: {
+            'type': "object",
+            'properties': {'error_message': {'type': "string"}}
+        }
+    }
+)
+
 # ---------------------------------------------------------------------------
 # Documentation / software
 # ---------------------------------------------------------------------------
