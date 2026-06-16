@@ -58,6 +58,7 @@ _urlpatterns = [
     path(r'datasets/<dsid>/webfiles/<gindex>/<filter_wfile>/', views.get_web_files ),
     path(r'datasets/<dsid>/filelist/<gindex>/', views.get_assembled_groups ),
     path(r'datasets/<dsid>/filelist/', views.get_assembled_groups ),
+    path(r'datasets/<dsid>/filesearch/datatypes/', views.filesearch_datatypes),
     path(r'datasets/<dsid>/abstract/', views.get_abstract),
     path(r'datasets/<dsid>/acknowledgment/', views.get_acknowledgement ),
     path(r'datasets/<dsid>/temporal/', views.get_temporal ),
