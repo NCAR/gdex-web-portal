@@ -45,7 +45,7 @@ def valid_dsid(dsid, cursor):
     return dsid is not None
 
 
-def datatypes(dsid, cursor):
+def datatypes(dsid):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
