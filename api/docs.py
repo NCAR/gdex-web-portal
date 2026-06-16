@@ -7,6 +7,38 @@ _DSID = OpenApiParameter(
     required=True, pattern=r'd\d{6}'
 )
 
+_VALID_DATETIME_MIN = OpenApiParameter(
+    name="valid_datetime_min", type=OpenApiTypes.STR,
+    location=OpenApiParameter.QUERY,
+    description=("Restrict to data valid on or after date/time specified as "
+                 '"YYYY-MM-DD HH:MM"'),
+    required=False,
+)
+
+_VALID_DATETIME_MAX = OpenApiParameter(
+    name="valid_datetime_max", type=OpenApiTypes.STR,
+    location=OpenApiParameter.QUERY,
+    description=("Restrict to data valid on or prior to date/time specified "
+                 'as "YYYY-MM-DD HH:MM"'),
+    required=False,
+)
+
+_VALID_DATE_MIN = OpenApiParameter(
+    name="valid_date_min", type=OpenApiTypes.STR,
+    location=OpenApiParameter.QUERY,
+    description=("Restrict to data valid on or after date specified as "
+                 '"YYYY-MM-DD"'),
+    required=False,
+)
+
+_VALID_DATE_MAX = OpenApiParameter(
+    name="valid_date_max", type=OpenApiTypes.STR,
+    location=OpenApiParameter.QUERY,
+    description=("Restrict to data valid on or after date specified as "
+                 '"YYYY-MM-DD"'),
+    required=False,
+)
+
 _STD_200 = {
     'status': {'type': 'string', 'example': 'ok'},
     'http_response': {'type': 'integer', 'example': 200},
@@ -189,6 +221,95 @@ filesearch_datatypes_schema = extend_schema(
             'properties': {'dsid': {'type': "string"},
                            'datatypes': {'type': "array",
                                          'items': {'type': "string"}}}
+        },
+        400: {
+            'type': "object",
+            'properties': {'error_message': {'type': "string"}}
+        },
+        500: {
+            'type': "object",
+            'properties': {'error_message': {'type': "string"}}
+        }
+    }
+)
+
+filesearch_filters_cyclone_fix_schema = extend_schema(
+    tags = ["Files"],
+    operation_id = "get_filesearch_cyclone_fix_filters",
+    summary = 'Get filters for a dataset with the "cyclone_fix" data type',
+    description = (
+            "This operation returns the filters that are available for the "
+            '"cyclone_fix" data files in a dataset.'),
+    parameters = [_DSID, _VALID_DATETIME_MIN, _VALID_DATETIME_MAX],
+    responses = {
+        200: {
+        },
+        400: {
+            'type': "object",
+            'properties': {'error_message': {'type': "string"}}
+        },
+        500: {
+            'type': "object",
+            'properties': {'error_message': {'type': "string"}}
+        }
+    }
+)
+
+filesearch_filters_grid_schema = extend_schema(
+    tags = ["Files"],
+    operation_id = "get_filesearch_grid_filters",
+    summary = 'Get filters for a dataset with the "grid" data type',
+    description = (
+            "This operation returns the filters that are available for the "
+            '"grid" data files in a dataset.'),
+    parameters = [_DSID, _VALID_DATETIME_MIN, _VALID_DATETIME_MAX],
+    responses = {
+        200: {
+            'type': "object",
+            'properties': {
+                'dsid': {'type': "string"},
+                'datatype': {'type': "string", 'enum': ["grid"]},
+                'restrictions': {'type': "array", 'items': {'type': "string"}},
+                'filters': {
+                    'type': "object",
+                    'properties': {
+                        'valid_datetime_min': {'type': "string"},
+                        'valid_datetime_max': {'type': "string"},
+                        'parameters': {
+                            'type': "array",
+                            'items': {
+                                'type': "object",
+                                'properties': {
+                                    'name': {'type': "string"},
+                                    'code': {'type': "string"}
+                                }
+                            }
+                        }
+                    }
+                 }
+             }
+        },
+        400: {
+            'type': "object",
+            'properties': {'error_message': {'type': "string"}}
+        },
+        500: {
+            'type': "object",
+            'properties': {'error_message': {'type': "string"}}
+        }
+    }
+)
+
+filesearch_filters_observation_schema = extend_schema(
+    tags = ["Files"],
+    operation_id = "get_filesearch_observation_filters",
+    summary = 'Get filters for a dataset with the "observation" data type',
+    description = (
+            "This operation returns the filters that are available for the "
+            '"observation" data files in a dataset.'),
+    parameters = [_DSID, _VALID_DATE_MIN, _VALID_DATE_MAX],
+    responses = {
+        200: {
         },
         400: {
             'type': "object",
