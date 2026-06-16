@@ -841,3 +841,18 @@ def get_all_datasets(request):
 @api_view(['GET'])
 def filesearch_datatypes(request, dsid):
     return filesearch.datatypes(dsid)
+
+@filesearch_filters_cyclone_fix_schema
+@api_view(['GET'])
+def filesearch_filters_cyclone_fix(request, dsid):
+    return filesearch.filters(request, dsid, datatype="cyclone_fix")
+
+@filesearch_filters_grid_schema
+@api_view(['GET'])
+def filesearch_filters_grid(request, dsid):
+    return filesearch.filters(request, dsid, datatype="grid")
+
+@filesearch_filters_observation_schema
+@api_view(['GET'])
+def filesearch_filters_observation(request, dsid):
+    return filesearch.filters(request, dsid, datatype="observation")
