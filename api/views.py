@@ -73,6 +73,9 @@ from .docs import (
     get_related_datasets_schema,
     get_all_datasets_schema,
     filesearch_datatypes_schema,
+    filesearch_filters_cyclone_fix_schema,
+    filesearch_filters_grid_schema,
+    filesearch_filters_observation_schema,
     exclude_schema,
 )
 
