@@ -332,6 +332,70 @@ def filters(request, dsid, datatype):
             conn.close()
 
 
+def get_grml_file_codes(request, dsid, cursor):
+    grml_req = HttpRequest()
+    grml_req.method = "POST"
+    grml_req.POST = QueryDict(mutable=True)
+    grml_req.POST.setlist('parameter', request.GET.getlist('parameters'))
+    if 'valid_datetime_min' in request.GET:
+        if not re.fullmatch(grid_date_re, request.GET['valid_datetime_min']):
+            return JsonResponse(
+                    {'error_message':
+                     "Invalid format for 'valid_datetime_min'"},
+                    status=400)
+
+        files_response['restrictions']['valid_datetime_min'] = (
+                request.GET['valid_datetime_min'])
+        parts = request.GET['valid_datetime_min'].split()
+        grml_req.POST['startDate'] = parts[0]
+        grml_req.POST['startTime'] = parts[1]
+    else:
+        grml_req.POST['startDate'] = "1000-01-01"
+        grml_req.POST['startTime'] = "00:00"
+
+    if 'valid_datetime_max' in request.GET:
+        if not re.fullmatch(grid_date_re, request.GET['valid_datetime_max']):
+            return JsonResponse(
+                    {'error_message':
+                     "Invalid format for 'valid_datetime_max'"},
+                    status=400)
+
+        files_response['restrictions']['valid_datetime_max'] = (
+                request.GET['valid_datetime_max'])
+        parts = request.GET['valid_datetime_max'].split()
+        grml_req.POST['endDate'] = parts[0]
+        grml_req.POST['endTime'] = parts[1]
+    else:
+        grml_req.POST['endDate'] = ""
+        grml_req.POST['endTime'] = ""
+
+    files_response['restrictions']['parameters'] = (
+            request.GET.getlist('parameters'))
+    kwargs = {}
+    if 'products' in request.GET:
+        kwargs['pcodes'] = (
+                [part for e in request.GET.getlist('products') for part in
+                 e.split(",")])
+        files_response['restrictions']['products'] = (
+                request.GET.getlist('products'))
+
+    if 'grids' in request.GET:
+        kwargs['gcodes'] = (
+                [part for e in request.GET.getlist('grids') for part in
+                 e.split(",")])
+        files_response['restrictions']['grids'] = request.GET.getlist('grids')
+
+    if 'levels' in request.GET:
+        kwargs['lcodes'] = (
+                [int(part) for e in request.GET.getlist('levels') for part in
+                 e.split(",")])
+        files_response['restrictions']['levels'] = (
+                request.GET.getlist('levels'))
+
+    grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
+    return grml['fcodes']
+
+
 def files(request, dsid, datatype):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
@@ -339,73 +403,15 @@ def files(request, dsid, datatype):
         files_response['dsid'] = dsid
         files_response['datatype'] = datatype
         services = service_list(dsid)
-        if datatype == "grid" and "GrML" in services:
-            grml_req = HttpRequest()
-            grml_req.method = "POST"
-            grml_req.POST = QueryDict(mutable=True)
-            grml_req.POST.setlist('parameter',
-                                  request.GET.getlist('parameters'))
-            if 'valid_datetime_min' in request.GET:
-                if not re.fullmatch(grid_date_re,
-                                    request.GET['valid_datetime_min']):
-                    return JsonResponse(
-                            {'error_message':
-                             "Invalid format for 'valid_datetime_min'"},
-                            status=400)
-
-                files_response['restrictions']['valid_datetime_min'] = (
-                        request.GET['valid_datetime_min'])
-                parts = request.GET['valid_datetime_min'].split()
-                grml_req.POST['startDate'] = parts[0]
-                grml_req.POST['startTime'] = parts[1]
-            else:
-                grml_req.POST['startDate'] = "1000-01-01"
-                grml_req.POST['startTime'] = "00:00"
-
-            if 'valid_datetime_max' in request.GET:
-                if not re.fullmatch(grid_date_re,
-                                    request.GET['valid_datetime_max']):
-                    return JsonResponse(
-                            {'error_message':
-                             "Invalid format for 'valid_datetime_max'"},
-                            status=400)
-
-                files_response['restrictions']['valid_datetime_max'] = (
-                        request.GET['valid_datetime_max'])
-                parts = request.GET['valid_datetime_max'].split()
-                grml_req.POST['endDate'] = parts[0]
-                grml_req.POST['endTime'] = parts[1]
-            else:
-                grml_req.POST['endDate'] = ""
-                grml_req.POST['endTime'] = ""
-
-            files_response['restrictions']['parameters'] = (
-                    request.GET.getlist('parameters'))
-            kwargs = {}
-            if 'products' in request.GET:
-                kwargs['pcodes'] = (
-                        [part for e in request.GET.getlist('products') for part
-                         in e.split(",")])
-                files_response['restrictions']['products'] = (
-                        request.GET.getlist('products'))
-
-            if 'grids' in request.GET:
-                kwargs['gcodes'] = (
-                        [part for e in request.GET.getlist('grids') for part in
-                         e.split(",")])
-                files_response['restrictions']['grids'] = (
-                        request.GET.getlist('grids'))
-
-            if 'levels' in request.GET:
-                kwargs['lcodes'] = (
-                        [int(part) for e in request.GET.getlist('levels') for
-                         part in e.split(",")])
-                files_response['restrictions']['levels'] = (
-                        request.GET.getlist('levels'))
-
-            grml = parse_grml_query(cursor, dsid, "weblist", grml_req,
-                                    **kwargs)
-            file_codes = grml['fcodes']
+        if datatype == "cyclone_fix" and "FixML" in services:
+            return JsonResponse({'error_message': "Not yet implemented."},
+                                status=500)
+        elif datatype == "grid" and "GrML" in services:
+            db = "WGrML"
+            file_codes = get_grml_file_codes(request, dsid, cursor)
+        elif datatype == "sensor" and "ObML" in services:
+            return JsonResponse({'error_message': "Not yet implemented."},
+                                status=500)
 
         if 'file_codes' in locals():
             files_response['pagination']['total_count'] = len(file_codes)
@@ -420,8 +426,8 @@ def files(request, dsid, datatype):
                 files_response['pagination']['next_page'] = None
                 files_response['pagination']['result_id'] = None
                 cursor.execute(
-                        f'select id from "WGrML".{dsid}_webfiles2 where code '
-                        "in %s order by id", (tuple(grml['fcodes']), ))
+                        f'select id from "{db}".{dsid}_webfiles2 where code '
+                        "in %s order by id", (tuple(file_codes), ))
             else:
                 files_response['pagination']['result_id'] = strand(20)
                 now = datetime.now(pytz.utc)
@@ -447,7 +453,7 @@ def files(request, dsid, datatype):
                 files_response['pagination']['next_page'] = 2
                 cursor.execute(
                         "select w.id from metautil.dsfiles_api_file_codes as "
-                        f'f left join "WGrML".{dsid}_webfiles2 as w on w.code '
+                        f'f left join "{db}".{dsid}_webfiles2 as w on w.code '
                         "= f.file_code where f.result_id = %s order by w.id "
                         f"limit {PAGE_SIZE} offset 0",
                         (files_response['pagination']['result_id'], ))
