@@ -82,6 +82,34 @@ _FILESEARCH_ERROR_RESPONSE = {
     'properties': {'error_message': {'type': "string"}}
 }
 
+_FILESEARCH_FILES_RESPONSE = {
+    'type': "object",
+    'properties': {
+        'dsid': {'type': "string"},
+        'datatype': {'type': "string"},
+        'restrictions': {'type': "array", 'items': {'type': "string"}},
+        'files': {
+            'type': "object",
+            'properties': {
+                'https_base': {'type': "string"},
+                'ncar_hpc_base': {'type': "string"},
+                'paths': {'type': "array", 'items': {'type': "string"}}
+            }
+        },
+        'pagination': {
+            'type': "object",
+            'properties': {
+                'total_count': {'type': "integer"},
+                'num_pages': {'type': "integer"},
+                'num_per_page': {'type': "integer"},
+                'current_page': {'type': "integer"},
+                'next_page': {'type': "integer"},
+                'reault_ID': {'type': "string"},
+            }
+        }
+    }
+}
+
 # ---------------------------------------------------------------------------
 # Parameters / metadata
 # ---------------------------------------------------------------------------
@@ -353,33 +381,36 @@ filesearch_files_grid_schema = extend_schema(
         _GRID_GRIDS, _GRID_LEVELS
   ],
   responses={
-        200: {
-            'type': "object",
-            'properties': {
-                'dsid': {'type': "string"},
-                'datatype': {'type': "string", 'enum': ["grid"]},
-                'restrictions': {'type': "array", 'items': {'type': "string"}},
-                'files': {
-                    'type': "object",
-                    'properties': {
-                        'https_base': {'type': "string"},
-                        'ncar_hpc_base': {'type': "string"},
-                        'paths': {'type': "array", 'items': {'type': "string"}}
-                    }
-                },
-                'pagination': {
-                    'type': "object",
-                    'properties': {
-                        'total_count': {'type': "integer"},
-                        'num_pages': {'type': "integer"},
-                        'num_per_page': {'type': "integer"},
-                        'current_page': {'type': "integer"},
-                        'next_page': {'type': "integer"},
-                        'reault_ID': {'type': "string"},
-                    }
-                }
-            }
-        },
+        200: _FILESEARCH_FILES_RESPONSE,
+        400: _FILESEARCH_ERROR_RESPONSE,
+        500: _FILESEARCH_ERROR_RESPONSE
+  }
+)
+
+filesearch_result_set_schema = extend_schema(
+  tags=['Files'],
+  operation_id="get_filesearch_result_set",
+  summary="Get a list of data files from a previously-created result set",
+  description=(
+          "This operation returns a list of data files for the specified "
+          "dataset and previously-created result set."),
+  parameters=[
+          _DSID,
+          OpenApiParameter(
+              name="result_id", type=OpenApiTypes.STR,
+              location=OpenApiParameter.PATH,
+              description="The result set ID for pagination",
+              required=True
+          ),
+          OpenApiParameter(
+              name="page_num", type=OpenApiTypes.INT,
+              location=OpenApiParameter.PATH,
+              description="The page number of the result set to retrieve",
+              required=True
+          )
+  ],
+  responses={
+        200: _FILESEARCH_FILES_RESPONSE,
         400: _FILESEARCH_ERROR_RESPONSE,
         500: _FILESEARCH_ERROR_RESPONSE
   }
