@@ -77,6 +77,11 @@ _STD_400 = {
     'contact': {'type': 'string', 'example': 'datahelp@ucar.edu'},
 }
 
+_FILESEARCH_ERROR_RESPONSE = {
+    'type': "object",
+    'properties': {'error_message': {'type': "string"}}
+}
+
 # ---------------------------------------------------------------------------
 # Parameters / metadata
 # ---------------------------------------------------------------------------
@@ -245,14 +250,8 @@ filesearch_datatypes_schema = extend_schema(
                            'datatypes': {'type': "array",
                                          'items': {'type': "string"}}}
         },
-        400: {
-            'type': "object",
-            'properties': {'error_message': {'type': "string"}}
-        },
-        500: {
-            'type': "object",
-            'properties': {'error_message': {'type': "string"}}
-        }
+        400: _FILESEARCH_ERROR_RESPONSE,
+        500: _FILESEARCH_ERROR_RESPONSE
     }
 )
 
@@ -267,14 +266,8 @@ filesearch_filters_cyclone_fix_schema = extend_schema(
     responses={
         200: {
         },
-        400: {
-            'type': "object",
-            'properties': {'error_message': {'type': "string"}}
-        },
-        500: {
-            'type': "object",
-            'properties': {'error_message': {'type': "string"}}
-        }
+        400: _FILESEARCH_ERROR_RESPONSE,
+        500: _FILESEARCH_ERROR_RESPONSE
     }
 )
 
@@ -320,14 +313,8 @@ filesearch_filters_grid_schema = extend_schema(
                  }
              }
         },
-        400: {
-            'type': "object",
-            'properties': {'error_message': {'type': "string"}}
-        },
-        500: {
-            'type': "object",
-            'properties': {'error_message': {'type': "string"}}
-        }
+        400: _FILESEARCH_ERROR_RESPONSE,
+        500: _FILESEARCH_ERROR_RESPONSE
     }
 )
 
@@ -342,15 +329,60 @@ filesearch_filters_sensor_schema = extend_schema(
     responses={
         200: {
         },
-        400: {
-            'type': "object",
-            'properties': {'error_message': {'type': "string"}}
-        },
-        500: {
-            'type': "object",
-            'properties': {'error_message': {'type': "string"}}
-        }
+        400: _FILESEARCH_ERROR_RESPONSE,
+        500: _FILESEARCH_ERROR_RESPONSE
     }
+)
+
+filesearch_files_grid_schema = extend_schema(
+  tags=['Files'],
+  operation_id="get_filesearch_grid_files",
+  summary='Get a list of data files containing data type "grid" data',
+  description=(
+          "This operation returns a list of data files that contain data in "
+          'the "grid" data type, optionally restricted by filters.'),
+  parameters=[
+        _DSID,
+        OpenApiParameter(
+            name="parameters", type=_ARRAY_OF_STRINGS,
+            location=OpenApiParameter.QUERY,
+            description="Restrict to specified parameter code(s)", many=True,
+            required=True
+        ),
+        _VALID_DATETIME_MIN, _VALID_DATETIME_MAX, _GRID_PRODUCTS,
+        _GRID_GRIDS, _GRID_LEVELS
+  ],
+  responses={
+        200: {
+            'type': "object",
+            'properties': {
+                'dsid': {'type': "string"},
+                'datatype': {'type': "string", 'enum': ["grid"]},
+                'restrictions': {'type': "array", 'items': {'type': "string"}},
+                'files': {
+                    'type': "object",
+                    'properties': {
+                        'https_base': {'type': "string"},
+                        'ncar_hpc_base': {'type': "string"},
+                        'paths': {'type': "array", 'items': {'type': "string"}}
+                    }
+                },
+                'pagination': {
+                    'type': "object",
+                    'properties': {
+                        'total_count': {'type': "integer"},
+                        'num_pages': {'type': "integer"},
+                        'num_per_page': {'type': "integer"},
+                        'current_page': {'type': "integer"},
+                        'next_page': {'type': "integer"},
+                        'reault_ID': {'type': "string"},
+                    }
+                }
+            }
+        },
+        400: _FILESEARCH_ERROR_RESPONSE,
+        500: _FILESEARCH_ERROR_RESPONSE
+  }
 )
 
 # ---------------------------------------------------------------------------
