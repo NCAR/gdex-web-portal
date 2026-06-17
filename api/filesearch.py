@@ -502,10 +502,9 @@ def serve_result_set(request, dsid, result_id, page_num):
                     {'error_message': "Invalid 'result_id' - must be 20 "
                                       "characters."}, status=400)
 
-    if page_num <= 0:
-        return JsonResponse(
-                    {'error_message': "Page numbers must be positive integers "
-                                      "beginning at '1'."}, status=400)
+    if page_num == 0:
+        return JsonResponse({'error_message': "Page numbers begin at '1'."},
+                            status=400)
 
     try:
         files_response['dsid'] = dsid
