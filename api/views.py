@@ -76,7 +76,9 @@ from .docs import (
     filesearch_filters_cyclone_fix_schema,
     filesearch_filters_grid_schema,
     filesearch_filters_sensor_schema,
+    filesearch_files_cyclone_fix_schema,
     filesearch_files_grid_schema,
+    filesearch_files_sensor_schema,
     filesearch_result_set_schema,
     exclude_schema,
 )
@@ -862,10 +864,20 @@ def filesearch_filters_grid(request, dsid):
 def filesearch_filters_sensor(request, dsid):
     return filesearch.filters(request, dsid, datatype="sensor")
 
+@filesearch_files_cyclone_fix_schema
+@api_view(['GET'])
+def filesearch_files_cyclone_fix(request, dsid):
+    return filesearch.files(request, dsid, datatype="cyclone_fix")
+
 @filesearch_files_grid_schema
 @api_view(['GET'])
 def filesearch_files_grid(request, dsid):
     return filesearch.files(request, dsid, datatype="grid")
+
+@filesearch_files_sensor_schema
+@api_view(['GET'])
+def filesearch_files_sensor(request, dsid):
+    return filesearch.files(request, dsid, datatype="sensor")
 
 @filesearch_result_set_schema
 @api_view(['GET'])

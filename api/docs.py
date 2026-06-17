@@ -362,6 +362,23 @@ filesearch_filters_sensor_schema = extend_schema(
     }
 )
 
+filesearch_files_cyclone_fix_schema = extend_schema(
+  tags=['Files'],
+  operation_id="get_filesearch_cyclone_fix_files",
+  summary='Get a list of data files containing data type "cyclone_fix" data',
+  description=(
+          "This operation returns a list of data files that contain data in "
+          'the "cyclone_fix" data type, optionally restricted by filters.'),
+  parameters=[
+      _DSID, _VALID_DATETIME_MIN, _VALID_DATETIME_MAX
+  ],
+  responses={
+      200: _FILESEARCH_FILES_RESPONSE,
+      400: _FILESEARCH_ERROR_RESPONSE,
+      500: _FILESEARCH_ERROR_RESPONSE
+  }
+)
+
 filesearch_files_grid_schema = extend_schema(
   tags=['Files'],
   operation_id="get_filesearch_grid_files",
@@ -370,20 +387,37 @@ filesearch_files_grid_schema = extend_schema(
           "This operation returns a list of data files that contain data in "
           'the "grid" data type, optionally restricted by filters.'),
   parameters=[
-        _DSID,
-        OpenApiParameter(
-            name="parameters", type=_ARRAY_OF_STRINGS,
-            location=OpenApiParameter.QUERY,
-            description="Restrict to specified parameter code(s)", many=True,
-            required=True
-        ),
-        _VALID_DATETIME_MIN, _VALID_DATETIME_MAX, _GRID_PRODUCTS,
-        _GRID_GRIDS, _GRID_LEVELS
+      _DSID,
+      OpenApiParameter(
+          name="parameters", type=_ARRAY_OF_STRINGS,
+          location=OpenApiParameter.QUERY,
+          description="Restrict to specified parameter code(s)", many=True,
+          required=True
+      ),
+      _VALID_DATETIME_MIN, _VALID_DATETIME_MAX, _GRID_PRODUCTS,
+      _GRID_GRIDS, _GRID_LEVELS
   ],
   responses={
-        200: _FILESEARCH_FILES_RESPONSE,
-        400: _FILESEARCH_ERROR_RESPONSE,
-        500: _FILESEARCH_ERROR_RESPONSE
+      200: _FILESEARCH_FILES_RESPONSE,
+      400: _FILESEARCH_ERROR_RESPONSE,
+      500: _FILESEARCH_ERROR_RESPONSE
+  }
+)
+
+filesearch_files_sensor_schema = extend_schema(
+  tags=['Files'],
+  operation_id="get_filesearch_sensor_files",
+  summary='Get a list of data files containing data type "sensor" data',
+  description=(
+          "This operation returns a list of data files that contain data in "
+          'the "sensor" data type, optionally restricted by filters.'),
+  parameters=[
+      _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX
+  ],
+  responses={
+      200: _FILESEARCH_FILES_RESPONSE,
+      400: _FILESEARCH_ERROR_RESPONSE,
+      500: _FILESEARCH_ERROR_RESPONSE
   }
 )
 
