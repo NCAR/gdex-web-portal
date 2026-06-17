@@ -59,6 +59,7 @@ _urlpatterns = [
     path(r'datasets/<dsid>/filesearch/filters/grid/', views.filesearch_filters_grid),
     path(r'datasets/<dsid>/filesearch/filters/sensor/', views.filesearch_filters_sensor),
     path(r'datasets/<dsid>/filesearch/files/grid/', views.filesearch_files_grid),
+    path(r'datasets/<dsid>/filesearch/results/<result_id>/<int:page_num>/', views.filesearch_result_set),
     path(r'datasets/<dsid>/groups/', views.get_root_groups ),
     path(r'datasets/<dsid>/groups/<gindex>/', views.get_child_groups ),
     path(r'datasets/<dsid>/webfiles/<gindex>/', views.get_web_files ),
