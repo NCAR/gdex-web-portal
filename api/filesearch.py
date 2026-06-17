@@ -474,47 +474,20 @@ def files(request, dsid, datatype):
             conn.close()
 
 
-def respond_to_request(request, dsid, operation, datatype=None):
-    try:
-        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
-        cursor = conn.cursor()
-        if not valid_dsid(dsid, cursor):
-            return JsonResponse(
-                    {'error_message': f"'{dsid}' is not a valid dataset "
-                                      "identifier."},
-                    status=400)
-
-        if operation == "datatypes":
-            return datatypes(dsid, cursor)
-        elif operation == "filters":
-            return filters(request, dsid, datatype, cursor)
-        elif operation == "files":
-            cursor.execute((
-                    "select result_id from metautil.dsfiles_api_result_ids "
-                    "where expiration < %s"), (datetime.now(), ))
-            res = cursor.fetchall()
-            for e in res:
-                cursor.execute((
-                        "delete from metautil.dsfiles_api_file_codes where "
-                        "result_id = %s"), (e[0], ))
-                cursor.execute((
-                        "delete from metautil.dsfiles_api_result_ids where "
-                        "result_id = %s"), (e[0], ))
-                conn.commit()
-
-            return files(request, dsid, datatype, conn)
-        else:
-            return JsonResponse(
-                    {'error_message': f"'{operation}' is not a valid "
-                                      "operation."},
-                    status=400)
-
-    except Exception as err:
-        print(f"DSFILES API SERVER ERROR: respond_to_request(): '{err}'")
-        return JsonResponse({'error_message': "Server error."}, status=500)
-    finally:
-        if 'conn' in locals():
-            conn.close()
+def expire_ids(conn):
+    cursor = conn.cursor()
+    cursor.execute(
+            "select result_id from metautil.dsfiles_api_result_ids where "
+            "expiration < %s", (datetime.now(), ))
+    res = cursor.fetchall()
+    for e in res:
+        cursor.execute(
+                "delete from metautil.dsfiles_api_file_codes where result_id "
+                "= %s", (e[0], ))
+        cursor.execute(
+                "delete from metautil.dsfiles_api_result_ids where result_id "
+                "= %s", (e[0], ))
+        conn.commit()
 
 
 def serve_result_set(request, dsid, result_id, page_num):
@@ -531,10 +504,12 @@ def serve_result_set(request, dsid, result_id, page_num):
     try:
         files_response['dsid'] = dsid
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        expire_ids(conn)
         cursor = conn.cursor()
         cursor.execute(
                 "select total_count, datatype from metautil."
-                "dsfiles_api_result_ids where dsid = %s", (dsid, ))
+                "dsfiles_api_result_ids where result_id = %s and dsid = %s",
+                (result_id, dsid))
         total_count, datatype = cursor.fetchone() or (None, None)
         if total_count is None:
             return JsonResponse(
