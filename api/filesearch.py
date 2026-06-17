@@ -418,12 +418,12 @@ def files(request, dsid, datatype):
             if files_response['pagination']['total_count'] <= PAGE_SIZE:
                 files_response['pagination']['current_page'] = 1
                 files_response['pagination']['next_page'] = None
-                files_response['pagination']['result_ID'] = None
+                files_response['pagination']['result_id'] = None
                 cursor.execute(
                         f'select id from "WGrML".{dsid}_webfiles2 where code '
                         "in %s order by id", (tuple(grml['fcodes']), ))
             else:
-                files_response['pagination']['result_ID'] = strand(20)
+                files_response['pagination']['result_id'] = strand(20)
                 now = datetime.now(pytz.utc)
                 expires = ((datetime.now(pytz.utc) + timedelta(hours=3))
                            .replace(tzinfo=tz.tzutc())
@@ -431,10 +431,10 @@ def files(request, dsid, datatype):
                 cursor.execute(
                         "insert into metautil.dsfiles_api_result_ids values "
                         "(%s, %s, %s, %s, %s)",
-                        (files_response['pagination']['result_ID'],
+                        (files_response['pagination']['result_id'],
                          expires, len(file_codes), datatype, dsid))
                 rows = (list(
-                        zip([files_response['pagination']['result_ID'] for x in
+                        zip([files_response['pagination']['result_id'] for x in
                              range(0, len(file_codes))], file_codes)))
                 for x in range(0, len(rows), 10000):
                     rowins = ", ".join([str(t) for t in rows[x:x+10000]])
@@ -450,7 +450,7 @@ def files(request, dsid, datatype):
                         f'f left join "WGrML".{dsid}_webfiles2 as w on w.code '
                         "= f.file_code where f.result_id = %s order by w.id "
                         f"limit {PAGE_SIZE} offset 0",
-                        (files_response['pagination']['result_ID'], ))
+                        (files_response['pagination']['result_id'], ))
 
             files_response['files']['paths'] = (
                     [e[0] for e in cursor.fetchall()])
@@ -517,10 +517,10 @@ def respond_to_request(request, dsid, operation, datatype=None):
             conn.close()
 
 
-def serve_result_set(request, dsid, result_ID, page_num):
-    if len(result_ID) != 20:
+def serve_result_set(request, dsid, result_id, page_num):
+    if len(result_id) != 20:
         return JsonResponse(
-                    {'error_message': "Invalid 'result_ID' - must be 20 "
+                    {'error_message': "Invalid 'result_id' - must be 20 "
                                       "characters."}, status=400)
 
     if page_num <= 0:
@@ -538,11 +538,11 @@ def serve_result_set(request, dsid, result_ID, page_num):
         total_count, datatype = cursor.fetchone() or (None, None)
         if total_count is None:
             return JsonResponse(
-                        {'error_message': "Invalid or expired 'result_ID'."},
+                        {'error_message': "Invalid or expired 'result_id'."},
                         status=400)
 
         files_response['datatype'] = datatype
-        files_response['pagination']['result_ID'] = result_ID
+        files_response['pagination']['result_id'] = result_id
         files_response['pagination']['total_count'] = total_count
         files_response['pagination']['num_pages'] = (
                 files_response['pagination']['total_count'] // PAGE_SIZE + 1)
@@ -553,7 +553,7 @@ def serve_result_set(request, dsid, result_ID, page_num):
                 "select w.id from metautil.dsfiles_api_file_codes as f left "
                 f'join "W{service}".{dsid}_webfiles2 as w on w.code = f.'
                 "file_code where f.result_id = %s order by w.id limit "
-                f"{PAGE_SIZE} offset {offset}", (result_ID, ))
+                f"{PAGE_SIZE} offset {offset}", (result_id, ))
         res = cursor.fetchall()
         files_response['files']['paths'] = [e[0] for e in res]
         files_response['pagination']['num_per_page'] = min(len(res), PAGE_SIZE)

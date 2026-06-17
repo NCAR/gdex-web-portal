@@ -104,7 +104,7 @@ _FILESEARCH_FILES_RESPONSE = {
                 'num_per_page': {'type': "integer"},
                 'current_page': {'type': "integer"},
                 'next_page': {'type': "integer"},
-                'reault_ID': {'type': "string"},
+                'result_id': {'type': "string"},
             }
         }
     }
