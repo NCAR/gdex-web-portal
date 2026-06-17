@@ -49,7 +49,7 @@ _urlpatterns = [
 
     # "datasets" tag
     path(r'get_datasets/', views.get_datasets),
-    path(r'datasets/<dsid>/data_access/root', DataAccessAPIView.as_view(), name='data-access-api' )
+    path(r'datasets/<dsid>/data_access/root', DataAccessAPIView.as_view(), name='data-access-api' ),
 
     # "Files" tag
     path(r'datasets/<dsid>/filelist/', views.get_assembled_groups ),
