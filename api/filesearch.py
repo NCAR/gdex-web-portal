@@ -19,7 +19,7 @@ from libpkg.strutils import strand
 datatypes_map = {
     'FixML': "cyclone_fix",
     'GrML': "grid",
-    'ObML': "observation",
+    'ObML': "sensor",
 }
 
 grid_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}"
@@ -313,7 +313,7 @@ def filters(request, dsid, datatype):
             response['filters'] = filters
             return JsonResponse(response)
 
-        if datatype == "observation":
+        if datatype == "sensor":
             return JsonResponse({'error_message': "Not yet implemented."},
                                 status=500)
 

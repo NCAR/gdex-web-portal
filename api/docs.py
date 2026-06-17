@@ -331,13 +331,13 @@ filesearch_filters_grid_schema = extend_schema(
     }
 )
 
-filesearch_filters_observation_schema = extend_schema(
+filesearch_filters_sensor_schema = extend_schema(
     tags=["Files"],
-    operation_id="get_filesearch_observation_filters",
-    summary='Get filters for a dataset with the "observation" data type',
+    operation_id="get_filesearch_sensor_filters",
+    summary='Get filters for a dataset with the "sensor" data type',
     description=(
             "This operation returns the filters that are available for the "
-            '"observation" data files in a dataset.'),
+            '"sensor" data files in a dataset.'),
     parameters=[_DSID, _VALID_DATE_MIN, _VALID_DATE_MAX],
     responses={
         200: {
