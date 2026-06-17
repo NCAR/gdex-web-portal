@@ -76,6 +76,7 @@ from .docs import (
     filesearch_filters_cyclone_fix_schema,
     filesearch_filters_grid_schema,
     filesearch_filters_sensor_schema,
+    filesearch_files_grid_schema,
     exclude_schema,
 )
 
@@ -859,3 +860,8 @@ def filesearch_filters_grid(request, dsid):
 @api_view(['GET'])
 def filesearch_filters_sensor(request, dsid):
     return filesearch.filters(request, dsid, datatype="sensor")
+
+@filesearch_files_grid_schema
+@api_view(['GET'])
+def filesearch_files_grid(request, dsid):
+    return filesearch.files(request, dsid, datatype="grid")
