@@ -39,6 +39,29 @@ _VALID_DATE_MAX = OpenApiParameter(
     required=False,
 )
 
+_ARRAY_OF_STRINGS = {
+    'type': "array",
+    'items': {
+        'type': "string",
+        'default': ""
+    }
+}
+
+_GRID_PRODUCTS = OpenApiParameter(
+    name="products", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
+    description="Restrict to specified product code(s)", many=True
+)
+
+_GRID_GRIDS = OpenApiParameter(
+    name="grids", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
+    description="Restrict to specified grid code(s)", many=True
+)
+
+_GRID_LEVELS = OpenApiParameter(
+    name="levels", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
+    description="Restrict to specified vertical level code(s)", many=True
+)
+
 _STD_200 = {
     'status': {'type': 'string', 'example': 'ok'},
     'http_response': {'type': 'integer', 'example': 200},
@@ -208,14 +231,14 @@ get_web_files_schema = extend_schema(
 )
 
 filesearch_datatypes_schema = extend_schema(
-    tags = ["Files"],
-    operation_id = "get_filesearch_datatypes",
-    summary = "Get data types (required for a file search) for a dataset",
-    description = (
+    tags=["Files"],
+    operation_id="get_filesearch_datatypes",
+    summary="Get data types (required for a file search) for a dataset",
+    description=(
             "This operation returns a list of data types (required for a file "
             "search) that exist for a dataset."),
-    parameters = [_DSID],
-    responses = {
+    parameters=[_DSID],
+    responses={
         200: {
             'type': "object",
             'properties': {'dsid': {'type': "string"},
@@ -234,14 +257,14 @@ filesearch_datatypes_schema = extend_schema(
 )
 
 filesearch_filters_cyclone_fix_schema = extend_schema(
-    tags = ["Files"],
-    operation_id = "get_filesearch_cyclone_fix_filters",
-    summary = 'Get filters for a dataset with the "cyclone_fix" data type',
-    description = (
+    tags=["Files"],
+    operation_id="get_filesearch_cyclone_fix_filters",
+    summary='Get filters for a dataset with the "cyclone_fix" data type',
+    description=(
             "This operation returns the filters that are available for the "
             '"cyclone_fix" data files in a dataset.'),
-    parameters = [_DSID, _VALID_DATETIME_MIN, _VALID_DATETIME_MAX],
-    responses = {
+    parameters=[_DSID, _VALID_DATETIME_MIN, _VALID_DATETIME_MAX],
+    responses={
         200: {
         },
         400: {
@@ -256,14 +279,22 @@ filesearch_filters_cyclone_fix_schema = extend_schema(
 )
 
 filesearch_filters_grid_schema = extend_schema(
-    tags = ["Files"],
-    operation_id = "get_filesearch_grid_filters",
-    summary = 'Get filters for a dataset with the "grid" data type',
-    description = (
+    tags=["Files"],
+    operation_id="get_filesearch_grid_filters",
+    summary='Get filters for a dataset with the "grid" data type',
+    description=(
             "This operation returns the filters that are available for the "
             '"grid" data files in a dataset.'),
-    parameters = [_DSID, _VALID_DATETIME_MIN, _VALID_DATETIME_MAX],
-    responses = {
+    parameters=[
+        _DSID, _VALID_DATETIME_MIN, _VALID_DATETIME_MAX,
+        OpenApiParameter(
+            name="parameters", type=_ARRAY_OF_STRINGS,
+            location=OpenApiParameter.QUERY,
+            description="Restrict to specified parameter code(s)", many=True
+        ),
+        _GRID_PRODUCTS, _GRID_GRIDS, _GRID_LEVELS
+    ],
+    responses={
         200: {
             'type': "object",
             'properties': {
@@ -301,14 +332,14 @@ filesearch_filters_grid_schema = extend_schema(
 )
 
 filesearch_filters_observation_schema = extend_schema(
-    tags = ["Files"],
-    operation_id = "get_filesearch_observation_filters",
-    summary = 'Get filters for a dataset with the "observation" data type',
-    description = (
+    tags=["Files"],
+    operation_id="get_filesearch_observation_filters",
+    summary='Get filters for a dataset with the "observation" data type',
+    description=(
             "This operation returns the filters that are available for the "
             '"observation" data files in a dataset.'),
-    parameters = [_DSID, _VALID_DATE_MIN, _VALID_DATE_MAX],
-    responses = {
+    parameters=[_DSID, _VALID_DATE_MIN, _VALID_DATE_MAX],
+    responses={
         200: {
         },
         400: {
