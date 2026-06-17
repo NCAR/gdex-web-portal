@@ -332,130 +332,146 @@ def filters(request, dsid, datatype):
             conn.close()
 
 
-def files(request, dsid, datatype, db_conn):
-    files_response['dsid'] = dsid
-    files_response['datatype'] = datatype
-    cursor = db_conn.cursor()
-    services = service_list(dsid)
-    if datatype == "grid" and "GrML" in services:
-        grml_req = HttpRequest()
-        grml_req.method = "POST"
-        grml_req.POST = QueryDict(mutable=True)
-        grml_req.POST.setlist('parameter', request.GET.getlist('parameters'))
-        if 'valid_datetime_min' in request.GET:
-            if not re.fullmatch(grid_date_re,
-                                request.GET['valid_datetime_min']):
-                return JsonResponse(
-                        {'error_message':
-                         "Invalid format for 'valid_datetime_min'"},
-                        status=400)
+def files(request, dsid, datatype):
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        files_response['dsid'] = dsid
+        files_response['datatype'] = datatype
+        services = service_list(dsid)
+        if datatype == "grid" and "GrML" in services:
+            grml_req = HttpRequest()
+            grml_req.method = "POST"
+            grml_req.POST = QueryDict(mutable=True)
+            grml_req.POST.setlist('parameter',
+                                  request.GET.getlist('parameters'))
+            if 'valid_datetime_min' in request.GET:
+                if not re.fullmatch(grid_date_re,
+                                    request.GET['valid_datetime_min']):
+                    return JsonResponse(
+                            {'error_message':
+                             "Invalid format for 'valid_datetime_min'"},
+                            status=400)
 
-            files_response['restrictions']['valid_datetime_min'] = (
-                    request.GET['valid_datetime_min'])
-            parts = request.GET['valid_datetime_min'].split()
-            grml_req.POST['startDate'] = parts[0]
-            grml_req.POST['startTime'] = parts[1]
-        else:
-            grml_req.POST['startDate'] = "1000-01-01"
-            grml_req.POST['startTime'] = "00:00"
+                files_response['restrictions']['valid_datetime_min'] = (
+                        request.GET['valid_datetime_min'])
+                parts = request.GET['valid_datetime_min'].split()
+                grml_req.POST['startDate'] = parts[0]
+                grml_req.POST['startTime'] = parts[1]
+            else:
+                grml_req.POST['startDate'] = "1000-01-01"
+                grml_req.POST['startTime'] = "00:00"
 
-        if 'valid_datetime_max' in request.GET:
-            if not re.fullmatch(grid_date_re,
-                                request.GET['valid_datetime_max']):
-                return JsonResponse(
-                        {'error_message':
-                         "Invalid format for 'valid_datetime_max'"},
-                        status=400)
+            if 'valid_datetime_max' in request.GET:
+                if not re.fullmatch(grid_date_re,
+                                    request.GET['valid_datetime_max']):
+                    return JsonResponse(
+                            {'error_message':
+                             "Invalid format for 'valid_datetime_max'"},
+                            status=400)
 
-            files_response['restrictions']['valid_datetime_max'] = (
-                    request.GET['valid_datetime_max'])
-            parts = request.GET['valid_datetime_max'].split()
-            grml_req.POST['endDate'] = parts[0]
-            grml_req.POST['endTime'] = parts[1]
-        else:
-            grml_req.POST['endDate'] = ""
-            grml_req.POST['endTime'] = ""
+                files_response['restrictions']['valid_datetime_max'] = (
+                        request.GET['valid_datetime_max'])
+                parts = request.GET['valid_datetime_max'].split()
+                grml_req.POST['endDate'] = parts[0]
+                grml_req.POST['endTime'] = parts[1]
+            else:
+                grml_req.POST['endDate'] = ""
+                grml_req.POST['endTime'] = ""
 
-        files_response['restrictions']['parameters'] = (
-                request.GET.getlist('parameters'))
-        kwargs = {}
-        if 'products' in request.GET:
-            kwargs['pcodes'] = (
-                    [part for e in request.GET.getlist('products') for part in
-                     e.split(",")])
-            files_response['restrictions']['products'] = (
-                    request.GET.getlist('products'))
+            files_response['restrictions']['parameters'] = (
+                    request.GET.getlist('parameters'))
+            kwargs = {}
+            if 'products' in request.GET:
+                kwargs['pcodes'] = (
+                        [part for e in request.GET.getlist('products') for part
+                         in e.split(",")])
+                files_response['restrictions']['products'] = (
+                        request.GET.getlist('products'))
 
-        if 'grids' in request.GET:
-            kwargs['gcodes'] = (
-                    [part for e in request.GET.getlist('grids') for part in
-                     e.split(",")])
-            files_response['restrictions']['grids'] = (
-                    request.GET.getlist('grids'))
+            if 'grids' in request.GET:
+                kwargs['gcodes'] = (
+                        [part for e in request.GET.getlist('grids') for part in
+                         e.split(",")])
+                files_response['restrictions']['grids'] = (
+                        request.GET.getlist('grids'))
 
-        if 'levels' in request.GET:
-            kwargs['lcodes'] = (
-                    [int(part) for e in request.GET.getlist('levels') for part
-                     in e.split(",")])
-            files_response['restrictions']['levels'] = (
-                    request.GET.getlist('levels'))
+            if 'levels' in request.GET:
+                kwargs['lcodes'] = (
+                        [int(part) for e in request.GET.getlist('levels') for
+                         part in e.split(",")])
+                files_response['restrictions']['levels'] = (
+                        request.GET.getlist('levels'))
 
-        grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
-        file_codes = grml['fcodes']
+            grml = parse_grml_query(cursor, dsid, "weblist", grml_req,
+                                    **kwargs)
+            file_codes = grml['fcodes']
 
-    if 'file_codes' in locals():
-        files_response['pagination']['total_count'] = len(file_codes)
-        files_response['pagination']['num_pages'] = (
-                files_response['pagination']['total_count'] // PAGE_SIZE + 1)
-        files_response['pagination']['num_per_page'] = (
-                min(files_response['pagination']['total_count'], PAGE_SIZE))
-        if files_response['pagination']['total_count'] <= PAGE_SIZE:
-            files_response['pagination']['current_page'] = 1
-            files_response['pagination']['next_page'] = None
-            files_response['pagination']['result_ID'] = None
-            cursor.execute(
-                    f'select id from "WGrML".{dsid}_webfiles2 where code in '
-                    "%s order by id", (tuple(grml['fcodes']), ))
-        else:
-            files_response['pagination']['result_ID'] = strand(20)
-            now = datetime.now(pytz.utc)
-            expires = ((datetime.now(pytz.utc) + timedelta(hours=3))
-                       .replace(tzinfo=tz.tzutc())
-                       .strftime("%Y-%m-%d %H:%M:%S"))
-            cursor.execute(
-                    "insert into metautil.dsfiles_api_result_ids values (%s, "
-                    "%s, %s, %s, %s)",
-                    (files_response['pagination']['result_ID'],
-                     expires, len(file_codes), datatype, dsid))
-            rows = (list(
-                    zip([files_response['pagination']['result_ID'] for x in
-                         range(0, len(file_codes))], file_codes)))
-            for x in range(0, len(rows), 10000):
-                rowins = ", ".join([str(t) for t in rows[x:x+10000]])
+        if 'file_codes' in locals():
+            files_response['pagination']['total_count'] = len(file_codes)
+            files_response['pagination']['num_pages'] = (
+                    files_response['pagination']['total_count'] // PAGE_SIZE
+                    + 1)
+            files_response['pagination']['num_per_page'] = (
+                    min(files_response['pagination']['total_count'],
+                        PAGE_SIZE))
+            if files_response['pagination']['total_count'] <= PAGE_SIZE:
+                files_response['pagination']['current_page'] = 1
+                files_response['pagination']['next_page'] = None
+                files_response['pagination']['result_ID'] = None
                 cursor.execute(
-                        "insert into metautil.dsfiles_api_file_codes values "
-                        f"{rowins}")
+                        f'select id from "WGrML".{dsid}_webfiles2 where code '
+                        "in %s order by id", (tuple(grml['fcodes']), ))
+            else:
+                files_response['pagination']['result_ID'] = strand(20)
+                now = datetime.now(pytz.utc)
+                expires = ((datetime.now(pytz.utc) + timedelta(hours=3))
+                           .replace(tzinfo=tz.tzutc())
+                           .strftime("%Y-%m-%d %H:%M:%S"))
+                cursor.execute(
+                        "insert into metautil.dsfiles_api_result_ids values "
+                        "(%s, %s, %s, %s, %s)",
+                        (files_response['pagination']['result_ID'],
+                         expires, len(file_codes), datatype, dsid))
+                rows = (list(
+                        zip([files_response['pagination']['result_ID'] for x in
+                             range(0, len(file_codes))], file_codes)))
+                for x in range(0, len(rows), 10000):
+                    rowins = ", ".join([str(t) for t in rows[x:x+10000]])
+                    cursor.execute(
+                            "insert into metautil.dsfiles_api_file_codes "
+                            f"values {rowins}")
 
-            db_conn.commit()
-            files_response['pagination']['current_page'] = 1
-            files_response['pagination']['next_page'] = 2
-            cursor.execute(
-                    "select w.id from metautil.dsfiles_api_file_codes as f "
-                    f'left join "WGrML".{dsid}_webfiles2 as w on w.code = f.'
-                    "file_code where f.result_id = %s order by w.id limit "
-                    f"{PAGE_SIZE} offset 0",
-                    (files_response['pagination']['result_ID'], ))
+                conn.commit()
+                files_response['pagination']['current_page'] = 1
+                files_response['pagination']['next_page'] = 2
+                cursor.execute(
+                        "select w.id from metautil.dsfiles_api_file_codes as "
+                        f'f left join "WGrML".{dsid}_webfiles2 as w on w.code '
+                        "= f.file_code where f.result_id = %s order by w.id "
+                        f"limit {PAGE_SIZE} offset 0",
+                        (files_response['pagination']['result_ID'], ))
 
-        files_response['files']['paths'] = [e[0] for e in cursor.fetchall()]
-        return JsonResponse(files_response, status=200)
+            files_response['files']['paths'] = (
+                    [e[0] for e in cursor.fetchall()])
+            return JsonResponse(files_response, status=200)
 
-    return JsonResponse(
-            {'error_message': (
-                    "API file discovery is not available for data type "
-                    f"'{datatype}'. See the "
-                    "'/api/datasets/{dsid}/filesearch/datatypes/' endpoint "
-                    "for the valid data types for this dataset.")},
-            status=400)
+        return JsonResponse(
+                {'error_message': (
+                        "API file discovery is not available for data type "
+                        f"'{datatype}'. See the "
+                        "'/api/datasets/{dsid}/filesearch/datatypes/' "
+                        "endpoint for the valid data types for this "
+                        "dataset.")},
+                status=400)
+    except Exception as err:
+        # log the error in the Apache error log
+        print(f"FILESEARCH API SERVER ERROR: files(dsid={dsid}, "
+              f"datatype={datatype}): '{err}'")
+        return JsonResponse({'error_message': "Server error."}, status=500)
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 
 def respond_to_request(request, dsid, operation, datatype=None):
