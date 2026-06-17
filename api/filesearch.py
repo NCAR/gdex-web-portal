@@ -525,8 +525,15 @@ def serve_result_set(request, dsid, result_id, page_num):
         files_response['datatype'] = datatype
         files_response['pagination']['result_id'] = result_id
         files_response['pagination']['total_count'] = total_count
-        files_response['pagination']['num_pages'] = (
+        num_pages = (
                 files_response['pagination']['total_count'] // PAGE_SIZE + 1)
+        if page_num > num_pages:
+            return JsonResponse(
+                    {'error-message': "Invalid page number - the result set "
+                                      f"only has {num_pages} pages"},
+                    status=400)
+
+        files_response['pagination']['num_pages'] = num_pages
         service = (
                 {value: key for key, value in datatypes_map.items()}[datatype])
         offset = (page_num - 1) * PAGE_SIZE
