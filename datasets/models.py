@@ -25,3 +25,21 @@ class DatasetsPage(Page):
 
     def get_children(self):
         return Page.objects.child_of(self).live().order_by('slug')
+
+class CustomSubsetPage(Page):
+    header = models.CharField(
+        max_length=100,
+        blank=False,
+        default="",
+        help_text="The label for the custom subset page",
+    )
+    description = RichTextField(
+        blank=True,
+        default="",
+        help_text="An optional description to appear above the custom subset form",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel('header', classname="collapsible collapsed"),
+        FieldPanel('description', classname="collapsible collapsed"),
+    ]
