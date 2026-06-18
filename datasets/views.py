@@ -97,10 +97,6 @@ def description(request, dsid, **kwargs):
             ctx['page'].acknowledgement.encode("latin-1")
                                        .decode("unicode-escape"))
     ctx['has_arco'] = api.common.has_arco(ctx['page'].dsid)
-    if ctx['has_arco']:
-        tmp_vars = api.common.get_arco_variables(ctx['page'].dsid)
-        ctx['arco_assets'] = tmp_vars[1:]
-        ctx['arco_headers'] = tmp_vars[0]
     software_data = api.common.get_dataset_software(ctx['page'].dsid)
     ctx['has_software'] = bool(software_data.get('files'))
     documentation_data = api.common.get_dataset_documentation(ctx['page'].dsid)
