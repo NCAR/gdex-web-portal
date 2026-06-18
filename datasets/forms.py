@@ -82,7 +82,7 @@ class BUFRD351SubsetForm(forms.Form):
     # Spatial range
     # ------------------------------------------------------------------
     gridSelection = forms.ChoiceField(
-        required=False,
+        required=True,
         choices=SPATIAL_CHOICES,
         label='Spatial Subset Preference',
         widget=forms.Select(attrs={

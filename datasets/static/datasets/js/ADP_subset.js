@@ -283,18 +283,24 @@ function checkRectypes()
  * Validate spatial subset preference
  *
  */
-function checkSpatialPref()
+function checkSpatial()
 {
+  gridSelection = $('[name="gridSelection"]').val();
 
-   if( (form.mapdisplayed.value == 0) && (form.latlondisplayed.value == 0) && (form.stationdisplayed.value == 0) ) 
-   {
-     alert("Please select a spatial subset preference");
-     return false;
-   } 
-   else 
-   {
-     return true;
-   }
+  if(gridSelection == -1)
+  {
+    alert("Please select a spatial subset preference");
+    return false;
+  } 
+  else if(gridSelection == 0)
+  {
+    return checkLatLon();
+  }
+  else if(gridSelection == 1)
+  {
+    return checkStations();
+  }
+  return true;
 }
 
 /**
@@ -309,7 +315,9 @@ function checkLatLon()
    var value, unit;
 
    i = 0;
-   if(form.mapdisplayed.value == 1) setSpaceValues();
+
+   gridSelection = $('[name="gridSelection"]').val();
+   if(gridSelection == 1) setSpaceValues();
    
    max = goodCoordinate(form.tlat.value, true);
    if(max == 999) 
@@ -317,6 +325,7 @@ function checkLatLon()
       alert("Top latitude was entered improperly.\nRe-enter as a positive number, followed by a space, followed by 'N' or 'S'.");
       return false;
    }
+   
 // Verify a space exists between the lat/lon coordinate number and direction
    value = form.tlat.value;
    unit = value.charAt(value.length - 1);
@@ -389,7 +398,7 @@ function setSpaceValues()
    var form = document.form;
    var tmp;
    
-   tmp = document.getElementById("gdrawboxmap_nlat").value;
+   tmp = $("#gdrawboxmap_nlat").val();
    if(tmp >= 0.) 
    {
       form.tlat.value = tmp + ".0 N";
@@ -398,7 +407,7 @@ function setSpaceValues()
    {
       form.tlat.value = (-tmp) + ".0 S";
    }
-   tmp = document.getElementById("gdrawboxmap_slat").value;
+   tmp = $("#gdrawboxmap_slat").val();
    if(tmp >= 0.) 
    {
       form.blat.value = tmp + ".0 N";
@@ -407,7 +416,7 @@ function setSpaceValues()
    {
       form.blat.value = (-tmp) + ".0 S";
    }
-   tmp = document.getElementById("gdrawboxmap_wlon").value;
+   tmp = $("#gdrawboxmap_wlon").val();
    if(tmp >= 0.) 
    {
       form.llon.value = tmp + ".0 E";
@@ -416,7 +425,7 @@ function setSpaceValues()
    {
       form.llon.value = (-tmp)+".0 W";
    }
-   tmp = document.getElementById("gdrawboxmap_elon").value;
+   tmp = $("#gdrawboxmap_elon").val();
    if(tmp >= 0.) 
    {
       document.form.rlon.value = tmp + ".0 E";
@@ -518,66 +527,14 @@ function checkParameters()
   return true;
 }
 
-
-/**
- * open a help window
- */
-
-function openHelpWindow(helpkey)
-{
-   notewin = window.open("", "DescWin", "width=600,height=400,scrollbars=yes,resizable=yes");
-
-   notewin.document.write("<html><head><title>Help Document</title></head>\n" +
-                          "<body style=\"font-size: 100%; font-family: helvetica,arial,verdana,sans-serif;\">\n");
-   if(helpkey == "temp") { // temporal range help
-      notewin.document.write("<table width=\"100%\">\n" +
-                "<tr style=\"background-color: #336699\">\n" +
-                "<th style=\"color: #ffffff; text-align:center; padding: 5px;\">\n" +
-                "Usage of Temporal Range Selection</th></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "Choose the starting and ending dates that define the bounding dates for\n" +
-                "your request, using the format YYYY-MM-DD. The bounding dates and all dates\n" +
-                "in between will be included in the output data set.  The ending date must \n" + 
-                "be later than or equal to the starting date.  Due to the large amount of data\n" +
-                "produced for long temporal subset periods, please limit your request to one\n" +
-                "year.  If you need more than one year of data, submit multiple data requests.\n" + 
-                "</td></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "Click 'Reset Range' to re-select the full period of record.\n" +
-                "</td></tr></table>\n");
-   }
-   if(helpkey == "spatial") { // Spatial subset preference help
-      notewin.document.write("<table width=\"100%\">\n" +
-                "<tr style=\"background-color: #336699\">\n" +
-                "<th style=\"color: #ffffff; text-align:center; padding: 5px;\">\n" +
-                "Spatial Subset Selection</th></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "The options for spatial subsetting are as follows:" +
-                "</td></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "<ul>\n" + 
-                "<li>Select region by latitude and longitude coordinates via Google map</li>\n" + 
-                "</ul></td></tr></table>\n");
-
-   }
-   notewin.document.write("<form><center><input type=\"button\" value=\"Close This Window\" " +
-           "onClick=\"self.close()\"></center></form>\n</body></html>\n");
-   notewin.document.close();
-   notewin.focus();
-}
-
 /**
  * function to show/hide google map
  */
 function displayGoogleMap(act)
 {
-   var mapdisp = document.getElementById("mapselect");
-   var mandisp = document.getElementById("manselect");
-
    if(act == 1) 
    {
-      mapdisp.style.display="block";
-      mandisp.style.display="none";
+      $("#mapselect").show();
       refreshMap('DrawBox');
       document.form.mapdisplayed.value = 1;
       document.form.latlondisplayed.value=1;
@@ -585,8 +542,7 @@ function displayGoogleMap(act)
    else 
    {
       setSpaceValues();
-      mapdisp.style.display="none";
-      mandisp.style.display="block";
+      $("#mapselect").hide();
       document.form.mapdisplayed.value = 0;
       document.form.latlondisplayed.value=1;
    }
@@ -595,41 +551,34 @@ function displayGoogleMap(act)
 /**
  * function to show appropriate spatial subsetting selection
  */
-function displayGridSelection(act)
+function displayGridSelection(value)
 {
-   var mapdisp     = document.getElementById("mapselect");
-   var mandisp     = document.getElementById("manselect");
-   var stationdisp = document.getElementById("stationSelect");
-
   // Null selection
-  if (act == -1) 
+  if (value == -1) 
   {
-    mapdisp.style.display="none";
-    mandisp.style.display="none";
-    stationdisp.style.display="none";
+    $("#mapselect").hide();
+    $("#stationSelect").hide();
     document.form.mapdisplayed.value=0;
     document.form.latlondisplayed.value=0;
     document.form.stationdisplayed.value=0;
   }
   
   // Google map lat/lon selection
-  if (act == 0) 
+  if (value == 0) 
   {
     displayGoogleMap(1);
-    stationdisp.style.display="none";
+    $("#stationSelect").hide();
     document.form.stationdisplayed.value=0;
-//    loadDrawBoxMap('drawboxmap',20,0);
   }
 
   // Station ID
-  if (act == 1) {
-    mapdisp.style.display="none";
-    stationdisp.style.display="block";
+  if (value == 1) {
+    $("#mapselect").hide();
+    $("#stationSelect").show();
     document.form.mapdisplayed.value=0;
     document.form.latlondisplayed.value=0;
     document.form.stationdisplayed.value=1;
   }
-
 }
 
 /**
@@ -713,7 +662,7 @@ function reviewRequest()
    var form = document.form;
 
 // Validate form inputs
-   if(!checkSpatialPref()) return;
+   if(!checkSpatial()) return;
    if(!checkDates()) return;
    if(!checkStations()) return;
    if(form.latlondisplayed.value == 1 && !checkLatLon()) return;
