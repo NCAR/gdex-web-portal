@@ -18,7 +18,7 @@ webapp:
     limits:
       memory: 128Gi
       cpu: 6
-    responseTimeout: 180
+    responseTimeout: 179
     maxUploadSize: 60m
   ingress:
     ingressClassName: nginx-external

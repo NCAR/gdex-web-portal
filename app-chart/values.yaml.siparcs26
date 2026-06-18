@@ -9,7 +9,7 @@ webapp:
     fqdnAPI: api.siparcs26-gdex.k8s.ucar.edu
     secretName: incommon-cert-siparcs26-gdex-web
   container: 
-    image: hub.k8s.ucar.edu/siparcs26-gdex/gdex-web-portal:v26727102180
+    image: hub.k8s.ucar.edu/siparcs26-gdex/gdex-web-portal:latest
     port: 8080
     requests:
       memory: 2Gi
@@ -17,7 +17,7 @@ webapp:
     limits:
       memory: 4Gi
       cpu: 6
-    responseTimeout: 180
+    responseTimeout: 179
     maxUploadSize: 60m
   ingress:
     ingressClassName: nginx-internal
