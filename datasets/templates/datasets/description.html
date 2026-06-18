@@ -82,6 +82,11 @@
            <script>
                //Add listeners
                $(document).ready(function() {
+                   $.getJSON('https://'+window.location.hostname+'/api/search_arco_vars/{{ page.dsid }}/{{ page.dsid }}', { }, function(data) {
+                       if (data.data && data.data.length > 0) {
+                           update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], false);
+                       }
+                   });
                    $('#onHPC').change(function(){
                        var query = $('#searchBar').val();
                        showLoadingCode();
