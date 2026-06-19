@@ -410,8 +410,17 @@ class TestHomePage(Page):
         verbose_name="Search Box Title")
     search_box_placeholder = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Search Box Placeholder")
+    banner_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text='Hero banner image displayed at the top of the home page.',
+    )
 
     content_panels = Page.content_panels + [
+        FieldPanel('banner_image'),
         FieldPanel('tagline', classname="collapsible collapsed"),
         FieldPanel('welcome', classname="collapsible collapsed"),
         MultiFieldPanel([
