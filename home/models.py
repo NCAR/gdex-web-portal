@@ -418,8 +418,26 @@ class TestHomePage(Page):
         related_name='+',
         help_text='Hero banner image displayed at the top of the home page.',
     )
+    hero_heading_highlight = models.CharField(
+        max_length=50,
+        default='GDEX.',
+        blank=True,
+        help_text='First word shown in blue e.g. "GDEX."'
+    )
+    hero_heading = models.CharField(
+        max_length=200,
+        default='The system of record for Earth system science.',
+        blank=True,
+        help_text='Main heading text after the highlighted word'
+    )
+    hero_description = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
+        MultiFieldPanel([
+            FieldPanel('hero_heading_highlight'),
+            FieldPanel('hero_heading'),
+            FieldPanel('hero_description'),
+        ], heading='Hero Section'),
         FieldPanel('banner_image'),
         FieldPanel('tagline', classname="collapsible collapsed"),
         FieldPanel('welcome', classname="collapsible collapsed"),
