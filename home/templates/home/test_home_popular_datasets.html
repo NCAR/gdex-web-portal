@@ -49,17 +49,22 @@
             });
 
             new Swiper('.gdex-datasets-swiper', {
-                slidesPerView: 1.2,
-                spaceBetween: 16,
+                slidesPerView: 1,
+                spaceBetween: 24,
+                loop: true,
+                autoplay: {
+                    delay: 5000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                },
                 navigation: {
-                    nextEl: '.gdex-swiper-next',
                     prevEl: '.gdex-swiper-prev',
+                    nextEl: '.gdex-swiper-next',
                 },
                 breakpoints: {
-                    576: { slidesPerView: 2.2 },
-                    768: { slidesPerView: 3.2 },
-                    992: { slidesPerView: 4 },
-                    1200: { slidesPerView: 5 },
+                    640:  { slidesPerView: 1 },
+                    768:  { slidesPerView: 2 },
+                    1024: { slidesPerView: 3 },
                 }
             });
         })
