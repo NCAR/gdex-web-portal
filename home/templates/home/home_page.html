@@ -1,3 +1,6 @@
+{% comment %}
+ Original home_pagetemplate content
+
 {% extends "base.html" %}
 {% load wagtailcore_tags %}
 
@@ -13,6 +16,7 @@
                 </div>
             </div>
         </div>
+        <p> ' GDEX homepage' </p>
         {% endblock %}
 
         {% block home_search_bar %}
@@ -24,4 +28,58 @@
         {% endblock %}
     </article>
 </div>
+{% endblock %}
+
+{% endcomment %}
+
+
+
+
+<!-- New home_pagetemplate content -->
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block headextras %}
+<link rel="stylesheet" href="{% static 'home/css/home_page.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="gdex-hero position-relative overflow-hidden">
+    <div class="gdex-hero__bg"
+         style="background-image: url('{% static 'img/hero_earth.png' %}');"></div>
+    <div class="gdex-hero__overlay"></div>
+    <div class="gdex-hero__content position-relative">
+        <div class="row">
+            <div class="col-lg-5 col-xl-4">
+                <h1 class="gdex-hero__heading">
+                    {% if page.hero_heading_highlight %}<span class="gdex-hero__heading-highlight">{{ page.hero_heading_highlight }}</span> {% endif %}{{ page.hero_heading|default:"The system of record for Earth system science." }}
+                </h1>
+                <div class="gdex-hero__description">
+                    {% if page.hero_description %}
+                        {{ page.hero_description|richtext }}
+                    {% else %}
+                        <p><strong>GDEX</strong> is NSF NCAR's trusted platform for discovering, sharing, preserving, and analyzing Earth System Science data.</p>
+                    {% endif %}
+                </div>
+                <div class="gdex-hero__actions">
+                    <a href="/gsearch/dataset-search/" class="gdex-hero__btn gdex-hero__btn--primary">
+                        <i class="fas fa-search"></i> Browse Datasets
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block home_search_bar %}
+{% include 'home/home_search_bar.html' %}
+{% endblock %}
+
+{% block grid_cards %}
+{% include 'home/home_grid_cards.html' %}
+{% endblock %}
+
 {% endblock %}

@@ -1,0 +1,75 @@
+/* ---- Hero ---- */
+body { overflow-x: hidden; }
+
+.gdex-hero {
+    min-height: 500px;
+    display: flex;
+    align-items: flex-start;
+    /* Break out of container-lg */
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    /* Negate main's top padding (py-3 pt-md-4) */
+    margin-top: -1.5rem;
+}
+.gdex-hero__bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center right;
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+.gdex-hero__overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.32);
+    z-index: 1;
+}
+.gdex-hero__content {
+    z-index: 2;
+    width: 100%;
+    padding: 3.5rem 2rem 3rem;
+}
+.gdex-hero__heading {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 3.2vw, 2.5rem);
+    color: #ffffff;
+    line-height: 1.2;
+    margin-bottom: 1.1rem;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.35);
+}
+.gdex-hero__heading-highlight { color: #2952c4; }
+.gdex-hero__description {
+    color: #ffffff;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    max-width: 430px;
+    margin-bottom: 2rem;
+}
+.gdex-hero__description p,
+.gdex-hero__description strong { color: #ffffff; }
+.gdex-hero__actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.gdex-hero__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.65rem 1.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: transform 0.18s ease, background-color 0.18s ease;
+}
+.gdex-hero__btn--primary {
+    background-color: #2952c4;
+    color: #ffffff;
+    border: 2px solid #2952c4;
+}
+.gdex-hero__btn--primary:hover {
+    background-color: #1e3f9a;
+    color: #ffffff;
+    transform: translateY(-2px);
+    text-decoration: none;
+}
