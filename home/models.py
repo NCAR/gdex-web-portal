@@ -87,14 +87,17 @@ class DecsStaff(models.Model):
     name = models.CharField(
         max_length=100,
         help_text='DECS staff member full name',
+        default='DECS Staff Member',
     )
     first_name = models.CharField(
         max_length=100,
         help_text='DECS staff member first name',
+        default='DECS',
     )
     last_name = models.CharField(
         max_length=100,
         help_text='DECS staff member last name',
+        default='Staff Member',
     )
     email = models.EmailField(
         max_length=100,
