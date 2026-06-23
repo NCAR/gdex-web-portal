@@ -78,6 +78,7 @@ class NewsAuthor(models.Model):
     class Meta:
         verbose_name = "News Author"
         verbose_name_plural = "News Authors"
+        ordering = ['name']
 
 @register_snippet
 class DecsStaff(models.Model):
@@ -86,6 +87,17 @@ class DecsStaff(models.Model):
     name = models.CharField(
         max_length=100,
         help_text='DECS staff member full name',
+        default='DECS Staff Member',
+    )
+    first_name = models.CharField(
+        max_length=100,
+        help_text='DECS staff member first name',
+        default='DECS',
+    )
+    last_name = models.CharField(
+        max_length=100,
+        help_text='DECS staff member last name',
+        default='Staff Member',
     )
     email = models.EmailField(
         max_length=100,
@@ -104,6 +116,8 @@ class DecsStaff(models.Model):
         MultiFieldPanel(
             [
                 FieldPanel("name"),
+                FieldPanel("first_name"),
+                FieldPanel("last_name"),
                 FieldPanel("email"),
                 FieldPanel("image"),
             ],
@@ -113,11 +127,12 @@ class DecsStaff(models.Model):
 
     def __str__(self):
         """ String repr of this class """
-        return self.name
+        return f"{self.first_name} {self.last_name}"
 
     class Meta:
         verbose_name = "DECS Staff Member"
         verbose_name_plural = "DECS Staff Members"
+        ordering = ['name']
 
 @register_snippet
 class SocialMedia(models.Model):
