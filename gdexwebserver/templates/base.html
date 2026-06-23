@@ -84,7 +84,7 @@
         <font color="red">TEST INSTANCE!</font> {{ request.get_host }}
         {% endif %}
         <main class="container-lg py-3 pt-md-4">
-            {% include "unity/breadcrumbs.html" %}
+            {% block breadcrumbs %}{% include "unity/breadcrumbs.html" %}{% endblock %}
             {% block content %}{% endblock %}
         </main>
         {% wagtailuserbar %}
