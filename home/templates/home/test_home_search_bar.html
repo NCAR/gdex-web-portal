@@ -34,16 +34,6 @@
 <div class="gdex-search-chips">
     <p class="gdex-search-chips__label">Explore specialized datasets</p>
     <div class="d-flex flex-wrap gap-3 justify-content-center">
-        {% if page.search_suggestions.all %}
-            {% for suggestion in page.search_suggestions.all %}
-            <a href="{{ suggestion.search_term_url }}" class="gdex-chip">
-                <i class="fas fa-search me-2"></i>
-                <span>
-                    <strong>{{ suggestion.search_term }}</strong>
-                </span>
-            </a>
-            {% endfor %}
-        {% else %}
         <a href="https://gdex.ucar.edu/metrics/by-the-numbers/" target="_blank" rel="noopener noreferrer" class="gdex-chip">
             <i class="fas fa-robot me-2"></i>
             <span>
@@ -58,6 +48,5 @@
                 <small class="d-block">Cloud-optimized array data</small>
             </span>
         </a>
-        {% endif %}
     </div>
 </div>

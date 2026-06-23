@@ -64,7 +64,7 @@ body { overflow-x: hidden; }
 }
 .gdex-hero__btn--primary {
     background-color: #2952c4;
-    color: #ffffff;
+    color: #ffffff !important;
     border: 2px solid #2952c4;
 }
 .gdex-hero__btn--primary:hover {
