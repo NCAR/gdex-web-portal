@@ -78,6 +78,7 @@ class NewsAuthor(models.Model):
     class Meta:
         verbose_name = "News Author"
         verbose_name_plural = "News Authors"
+        ordering = ['name']
 
 @register_snippet
 class DecsStaff(models.Model):
