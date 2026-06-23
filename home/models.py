@@ -87,6 +87,14 @@ class DecsStaff(models.Model):
         max_length=100,
         help_text='DECS staff member full name',
     )
+    first_name = models.CharField(
+        max_length=100,
+        help_text='DECS staff member first name',
+    )
+    last_name = models.CharField(
+        max_length=100,
+        help_text='DECS staff member last name',
+    )
     email = models.EmailField(
         max_length=100,
         default='rdahelp@ucar.edu',
@@ -104,6 +112,8 @@ class DecsStaff(models.Model):
         MultiFieldPanel(
             [
                 FieldPanel("name"),
+                FieldPanel("first_name"),
+                FieldPanel("last_name"),
                 FieldPanel("email"),
                 FieldPanel("image"),
             ],
@@ -113,7 +123,7 @@ class DecsStaff(models.Model):
 
     def __str__(self):
         """ String repr of this class """
-        return self.name
+        return f"{self.first_name} {self.last_name}"
 
     class Meta:
         verbose_name = "DECS Staff Member"
