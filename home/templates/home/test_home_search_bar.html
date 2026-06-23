@@ -1,24 +1,63 @@
-<div class="component featured-work container-lg">
-    <div class="row gx-0 pt-md-4 justify-content-center">
-        <div class="col-8 primary text-center">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="card-title mb-md-2">{{ page.search_box_title }}</h3>
-                    <form id="search-form" class="d-flex" name="search_form" action="/gsearch/dataset-search/">
-                        <input class="form-control" type="search" id="search-input" autocomplete="off" data-provide="typeahead" name="q" placeholder="{{ page.search_box_placeholder }}" value="">
-                        <button class="btn btn-primary" type="submit" aria-label="Search"><i class="fas fa-search"></i></button>
-                    </form>
-                    {% if page.search_suggestions.all %}
-                    <div id="search-suggestions" class="mt-2">
-                        {% for suggestion in page.search_suggestions.all %}
-                        <a href="{{ suggestion.search_term_url }}">
-                            <span class="badge home-search-badge rounded">{{ suggestion.search_term }}</span>
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
+<!-- SEARCH SECTION -->
+<section class="gdex-search-section">
+    <div class="gdex-search-outer">
+        <div class="gdex-search-card">
+            <h2 class="gdex-search-card__title">{{ page.search_box_title|default:"Search For Datasets" }}</h2>
+            <form action="/gsearch/dataset-search/" method="get" id="gdex-home-search-form">
+                <div class="gdex-search-card__input-group">
+                    <input
+                        type="text"
+                        name="q"
+                        id="gdex-home-search-input"
+                        class="gdex-search-card__input"
+                        placeholder="{{ page.search_box_placeholder|default:"Search by keyword or dataset number" }}"
+                        aria-label="Search datasets"
+                    >
+                    <button type="submit" class="gdex-search-card__btn" aria-label="Search">
+                        <i class="fas fa-search"></i>
+                        <span>Search</span>
+                    </button>
                 </div>
-            </div>
+            </form>
+            <script>
+                document.getElementById('gdex-home-search-form').addEventListener('submit', function (e) {
+                    if (!document.getElementById('gdex-home-search-input').value.trim()) {
+                        e.preventDefault();
+                    }
+                });
+            </script>
         </div>
+    </div>
+</section>
+
+<!-- CHIPS -->
+<div class="gdex-search-chips">
+    <p class="gdex-search-chips__label">Explore specialized datasets</p>
+    <div class="d-flex flex-wrap gap-3 justify-content-center">
+        {% if page.search_suggestions.all %}
+            {% for suggestion in page.search_suggestions.all %}
+            <a href="{{ suggestion.search_term_url }}" class="gdex-chip">
+                <i class="fas fa-search me-2"></i>
+                <span>
+                    <strong>{{ suggestion.search_term }}</strong>
+                </span>
+            </a>
+            {% endfor %}
+        {% else %}
+        <a href="https://gdex.ucar.edu/metrics/by-the-numbers/" target="_blank" rel="noopener noreferrer" class="gdex-chip">
+            <i class="fas fa-robot me-2"></i>
+            <span>
+                <strong>AI-ready datasets</strong>
+                <small class="d-block">Dataset prepared for AI/ML Workflow</small>
+            </span>
+        </a>
+        <a href="/gsearch/dataset-search/?format=zarr" class="gdex-chip">
+            <i class="fas fa-layer-group me-2"></i>
+            <span>
+                <strong>Zarr datasets</strong>
+                <small class="d-block">Cloud-optimized array data</small>
+            </span>
+        </a>
+        {% endif %}
     </div>
 </div>
