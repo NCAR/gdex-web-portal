@@ -128,7 +128,7 @@ class DecsStaff(models.Model):
     class Meta:
         verbose_name = "DECS Staff Member"
         verbose_name_plural = "DECS Staff Members"
-        ordering = ['last_name', 'first_name']
+        ordering = ['name']
 
 @register_snippet
 class SocialMedia(models.Model):
