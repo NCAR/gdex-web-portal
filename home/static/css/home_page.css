@@ -306,3 +306,98 @@ body { overflow-x: hidden; }
     text-decoration: none;
 }
 .gdex-feature-card__link:hover { color: #0d2d6e !important; text-decoration: underline; }
+
+/* ---- Popular Datasets ---- */
+.gdex-popular-section {
+    background-color: #f2f2f2;
+    padding: 3rem 0 4rem;
+    position: relative;
+    z-index: 11;
+}
+.gdex-popular-section__view-all {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #2952c4 !important;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.gdex-popular-section__view-all:hover { color: #0d2d6e !important; text-decoration: underline; }
+
+.gdex-datasets-swiper-wrapper {
+    position: relative;
+    padding: 0 2.5rem;
+}
+.gdex-datasets-swiper { overflow: hidden; }
+
+.gdex-dataset-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    padding: 1.5rem 1rem;
+    background-color: #ffffff;
+    border-radius: 18px;
+    border: 1.5px solid #d0ddf0;
+    text-decoration: none;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    height: 100%;
+}
+.gdex-dataset-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px rgba(41,82,196,0.13);
+    text-decoration: none;
+}
+.gdex-dataset-card__circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #d0ddf0;
+}
+.gdex-dataset-card__circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.gdex-dataset-card__name {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #00357a !important;
+    line-height: 1.4;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Swiper nav arrows */
+.gdex-swiper-prev,
+.gdex-swiper-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #2952c4;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+.gdex-swiper-prev { left: 0; }
+.gdex-swiper-next { right: 0; }
+.gdex-swiper-prev:hover,
+.gdex-swiper-next:hover { background-color: #0d2d6e; }
+.gdex-swiper-prev.swiper-button-disabled,
+.gdex-swiper-next.swiper-button-disabled { opacity: 0.35; pointer-events: none; }

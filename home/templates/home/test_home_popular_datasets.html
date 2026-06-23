@@ -1,0 +1,70 @@
+{% load static wagtailcore_tags %}
+
+<!-- POPULAR DATASETS -->
+<section class="gdex-popular-section">
+    <div class="container-lg">
+
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="gdex-section-title mb-0">Explore Popular Datasets</h2>
+            <a href="https://gdex.ucar.edu/metrics/by-the-numbers/" target="_blank" rel="noopener noreferrer" class="gdex-popular-section__view-all">
+                View all datasets &rarr;
+            </a>
+        </div>
+
+        <div class="gdex-datasets-swiper-wrapper">
+            <div class="swiper gdex-datasets-swiper">
+                <div class="swiper-wrapper" id="gdex-popular-datasets-wrapper">
+                    <!-- slides injected by JS after API call -->
+                </div>
+            </div>
+            <div class="gdex-swiper-prev"><i class="fas fa-chevron-left"></i></div>
+            <div class="gdex-swiper-next"><i class="fas fa-chevron-right"></i></div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+(function () {
+    var placeholderImg = '{% static "img/hero_earth.png" %}';
+    var apiUrl = '{% url "top_datasets" %}';
+
+    fetch(apiUrl)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            var wrapper = document.getElementById('gdex-popular-datasets-wrapper');
+            data.top_datasets.forEach(function (ds) {
+                var slide = document.createElement('div');
+                slide.className = 'swiper-slide';
+                slide.innerHTML =
+                    '<a href="/datasets/' + ds.dataset + '" class="gdex-dataset-card">' +
+                        '<div class="gdex-dataset-card__circle">' +
+                            '<img src="' + placeholderImg + '" alt="' + ds.OName + '">' +
+                        '</div>' +
+                        '<div class="gdex-dataset-card__body">' +
+                            '<h4 class="gdex-dataset-card__name">' + ds.OName + '</h4>' +
+                        '</div>' +
+                    '</a>';
+                wrapper.appendChild(slide);
+            });
+
+            new Swiper('.gdex-datasets-swiper', {
+                slidesPerView: 1.2,
+                spaceBetween: 16,
+                navigation: {
+                    nextEl: '.gdex-swiper-next',
+                    prevEl: '.gdex-swiper-prev',
+                },
+                breakpoints: {
+                    576: { slidesPerView: 2.2 },
+                    768: { slidesPerView: 3.2 },
+                    992: { slidesPerView: 4 },
+                    1200: { slidesPerView: 5 },
+                }
+            });
+        })
+        .catch(function () {
+            document.getElementById('gdex-popular-datasets-wrapper').closest('.gdex-datasets-swiper-wrapper').style.display = 'none';
+        });
+}());
+</script>
