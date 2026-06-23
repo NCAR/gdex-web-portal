@@ -77,31 +77,31 @@
 <script>
 function fmt(n) { return Number(n).toLocaleString(); }
 
-$.getJSON('/api/metrics/total_datasets/', function(data) {
+$.getJSON('{% url "total_datasets" %}', function(data) {
     $('#btn-datasets').text(fmt(data.value));
 }).fail(function() { $('#btn-datasets').text('Error'); });
 
-$.getJSON('/api/metrics/total_citations/', function(data) {
+$.getJSON('{% url "total_citations" %}', function(data) {
     $('#btn-citations').text(fmt(data.value));
 }).fail(function() { $('#btn-citations').text('Error'); });
 
-$.getJSON('/api/metrics/unique_users/', function(data) {
+$.getJSON('{% url "unique_users" %}', function(data) {
     $('#btn-users').text(fmt(data.ips));
 }).fail(function() { $('#btn-users').text('Error'); });
 
-$.getJSON('/api/metrics/volume_downloaded/', function(data) {
+$.getJSON('{% url "volume_downloaded" %}', function(data) {
     $('#btn-downloaded').text(fmt(data.volume) + ' PB');
 }).fail(function() { $('#btn-downloaded').text('Error'); });
 
-$.getJSON('/api/metrics/gdex_volume/', function(data) {
+$.getJSON('{% url "gdex_volume" %}', function(data) {
     $('#btn-volume').text(fmt(data.value) + ' PB');
 }).fail(function() { $('#btn-volume').text('Error'); });
 
-$.getJSON('/api/metrics/total_requests/', function(data) {
+$.getJSON('{% url "total_requests" %}', function(data) {
     $('#btn-requests').text(fmt(data.value));
 }).fail(function() { $('#btn-requests').text('Error'); });
 
-$.getJSON('/api/metrics/ai_datasets/', function(data) {
+$.getJSON('{% url "ai_datasets" %}', function(data) {
     $.each(data.ai_datasets, function(_, row) {
         $('#ai-datasets-list').append(
             $('<div>').addClass('list-item p-3').append(
@@ -113,7 +113,7 @@ $.getJSON('/api/metrics/ai_datasets/', function(data) {
     });
 }).fail(function() { $('#ai-datasets-list').text('Error loading datasets'); });
 
-$.getJSON('/api/metrics/top_datasets/', function(data) {
+$.getJSON('{% url "top_datasets" %}', function(data) {
     $.each(data.top_datasets, function(i, ds) {
         $('#top-datasets-list').append(
             $('<div>').addClass('list-item p-3').append(

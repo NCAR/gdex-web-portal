@@ -9,8 +9,6 @@ from django.conf import settings
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.forms import ValidationError
-#from django.views.decorators.cache import cache_page
 from os.path import exists
 try:
     from urllib.parse import urlencode
@@ -21,6 +19,7 @@ from wagtail.models import Page
 from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
                                 iso_19139, json_ld)
 
+from . import transform
 from .utils import get_custom_subset_context, get_hostname, ng_gdex_id
 from .CodeExample import CodeExample
 from api.common import (format_dataset_id, get_request_info,
@@ -45,6 +44,7 @@ logger = logging.getLogger(__name__)
 
 metadb_config = settings.RDADB['metadata_config_pg']
 
+
 def get_dataset_description_context(dsid):
     """ Return basic dataset description context (dsid, dsdoi, dstitle) """
     slist = slug_list(dsid)
@@ -59,8 +59,9 @@ def get_dataset_description_context(dsid):
             'dslogo': qs[0].dslogo,
             }
         return d
-    else:
-        return None
+
+    return None
+
 
 def get_result_list(config, query):
     conn = psycopg2.connect(**config)
@@ -76,7 +77,7 @@ def get_result_list(config, query):
     return res_list
 
 
-def description(request, dsid):
+def description(request, dsid, **kwargs):
     qs = Page.objects.type(DatasetDescriptionPage).filter(
                            slug__in=slug_list(dsid)).live().specific()
     if len(qs) == 0:
@@ -85,7 +86,10 @@ def description(request, dsid):
     if "HTTP_X_REQUESTED_WITH" in request.META:
         template = "datasets/description.html"
     else:
-        template = "dataset_description/dataset_description_page.html"
+        if 'template' in kwargs:
+            template = kwargs['template']
+        else:
+            template = "dataset_description/dataset_description_page.html"
 
     ctx = qs[0].get_context(request)
     ctx['page'].dsid = ng_gdex_id(dsid)
@@ -93,14 +97,13 @@ def description(request, dsid):
             ctx['page'].acknowledgement.encode("latin-1")
                                        .decode("unicode-escape"))
     ctx['has_arco'] = api.common.has_arco(ctx['page'].dsid)
-    if ctx['has_arco']:
-        tmp_vars = api.common.get_arco_variables(ctx['page'].dsid)
-        ctx['arco_assets'] = tmp_vars[1:]
-        ctx['arco_headers'] = tmp_vars[0]
     software_data = api.common.get_dataset_software(ctx['page'].dsid)
     ctx['has_software'] = bool(software_data.get('files'))
     documentation_data = api.common.get_dataset_documentation(ctx['page'].dsid)
     ctx['has_documentation'] = bool(documentation_data.get('files'))
+    if 'page_context' in kwargs:
+        ctx.update(kwargs['page_context'])
+
     return render(request, template, ctx)
 
 
@@ -117,19 +120,11 @@ def build_matrix(request, dsid):
     ctx = Matrix(dsid, duser).to_json()
     ctx.update({'dsid': dsid})
     if "HTTP_X_REQUESTED_WITH" in request.META:
-        template = "dataaccess/matrix.html"
-    else:
-        d = get_dataset_description_context(dsid)
-        if d is None:
-            return render(request, "404.html")
+        return render(request, "dataaccess/matrix.html", ctx)
 
-        template = "dataaccess/matrix_page.html"
-        d.update ({
-            'title': "NSF NCAR GDEX | Dataset {} Data Access".format(dsid),
-        })
-        ctx.update({'page': d})
-
-    return render(request, template, ctx)
+    ctx.update({'title': f"NSF NCAR GDEX | Dataset {dsid} Data Access"})
+    return description(request, dsid, template="dataaccess/matrix_page.html",
+                       page_context=ctx)
 
 
 def listopt(request, dsid, listtyp):
@@ -170,6 +165,7 @@ def listopt_gindex(request, dsid, listtyp, gindex):
 
     return render(request, 'dataaccess/not_authorized.html')
 
+
 def get_alt_index(json, _type='docs'):
     """Get HTML from alt_index if it exists as a helpfile.
 
@@ -189,11 +185,12 @@ def get_alt_index(json, _type='docs'):
                         'web/datasets',
                         dsid,
                         f'{_type}/alt_index.html')
-                return requests.get(alt_url).text.replace('\n','')
+                return requests.get(alt_url).text.replace('\n', '')
     except KeyError as e:
         print(e)
         return None
     return None
+
 
 def get_documentation_table(request, dsnum):
     hostname = get_hostname()
@@ -207,20 +204,15 @@ def get_documentation_table(request, dsnum):
 
     alt_index = get_alt_index(documentation_json)
     if alt_index:
-        documentation_json['data'].update({'alt_index':alt_index})
-
+        documentation_json['data'].update({'alt_index': alt_index})
 
     if "HTTP_X_REQUESTED_WITH" in request.META:
-        template = "datasets/documentation_table.html"
-    else:
-        d = get_dataset_description_context(dsid)
-        if d is None:
-            return render(request, "404.html")
+        return render(request, "datasets/documentation_table.html",
+                      documentation_json)
 
-        template = "datasets/documentation_table_page.html"
-        documentation_json.update({'page': d})
-
-    return render(request, template, documentation_json)
+    return description(request, dsnum,
+                       template="datasets/documentation_table_page.html",
+                       page_context=documentation_json)
 
 
 def examples_page(request, dsnum):
@@ -261,9 +253,9 @@ def get_software_table(request, dsnum):
     software = requests.get(url)
     software = software.content
     software_json = json.loads(software)
-    return render(request,
-                  'datasets/software_table.html',
-                  software_json)
+    return description(request, dsnum,
+                       template="datasets/software_table.html",
+                       page_context=software_json)
 
 
 def get_filelist_table(request, dsnum, groupid=None):
@@ -439,6 +431,7 @@ def get_detailed_metadata(request, dsid):
                   template,
                   {'page': d})
 
+
 def metadata_view(request, dsid):
     if "HTTP_X_REQUESTED_WITH" not in request.META:
         return render(request, "404.html")
@@ -489,6 +482,7 @@ def metadata_view(request, dsid):
     md = md.replace("<", "&lt;").replace(">", "&gt;")
     return HttpResponse("<pre>" + md + "</pre>")
 
+
 @csrf_exempt
 def submit_web_data_request(request, dsid):
     """ View to handle subset data request submitted from the web interface """
@@ -497,41 +491,47 @@ def submit_web_data_request(request, dsid):
     if "HTTP_X_REQUESTED_WITH" in request.META:
         confirm_template = 'datasets/request-submit-confirm.html'
         error_template = 'datasets/request-submit-error.html'
-        logger.info("Rendering AJAX request submission for dataset {}".format(dsid))
+        logger.info(f"Rendering AJAX request submission for dataset {dsid}")
     else:
         d = get_dataset_description_context(dsid)
         if d is None:
             return render(request, "404.html")
         confirm_template = 'datasets/request-submit-confirm-base.html'
         error_template = 'datasets/request-submit-error-base.html'
-        logger.info("Rendering full request submission page for dataset {}".format(dsid))
+        logger.info(
+                f"Rendering full request submission page for dataset {dsid}")
 
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a mutable copy of POST data
         mutable_post = request.POST.copy()
-        mutable_post['fromflag'] = 'W'  # enforce fromflag = 'W' for web requests
-        mutable_post['location'] = 'web'  # enforce location = 'web' for web requests
-        mutable_post['gindex'] = mutable_post.get('gindex', 0)  # default gindex to 0 if not provided
-
+        # enforce fromflag = 'W' for web requests
+        mutable_post['fromflag'] = 'W'
+        # enforce location = 'web' for web requests
+        mutable_post['location'] = 'web'
+        # default gindex to 0 if not provided
+        mutable_post['gindex'] = mutable_post.get('gindex', 0)
         # get user email if not provided
         if not mutable_post.get('email', None):
             mutable_post['email'] = get_user_email(request)
 
-        # instantiate a form instance and populate it with data from the request:
+        # instantiate a form instance and populate it with data from the
+        #  request:
         form = DatasetRequestForm(mutable_post, initial={'dsid': dsid})
-
         # validate the form
         if form.is_valid():
             # check if email is still missing after validation
             if not form.cleaned_data.get('email'):
-                form.add_error('email', "Please log in at <a href='/dashboard/'>Dashboard</a> to submit a data request.")
+                form.add_error(
+                        'email', "Please log in at <a href='/dashboard/'>"
+                                 "Dashboard</a> to submit a data request.")
                 response = {'error': {'code': 'missing_email'}}
                 context = {'form': form, 'response': response}
                 if d:
                     context.update({'page': d})
                 template = error_template
-                logger.info("Missing email error after validation: {}".format(response))
+                logger.info(
+                        f"Missing email error after validation: {response}")
                 return render(request, template, context)
 
             # process the data in form.cleaned_data as required
@@ -540,7 +540,8 @@ def submit_web_data_request(request, dsid):
             except Exception as e:
                 logger.info("Error processing data request: {}".format(e))
                 form.add_error(None, str(e))
-                response = {'error': {'code': 'processing_error', 'message': str(e)}}
+                response = {'error': {'code': 'processing_error',
+                                      'message': str(e)}}
                 context = {'form': form, 'response': response}
                 if d:
                     context.update({'page': d})
@@ -562,27 +563,30 @@ def submit_web_data_request(request, dsid):
             context = {'response': response}
             if d:
                 context.update({'page': d})
-                logger.info("Added dataset description context to confirmation page for dataset {}".format(dsid))
+                logger.info(
+                        "Added dataset description context to confirmation "
+                        f"page for dataset {dsid}")
             return render(request, template, context)
-        else:
-            for field_name, errors in form.errors.items():
-                for error in errors:
-                    logger.error("Form error in field '{}': {}".format(field_name, error))
-            # redirect to the form error page
-            response = {'error': {'code': 'invalid_form'}}
-            context = {'form': form, 'response': response}
-            if d:
-                context.update({'page': d})
-            template = error_template
-            return render(request, template, context)
+
+        for field_name, errors in form.errors.items():
+            for error in errors:
+                logger.error(f"Form error in field '{field_name}': {error}")
+        # redirect to the form error page
+        response = {'error': {'code': 'invalid_form'}}
+        context = {'form': form, 'response': response}
+        if d:
+            context.update({'page': d})
+
+        template = error_template
+        return render(request, template, context)
 
     # If a GET (or any other method) redirect user to the data access page.
     # DECS staff get a blank request form
-    else:
-        if is_internal_user(request):
-            return blank_request_form(request, dsid)
-        else:
-            return redirect(f'/datasets/{dsid}/dataaccess/')
+    if is_internal_user(request):
+        return blank_request_form(request, dsid)
+
+    return redirect(f'/datasets/{dsid}/dataaccess/')
+
 
 def blank_request_form(request, dsid):
     """
@@ -604,15 +608,18 @@ def blank_request_form(request, dsid):
         if d is None:
             return render(request, "404.html")
         form_template = 'datasets/request-submit-form-base.html'
-        logger.info("Rendering full request form page for dataset {}".format(dsid))
+        logger.info(f"Rendering full request form page for dataset {dsid}")
 
     form = DatasetRequestForm(initial={'dsid': dsid})
     context = {'form': form}
     if d:
         context.update({'page': d})
-        logger.info("Added dataset description context to form page for dataset {}".format(dsid))
+        logger.info(
+                "Added dataset description context to form page for dataset "
+                f"{dsid}")
     template = form_template
     return render(request, template, context)
+
 
 def get_native(request, dsid):
     tdir_name = make_tempdir()
@@ -630,6 +637,7 @@ def get_native(request, dsid):
         return HttpResponse(xml, content_type="application/xml")
     finally:
         remove_tempdir(tdir_name)
+
 
 def custom_subset(request, dsid):
     """
@@ -657,23 +665,29 @@ def custom_subset(request, dsid):
             template = f"datasets/custom-subset-page-{dsid}.html"
         else:
             template = "datasets/custom-subset-page-base.html"
-        logger.info("Rendering AJAX custom subset page for dataset {}".format(dsid))
+
+        logger.info(f"Rendering AJAX custom subset page for dataset {dsid}")
     else:
         d = get_dataset_description_context(dsid)
         if d is None:
             return render(request, "404.html")
+
         template = "datasets/custom-subset-page-base.html"
-        logger.info("Rendering full custom subset page for dataset {}".format(dsid))
+        logger.info(f"Rendering full custom subset page for dataset {dsid}")
 
     subset_context = {
         'dsid': dsid,
         'title': "NSF NCAR GDEX | Dataset {} Custom Subset".format(dsid),
-        'dstitle': d['dstitle'] if d else get_dataset_description_context(dsid)['dstitle'],
+        'dstitle': (
+                d['dstitle'] if d else
+                get_dataset_description_context(dsid)['dstitle']),
     }
     if 'gindex' in request.GET:
         subset_context.update({'gindex': request.GET['gindex']})
 
-    subset_context.update(get_custom_subset_context(dsid, subset_context.get('gindex', None)))
+    subset_context.update(
+            get_custom_subset_context(dsid,
+                                      subset_context.get('gindex', None)))
 
     ctx = {
         'subset': subset_context,
@@ -685,6 +699,7 @@ def custom_subset(request, dsid):
         ctx.update({'page': d})
 
     return render(request, template, ctx)
+
 
 def example_view(request, dsid):
     """Displays page to get code examples."""
@@ -703,8 +718,21 @@ def example_view(request, dsid):
         slat = request.GET.get('slat', -90)
         wlon = request.GET.get('wlon', -180)
         elon = request.GET.get('elon', 180)
-        example_obj = CodeExample(dsid, start=start, end=end, is_remote=is_remote, selected_var=param,
-                elon=elon,wlon=wlon,slat=slat,nlat=nlat, selected_type=example_type)
+        example_obj = CodeExample(dsid, start=start, end=end,
+                                  is_remote=is_remote, selected_var=param,
+                                  elon=elon, wlon=wlon, slat=slat, nlat=nlat,
+                                  selected_type=example_type)
         return HttpResponse(example_obj.get_code())
     example_obj = CodeExample(dsid)
-    return render(request, "datasets/code_example.html", {'ctx':example_obj})
+    return render(request, "datasets/code_example.html", {'ctx': example_obj})
+
+
+def markup_view(request, dsid, markup_type, file):
+    return transform.transform(request, dsid, markup_type, file)
+
+
+def product_detail(request, dsid, markup_type, time_range_code,
+                   grid_definition_code, file):
+    return transform.product_detail(request, dsid, markup_type,
+                                    time_range_code, grid_definition_code,
+                                    file)
