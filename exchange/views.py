@@ -57,7 +57,7 @@ def _list_directory(pelfs, list_path, subpath, base_path, osdf_data_path, hide_r
 
     for entry in pelfs.ls(list_path, detail=True):
         name = os.path.basename(entry['name'].rstrip('/'))
-        if not name:
+        if not name or name.startswith('.'):
             continue
         if hide_readme_at_root and name == 'README.md':
             continue
