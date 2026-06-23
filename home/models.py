@@ -400,6 +400,7 @@ class TestHomePageFeaturedCard(Orderable):
         FieldPanel('text'),
         FieldPanel('card_url'),
         PageChooserPanel('card_page'),
+        FieldPanel('card_link_text'),
     ]
 
     def clean(self):
