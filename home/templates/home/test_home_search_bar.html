@@ -25,6 +25,9 @@
                         e.preventDefault();
                     }
                 });
+                window.addEventListener('pageshow', function () {
+                    document.getElementById('gdex-home-search-input').value = '';
+                });
             </script>
         </div>
     </div>
