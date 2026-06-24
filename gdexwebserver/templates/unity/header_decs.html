@@ -1,6 +1,11 @@
 {% load decs_tags menu_tags %}
 
 <header>
+    {% if request.get_host|slice:"0:4" != "gdex" and request.get_host|slice:"0:8" != "api.gdex" %}
+    <div style="background:#cc0000;color:#fff;font-size:0.75rem;font-weight:600;text-align:center;padding:3px 0;letter-spacing:0.05em;">
+        TEST INSTANCE &mdash; {{ request.get_host }}
+    </div>
+    {% endif %}
     <nav class="navbar navbar-expand-md navbar-light align-items-start py-0">
         <div class="container-fluid px-0">
             <div class="row gx-0 flex-grow-1">

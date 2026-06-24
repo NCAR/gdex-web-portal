@@ -202,24 +202,7 @@ body { overflow-x: hidden; }
 .gdex-chip:hover i { color: #ffffff; }
 .gdex-chip:hover small { color: rgba(255,255,255,0.8); }
 
-/* ---- Waves wrapper ---- */
-.gdex-waves-wrapper {
-    position: relative;
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-}
-.gdex-waves-img {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 38%;
-    height: 100%;
-    object-fit: cover;
-    object-position: left center;
-    opacity: 0.45;
-    pointer-events: none;
-    z-index: 10;
-}
+/* ---- Waves overlay on feature cards (uses body background image via ::after) ---- */
 
 /* ---- Section title (shared) ---- */
 .gdex-section-title {
@@ -234,6 +217,25 @@ body { overflow-x: hidden; }
 .gdex-features-section {
     background-color: #f2f2f2;
     padding: 4rem 0 5rem;
+    position: relative;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    overflow: hidden;
+}
+.gdex-features-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 38%;
+    height: 100%;
+    background-image: url('../unity/img/UCAR-Waves-Lines-Only.png');
+    background-size: cover;
+    background-position: left center;
+    background-repeat: no-repeat;
+    opacity: 0.45;
+    pointer-events: none;
+    z-index: 1;
 }
 .gdex-feature-card {
     background-color: #f8f8f8;
@@ -247,7 +249,8 @@ body { overflow-x: hidden; }
     text-align: center;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     cursor: pointer;
-    z-index: 11;
+    position: relative;
+    z-index: 2;
 }
 .gdex-feature-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(41,82,196,0.13); }
 .gdex-feature-card::before {
@@ -440,6 +443,9 @@ body { overflow-x: hidden; }
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
+
+/* cancel main's py-3 bottom padding so metrics section butts against the footer */
+main:has(.gdex-metrics-section) { padding-bottom: 0; }
 
 /* ---- Metrics ---- */
 .gdex-metrics-section {
