@@ -166,31 +166,33 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     margin-left: calc(-50vw + 50%);
     background-color: #ffffff;
     text-align: center;
-    padding: 2rem 1rem 2.5rem;
+    padding: 1.5rem 1rem 2rem;
 }
 .gdex-search-chips__label {
     font-family: 'Poppins', sans-serif;
-    font-weight: 700;
-    font-size: clamp(1.5rem, 2.8vw, 2rem);
-    color: #0d2d6e;
-    margin-bottom: 1.5rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a9bb0;
+    margin-bottom: 0.85rem;
 }
 .gdex-chip {
     display: inline-flex;
     align-items: center;
+    width: 220px;
     background-color: #ffffff;
     border: 1.5px solid #c5d6ef;
     color: #00357a;
     border-radius: 8px;
-    padding: 0.6rem 1rem;
-    font-size: 0.875rem;
+    padding: 0.55rem 0.875rem;
+    font-size: 0.825rem;
     text-decoration: none;
     transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-    min-width: 180px;
 }
-.gdex-chip strong { display: block; font-weight: 600; color: #00357a; }
-.gdex-chip small { font-weight: 400; font-size: 0.75rem; color: #5a6a80; }
-.gdex-chip i { color: #1a56b0; font-size: 1.1rem; flex-shrink: 0; }
+.gdex-chip strong { display: block; font-weight: 600; font-size: 0.825rem; color: #00357a; }
+.gdex-chip small { font-weight: 400; font-size: 0.72rem; color: #5a6a80; }
+.gdex-chip i { color: #1a56b0; font-size: 1rem; flex-shrink: 0; }
 .gdex-chip:hover {
     background-color: #2952c4;
     border-color: #2952c4;
