@@ -178,7 +178,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-chip {
     display: inline-flex;
     align-items: center;
-    width: 240px;
+    width: 295px;
     background-color: #ffffff;
     border: 1.5px solid #c5d6ef;
     color: #00357a;
