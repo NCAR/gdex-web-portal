@@ -311,6 +311,8 @@ body { overflow-x: hidden; }
 .gdex-popular-section {
     background-color: #ffffff;
     padding: 5rem 0 4.5rem;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
 }
 .gdex-popular-section__title {
     font-family: 'Poppins', sans-serif;
@@ -437,4 +439,60 @@ body { overflow-x: hidden; }
     white-space: nowrap;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+/* ---- Metrics ---- */
+.gdex-metrics-section {
+    background-color: #f2f2f2;
+    padding: 5rem 0 5.5rem;
+    border-top: 1px solid #e0e0e0;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+.gdex-metrics-section__title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 2.8vw, 2rem);
+    color: #0d2d6e;
+    text-align: center;
+    margin-bottom: 2.25rem;
+}
+.gdex-metric {
+    text-align: center;
+    background: #ffffff;
+    border-radius: 25px;
+    padding: 1.75rem 1rem;
+    border: 1px solid #dce8f8;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    position: relative;
+    z-index: 11;
+}
+.gdex-metric:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(41,82,196,0.1); }
+.gdex-metric__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #2952c4;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.85rem;
+    font-size: 1.15rem;
+}
+.gdex-metric__value {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    color: #0d2d6e;
+    line-height: 1.1;
+    margin-bottom: 0.35rem;
+}
+.gdex-metric__label {
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: #6b7a99;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }

@@ -1,0 +1,81 @@
+{% load static %}
+
+<!-- METRICS -->
+<section class="gdex-metrics-section">
+    <div class="container-lg">
+
+        <h2 class="gdex-metrics-section__title">GDEX By the Metrics</h2>
+
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-4">
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-data-assimilation"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-datasets">&hellip;</div>
+                    <div class="gdex-metric__label">Total Datasets</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-documents"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-citations">&hellip;</div>
+                    <div class="gdex-metric__label">Total Citations</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-our-staff"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-users">&hellip;</div>
+                    <div class="gdex-metric__label">Unique IPs</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-observations"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-downloaded">&hellip;</div>
+                    <div class="gdex-metric__label">Data Downloaded</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-computational-resources"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-volume">&hellip;</div>
+                    <div class="gdex-metric__label">Size of GDEX</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-specs"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-requests">&hellip;</div>
+                    <div class="gdex-metric__label">Customized Requests</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+(function () {
+    function fmt(n) { return Number(n).toLocaleString(); }
+
+    function fetchMetric(url, id, transform) {
+        fetch(url)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = transform(data);
+            })
+            .catch(function () {
+                var el = document.getElementById(id);
+                if (el) el.textContent = '—';
+            });
+    }
+
+    fetchMetric('{% url "total_datasets" %}',    'gdex-metric-datasets',   function (d) { return fmt(d.value); });
+    fetchMetric('{% url "total_citations" %}',   'gdex-metric-citations',  function (d) { return fmt(d.value); });
+    fetchMetric('{% url "unique_users" %}',      'gdex-metric-users',      function (d) { return fmt(d.ips); });
+    fetchMetric('{% url "volume_downloaded" %}', 'gdex-metric-downloaded', function (d) { return fmt(d.volume) + ' PB'; });
+    fetchMetric('{% url "gdex_volume" %}',       'gdex-metric-volume',     function (d) { return fmt(d.value) + ' PB'; });
+    fetchMetric('{% url "total_requests" %}',    'gdex-metric-requests',   function (d) { return fmt(d.value); });
+}());
+</script>
