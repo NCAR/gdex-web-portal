@@ -230,7 +230,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-search-chips {
     background-color: #ffffff;
     text-align: center;
-    padding: 2rem 0 2.5rem;
+    padding: 4.5rem 0 2.5rem;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
 }
