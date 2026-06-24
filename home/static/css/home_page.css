@@ -430,15 +430,29 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 /* ---- Metrics ---- */
 .gdex-metrics-section {
     background-color: #f2f2f2;
-    background-image: url('../unity/img/UCAR-Waves-Lines-Only-33.png');
-    background-size: 55% auto;
-    background-position: right top;
-    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
     padding: 5rem 0 5.5rem;
     border-top: 1px solid #e0e0e0;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
 }
+.gdex-metrics-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 55%;
+    height: 100%;
+    background-image: url('../unity/img/UCAR-Waves-Lines-Only-33.png');
+    background-size: 100% auto;
+    background-position: left top;
+    background-repeat: no-repeat;
+    transform: scaleX(-1);
+    pointer-events: none;
+    z-index: 0;
+}
+.gdex-metrics-section .container-lg { position: relative; z-index: 1; }
 .gdex-metrics-section__title {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
