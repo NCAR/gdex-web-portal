@@ -355,10 +355,12 @@ class TestHomePageSearchSuggestion(Orderable):
     page = ParentalKey('TestHomePage', related_name='search_suggestions', on_delete=models.CASCADE)
     search_term = models.CharField(max_length=25, verbose_name='Search Term', help_text='Search term displayed under the home page search bar as a search suggestion badge.  For example, "AI Ready Datasets" or "Zarr Format Datasets".')
     search_term_url = models.CharField(max_length=255, verbose_name='Search Term URL', help_text='Search term URL specified as the GDEX Search URL to link to when the search term is clicked.  This can be a relative URL or absolute URL. For example, a relative URL could be /gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready and an absolute URL could be https://gdex.ucar.edu/gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready to link to a search for AI-Ready datasets.')
+    description = models.CharField(max_length=100, blank=True, default="", verbose_name='Search Term Description', help_text='Optional short description of the search term to be displayed under the search term badge.  For example, "Datasets prepared for AI/ML applications" or "Cloud-optimized array data".')
 
     panels = [
         FieldPanel('search_term'),
         FieldPanel('search_term_url'),
+        FieldPanel('description'),
     ]
 
 class TestHomePageFeaturedCard(Orderable):
@@ -401,6 +403,11 @@ class TestHomePageFeaturedCard(Orderable):
         verbose_name="Card Page",
         help_text="Internal page to link to from the card. If both Card Page and Card URL are provided, Card Page will take precedence.",
     )
+    card_link_text = models.CharField(
+        max_length=100,
+        default='Learn more',
+        help_text="Text displayed for the link to the related URL.  Default='Learn more'",
+    )
 
     panels = [
         FieldPanel('title'),
@@ -409,6 +416,7 @@ class TestHomePageFeaturedCard(Orderable):
         FieldPanel('text'),
         FieldPanel('card_url'),
         PageChooserPanel('card_page'),
+        FieldPanel('card_link_text'),
     ]
 
     def clean(self):
