@@ -47,6 +47,9 @@
 {% include 'home/test_home_search_bar.html' %}
 {% endblock %}
 
+<div class="gdex-waves-wrapper">
+<img src="{% static 'unity/img/UCAR-Waves-Lines-Only.png' %}" alt="" aria-hidden="true" class="gdex-waves-img">
+
 {% block grid_cards %}
 {% include 'home/test_home_grid_cards.html' %}
 {% endblock %}
@@ -58,5 +61,7 @@
 {% block metrics %}
 {% include 'home/test_home_metrics.html' %}
 {% endblock %}
+
+</div><!-- end gdex-waves-wrapper -->
 
 {% endblock %}
