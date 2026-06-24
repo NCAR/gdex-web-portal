@@ -1,7 +1,7 @@
 /* ---- Layout: cancel main's padding on the test home page only ---- */
 body { overflow-x: hidden; }
-main:has(.gdex-hero) { padding-top: 0; }
-main:has(.gdex-metrics-section) { padding-bottom: 0; }
+main:has(.gdex-hero) { padding-top: 0 !important; }
+main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 
 /* ---- Hero ---- */
 .gdex-hero {
