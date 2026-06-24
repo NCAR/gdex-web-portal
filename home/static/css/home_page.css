@@ -5,30 +5,30 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 
 /* ---- Hero ---- */
 .gdex-hero {
-    min-height: 500px;
+    min-height: 540px;
     display: flex;
     align-items: flex-start;
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-}
-.gdex-hero__bg {
-    position: absolute;
-    inset: 0;
+    position: relative;
     background-size: cover;
     background-position: center right;
     background-repeat: no-repeat;
-    z-index: 0;
+    background-color: #0d1f3c;
+    padding-bottom: 6rem;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
 }
 .gdex-hero__overlay {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.32);
-    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.50);
+    z-index: 0;
 }
 .gdex-hero__content {
-    z-index: 2;
     width: 100%;
-    padding: 3.5rem 2rem 3rem;
+    padding-top: 3.5rem;
+    padding-bottom: 2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 .gdex-hero__heading {
     font-family: 'Poppins', sans-serif;
@@ -37,9 +37,9 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     color: #ffffff;
     line-height: 1.2;
     margin-bottom: 1.1rem;
-    text-shadow: 0 2px 16px rgba(0,0,0,0.35);
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 }
-.gdex-hero__heading-highlight { color: #2952c4; }
+.gdex-hero__heading-highlight { color: #5bc8ff; }
 .gdex-hero__description {
     color: #ffffff;
     font-size: 1.05rem;
@@ -48,8 +48,10 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     margin-bottom: 2rem;
 }
 .gdex-hero__description p,
-.gdex-hero__description strong { color: #ffffff; }
-.gdex-hero__actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.gdex-hero__description .rich-text p { color: #ffffff; margin-bottom: 0; }
+.gdex-hero__description strong,
+.gdex-hero__description .rich-text strong { color: #ffffff; font-weight: 600; }
+.gdex-hero__actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 2rem; }
 .gdex-hero__btn {
     display: inline-flex;
     align-items: center;
@@ -74,111 +76,82 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     text-decoration: none;
 }
 
-/* ---- Search Section ---- */
-.gdex-search-section {
-    background-color: #f5f5f5;
+/* ---- Search outer — negative margin overlaps hero ---- */
+.gdex-search-outer {
+    margin-top: -6rem;
     position: relative;
-    padding: 10px 0;
+    z-index: 10;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
 }
-.gdex-search-section::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 10px;
+.gdex-search-block {
     background-color: #2952c4;
-    z-index: 0;
+    padding: 2.5rem 0;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.30);
 }
-.gdex-search-section::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 10px;
-    background-color: #2952c4;
-    z-index: 0;
-}
-.gdex-search-outer {
-    position: relative;
-    z-index: 1;
-    max-width: 1140px;
-    margin: -6px auto;
-    background-color: #f5f5f5;
-    border-radius: 32px;
-    padding: 2rem;
-    border: 1.5px solid #d0ddf0;
-    box-shadow: 0 8px 40px rgba(41, 82, 196, 0.14);
-}
-.gdex-search-card {
-    background-color: #2952c4;
-    border-radius: 22px;
-    padding: 4.25rem 5rem;
-    box-shadow: 0 6px 32px rgba(0, 53, 122, 0.22);
-}
-.gdex-search-card__title {
+.gdex-search-block__title {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
-    font-size: 1.9rem;
+    font-size: 1.8rem;
     color: #ffffff;
     text-align: center;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.4rem;
 }
-.gdex-search-card__input-group {
+.gdex-search-bar {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 0.75rem;
 }
-.gdex-search-card__input {
+.gdex-search-bar__input {
     flex: 1;
     border: none;
-    border-radius: 10px;
-    padding: 1.3rem 1.75rem;
+    border-radius: 8px;
+    padding: 1.1rem 1.75rem;
     font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
+    font-size: 1.05rem;
     outline: none;
     color: #1a1a2e;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
 }
-.gdex-search-card__input::placeholder { color: #8a9bb0; font-weight: 500; }
-.gdex-search-card__btn {
+.gdex-search-bar__input::placeholder { color: #8a9bb0; font-weight: 400; }
+.gdex-search-bar__btn {
     background-color: #f59e0b;
-    color: #0d2d6e;
+    color: #ffffff;
     border: none;
-    border-radius: 10px;
-    padding: 1.3rem 2rem;
+    border-radius: 8px;
+    padding: 1.1rem 2.25rem;
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.15s ease;
+    transition: background-color 0.2s ease;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     white-space: nowrap;
     flex-shrink: 0;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
 }
-.gdex-search-card__btn:hover { background-color: #d97706; transform: translateY(-1px); }
+.gdex-search-bar__btn i { font-size: 1rem; }
+.gdex-search-bar__btn:hover { background-color: #d97706; }
 
 /* ---- Chips ---- */
 .gdex-search-chips {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
     background-color: #ffffff;
     text-align: center;
-    padding: 2rem 1rem 2.5rem;
+    padding: 2rem 0 2.5rem;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
 }
 .gdex-search-chips__label {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
     font-size: clamp(1.5rem, 2.8vw, 2rem);
     color: #0d2d6e;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.25rem;
 }
 .gdex-chip {
     display: inline-flex;
     align-items: center;
-    width: 295px;
+    min-width: 295px;
     background-color: #ffffff;
     border: 1.5px solid #c5d6ef;
     color: #00357a;
@@ -186,7 +159,8 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     padding: 0.6rem 1rem;
     font-size: 0.875rem;
     text-decoration: none;
-    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+                color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 .gdex-chip strong { display: block; font-weight: 600; color: #00357a; }
 .gdex-chip small { font-weight: 400; font-size: 0.75rem; color: #5a6a80; }
@@ -196,11 +170,12 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     border-color: #2952c4;
     color: #ffffff;
     text-decoration: none;
+    box-shadow: 0 4px 16px rgba(41, 82, 196, 0.3);
     transform: translateY(-2px);
 }
-.gdex-chip:hover strong,
+.gdex-chip:hover strong { color: #ffffff; }
+.gdex-chip:hover small { color: rgba(255, 255, 255, 0.8); }
 .gdex-chip:hover i { color: #ffffff; }
-.gdex-chip:hover small { color: rgba(255,255,255,0.8); }
 
 /* ---- Section title (shared) ---- */
 .gdex-section-title {
@@ -494,4 +469,19 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     line-height: 1.4;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 767px) {
+    .gdex-hero { min-height: 320px; padding-bottom: 4rem; }
+    .gdex-hero__content { padding-top: 2rem; padding-bottom: 1.5rem; }
+    .gdex-hero__heading { font-size: clamp(1.5rem, 6vw, 2rem); }
+    .gdex-hero__description { font-size: 0.95rem; }
+
+    .gdex-search-block { padding: 1.5rem 0; }
+    .gdex-search-block__title { font-size: 1.35rem; }
+    .gdex-search-bar { flex-direction: column; gap: 0.5rem; }
+    .gdex-search-bar__btn { justify-content: center; }
+
+    .gdex-search-chips { padding: 1.5rem 0 2rem; }
 }

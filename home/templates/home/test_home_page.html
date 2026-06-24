@@ -12,13 +12,13 @@
 {% block content %}
 
 <!-- HERO -->
-<section class="gdex-hero position-relative overflow-hidden">
-    {% if page.banner_image %}
-        {% image page.banner_image original as hero_img %}
-        <div class="gdex-hero__bg" style="background-image: url('{{ hero_img.url }}');"></div>
-    {% else %}
-        <div class="gdex-hero__bg" style="background-image: url({% static 'img/hero_earth.png' %});"></div>
-    {% endif %}
+{% static "img/hero_earth.png" as hero_fallback_img %}
+{% if page.banner_image %}
+    {% image page.banner_image original as hero_img %}
+    <section class="gdex-hero" style="background-image: url('{{ hero_img.url }}');">
+{% else %}
+    <section class="gdex-hero" style="background-image: url('{{ hero_fallback_img }}');">
+{% endif %}
     <div class="gdex-hero__overlay"></div>
     <div class="gdex-hero__content position-relative">
         <div class="row">

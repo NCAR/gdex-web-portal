@@ -1,19 +1,19 @@
-<!-- SEARCH SECTION -->
-<section class="gdex-search-section">
-    <div class="gdex-search-outer">
-        <div class="gdex-search-card">
-            <h2 class="gdex-search-card__title">{{ page.search_box_title|default:"Search For Datasets" }}</h2>
+<!-- SEARCH OUTER — negative margin overlaps the hero -->
+<div class="gdex-search-outer">
+    <div class="gdex-search-block">
+        <div class="container-lg">
+            <h2 class="gdex-search-block__title">{{ page.search_box_title|default:"Search For Datasets" }}</h2>
             <form action="/gsearch/dataset-search/" method="get" id="gdex-home-search-form">
-                <div class="gdex-search-card__input-group">
+                <div class="gdex-search-bar">
                     <input
                         type="text"
                         name="q"
                         id="gdex-home-search-input"
-                        class="gdex-search-card__input"
+                        class="gdex-search-bar__input"
                         placeholder="{{ page.search_box_placeholder|default:"Search by keyword or dataset number" }}"
                         aria-label="Search datasets"
                     >
-                    <button type="submit" class="gdex-search-card__btn" aria-label="Search">
+                    <button type="submit" class="gdex-search-bar__btn" aria-label="Search">
                         <i class="fas fa-search"></i>
                         <span>Search</span>
                     </button>
@@ -33,25 +33,27 @@
             </script>
         </div>
     </div>
-</section>
+</div>
 
 <!-- CHIPS -->
 <div class="gdex-search-chips">
-    <p class="gdex-search-chips__label">Explore specialized datasets</p>
-    <div class="d-flex flex-wrap gap-3 justify-content-center">
-        <a href="https://gdex.ucar.edu/metrics/by-the-numbers/" target="_blank" rel="noopener noreferrer" class="gdex-chip">
-            <i class="fas fa-robot me-2"></i>
-            <span>
-                <strong>AI-ready datasets</strong>
-                <small class="d-block">Dataset prepared for AI/ML Workflow</small>
-            </span>
-        </a>
-        <a href="/gsearch/dataset-search/?format=zarr" class="gdex-chip">
-            <i class="fas fa-layer-group me-2"></i>
-            <span>
-                <strong>Zarr datasets</strong>
-                <small class="d-block">Cloud-optimized array data</small>
-            </span>
-        </a>
+    <div class="container-lg">
+        <p class="gdex-search-chips__label">Explore specialized datasets</p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <a href="https://gdex.ucar.edu/metrics/by-the-numbers/" target="_blank" rel="noopener noreferrer" class="gdex-chip">
+                <i class="fas fa-robot me-2"></i>
+                <span>
+                    <strong>AI-ready datasets</strong>
+                    <small class="d-block">Dataset prepared for AI/ML Workflow</small>
+                </span>
+            </a>
+            <a href="/gsearch/dataset-search/?format=zarr" class="gdex-chip">
+                <i class="fas fa-layer-group me-2"></i>
+                <span>
+                    <strong>Zarr datasets</strong>
+                    <small class="d-block">Cloud-optimized array data</small>
+                </span>
+            </a>
+        </div>
     </div>
 </div>
