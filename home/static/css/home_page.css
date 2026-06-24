@@ -215,8 +215,8 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-features-section {
     background-color: #f2f2f2;
     background-image: url('../unity/img/UCAR-Waves-Lines-Only-33.png');
-    background-size: auto 120%;
-    background-position: right -5% top -10%;
+    background-size: 55% auto;
+    background-position: right top;
     background-repeat: no-repeat;
     padding: 4rem 0 5rem;
     width: 100vw;
@@ -430,9 +430,9 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 /* ---- Metrics ---- */
 .gdex-metrics-section {
     background-color: #f2f2f2;
-    background-image: url('../unity/img/UCAR-Waves-Lines-Only-66.png');
-    background-size: auto 130%;
-    background-position: right -5% top -15%;
+    background-image: url('../unity/img/UCAR-Waves-Lines-Only-33.png');
+    background-size: 55% auto;
+    background-position: right top;
     background-repeat: no-repeat;
     padding: 5rem 0 5.5rem;
     border-top: 1px solid #e0e0e0;
