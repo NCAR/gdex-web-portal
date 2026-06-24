@@ -8,8 +8,6 @@ body { overflow-x: hidden; }
     /* Break out of container-lg */
     width: 100vw;
     margin-left: calc(-50vw + 50%);
-    /* Negate main's top padding (py-3 pt-md-4) */
-    margin-top: -1.5rem;
 }
 .gdex-hero__bg {
     position: absolute;
@@ -445,6 +443,7 @@ body { overflow-x: hidden; }
 }
 
 /* cancel main's py-3 bottom padding so metrics section butts against the footer */
+main:has(.gdex-hero) { padding-top: 0; }
 main:has(.gdex-metrics-section) { padding-bottom: 0; }
 
 /* ---- Metrics ---- */

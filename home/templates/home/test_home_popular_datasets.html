@@ -29,6 +29,12 @@
     var placeholderImg = '{% static "img/hero_earth.png" %}';
     var apiUrl = '{% url "top_datasets" %}';
 
+    function fmt(n) { return Number(n).toLocaleString(); }
+    function fmtVol(tb) {
+        var n = parseFloat(tb);
+        return n >= 1000 ? (n / 1000).toFixed(1) + ' PB' : Math.round(n) + ' TB';
+    }
+
     fetch(apiUrl)
         .then(function (r) { return r.json(); })
         .then(function (data) {
@@ -42,7 +48,12 @@
                             '<img src="' + placeholderImg + '" alt="' + ds.OName + '">' +
                         '</div>' +
                         '<div class="gdex-dataset-card__body">' +
+                            '<div class="gdex-dataset-card__size">#' + ds.index + '</div>' +
                             '<h4 class="gdex-dataset-card__name">' + ds.OName + '</h4>' +
+                            '<div class="gdex-dataset-card__meta">' +
+                                '<span class="gdex-dataset-card__badge">' + fmt(ds['Total Number of Unique Users']) + ' users</span>' +
+                                '<span class="gdex-dataset-card__badge">' + fmtVol(ds['Total Volume Downloaded (TB)']) + ' downloaded</span>' +
+                            '</div>' +
                         '</div>' +
                     '</a>';
                 wrapper.appendChild(slide);
