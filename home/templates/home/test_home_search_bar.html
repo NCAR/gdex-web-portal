@@ -1,36 +1,40 @@
 <!-- SEARCH OUTER — negative margin overlaps the hero -->
 <div class="gdex-search-outer">
-    <div class="gdex-search-block">
-        <div class="container-lg">
-            <h2 class="gdex-search-block__title">{{ page.search_box_title|default:"Search For Datasets" }}</h2>
-            <form action="/gsearch/dataset-search/" method="get" id="gdex-home-search-form">
-                <div class="gdex-search-bar">
-                    <input
-                        type="text"
-                        name="q"
-                        id="gdex-home-search-input"
-                        class="gdex-search-bar__input"
-                        placeholder="{{ page.search_box_placeholder|default:"Search by keyword or dataset number" }}"
-                        aria-label="Search datasets"
-                    >
-                    <button type="submit" class="gdex-search-bar__btn" aria-label="Search">
-                        <i class="fas fa-search"></i>
-                        <span>Search</span>
-                    </button>
+    <div class="container-lg">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="gdex-search-block">
+                    <h2 class="gdex-search-block__title">{{ page.search_box_title|default:"Search For Datasets" }}</h2>
+                    <form action="/gsearch/dataset-search/" method="get" id="gdex-home-search-form">
+                        <div class="gdex-search-bar">
+                            <input
+                                type="text"
+                                name="q"
+                                id="gdex-home-search-input"
+                                class="gdex-search-bar__input"
+                                placeholder="{{ page.search_box_placeholder|default:"Search by keyword or dataset number" }}"
+                                aria-label="Search datasets"
+                            >
+                            <button type="submit" class="gdex-search-bar__btn" aria-label="Search">
+                                <i class="fas fa-search"></i>
+                                <span>Search</span>
+                            </button>
+                        </div>
+                    </form>
+                    <script>
+                        document.getElementById('gdex-home-search-form').addEventListener('submit', function (e) {
+                            if (!document.getElementById('gdex-home-search-input').value.trim()) {
+                                e.preventDefault();
+                            }
+                        });
+                        if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+                        window.addEventListener('pageshow', function () {
+                            document.getElementById('gdex-home-search-input').value = '';
+                            window.scrollTo(0, 0);
+                        });
+                    </script>
                 </div>
-            </form>
-            <script>
-                document.getElementById('gdex-home-search-form').addEventListener('submit', function (e) {
-                    if (!document.getElementById('gdex-home-search-input').value.trim()) {
-                        e.preventDefault();
-                    }
-                });
-                if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
-                window.addEventListener('pageshow', function () {
-                    document.getElementById('gdex-home-search-input').value = '';
-                    window.scrollTo(0, 0);
-                });
-            </script>
+            </div>
         </div>
     </div>
 </div>

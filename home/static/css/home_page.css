@@ -156,12 +156,10 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     margin-top: -6rem;
     position: relative;
     z-index: 10;
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
 }
 .gdex-search-block {
     background-color: #2952c4;
-    padding: 2.5rem 0;
+    padding: 2.5rem 5rem;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.30);
 }
 .gdex-search-block__title {
@@ -190,7 +188,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-search-bar__input::placeholder { color: #8a9bb0; font-weight: 400; }
 .gdex-search-bar__btn {
     background-color: #f59e0b;
-    color: #ffffff;
+    color: #0d2d6e;
     border: none;
     border-radius: 8px;
     padding: 1.1rem 2.25rem;
@@ -198,15 +196,20 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     white-space: nowrap;
     flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
 }
 .gdex-search-bar__btn i { font-size: 1rem; }
-.gdex-search-bar__btn:hover { background-color: #d97706; }
+.gdex-search-bar__btn:hover {
+    background-color: #d97706;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+}
 
 
 /* ============================================================
@@ -493,7 +496,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     text-align: center;
     background: #ffffff;
     border-radius: 25px;
-    padding: 2.25rem 1.25rem;
+    padding: 1.5rem 1rem;
     border: 1px solid #dce8f8;
     transition: transform 0.22s ease, box-shadow 0.22s ease;
     position: relative;

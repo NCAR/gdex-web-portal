@@ -20,7 +20,7 @@
                     <a href="{% if card.card_page %}{{ card.card_page.url }}{% else %}{{ card.card_url }}{% endif %}"
                        class="gdex-feature-card__link stretched-link"
                        {% if not card.card_page and card.card_url %}target="_blank" rel="noopener noreferrer"{% endif %}>
-                        Learn more &rarr;
+                        {{ card.card_link_text }} &rarr;
                     </a>
                 </div>
             </div>
