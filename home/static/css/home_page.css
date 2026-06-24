@@ -156,6 +156,18 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     margin-top: -6rem;
     position: relative;
     z-index: 10;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+.gdex-search-outer::after {
+    content: '';
+    position: absolute;
+    top: 6rem;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ffffff;
+    z-index: -1;
 }
 .gdex-search-block {
     background-color: #2952c4;

@@ -26,7 +26,10 @@
 
 <script>
 (function () {
-    var placeholderImg = '{% static "img/hero_earth.png" %}';
+    var placeholderImgs = [
+        '{% static "img/hero_earth.png" %}',
+        '{% static "img/20cr_v3.png" %}'
+    ];
     var apiUrl = '{% url "top_datasets" %}';
 
     function fmt(n) { return Number(n).toLocaleString(); }
@@ -39,13 +42,14 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
             var wrapper = document.getElementById('gdex-popular-datasets-wrapper');
-            data.top_datasets.forEach(function (ds) {
+            data.top_datasets.forEach(function (ds, i) {
+                var img = placeholderImgs[i % placeholderImgs.length];
                 var slide = document.createElement('div');
                 slide.className = 'swiper-slide';
                 slide.innerHTML =
                     '<a href="/datasets/' + ds.dataset + '" class="gdex-dataset-card">' +
                         '<div class="gdex-dataset-card__circle">' +
-                            '<img src="' + placeholderImg + '" alt="' + ds.OName + '">' +
+                            '<img src="' + img + '" alt="' + ds.OName + '">' +
                         '</div>' +
                         '<div class="gdex-dataset-card__body">' +
                             '<div class="gdex-dataset-card__size">#' + ds.index + '</div>' +
