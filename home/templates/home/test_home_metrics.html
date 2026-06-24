@@ -58,12 +58,32 @@
 (function () {
     function fmt(n) { return Number(n).toLocaleString(); }
 
-    function fetchMetric(url, id, transform) {
+    function countUp(el, target, suffix, isFloat) {
+        var duration = 1800;
+        var startTime = null;
+        suffix = suffix || '';
+        function step(ts) {
+            if (!startTime) startTime = ts;
+            var progress = Math.min((ts - startTime) / duration, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+            var current = target * eased;
+            el.textContent = isFloat
+                ? current.toFixed(2) + suffix
+                : fmt(Math.floor(current)) + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    function fetchMetric(url, id, getValue, suffix, isFloat) {
         fetch(url)
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 var el = document.getElementById(id);
-                if (el) el.textContent = transform(data);
+                if (!el) return;
+                var target = parseFloat(getValue(data));
+                if (isNaN(target)) { el.textContent = '—'; return; }
+                countUp(el, target, suffix, isFloat);
             })
             .catch(function () {
                 var el = document.getElementById(id);
@@ -71,11 +91,11 @@
             });
     }
 
-    fetchMetric('{% url "total_datasets" %}',    'gdex-metric-datasets',   function (d) { return fmt(d.value); });
-    fetchMetric('{% url "total_citations" %}',   'gdex-metric-citations',  function (d) { return fmt(d.value); });
-    fetchMetric('{% url "unique_users" %}',      'gdex-metric-users',      function (d) { return fmt(d.ips); });
-    fetchMetric('{% url "volume_downloaded" %}', 'gdex-metric-downloaded', function (d) { return fmt(d.volume) + ' PB'; });
-    fetchMetric('{% url "gdex_volume" %}',       'gdex-metric-volume',     function (d) { return fmt(d.value) + ' PB'; });
-    fetchMetric('{% url "total_requests" %}',    'gdex-metric-requests',   function (d) { return fmt(d.value); });
+    fetchMetric('{% url "total_datasets" %}',    'gdex-metric-datasets',   function (d) { return d.value; });
+    fetchMetric('{% url "total_citations" %}',   'gdex-metric-citations',  function (d) { return d.value; });
+    fetchMetric('{% url "unique_users" %}',      'gdex-metric-users',      function (d) { return d.ips; });
+    fetchMetric('{% url "volume_downloaded" %}', 'gdex-metric-downloaded', function (d) { return d.volume; }, ' PB', true);
+    fetchMetric('{% url "gdex_volume" %}',       'gdex-metric-volume',     function (d) { return d.value; }, ' PB', true);
+    fetchMetric('{% url "total_requests" %}',    'gdex-metric-requests',   function (d) { return d.value; });
 }());
 </script>
