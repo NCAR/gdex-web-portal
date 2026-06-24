@@ -166,33 +166,31 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     margin-left: calc(-50vw + 50%);
     background-color: #ffffff;
     text-align: center;
-    padding: 1.5rem 1rem 2rem;
+    padding: 2rem 1rem 2.5rem;
 }
 .gdex-search-chips__label {
     font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #8a9bb0;
-    margin-bottom: 0.85rem;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 2.8vw, 2rem);
+    color: #0d2d6e;
+    margin-bottom: 1.5rem;
 }
 .gdex-chip {
     display: inline-flex;
     align-items: center;
-    width: 220px;
+    width: 240px;
     background-color: #ffffff;
     border: 1.5px solid #c5d6ef;
     color: #00357a;
     border-radius: 8px;
-    padding: 0.55rem 0.875rem;
-    font-size: 0.825rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.875rem;
     text-decoration: none;
     transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
-.gdex-chip strong { display: block; font-weight: 600; font-size: 0.825rem; color: #00357a; }
-.gdex-chip small { font-weight: 400; font-size: 0.72rem; color: #5a6a80; }
-.gdex-chip i { color: #1a56b0; font-size: 1rem; flex-shrink: 0; }
+.gdex-chip strong { display: block; font-weight: 600; color: #00357a; }
+.gdex-chip small { font-weight: 400; font-size: 0.75rem; color: #5a6a80; }
+.gdex-chip i { color: #1a56b0; font-size: 1.1rem; flex-shrink: 0; }
 .gdex-chip:hover {
     background-color: #2952c4;
     border-color: #2952c4;
@@ -216,14 +214,28 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 /* ---- Feature cards ---- */
 .gdex-features-section {
     background-color: #f2f2f2;
-    background-image: url('../unity/img/UCAR-Waves-Lines-Only-33.png');
-    background-size: 55% auto;
-    background-position: right top;
-    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
     padding: 4rem 0 5rem;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
 }
+.gdex-features-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -8%;
+    width: 55%;
+    height: 100%;
+    background-image: url('../unity/img/UCAR-Waves-Lines-Only-33.png');
+    background-size: 100% auto;
+    background-position: right top;
+    background-repeat: no-repeat;
+    opacity: 0.22;
+    pointer-events: none;
+    z-index: 0;
+}
+.gdex-features-section .container-lg { position: relative; z-index: 1; }
 .gdex-feature-card {
     background-color: #f8f8f8;
     border-radius: 25px;
@@ -432,28 +444,10 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 /* ---- Metrics ---- */
 .gdex-metrics-section {
     background-color: #f2f2f2;
-    position: relative;
-    overflow: hidden;
-    padding: 5rem 0 5.5rem;
+    padding: 3.5rem 0 4rem;
     border-top: 1px solid #e0e0e0;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
-}
-.gdex-metrics-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 55%;
-    height: 100%;
-    background-image: url('../unity/img/UCAR-Waves-Lines-Only-33.png');
-    background-size: 100% auto;
-    background-position: left top;
-    background-repeat: no-repeat;
-    transform: scaleX(-1);
-    opacity: 0.18;
-    pointer-events: none;
-    z-index: 0;
 }
 .gdex-metrics-section .container-lg { position: relative; z-index: 1; }
 .gdex-metrics-section__title {
