@@ -6,7 +6,7 @@
 
         <h2 class="gdex-metrics-section__title">GDEX By the Metrics</h2>
 
-        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-4">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-4">
             <div class="col">
                 <div class="gdex-metric">
                     <div class="gdex-metric__icon"><i class="icon-data-software-services"></i></div>
@@ -22,14 +22,14 @@
                 </div>
             </div>
             <div class="col">
-                <div class="gdex-metric">
+                <div class="gdex-metric gdex-metric--featured">
                     <div class="gdex-metric__icon"><i class="icon-our-staff"></i></div>
                     <div class="gdex-metric__value" id="gdex-metric-users">&hellip;</div>
                     <div class="gdex-metric__label">Unique IPs</div>
                 </div>
             </div>
             <div class="col">
-                <div class="gdex-metric">
+                <div class="gdex-metric gdex-metric--featured">
                     <div class="gdex-metric__icon"><i class="icon-observations"></i></div>
                     <div class="gdex-metric__value" id="gdex-metric-downloaded">&hellip;</div>
                     <div class="gdex-metric__label">Data Downloaded</div>
@@ -75,27 +75,44 @@
         requestAnimationFrame(step);
     }
 
-    function fetchMetric(url, id, getValue, suffix, isFloat) {
-        fetch(url)
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                var el = document.getElementById(id);
-                if (!el) return;
-                var target = parseFloat(getValue(data));
-                if (isNaN(target)) { el.textContent = '—'; return; }
-                countUp(el, target, suffix, isFloat);
-            })
-            .catch(function () {
-                var el = document.getElementById(id);
-                if (el) el.textContent = '—';
-            });
+    var metrics = [
+        { url: '{% url "total_datasets" %}',    id: 'gdex-metric-datasets',   get: function (d) { return d.value; } },
+        { url: '{% url "total_citations" %}',   id: 'gdex-metric-citations',   get: function (d) { return d.value; } },
+        { url: '{% url "unique_users" %}',      id: 'gdex-metric-users',       get: function (d) { return d.ips; } },
+        { url: '{% url "volume_downloaded" %}', id: 'gdex-metric-downloaded',  get: function (d) { return d.volume; }, suffix: ' PB', float: true },
+        { url: '{% url "gdex_volume" %}',       id: 'gdex-metric-volume',      get: function (d) { return d.value; }, suffix: ' PB', float: true },
+        { url: '{% url "total_requests" %}',    id: 'gdex-metric-requests',    get: function (d) { return d.value; } },
+    ];
+
+    function runAll() {
+        metrics.forEach(function (m) {
+            fetch(m.url)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var el = document.getElementById(m.id);
+                    if (!el) return;
+                    var target = parseFloat(m.get(data));
+                    if (isNaN(target)) { el.textContent = '—'; return; }
+                    countUp(el, target, m.suffix, m.float);
+                })
+                .catch(function () {
+                    var el = document.getElementById(m.id);
+                    if (el) el.textContent = '—';
+                });
+        });
     }
 
-    fetchMetric('{% url "total_datasets" %}',    'gdex-metric-datasets',   function (d) { return d.value; });
-    fetchMetric('{% url "total_citations" %}',   'gdex-metric-citations',  function (d) { return d.value; });
-    fetchMetric('{% url "unique_users" %}',      'gdex-metric-users',      function (d) { return d.ips; });
-    fetchMetric('{% url "volume_downloaded" %}', 'gdex-metric-downloaded', function (d) { return d.volume; }, ' PB', true);
-    fetchMetric('{% url "gdex_volume" %}',       'gdex-metric-volume',     function (d) { return d.value; }, ' PB', true);
-    fetchMetric('{% url "total_requests" %}',    'gdex-metric-requests',   function (d) { return d.value; });
+    var section = document.querySelector('.gdex-metrics-section');
+    if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+            if (entries[0].isIntersecting) {
+                observer.unobserve(section);
+                runAll();
+            }
+        }, { threshold: 0.15 });
+        observer.observe(section);
+    } else {
+        runAll();
+    }
 }());
 </script>

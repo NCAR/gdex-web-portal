@@ -430,27 +430,10 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 /* ---- Metrics ---- */
 .gdex-metrics-section {
     background-color: #f2f2f2;
-    position: relative;
-    overflow: hidden;
     padding: 5rem 0 5.5rem;
     border-top: 1px solid #e0e0e0;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
-}
-.gdex-metrics-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 55%;
-    height: 100%;
-    background-image: url('../unity/img/UCAR-Waves-Lines-Only-33.png');
-    background-size: 100% auto;
-    background-position: left top;
-    background-repeat: no-repeat;
-    transform: scaleX(-1);
-    pointer-events: none;
-    z-index: 0;
 }
 .gdex-metrics-section .container-lg { position: relative; z-index: 1; }
 .gdex-metrics-section__title {
@@ -458,7 +441,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     font-weight: 700;
     font-size: clamp(1.5rem, 2.8vw, 2rem);
     color: #0d2d6e;
-    text-align: center;
+    text-align: left;
     margin-bottom: 2.25rem;
 }
 .gdex-metric {
@@ -497,4 +480,22 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     line-height: 1.4;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+}
+.gdex-metric--featured {
+    background: linear-gradient(145deg, #eef2fb 0%, #dce8ff 100%);
+    border-color: #b3c8f0;
+    box-shadow: 0 4px 18px rgba(41,82,196,0.1);
+}
+.gdex-metric--featured .gdex-metric__value {
+    font-size: clamp(1.55rem, 3vw, 2.1rem);
+    color: #2952c4;
+}
+.gdex-metric--featured .gdex-metric__icon {
+    width: 56px;
+    height: 56px;
+    font-size: 1.3rem;
+    background-color: #1e3f9a;
+}
+.gdex-metric--featured:hover {
+    box-shadow: 0 10px 28px rgba(41,82,196,0.18);
 }
