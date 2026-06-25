@@ -1,0 +1,107 @@
+{% load static gsearch_tags %}
+
+<aside class="gdex-filters-sidebar">
+
+  <div class="gdex-filters-sidebar__header">
+    <h2 class="gdex-filters-sidebar__title">Filters</h2>
+    <a class="gdex-filters-sidebar__clear" href="javascript:void(0)" onclick="clearFilters();">clear all</a>
+  </div>
+
+  <div class="gdex-filters-sidebar__scroll-body" id="gdex-sidebar-body">
+
+    {# ── Time Range ─────────────────────────────────────────────────────────
+         Temporal inputs keep their original IDs so gsearch.js can read them
+         and append the correct Globus range filter values before submission.
+    ── #}
+    <div class="gdex-filter-group">
+      <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
+        <span class="gdex-filter-group__name">Time Range</span>
+        <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
+      </div>
+      <div class="gdex-filter-group__body">
+        <div class="gdex-filter-custom-range">
+          <div class="gdex-filter-custom-range__label">Custom Temporal Range</div>
+          <div class="gdex-filter-custom-range__inputs">
+            <input type="text"
+                   id="temporal_start_input"
+                   name="filter-range.temporal_range_end"
+                   class="gdex-filter-date-input"
+                   placeholder="YYYY-MM-DD"
+                   autocomplete="off"
+                   onchange="customSearch(1);"
+                   value="{% if request.session.temporal_start_input %}{{ request.session.temporal_start_input }}{% endif %}">
+            <span class="gdex-filter-custom-range__dash">–</span>
+            <input type="text"
+                   id="temporal_end_input"
+                   name="filter-range.temporal_range_start"
+                   class="gdex-filter-date-input"
+                   placeholder="YYYY-MM-DD"
+                   autocomplete="off"
+                   onchange="customSearch(1);"
+                   value="{% if request.session.temporal_end_input %}{{ request.session.temporal_end_input }}{% endif %}">
+          </div>
+          <div class="gdex-filter-custom-range__labels">
+            <span>From</span><span>To</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Globus Facets ───────────────────────────────────────────────────────
+         Each facet from search.facets becomes a collapsible filter group.
+         - Starts open if a filter in that group is currently active.
+         - Checkboxes use field.search_filter_query_key (Globus URL param name)
+           so the existing customSearch() submission works unchanged.
+         - has_active_bucket tag checks if any bucket.checked == True.
+    ── #}
+    <form id="facet-form">
+      {% for facet in search.facets %}
+      {% if facet.buckets %}
+      <div class="gdex-filter-group {% if not facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
+        <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
+          <span class="gdex-filter-group__name">{{ facet.name }}</span>
+          <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="gdex-filter-group__body">
+          <input type="text"
+                 placeholder="Search {{ facet.name|lower }}"
+                 class="gdex-filter-search-input">
+          <div class="gdex-filter-options">
+            {% for field in facet.buckets %}
+            <label class="gdex-filter-checkbox gdex-filter-checkbox--count">
+              <input type="checkbox"
+                     name="{{ field.search_filter_query_key }}"
+                     value="{{ field.value }}"
+                     class="gsearch-checkbox"
+                     autocomplete="off"
+                     onchange="customSearch(1);"
+                     {% if field.checked %}checked{% endif %}>
+              <span>
+                {% if field.filter_type == 'year' %}
+                  {{ field.datetime|date:'Y' }}
+                {% elif field.filter_type == 'month' %}
+                  {{ field.datetime|date:'F Y' }}
+                {% elif field.filter_type == 'day' %}
+                  {{ field.datetime|date:'M d Y' }}
+                {% elif field.field_name == 'location' or field.field_name == 'platform' %}
+                  {% truncate_facet field.value %}
+                {% elif field.field_name == 'spatial_resolution' or field.field_name == 'time_resolution' %}
+                  {% truncate_facet field.value separator=':' %}
+                {% else %}
+                  {{ field.value }}
+                {% endif %}
+              </span>
+              <span class="gdex-filter-count">{{ field.count }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          <button type="button" class="gdex-filter-see-more">see more…</button>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </form>
+
+  </div>{# /.gdex-filters-sidebar__scroll-body #}
+
+</aside>

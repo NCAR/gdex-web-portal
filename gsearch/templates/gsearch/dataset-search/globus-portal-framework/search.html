@@ -36,62 +36,42 @@
   </div>
 </section>
 
-{# ── Wrap remaining layout in a container since <main> no longer provides one #}
-<div class="container-lg py-3">
+{# ── Body: sidebar + results ──────────────────────────────────────────────── #}
+{% static 'unity/img/UCAR-Waves-Lines-Only.png' as waves_url %}
+<div class="gdex-find-data-body" style="--waves-url: url('{{ waves_url }}');">
+  <div class="container-lg">
+    <div class="gdex-find-data-layout">
 
-  {% block search_nav %}
-    {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-nav.html' as search_nav %}
-    {% include search_nav %}
-  {% endblock %}
-
-  <div class="tab-content" id="search-nav-tabContent">
-    <div class="tab-pane fade show active dataset p-3" id="search-form-tab-pane" role="tabpanel" aria-labelledby="search-tab" tabindex="0">
-
-      <div class="row">
-        {% block search_facets %}
-        <div id="sidebar" class="col-xs-12 col-sm-4 col-md-4">
-          <div id="filters">
-            <div id="facet-container">
-              <form id="filter-form">
-                {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-filters.html' as it_search_filters %}
-                {% include it_search_filters %}
-              </form>
-              <form id="facet-form">
-                {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-facets.html' as it_search_facets %}
-                {% include it_search_facets %}
-              </form>
-            </div>
-          </div>
-        </div>
-        {% endblock %}
-
-        <div id="content" class="col-xs-12 col-sm-8 col-md-8">
-          {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-summary.html' as it_search_summary %}
-          {% include it_search_summary %}
-
-          <div id="results" style="display: inline;">
-            {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-results.html' as it_search_results %}
-            {% include it_search_results %}
-
-            {% block search_pagination %}
-              {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-pagination.html' as it_search_pagination %}
-              {% include it_search_pagination %}
-            {% endblock %}
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="tab-pane fade dataset p-3" id="search-about-tab-pane" role="tabpanel" aria-labelledby="about-tab" tabindex="0">
-      {% block search_about %}
-        {% index_template 'gsearch/dataset-search/globus-portal-framework/search-about.html' as search_about %}
-        {% include search_about %}
+      {# ── Sidebar ── #}
+      {% block search_facets %}
+        {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-sidebar.html' as it_sidebar %}
+        {% include it_sidebar %}
       {% endblock %}
-    </div>
 
-  </div>
+      {# ── Results area ── #}
+      <div class="gdex-results-area">
 
-</div>{# /.container-lg #}
+        {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-summary.html' as it_summary %}
+        {% include it_summary %}
 
+        <div id="results">
+          {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-results.html' as it_results %}
+          {% include it_results %}
+
+          {% block search_pagination %}
+            {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-pagination.html' as it_pagination %}
+            {% include it_pagination %}
+          {% endblock %}
+        </div>
+
+      </div>{# /.gdex-results-area #}
+
+    </div>{# /.gdex-find-data-layout #}
+  </div>{# /.container-lg #}
+</div>{# /.gdex-find-data-body #}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'gsearch/js/find_data.js' %}"></script>
 {% endblock %}

@@ -669,7 +669,9 @@
     margin-top: auto;
     padding-top: 0.65rem;
 }
-.gdex-btn-access {
+a.gdex-btn-access,
+a.gdex-btn-access:link,
+a.gdex-btn-access:visited {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
@@ -686,8 +688,11 @@
     white-space: nowrap;
     transition: background-color 0.2s ease;
 }
-.gdex-btn-access:hover { background: #0d2d6e; color: #ffffff; text-decoration: none; }
-.gdex-btn-description {
+a.gdex-btn-access:hover { background: #0d2d6e; color: #ffffff; text-decoration: none; }
+
+a.gdex-btn-description,
+a.gdex-btn-description:link,
+a.gdex-btn-description:visited {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
@@ -704,8 +709,11 @@
     white-space: nowrap;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
-.gdex-btn-description:hover { background: #e8effe; color: #0d2d6e; border-color: #0d2d6e; text-decoration: none; }
-.gdex-btn-more {
+a.gdex-btn-description:hover { background: #e8effe; color: #0d2d6e; border-color: #0d2d6e; text-decoration: none; }
+
+a.gdex-btn-more,
+a.gdex-btn-more:link,
+a.gdex-btn-more:visited {
     background: none;
     border: none;
     color: #6b7a99;
@@ -718,8 +726,9 @@
     align-items: center;
     gap: 0.25rem;
     transition: color 0.15s ease;
+    text-decoration: none;
 }
-.gdex-btn-more:hover { color: #2952c4; }
+a.gdex-btn-more:hover { color: #2952c4; text-decoration: none; }
 
 
 /* ------------------------------------------------------------

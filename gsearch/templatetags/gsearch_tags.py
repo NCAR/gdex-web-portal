@@ -3,6 +3,21 @@ from django.conf import settings
 
 register = template.Library()
 
+
+@register.filter
+def has_active_bucket(facet):
+    """Return True if any bucket in the facet is currently checked/selected."""
+    try:
+        buckets = facet.get('buckets') if isinstance(facet, dict) else getattr(facet, 'buckets', [])
+    except Exception:
+        return False
+    for b in (buckets or []):
+        checked = b.get('checked') if isinstance(b, dict) else getattr(b, 'checked', False)
+        if checked:
+            return True
+    return False
+
+
 @register.simple_tag
 def truncate_facet(value, separator='>', num=1):
     """ Split a facet string value by the given separator,
