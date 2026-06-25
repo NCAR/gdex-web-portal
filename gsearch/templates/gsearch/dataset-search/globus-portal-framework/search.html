@@ -107,14 +107,7 @@
 
 {% endblock %}
 
-{% block search_head %}
-{{ block.super }}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-{% endblock %}
-
 {% block extra_js %}
-{# flatpickr must come first — search_data.js calls flatpickr() at init time #}
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 /* Hide the active filters row when no chips are present */
 (function () {

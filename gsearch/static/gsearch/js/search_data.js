@@ -244,24 +244,26 @@
         scheduleNavigation();
     }
 
-    /* ---------- flatpickr ---------- */
+    /* ---------- flatpickr (only init if the library is loaded) ---------- */
 
-    dateFromPicker = flatpickr('#date-from', {
-        dateFormat: 'Y-m-d',
-        allowInput: true,
-        onChange: function (sel, str) {
-            if (dateToPicker) dateToPicker.set('minDate', str || null);
-            refreshDateChip();
-        }
-    });
-    dateToPicker = flatpickr('#date-to', {
-        dateFormat: 'Y-m-d',
-        allowInput: true,
-        onChange: function (sel, str) {
-            if (dateFromPicker) dateFromPicker.set('maxDate', str || null);
-            refreshDateChip();
-        }
-    });
+    if (typeof flatpickr !== 'undefined') {
+        dateFromPicker = flatpickr('#date-from', {
+            dateFormat: 'Y-m-d',
+            allowInput: true,
+            onChange: function (sel, str) {
+                if (dateToPicker) dateToPicker.set('minDate', str || null);
+                refreshDateChip();
+            }
+        });
+        dateToPicker = flatpickr('#date-to', {
+            dateFormat: 'Y-m-d',
+            allowInput: true,
+            onChange: function (sel, str) {
+                if (dateFromPicker) dateFromPicker.set('maxDate', str || null);
+                refreshDateChip();
+            }
+        });
+    }
 
     /* ---------- restore URL state (after flatpickr is ready) ---------- */
 
