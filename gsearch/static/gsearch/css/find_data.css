@@ -832,3 +832,19 @@
     .gdex-dataset-result__meta { gap: 0.25rem 0.75rem; }
     .gdex-results-filters-row { flex-wrap: wrap; }
 }
+
+
+/* ------------------------------------------------------------
+   Override legacy gsearch.css rules that bleed into the hero
+   (#search-form #search-input has specificity 0,2,0 in gsearch.css;
+   these rules use 0,2,1 — class + two IDs — to win cleanly)
+   ------------------------------------------------------------ */
+.gdex-find-data-hero #search-form #search-input {
+    height: auto;
+    margin-right: 0;
+    border-radius: 0;
+    text-indent: 0;
+    font-size: 0.975rem;
+    flex: 1;
+    min-width: 0;
+}

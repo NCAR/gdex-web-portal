@@ -1,40 +1,78 @@
-{# gsearch/templates/gsearch/dataset-search/globus-portal-framework/components/search-results.html #}
+{% load static %}
 <div>
   {% for result in search.search_results %}
-  <div class="card my-3">
-    <div class="card-header">
-      <h3 class="search-title">
-        <a href="{{ result.dataset_url }}">{{result.title|default:'Result'}}</a>
-      </h3>
+  <article class="gdex-dataset-result">
+
+    <div class="gdex-dataset-result__thumb">
+      <img src="{% static 'img/hero_earth.png' %}" alt="{{ result.title }}">
     </div>
-    <div class="card-body">
-      {% if result.dataset_type == 'H' %}
-        <div class="mb-1 bg-warning text-dark p-2 rounded">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          For ancillary use only - not recommended as a primary research dataset. It has likely been superseded by newer and better datasets.
-        </div>
-      {% endif %}
-      {% for item in result.search_highlights %}
-        <div class="my-1">
-            {% if item.type == "date" %}
-              <strong>{{item.title}}:</strong> 
-              {{item.value | date:"d M Y"}}
-            {% elif item.title == "Description" %}
-              <strong>{{item.title}}:</strong>
-              <div>{{item.value | truncatechars:500}}</div>
-            {% elif item.name == "format" or item.name == "tags" %}
-              {% for val in item.value %}
-                <a href="{% url 'search' globus_portal_framework.index %}?q=&{{ item.search_filter_query_key }}={{ val }}" class="text-decoration-none">
-                <span class="badge gsearch-badge rounded">{{val}}</span>
-                </a>
-              {% endfor %}
-            {% else %}
-              <strong>{{item.title}}:</strong> 
-              {{item.value}}
+
+    <div class="gdex-dataset-result__body">
+
+      {# ── Title row ── #}
+      <div class="gdex-dataset-result__top">
+        <div class="gdex-dataset-result__title-block">
+          <h3 class="gdex-dataset-result__title">
+            <a href="{{ result.dataset_url }}"
+               data-summary="{{ result.summary }}">
+              {{ result.title }}
+              <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon"></i>
+            </a>
+          </h3>
+          <p class="gdex-dataset-result__doi">
+            DOI: {{ result.doi }}
+            {% if result.doi != 'N/A' %}
+            <button class="gdex-doi-copy" title="Copy DOI" data-doi="{{ result.doi }}">
+              <i class="fas fa-copy"></i>
+            </button>
             {% endif %}
+          </p>
         </div>
-      {% endfor %}
+        <button class="gdex-dataset-result__cloud-btn" title="Cloud access">
+          <i class="fas fa-cloud"></i>
+        </button>
+      </div>
+
+      {# ── Historical dataset warning ── #}
+      {% if result.dataset_type == 'H' %}
+      <div class="mb-2 bg-warning text-dark p-2 rounded" style="font-size:0.8rem;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        For ancillary use only — not recommended as a primary research dataset.
+        It has likely been superseded by newer and better datasets.
+      </div>
+      {% endif %}
+
+      {# ── Metadata row 1 ── #}
+      <div class="gdex-dataset-result__meta">
+        <span><strong>ID:</strong> {{ result.dataset_id }}</span>
+        <span><strong>Size:</strong> {{ result.size }}</span>
+        <span><strong>Data Type:</strong> {{ result.data_type_display }}</span>
+        <span><strong>Temporal Range:</strong> {{ result.temporal_range }}</span>
+        <span><strong>Data Source:</strong> {{ result.data_source }}</span>
+      </div>
+
+      {# ── Metadata row 2 ── #}
+      <div class="gdex-dataset-result__meta">
+        <span><strong>Data Format:</strong> {{ result.data_format_display }}</span>
+        <span><strong>Time Resolution:</strong> {{ result.time_resolution_display }}</span>
+      </div>
+
+      {# ── Action buttons ── #}
+      <div class="gdex-dataset-result__actions">
+        <a href="{{ result.dataset_url }}" class="gdex-btn-access">
+          <i class="fas fa-download"></i> Access Data
+        </a>
+        <a href="{{ result.dataset_url }}" class="gdex-btn-description">
+          <i class="fas fa-file-alt"></i> Description
+        </a>
+        <a href="{{ result.dataset_url }}" class="gdex-btn-more">
+          Citations &amp; Metrics <i class="fas fa-chart-bar ms-1"></i>
+        </a>
+      </div>
+
     </div>
-  </div>
+  </article>
+  {% empty %}
+  <p class="gdex-results-empty">No datasets found. Try adjusting your search or filters.</p>
   {% endfor %}
 </div>
