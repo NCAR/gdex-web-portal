@@ -2,7 +2,7 @@
 
 <header>
     {% if request.get_host|slice:"0:4" != "gdex" and request.get_host|slice:"0:8" != "api.gdex" %}
-        <div class="alert alert-warning text-center mb-0" role="alert">
+        <div class="alert alert-warning text-center mb-0 fw-bold" role="alert">
             TEST INSTANCE - {{ request.get_host }}
         </div>
     {% endif %}
