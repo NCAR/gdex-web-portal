@@ -642,6 +642,9 @@
         contEl.addEventListener('change', function () {
             var cont = this.value;
             removeLocChip();
+            /* Clear hidden location checkboxes — no search yet, user is navigating the cascade */
+            var hiddenForm = document.getElementById('gdex-location-hidden-form');
+            if (hiddenForm) hiddenForm.querySelectorAll('input').forEach(function (cb) { cb.checked = false; });
             countEl.disabled = true;
             stateEl.disabled = true;
             stateRow.style.display = '';
@@ -660,7 +663,7 @@
             var country = this.value;
             fillSelect(stateEl, [], 'Select state…');
             stateEl.disabled = true;
-            if (!country) { removeLocChip(); return; }
+            if (!country) { removeLocChip(); gdexApplyLocation(''); return; }
             addLocChip(country);
             var states = (locationData[cont] && locationData[cont][country]) || [];
             if (states.length) {
@@ -669,17 +672,46 @@
                 stateRow.style.display = '';
             } else {
                 stateRow.style.display = 'none';
-                scheduleNavigation();
+                gdexApplyLocation(cont + ' > ' + country);
             }
         });
 
         stateEl.addEventListener('change', function () {
+            var cont    = contEl.value;
             var country = countEl.value;
             var state   = this.value;
             if (state) addLocChip(state);
             else if (country) addLocChip(country);
-            scheduleNavigation();
+            gdexApplyLocation(state ? cont + ' > ' + country + ' > ' + state : cont + ' > ' + country);
         });
+
+        /* Restore cascade dropdowns from any pre-checked hidden location input (page reload) */
+        (function () {
+            var hiddenForm = document.getElementById('gdex-location-hidden-form');
+            if (!hiddenForm || !contEl) return;
+            var checked = hiddenForm.querySelector('input:checked');
+            if (!checked || !checked.value) return;
+            var parts   = checked.value.split(' > ');
+            var cont    = parts[0] || '';
+            var country = parts[1] || '';
+            var state   = parts[2] || '';
+            if (cont && locationData[cont]) {
+                contEl.value = cont;
+                fillSelect(countEl, Object.keys(locationData[cont]), 'Select country…');
+                countEl.disabled = false;
+                if (country) {
+                    countEl.value = country;
+                    var states = locationData[cont][country] || [];
+                    if (states.length) {
+                        fillSelect(stateEl, states, 'Select state / region…');
+                        stateEl.disabled = false;
+                        if (state) stateEl.value = state;
+                    } else {
+                        stateRow.style.display = 'none';
+                    }
+                }
+            }
+        }());
     }());
 
 }());

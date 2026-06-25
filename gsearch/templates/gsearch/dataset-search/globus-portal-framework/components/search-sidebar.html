@@ -9,10 +9,7 @@
 
   <div class="gdex-filters-sidebar__scroll-body" id="gdex-sidebar-body">
 
-    {# ── Time Range ─────────────────────────────────────────────────────────
-         Temporal inputs keep their original IDs so gsearch.js can read them
-         and append the correct Globus range filter values before submission.
-    ── #}
+    {# Time Range — temporal inputs keep original IDs so gsearch.js can read them #}
     <div class="gdex-filter-group">
       <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
         <span class="gdex-filter-group__name">Time Range</span>
@@ -44,7 +41,7 @@
                    autocomplete="off"
                    onchange="customSearch(1);"
                    value="{% if request.session.temporal_start_input %}{{ request.session.temporal_start_input }}{% endif %}">
-            <span class="gdex-filter-custom-range__dash">–</span>
+            <span class="gdex-filter-custom-range__dash">&ndash;</span>
             <input type="text"
                    id="temporal_end_input"
                    name="filter-range.temporal_range_start"
@@ -61,16 +58,55 @@
       </div>
     </div>
 
-    {# ── Globus Facets ───────────────────────────────────────────────────────
-         Each facet from search.facets becomes a collapsible filter group.
-         - Starts open if a filter in that group is currently active.
-         - Checkboxes use field.search_filter_query_key (Globus URL param name)
-           so the existing customSearch() submission works unchanged.
-         - has_active_bucket tag checks if any bucket.checked == True.
-    ── #}
+    {# Globus facets — each becomes a collapsible filter group #}
     <form id="facet-form">
       {% for facet in search.facets %}
       {% if facet.buckets %}
+
+      {% if facet.name == 'Location' %}
+      {# Location uses a cascading continent > country > state dropdown #}
+      <div class="gdex-filter-group {% if not facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
+        <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
+          <span class="gdex-filter-group__name">{{ facet.name }}</span>
+          <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="gdex-filter-group__body">
+          <div class="gdex-location-cascade">
+            <div class="gdex-location-cascade__row">
+              <label class="gdex-location-cascade__label" for="loc-continent">Continent / Region</label>
+              <select class="gdex-location-select" id="loc-continent">
+                <option value="">Select continent&hellip;</option>
+              </select>
+            </div>
+            <div class="gdex-location-cascade__row">
+              <label class="gdex-location-cascade__label" for="loc-country">Country</label>
+              <select class="gdex-location-select" id="loc-country" disabled>
+                <option value="">Select country&hellip;</option>
+              </select>
+            </div>
+            <div class="gdex-location-cascade__row" id="loc-state-row">
+              <label class="gdex-location-cascade__label" for="loc-state">State / Region</label>
+              <select class="gdex-location-select" id="loc-state" disabled>
+                <option value="">Select state&hellip;</option>
+              </select>
+            </div>
+          </div>
+          {# Hidden Globus location checkboxes — checked by gdexApplyLocation(), submitted by customSearch() #}
+          <div id="gdex-location-hidden-form" style="display:none;">
+            {% for field in facet.buckets %}
+            <input type="checkbox"
+                   name="{{ field.search_filter_query_key }}"
+                   value="{{ field.value }}"
+                   class="gsearch-checkbox"
+                   autocomplete="off"
+                   {% if field.checked %}checked{% endif %}>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      {% else %}
+      {# Standard flat filter group for all other facets #}
       <div class="gdex-filter-group {% if not facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
         <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
           <span class="gdex-filter-group__name">{{ facet.name }}</span>
@@ -97,7 +133,7 @@
                   {{ field.datetime|date:'F Y' }}
                 {% elif field.filter_type == 'day' %}
                   {{ field.datetime|date:'M d Y' }}
-                {% elif field.field_name == 'location' or field.field_name == 'platform' %}
+                {% elif field.field_name == 'platform' %}
                   {% truncate_facet field.value %}
                 {% elif field.field_name == 'spatial_resolution' or field.field_name == 'time_resolution' %}
                   {% truncate_facet field.value separator=':' %}
@@ -109,9 +145,11 @@
             </label>
             {% endfor %}
           </div>
-          <button type="button" class="gdex-filter-see-more">see more…</button>
+          <button type="button" class="gdex-filter-see-more">see more&hellip;</button>
         </div>
       </div>
+      {% endif %}
+
       {% endif %}
       {% endfor %}
     </form>

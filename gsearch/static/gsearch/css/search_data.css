@@ -844,10 +844,15 @@ a.gdex-btn-more:hover { color: #2952c4; text-decoration: none; }
 
 
 /* ------------------------------------------------------------
-   Override legacy gsearch.css rules that bleed into the hero
-   (#search-form #search-input has specificity 0,2,0 in gsearch.css;
-   these rules use 0,2,1 — class + two IDs — to win cleanly)
+   Override legacy gsearch.css rules that bleed into the hero.
+   gsearch.css sets #search-form { display:flex; flex-direction:row }
+   which collapses the form to content-width. We reset it to block
+   so .gdex-find-data-hero__search-bar stretches to the form width.
    ------------------------------------------------------------ */
+.gdex-find-data-hero #search-form {
+    display: block;
+    width: 100%;
+}
 .gdex-find-data-hero #search-form #search-input {
     height: auto;
     margin-right: 0;

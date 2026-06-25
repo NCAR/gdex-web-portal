@@ -1,5 +1,5 @@
 {% extends 'gsearch/dataset-search/globus-portal-framework/search-base.html' %}
-{% load static index_template is_active %}
+{% load static index_template is_active gsearch_tags %}
 
 {# Remove the default container-lg so the hero can span full viewport width #}
 {% block main_class %}p-0{% endblock %}
@@ -9,7 +9,6 @@
 
 {% block body %}
 
-{# ── Hero Banner ──────────────────────────────────────────────────────────── #}
 {% static 'img/hero_earth.png' as hero_bg %}
 <section class="gdex-find-data-hero position-relative overflow-hidden">
   <div class="gdex-find-data-hero__bg" style="background-image: url('{{ hero_bg }}');"></div>
@@ -36,23 +35,59 @@
   </div>
 </section>
 
-{# ── Body: sidebar + results ──────────────────────────────────────────────── #}
 {% static 'unity/img/UCAR-Waves-Lines-Only.png' as waves_url %}
 <div class="gdex-find-data-body" style="--waves-url: url('{{ waves_url }}');">
   <div class="container-lg">
     <div class="gdex-find-data-layout">
 
-      {# ── Sidebar ── #}
       {% block search_facets %}
         {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-sidebar.html' as it_sidebar %}
         {% include it_sidebar %}
       {% endblock %}
 
-      {# ── Results area ── #}
       <div class="gdex-results-area">
 
         {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-summary.html' as it_summary %}
         {% include it_summary %}
+
+        {# Active filter chips — shows which filters are currently applied #}
+        <div class="gdex-results-filters-row" id="gdex-active-filters-row">
+          <span class="gdex-results-filters-label">Active:</span>
+          <div class="gdex-active-filters" id="gdex-active-filters">
+            {% for facet in search.facets %}
+              {% for field in facet.buckets %}
+                {% if field.checked %}
+                <span class="gdex-active-filter-chip">
+                  <span class="gdex-active-filter-chip__group">{{ facet.name }}</span>
+                  <span class="gdex-active-filter-chip__value">
+                    {% if field.field_name == 'location' or field.field_name == 'platform' %}
+                      {% truncate_facet field.value %}
+                    {% elif field.field_name == 'spatial_resolution' or field.field_name == 'time_resolution' %}
+                      {% truncate_facet field.value separator=':' %}
+                    {% else %}
+                      {{ field.value }}
+                    {% endif %}
+                  </span>
+                  <button class="gdex-active-filter-chip__remove"
+                          aria-label="Remove {{ facet.name }} filter"
+                          onclick="gdexRemoveFilter('{{ field.search_filter_query_key|escapejs }}', '{{ field.value|escapejs }}');">&times;</button>
+                </span>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+            {% if request.session.temporal_start_input or request.session.temporal_end_input %}
+            <span class="gdex-active-filter-chip">
+              <span class="gdex-active-filter-chip__group">Time</span>
+              <span class="gdex-active-filter-chip__value">
+                {{ request.session.temporal_start_input }}{% if request.session.temporal_end_input %} &ndash; {{ request.session.temporal_end_input }}{% endif %}
+              </span>
+              <button class="gdex-active-filter-chip__remove"
+                      aria-label="Remove time range filter"
+                      onclick="gdexClearTemporal();">&times;</button>
+            </span>
+            {% endif %}
+          </div>
+        </div>
 
         <div id="results">
           {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-results.html' as it_results %}
@@ -81,6 +116,15 @@
 {# flatpickr must come first — search_data.js calls flatpickr() at init time #}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
+/* Hide the active filters row when no chips are present */
+(function () {
+    var row = document.getElementById('gdex-active-filters-row');
+    if (row && !row.querySelector('.gdex-active-filter-chip')) {
+        row.style.display = 'none';
+    }
+}());
+
+/* Set a time preset: N years back → temporal_start_input, then submit */
 function gdexApplyPreset(radio) {
     var years = parseInt(radio.value, 10);
     var d = new Date();
@@ -89,6 +133,45 @@ function gdexApplyPreset(radio) {
     var dy = String(d.getDate()).padStart(2, '0');
     document.getElementById('temporal_start_input').value = d.getFullYear() + '-' + mo + '-' + dy;
     document.getElementById('temporal_end_input').value = '';
+    customSearch(1);
+}
+
+/* Uncheck a single Globus facet and resubmit */
+function gdexRemoveFilter(name, value) {
+    var cb = document.querySelector('#facet-form input[name="' + name + '"][value="' + value + '"]');
+    if (cb) cb.checked = false;
+    customSearch(1);
+}
+
+/* Clear temporal inputs and resubmit */
+function gdexClearTemporal() {
+    var s = document.getElementById('temporal_start_input');
+    var e = document.getElementById('temporal_end_input');
+    if (s) s.value = '';
+    if (e) e.value = '';
+    customSearch(1);
+}
+
+/*
+ * Apply a location filter from the cascade dropdowns.
+ * path: the full Globus location string, e.g. "North America > United States > Colorado"
+ * Checks all hidden location checkboxes whose value exactly matches OR starts with the path,
+ * so filtering by "United States" also catches "United States > Colorado" etc.
+ * Calling with path='' clears the location filter.
+ */
+function gdexApplyLocation(path) {
+    var hiddenForm = document.getElementById('gdex-location-hidden-form');
+    if (!hiddenForm) return;
+    hiddenForm.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+        cb.checked = false;
+    });
+    if (path) {
+        hiddenForm.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+            if (cb.value === path || cb.value.indexOf(path + ' > ') === 0) {
+                cb.checked = true;
+            }
+        });
+    }
     customSearch(1);
 }
 </script>
