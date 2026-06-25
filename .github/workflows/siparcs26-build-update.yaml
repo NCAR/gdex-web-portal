@@ -3,7 +3,7 @@ name: SIPARCS-26 Container Build and Helm chart update
 on:
   push:
     branches:
-      - siparcs26/*
+      - siparcs26
     paths-ignore:
       - ".github/**"
       - ".gitignore"
