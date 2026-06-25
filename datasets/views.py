@@ -16,6 +16,7 @@ try:
     from urllib.parse import urlencode
 except Exception:
     from urllib import urlencode
+from datasets.models import CustomSubsetPage
 from wagtail.models import Page
 
 from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,

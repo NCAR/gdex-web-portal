@@ -2,6 +2,8 @@ from django.http import HttpResponse
 from django.conf import settings
 import psycopg2
 from datetime import datetime
+from wagtail.models import Page
+from datasets.models import CustomSubsetPage
 
 from logging import getLogger
 logger = getLogger(__name__)
@@ -48,6 +50,16 @@ def get_hostname():
 def get_custom_subset_context(dsid, gindex=None):
     # Get dataset context needed for custom subset page
     context = {}
+    query_params = {'dsid': dsid}
+    if gindex is not None:
+        query_params['gindex'] = gindex
+    qs = Page.objects.type(CustomSubsetPage).filter(**query_params).live().specific()
+    if len(qs) > 0:
+        context = {
+            'header': qs[0].header,
+            'description': qs[0].description,
+        }
+    
     dsperiod = get_dataset_period(dsid, gindex)
     if dsperiod:
         context.update(dsperiod)
