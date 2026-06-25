@@ -1,3 +1,6 @@
+# New search page design (work in progress, not ready for codebase)
+gsearch/search/
+
 manage.py
 pyvenv.cfg
 bin/*

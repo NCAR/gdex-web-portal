@@ -80,7 +80,7 @@
     <body class="ncar{% block body_class %}{% endblock %}">
         {% include "unity/header_decs.html" %}
         {% alerts %}
-        <main class="container-lg py-3 pt-md-4">
+        <main class="{% block main_class %}container-lg py-3 pt-md-4{% endblock %}">
             {% block breadcrumbs %}{% include "unity/breadcrumbs.html" %}{% endblock %}
             {% block content %}{% endblock %}
         </main>
@@ -92,4 +92,5 @@
     
     <script src="{% static 'unity/lib/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'unity/js/main.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
 </html>
