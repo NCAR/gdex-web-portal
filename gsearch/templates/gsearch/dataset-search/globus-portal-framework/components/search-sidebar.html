@@ -19,6 +19,20 @@
         <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
       </div>
       <div class="gdex-filter-group__body">
+        <div class="gdex-filter-options">
+          <label class="gdex-filter-checkbox">
+            <input type="radio" name="gdex-time-preset" value="1" onchange="gdexApplyPreset(this);"> Last 1 year
+          </label>
+          <label class="gdex-filter-checkbox">
+            <input type="radio" name="gdex-time-preset" value="5" onchange="gdexApplyPreset(this);"> Last 5 years
+          </label>
+          <label class="gdex-filter-checkbox">
+            <input type="radio" name="gdex-time-preset" value="10" onchange="gdexApplyPreset(this);"> Last 10 years
+          </label>
+          <label class="gdex-filter-checkbox">
+            <input type="radio" name="gdex-time-preset" value="25" onchange="gdexApplyPreset(this);"> Last 25 years
+          </label>
+        </div>
         <div class="gdex-filter-custom-range">
           <div class="gdex-filter-custom-range__label">Custom Temporal Range</div>
           <div class="gdex-filter-custom-range__inputs">

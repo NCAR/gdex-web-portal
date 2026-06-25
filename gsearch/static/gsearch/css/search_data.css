@@ -1,6 +1,6 @@
 /* ============================================================
-   GDEX — Find Data / Search Page Styles
-   Loaded only on find_data.html via {% block extra_css %}
+   GDEX — Search Data Page Styles
+   Loaded on search.html via search-base.html {% block search_head %}
    ============================================================ */
 
 

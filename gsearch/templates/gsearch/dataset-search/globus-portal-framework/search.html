@@ -72,6 +72,25 @@
 
 {% endblock %}
 
+{% block search_head %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
 {% block extra_js %}
-<script src="{% static 'gsearch/js/find_data.js' %}"></script>
+{# flatpickr must come first — search_data.js calls flatpickr() at init time #}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+function gdexApplyPreset(radio) {
+    var years = parseInt(radio.value, 10);
+    var d = new Date();
+    d.setFullYear(d.getFullYear() - years);
+    var mo = String(d.getMonth() + 1).padStart(2, '0');
+    var dy = String(d.getDate()).padStart(2, '0');
+    document.getElementById('temporal_start_input').value = d.getFullYear() + '-' + mo + '-' + dy;
+    document.getElementById('temporal_end_input').value = '';
+    customSearch(1);
+}
+</script>
+<script src="{% static 'gsearch/js/search_data.js' %}"></script>
 {% endblock %}

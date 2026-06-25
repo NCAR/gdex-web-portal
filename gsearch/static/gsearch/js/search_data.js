@@ -1,6 +1,6 @@
 /* ============================================================
-   GDEX — Find Data Page JavaScript
-   Loaded at the bottom of find_data.html via {% block extra_js %}
+   GDEX — Search Data Page JavaScript
+   Loaded at the bottom of search.html via {% block extra_js %}
    Depends on: flatpickr (loaded via CDN before this file)
    ============================================================ */
 
