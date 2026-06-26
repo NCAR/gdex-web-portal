@@ -581,30 +581,54 @@
             customSearch(1);
         });
 
-        /* ── Pre-select if filter already active on load ─────────────── */
+        /* ── Restore cascade state on page load ──────────────────────── */
+        // Read from URL params first (reliable after F5 refresh), then
+        // fall back to the Globus bucket checked flag.
 
-        var checkedBucket = null;
-        for (var i = 0; i < buckets.length; i++) {
-            if (buckets[i].checked) { checkedBucket = buckets[i]; break; }
+        var urlParams = new URLSearchParams(window.location.search);
+        var activeValues = urlParams.getAll('filter-match-any.location');
+
+        if (!activeValues.length) {
+            for (var i = 0; i < buckets.length; i++) {
+                if (buckets[i].checked) { activeValues = [buckets[i].value]; break; }
+            }
         }
-        if (checkedBucket) {
-            var cls = classifyBucket(checkedBucket.value);
+
+        if (activeValues.length) {
+            var activeValue = activeValues[0];
+            var cls = classifyBucket(activeValue);
+
+            // Find the matching Globus bucket so we can wire the hidden input
+            var activeBucket = null;
+            for (var j = 0; j < buckets.length; j++) {
+                if (buckets[j].value === activeValue) { activeBucket = buckets[j]; break; }
+            }
+
+            // Pre-select continent
             contSel.value = cls.continent;
+
+            // Force the location group open (it might still be collapsed)
+            var locGroup = contSel.closest('.gdex-filter-group');
+            if (locGroup) locGroup.classList.remove('gdex-filter-group--collapsed');
+
             if (cls.country && continentMap[cls.continent]) {
                 continentMap[cls.continent].countryOrder.forEach(function (l) {
                     countrySel.appendChild(makeOpt(l));
                 });
                 countrySel.disabled = false;
                 countrySel.value = cls.country;
+
                 if (cls.state && continentMap[cls.continent].countryMap[cls.country]) {
                     continentMap[cls.continent].countryMap[cls.country].stateOrder.forEach(function (l) {
                         stateSel.appendChild(makeOpt(l));
                     });
-                    stateSel.disabled = false; stateRow.style.display = '';
+                    stateSel.disabled = false;
+                    stateRow.style.display = '';
                     stateSel.value = cls.state;
                 }
             }
-            setHiddenInputs([checkedBucket]);
+
+            if (activeBucket) setHiddenInputs([activeBucket]);
         }
 
         window._resetLocationSelects = function () {
