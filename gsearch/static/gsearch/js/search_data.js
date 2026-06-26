@@ -324,19 +324,195 @@
         });
     });
 
-    /* ---------- location tree: continent + region toggles ---------- */
+    /* ---------- location cascade dropdowns ---------- */
 
-    document.querySelectorAll('.gdex-loc-top__label').forEach(function (label) {
-        label.addEventListener('click', function () {
-            this.closest('.gdex-loc-top').classList.toggle('gdex-loc-top--collapsed');
-        });
-    });
+    (function () {
+        var dataEl = document.getElementById('gdex-location-data');
+        if (!dataEl) return;
 
-    document.querySelectorAll('.gdex-loc-mid__label').forEach(function (label) {
-        label.addEventListener('click', function () {
-            this.closest('.gdex-loc-mid').classList.toggle('gdex-loc-mid--collapsed');
+        var buckets;
+        try { buckets = JSON.parse(dataEl.textContent); } catch (e) { return; }
+
+        // Build tree from GCMD strings: "CATEGORY > CONTINENT > COUNTRY > STATE"
+        // parts[0]=GCMD category, parts[1]=continent/region, parts[2]=country, parts[3]=state
+        var tree = {};
+        var continentOrder = [];
+
+        buckets.forEach(function (b) {
+            var parts = b.value.split('>').map(function (p) { return p.trim(); });
+            var continent = parts.length > 1 ? parts[1] : parts[0];
+            var country   = parts.length > 2 ? parts[2] : null;
+            var state     = parts.length > 3 ? parts[3] : null;
+
+            if (!tree[continent]) {
+                tree[continent] = { bucket: null, countries: {}, countryOrder: [] };
+                continentOrder.push(continent);
+            }
+            if (country) {
+                if (!tree[continent].countries[country]) {
+                    tree[continent].countries[country] = { bucket: null, states: {}, stateOrder: [] };
+                    tree[continent].countryOrder.push(country);
+                }
+                if (state) {
+                    tree[continent].countries[country].states[state] = b;
+                    tree[continent].countries[country].stateOrder.push(state);
+                } else {
+                    tree[continent].countries[country].bucket = b;
+                }
+            } else {
+                tree[continent].bucket = b;
+            }
         });
-    });
+
+        var contSel    = document.getElementById('loc-continent');
+        var countrySel = document.getElementById('loc-country');
+        var stateSel   = document.getElementById('loc-state');
+        var stateRow   = document.getElementById('loc-state-row');
+        var hiddenDiv  = document.getElementById('gdex-location-hidden');
+        if (!contSel || !countrySel || !stateSel || !hiddenDiv) return;
+
+        function toTitleCase(str) {
+            return str.toLowerCase().replace(/(?:^|\s|-)\S/g, function (c) { return c.toUpperCase(); });
+        }
+
+        function makeOption(label) {
+            var opt = document.createElement('option');
+            opt.value = label;
+            opt.textContent = toTitleCase(label);
+            return opt;
+        }
+
+        function setHiddenInput(bucket) {
+            hiddenDiv.innerHTML = '';
+            if (!bucket) return;
+            var inp = document.createElement('input');
+            inp.type = 'checkbox';
+            inp.name = bucket.name;
+            inp.value = bucket.value;
+            inp.checked = true;
+            inp.autocomplete = 'off';
+            inp.style.display = 'none';
+            hiddenDiv.appendChild(inp);
+        }
+
+        function resetState() {
+            stateSel.innerHTML = '<option value="">Select state…</option>';
+            stateSel.disabled = true;
+            stateRow.style.display = 'none';
+        }
+
+        function resetCountry() {
+            countrySel.innerHTML = '<option value="">Select country…</option>';
+            countrySel.disabled = true;
+            resetState();
+        }
+
+        // Populate continent/region select from bucket data
+        continentOrder.forEach(function (label) {
+            contSel.appendChild(makeOption(label));
+        });
+
+        contSel.addEventListener('change', function () {
+            var cv = this.value;
+            resetCountry();
+            hiddenDiv.innerHTML = '';
+            if (!cv) { customSearch(1); return; }
+
+            var node = tree[cv];
+            if (!node) return;
+
+            if (node.countryOrder.length > 0) {
+                node.countryOrder.forEach(function (label) {
+                    countrySel.appendChild(makeOption(label));
+                });
+                countrySel.disabled = false;
+                // Wait for country selection before firing search
+            } else {
+                // No children (e.g. "ARCTIC") — filter immediately on this bucket
+                setHiddenInput(node.bucket);
+                customSearch(1);
+            }
+        });
+
+        countrySel.addEventListener('change', function () {
+            var cv = contSel.value;
+            var ctv = this.value;
+            resetState();
+            hiddenDiv.innerHTML = '';
+            if (!ctv) { customSearch(1); return; }
+
+            var countryNode = tree[cv] && tree[cv].countries[ctv];
+            if (!countryNode) return;
+
+            if (countryNode.stateOrder.length > 0) {
+                countryNode.stateOrder.forEach(function (label) {
+                    stateSel.appendChild(makeOption(label));
+                });
+                stateSel.disabled = false;
+                stateRow.style.display = '';
+            }
+            // Filter on the country bucket (or continent bucket as fallback)
+            setHiddenInput(countryNode.bucket || (tree[cv] && tree[cv].bucket));
+            customSearch(1);
+        });
+
+        stateSel.addEventListener('change', function () {
+            var cv  = contSel.value;
+            var ctv = countrySel.value;
+            var sv  = this.value;
+            hiddenDiv.innerHTML = '';
+
+            if (!sv) {
+                // Reverted to country level
+                var countryNode = tree[cv] && tree[cv].countries[ctv];
+                setHiddenInput(countryNode && countryNode.bucket);
+            } else {
+                var stateBucket = tree[cv] && tree[cv].countries[ctv] &&
+                                  tree[cv].countries[ctv].states[sv];
+                setHiddenInput(stateBucket);
+            }
+            customSearch(1);
+        });
+
+        // Pre-select dropdowns if a location filter is already active on load
+        var checkedBucket = null;
+        for (var i = 0; i < buckets.length; i++) {
+            if (buckets[i].checked) { checkedBucket = buckets[i]; break; }
+        }
+        if (checkedBucket) {
+            var pp = checkedBucket.value.split('>').map(function (p) { return p.trim(); });
+            var preContinent = pp.length > 1 ? pp[1] : pp[0];
+            var preCountry   = pp.length > 2 ? pp[2] : null;
+            var preState     = pp.length > 3 ? pp[3] : null;
+
+            contSel.value = preContinent;
+
+            if (preCountry && tree[preContinent]) {
+                tree[preContinent].countryOrder.forEach(function (label) {
+                    countrySel.appendChild(makeOption(label));
+                });
+                countrySel.disabled = false;
+                countrySel.value = preCountry;
+
+                if (preState && tree[preContinent].countries[preCountry]) {
+                    tree[preContinent].countries[preCountry].stateOrder.forEach(function (label) {
+                        stateSel.appendChild(makeOption(label));
+                    });
+                    stateSel.disabled = false;
+                    stateRow.style.display = '';
+                    stateSel.value = preState;
+                }
+            }
+            setHiddenInput(checkedBucket);
+        }
+
+        // Allow external code (clear-all chip) to reset the selects
+        window._resetLocationSelects = function () {
+            contSel.value = '';
+            resetCountry();
+            hiddenDiv.innerHTML = '';
+        };
+    }());
 
     /* ---------- filter search + see more ---------- */
 

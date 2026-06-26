@@ -64,70 +64,39 @@
       {% if facet.buckets %}
 
       {% if facet.field_name == 'location' %}
-      {# ── Location: rendered as a continent > region > country tree ── #}
+      {# ── Location: cascading continent → country → state dropdowns ── #}
       <div class="gdex-filter-group {% if not facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
         <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
           <span class="gdex-filter-group__name">{{ facet.name }}</span>
           <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
         </div>
         <div class="gdex-filter-group__body">
-          <input type="text" placeholder="Search location" class="gdex-filter-search-input">
-          <div class="gdex-filter-options">
-            {% with facet.buckets|location_tree as loc_tree %}
-            {% for top in loc_tree %}
-
-              {# Top-level continent/ocean/region label — not a checkbox, just a heading #}
-              <div class="gdex-loc-top">
-                <span class="gdex-loc-top__label">
-                  <i class="fas fa-chevron-down gdex-loc-top__chevron"></i>
-                  {{ top.label|title }}
-                </span>
-              </div>
-
-              {# Direct buckets (value has only one level, e.g. "OCEAN") #}
-              {% for field in top.direct %}
-              <label class="gdex-filter-checkbox gdex-filter-checkbox--count gdex-loc-direct">
-                <input type="checkbox"
-                       name="{{ field.search_filter_query_key }}"
-                       value="{{ field.value }}"
-                       class="gsearch-checkbox"
-                       autocomplete="off"
-                       onchange="customSearch(1);"
-                       {% if field.checked %}checked{% endif %}>
-                <span>{{ field.value|title }}</span>
-                <span class="gdex-filter-count">{{ field.count }}</span>
-              </label>
-              {% endfor %}
-
-              {# Mid-level children (e.g. "NORTH AMERICA") each with their leaf buckets #}
-              {% for child in top.children %}
-              <div class="gdex-loc-mid">
-                <span class="gdex-loc-mid__label">
-                  <i class="fas fa-chevron-down gdex-loc-mid__chevron"></i>
-                  {{ child.label|title }}
-                </span>
-                <div class="gdex-loc-mid__body">
-                  {% for field in child.buckets %}
-                  <label class="gdex-filter-checkbox gdex-filter-checkbox--count gdex-loc-leaf">
-                    <input type="checkbox"
-                           name="{{ field.search_filter_query_key }}"
-                           value="{{ field.value }}"
-                           class="gsearch-checkbox"
-                           autocomplete="off"
-                           onchange="customSearch(1);"
-                           {% if field.checked %}checked{% endif %}>
-                    <span>{% truncate_facet field.value %}</span>
-                    <span class="gdex-filter-count">{{ field.count }}</span>
-                  </label>
-                  {% endfor %}
-                </div>
-              </div>
-              {% endfor %}
-
-            {% endfor %}
-            {% endwith %}
+          <div class="gdex-location-cascade">
+            <div class="gdex-location-cascade__row">
+              <label class="gdex-location-cascade__label" for="loc-continent">Continent / Region</label>
+              <select class="gdex-location-select" id="loc-continent">
+                <option value="">Select continent&hellip;</option>
+              </select>
+            </div>
+            <div class="gdex-location-cascade__row">
+              <label class="gdex-location-cascade__label" for="loc-country">Country</label>
+              <select class="gdex-location-select" id="loc-country" disabled>
+                <option value="">Select country&hellip;</option>
+              </select>
+            </div>
+            <div class="gdex-location-cascade__row" id="loc-state-row" style="display:none">
+              <label class="gdex-location-cascade__label" for="loc-state">State / Region</label>
+              <select class="gdex-location-select" id="loc-state" disabled>
+                <option value="">Select state&hellip;</option>
+              </select>
+            </div>
           </div>
-          <button type="button" class="gdex-filter-see-more">see more&hellip;</button>
+          {# Hidden input injected by JS when a location is chosen — must stay inside #facet-form #}
+          <div id="gdex-location-hidden"></div>
+          {# Globus bucket data for JS population — not submitted, read-only #}
+          <script id="gdex-location-data" type="application/json">
+          [{% for field in facet.buckets %}{"name":"{{ field.search_filter_query_key }}","value":"{{ field.value|escapejs }}","count":{{ field.count }},"checked":{% if field.checked %}true{% else %}false{% endif %}}{% if not forloop.last %},{% endif %}{% endfor %}]
+          </script>
         </div>
       </div>
 
