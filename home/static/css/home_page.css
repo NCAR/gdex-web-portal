@@ -491,18 +491,31 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
    METRICS
    ============================================================ */
 .gdex-metrics-section {
-    background-color: #f2f2f2;
+    background-color: #0d1f5c;
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
     padding: 3.5rem 0 4rem;
-    border-top: 1px solid #e0e0e0;
+    border-top: none;
+    position: relative;
+    overflow: hidden;
+}
+.gdex-metrics-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(8, 18, 58, 0.87) 0%, rgba(18, 45, 110, 0.80) 100%);
+    z-index: 0;
 }
 .gdex-metrics-section .container-lg { position: relative; z-index: 1; }
 .gdex-metrics-section__title {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
     font-size: clamp(1.5rem, 2.8vw, 2rem);
-    color: #0d2d6e;
+    color: #ffffff;
     text-align: center;
     margin-bottom: 2.25rem;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.35);
 }
 .gdex-metric {
     text-align: center;
@@ -514,7 +527,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     position: relative;
     z-index: 11;
 }
-.gdex-metric:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(41, 82, 196, 0.1); }
+.gdex-metric:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(41, 82, 196, 0.28); }
 .gdex-metric__icon {
     width: 54px;
     height: 54px;
