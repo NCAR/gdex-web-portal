@@ -138,28 +138,6 @@ function gdexClearTemporal() {
     customSearch(1);
 }
 
-/*
- * Apply a location filter from the cascade dropdowns.
- * path: the full Globus location string, e.g. "North America > United States > Colorado"
- * Checks all hidden location checkboxes whose value exactly matches OR starts with the path,
- * so filtering by "United States" also catches "United States > Colorado" etc.
- * Calling with path='' clears the location filter.
- */
-function gdexApplyLocation(path) {
-    var hiddenForm = document.getElementById('gdex-location-hidden-form');
-    if (!hiddenForm) return;
-    hiddenForm.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
-        cb.checked = false;
-    });
-    if (path) {
-        hiddenForm.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
-            if (cb.value === path || cb.value.indexOf(path + ' > ') === 0) {
-                cb.checked = true;
-            }
-        });
-    }
-    customSearch(1);
-}
 </script>
 <script src="{% static 'gsearch/js/search_data.js' %}"></script>
 {% endblock %}
