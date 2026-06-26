@@ -565,11 +565,14 @@
             if (!cNode) return;
 
             if (cNode.stateOrder.length > 0) {
+                // Has states — show the dropdown and wait; don't search yet
                 cNode.stateOrder.forEach(function (l) { stateSel.appendChild(makeOpt(l)); });
                 stateSel.disabled = false; stateRow.style.display = '';
+            } else {
+                // Leaf country — filter immediately
+                setHiddenInputs(getBuckets(cv, ctv, null));
+                customSearch(1);
             }
-            setHiddenInputs(getBuckets(cv, ctv, null));
-            customSearch(1);
         });
 
         stateSel.addEventListener('change', function () {
