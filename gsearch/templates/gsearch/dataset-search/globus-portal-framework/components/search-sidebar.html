@@ -39,7 +39,7 @@
                    class="gdex-filter-date-input"
                    placeholder="YYYY-MM-DD"
                    autocomplete="off"
-                   onchange="customSearch(1);"
+                   onchange="document.querySelectorAll('input[name=gdex-time-preset]').forEach(function(r){r.checked=false;}); customSearch(1);"
                    value="{% if request.session.temporal_start_input %}{{ request.session.temporal_start_input }}{% endif %}">
             <span class="gdex-filter-custom-range__dash">&ndash;</span>
             <input type="text"
@@ -48,7 +48,7 @@
                    class="gdex-filter-date-input"
                    placeholder="YYYY-MM-DD"
                    autocomplete="off"
-                   onchange="customSearch(1);"
+                   onchange="document.querySelectorAll('input[name=gdex-time-preset]').forEach(function(r){r.checked=false;}); customSearch(1);"
                    value="{% if request.session.temporal_end_input %}{{ request.session.temporal_end_input }}{% endif %}">
           </div>
           <div class="gdex-filter-custom-range__labels">

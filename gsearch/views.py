@@ -44,6 +44,35 @@ def dataset_search(request, index):
             'filters': filters,
             'index': index,
         }
+
+        # Parse temporal range filters from GET params and save to session so
+        # the "Selected Filters" chip can render them server-side.
+        # customSearch() submits "filter-range.temporal_range_end=YYYY-MM-DD--*"
+        # for the start bound and "filter-range.temporal_range_start=*--YYYY-MM-DD"
+        # for the end bound.
+        temporal_start = ''
+        temporal_end = ''
+        for val in request.GET.getlist('filter-range.temporal_range_end'):
+            if '--' in val:
+                temporal_start = val.split('--')[0].strip()
+                break
+        for val in request.GET.getlist('filter-range.temporal_range_start'):
+            if '--' in val:
+                candidate = val.split('--')[-1].strip()
+                if candidate and candidate != '*':
+                    temporal_end = candidate
+                break
+
+        if temporal_start:
+            request.session['temporal_start_input'] = temporal_start
+        elif 'temporal_start_input' in request.session:
+            del request.session['temporal_start_input']
+
+        if temporal_end:
+            request.session['temporal_end_input'] = temporal_end
+        elif 'temporal_end_input' in request.session:
+            del request.session['temporal_end_input']
+
         error = context['search'].get('error')
         if error:
             messages.error(request, error)

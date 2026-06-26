@@ -122,6 +122,24 @@ function gdexApplyPreset(radio) {
     customSearch(1);
 }
 
+/* Restore preset radio selection on page load if the active start date matches a preset */
+(function () {
+    var startVal = document.getElementById('temporal_start_input');
+    if (!startVal || !startVal.value) return;
+    var today = new Date();
+    document.querySelectorAll('input[name="gdex-time-preset"]').forEach(function (radio) {
+        var years = parseInt(radio.value, 10);
+        var expected = new Date(today);
+        expected.setFullYear(expected.getFullYear() - years);
+        var mo = String(expected.getMonth() + 1).padStart(2, '0');
+        var dy = String(expected.getDate()).padStart(2, '0');
+        var dateStr = expected.getFullYear() + '-' + mo + '-' + dy;
+        if (startVal.value === dateStr) {
+            radio.checked = true;
+        }
+    });
+}());
+
 /* Uncheck a single Globus facet and resubmit */
 function gdexRemoveFilter(name, value) {
     var cb = document.querySelector('#facet-form input[name="' + name + '"][value="' + value + '"]');
