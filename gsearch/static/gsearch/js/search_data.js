@@ -324,6 +324,20 @@
         });
     });
 
+    /* ---------- location tree: continent + region toggles ---------- */
+
+    document.querySelectorAll('.gdex-loc-top__label').forEach(function (label) {
+        label.addEventListener('click', function () {
+            this.closest('.gdex-loc-top').classList.toggle('gdex-loc-top--collapsed');
+        });
+    });
+
+    document.querySelectorAll('.gdex-loc-mid__label').forEach(function (label) {
+        label.addEventListener('click', function () {
+            this.closest('.gdex-loc-mid').classList.toggle('gdex-loc-mid--collapsed');
+        });
+    });
+
     /* ---------- filter search + see more ---------- */
 
     (function () {

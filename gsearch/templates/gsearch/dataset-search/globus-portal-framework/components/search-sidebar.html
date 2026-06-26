@@ -62,6 +62,77 @@
     <form id="facet-form">
       {% for facet in search.facets %}
       {% if facet.buckets %}
+
+      {% if facet.field_name == 'location' %}
+      {# ── Location: rendered as a continent > region > country tree ── #}
+      <div class="gdex-filter-group {% if not facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
+        <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
+          <span class="gdex-filter-group__name">{{ facet.name }}</span>
+          <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="gdex-filter-group__body">
+          <input type="text" placeholder="Search location" class="gdex-filter-search-input">
+          <div class="gdex-filter-options">
+            {% with facet.buckets|location_tree as loc_tree %}
+            {% for top in loc_tree %}
+
+              {# Top-level continent/ocean/region label — not a checkbox, just a heading #}
+              <div class="gdex-loc-top">
+                <span class="gdex-loc-top__label">
+                  <i class="fas fa-chevron-down gdex-loc-top__chevron"></i>
+                  {{ top.label|title }}
+                </span>
+              </div>
+
+              {# Direct buckets (value has only one level, e.g. "OCEAN") #}
+              {% for field in top.direct %}
+              <label class="gdex-filter-checkbox gdex-filter-checkbox--count gdex-loc-direct">
+                <input type="checkbox"
+                       name="{{ field.search_filter_query_key }}"
+                       value="{{ field.value }}"
+                       class="gsearch-checkbox"
+                       autocomplete="off"
+                       onchange="customSearch(1);"
+                       {% if field.checked %}checked{% endif %}>
+                <span>{{ field.value|title }}</span>
+                <span class="gdex-filter-count">{{ field.count }}</span>
+              </label>
+              {% endfor %}
+
+              {# Mid-level children (e.g. "NORTH AMERICA") each with their leaf buckets #}
+              {% for child in top.children %}
+              <div class="gdex-loc-mid">
+                <span class="gdex-loc-mid__label">
+                  <i class="fas fa-chevron-down gdex-loc-mid__chevron"></i>
+                  {{ child.label|title }}
+                </span>
+                <div class="gdex-loc-mid__body">
+                  {% for field in child.buckets %}
+                  <label class="gdex-filter-checkbox gdex-filter-checkbox--count gdex-loc-leaf">
+                    <input type="checkbox"
+                           name="{{ field.search_filter_query_key }}"
+                           value="{{ field.value }}"
+                           class="gsearch-checkbox"
+                           autocomplete="off"
+                           onchange="customSearch(1);"
+                           {% if field.checked %}checked{% endif %}>
+                    <span>{% truncate_facet field.value %}</span>
+                    <span class="gdex-filter-count">{{ field.count }}</span>
+                  </label>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endfor %}
+
+            {% endfor %}
+            {% endwith %}
+          </div>
+          <button type="button" class="gdex-filter-see-more">see more&hellip;</button>
+        </div>
+      </div>
+
+      {% else %}
+      {# ── All other facets — generic flat list ── #}
       <div class="gdex-filter-group {% if not facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
         <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
           <span class="gdex-filter-group__name">{{ facet.name }}</span>
@@ -88,7 +159,7 @@
                   {{ field.datetime|date:'F Y' }}
                 {% elif field.filter_type == 'day' %}
                   {{ field.datetime|date:'M d Y' }}
-                {% elif field.field_name == 'location' or field.field_name == 'platform' %}
+                {% elif field.field_name == 'platform' %}
                   {% truncate_facet field.value %}
                 {% elif field.field_name == 'spatial_resolution' or field.field_name == 'time_resolution' %}
                   {% truncate_facet field.value separator=':' %}
@@ -103,6 +174,8 @@
           <button type="button" class="gdex-filter-see-more">see more&hellip;</button>
         </div>
       </div>
+      {% endif %}
+
       {% endif %}
       {% endfor %}
     </form>

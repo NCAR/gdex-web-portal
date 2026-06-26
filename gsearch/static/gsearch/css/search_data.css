@@ -339,6 +339,70 @@
 .gdex-filter-see-more:hover { text-decoration: underline; }
 .gdex-filter-option--overflow { display: none; }
 .gdex-filter-option--search-hidden { display: none; }
+
+
+/* ------------------------------------------------------------
+   Location tree — continent > region > country hierarchy
+   ------------------------------------------------------------ */
+.gdex-loc-top {
+    margin-top: 0.6rem;
+    margin-bottom: 0.2rem;
+}
+.gdex-loc-top__label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #00357a;
+    cursor: pointer;
+    user-select: none;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.gdex-loc-top__chevron {
+    font-size: 0.6rem;
+    color: #00357a;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+.gdex-loc-top--collapsed .gdex-loc-top__chevron { transform: rotate(-90deg); }
+.gdex-loc-top--collapsed ~ .gdex-loc-direct,
+.gdex-loc-top--collapsed ~ .gdex-loc-mid { display: none; }
+
+.gdex-loc-direct {
+    padding-left: 1rem;
+}
+
+.gdex-loc-mid {
+    padding-left: 1rem;
+    margin-bottom: 0.15rem;
+}
+.gdex-loc-mid__label {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #3a4a60;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0.15rem;
+}
+.gdex-loc-mid__chevron {
+    font-size: 0.55rem;
+    color: #6b7a99;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+.gdex-loc-mid--collapsed .gdex-loc-mid__chevron { transform: rotate(-90deg); }
+.gdex-loc-mid--collapsed .gdex-loc-mid__body { display: none; }
+
+.gdex-loc-leaf {
+    padding-left: 1.1rem;
+}
 .gdex-filter-no-results {
     font-size: 0.76rem;
     color: #9aabbf;
