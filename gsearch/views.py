@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.conf import settings
 from urllib.parse import urlparse
 from django.contrib import messages
+from datetime import date as _date
 import json
 
 from globus_portal_framework import load_search_client
@@ -72,6 +73,31 @@ def dataset_search(request, index):
             request.session['temporal_end_input'] = temporal_end
         elif 'temporal_end_input' in request.session:
             del request.session['temporal_end_input']
+
+        # Detect if the active temporal start date matches one of the quick
+        # preset durations (1 / 5 / 10 / 25 years).  When it does, store the
+        # number of years so the chip can say "Last X years" and the From field
+        # is not pre-populated (preset ≠ custom range).
+        preset_years = None
+        if temporal_start:
+            try:
+                start_dt = _date.fromisoformat(temporal_start)
+                today = _date.today()
+                for yrs in [1, 5, 10, 25]:
+                    try:
+                        expected = _date(today.year - yrs, today.month, today.day)
+                    except ValueError:
+                        expected = _date(today.year - yrs, today.month, 28)
+                    if abs((start_dt - expected).days) <= 1:
+                        preset_years = yrs
+                        break
+            except (ValueError, TypeError):
+                pass
+
+        if preset_years:
+            request.session['temporal_preset_years'] = preset_years
+        elif 'temporal_preset_years' in request.session:
+            del request.session['temporal_preset_years']
 
         error = context['search'].get('error')
         if error:
