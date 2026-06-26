@@ -329,40 +329,165 @@
     (function () {
         var dataEl = document.getElementById('gdex-location-data');
         if (!dataEl) return;
-
         var buckets;
         try { buckets = JSON.parse(dataEl.textContent); } catch (e) { return; }
 
-        // Build tree from GCMD strings: "CATEGORY > CONTINENT > COUNTRY > STATE"
-        // parts[0]=GCMD category, parts[1]=continent/region, parts[2]=country, parts[3]=state
-        var tree = {};
+        /* ── Geographic lookup tables ───────────────────────────────── */
+
+        var US_STATES = {};
+        ['ALABAMA','ALASKA','ARIZONA','ARKANSAS','CALIFORNIA','COLORADO','CONNECTICUT',
+         'DELAWARE','FLORIDA','GEORGIA','HAWAII','IDAHO','ILLINOIS','INDIANA','IOWA',
+         'KANSAS','KENTUCKY','LOUISIANA','MAINE','MARYLAND','MASSACHUSETTS','MICHIGAN',
+         'MINNESOTA','MISSISSIPPI','MISSOURI','MONTANA','NEBRASKA','NEVADA',
+         'NEW HAMPSHIRE','NEW JERSEY','NEW MEXICO','NEW YORK','NORTH CAROLINA',
+         'NORTH DAKOTA','OHIO','OKLAHOMA','OREGON','PENNSYLVANIA','RHODE ISLAND',
+         'SOUTH CAROLINA','SOUTH DAKOTA','TENNESSEE','TEXAS','UTAH','VERMONT',
+         'VIRGINIA','WASHINGTON','WEST VIRGINIA','WISCONSIN','WYOMING',
+         'DISTRICT OF COLUMBIA'].forEach(function (s) { US_STATES[s] = true; });
+
+        var CA_PROVS = {};
+        ['ALBERTA','BRITISH COLUMBIA','MANITOBA','NEW BRUNSWICK',
+         'NEWFOUNDLAND AND LABRADOR','NORTHWEST TERRITORIES','NOVA SCOTIA','NUNAVUT',
+         'ONTARIO','PRINCE EDWARD ISLAND','QUEBEC','SASKATCHEWAN','YUKON']
+            .forEach(function (p) { CA_PROVS[p] = true; });
+
+        var COUNTRY_CONT = {
+            'CANADA':'North America','MEXICO':'North America','GREENLAND':'North America',
+            'CUBA':'North America','PUERTO RICO':'North America','BERMUDA':'North America',
+            'BELIZE':'North America','COSTA RICA':'North America','EL SALVADOR':'North America',
+            'GUATEMALA':'North America','HONDURAS':'North America','NICARAGUA':'North America',
+            'PANAMA':'North America','HAITI':'North America','DOMINICAN REPUBLIC':'North America',
+            'JAMAICA':'North America','TRINIDAD AND TOBAGO':'North America',
+            'BRAZIL':'South America','ARGENTINA':'South America','CHILE':'South America',
+            'COLOMBIA':'South America','PERU':'South America','VENEZUELA':'South America',
+            'ECUADOR':'South America','BOLIVIA':'South America','PARAGUAY':'South America',
+            'URUGUAY':'South America','GUYANA':'South America','SURINAME':'South America',
+            'UNITED KINGDOM':'Europe','FRANCE':'Europe','GERMANY':'Europe','ITALY':'Europe',
+            'SPAIN':'Europe','PORTUGAL':'Europe','NETHERLANDS':'Europe','BELGIUM':'Europe',
+            'SWITZERLAND':'Europe','AUSTRIA':'Europe','SWEDEN':'Europe','NORWAY':'Europe',
+            'DENMARK':'Europe','FINLAND':'Europe','IRELAND':'Europe','GREECE':'Europe',
+            'POLAND':'Europe','CZECH REPUBLIC':'Europe','SLOVAKIA':'Europe',
+            'HUNGARY':'Europe','ROMANIA':'Europe','BULGARIA':'Europe','CROATIA':'Europe',
+            'UKRAINE':'Europe','RUSSIA':'Europe',
+            'CHINA':'Asia','JAPAN':'Asia','INDIA':'Asia','SOUTH KOREA':'Asia',
+            'NORTH KOREA':'Asia','TAIWAN':'Asia','INDONESIA':'Asia','MALAYSIA':'Asia',
+            'PHILIPPINES':'Asia','THAILAND':'Asia','VIETNAM':'Asia','CAMBODIA':'Asia',
+            'MYANMAR':'Asia','LAOS':'Asia','SINGAPORE':'Asia','BANGLADESH':'Asia',
+            'SRI LANKA':'Asia','NEPAL':'Asia','PAKISTAN':'Asia','AFGHANISTAN':'Asia',
+            'IRAN':'Asia','IRAQ':'Asia','SAUDI ARABIA':'Asia','TURKEY':'Asia',
+            'SYRIA':'Asia','JORDAN':'Asia','ISRAEL':'Asia','LEBANON':'Asia',
+            'OMAN':'Asia','YEMEN':'Asia','KUWAIT':'Asia',
+            'UNITED ARAB EMIRATES':'Asia','UAE':'Asia','MONGOLIA':'Asia',
+            'KAZAKHSTAN':'Asia','UZBEKISTAN':'Asia','TAJIKISTAN':'Asia',
+            'KYRGYZSTAN':'Asia','TURKMENISTAN':'Asia',
+            'NIGERIA':'Africa','ETHIOPIA':'Africa','EGYPT':'Africa',
+            'SOUTH AFRICA':'Africa','KENYA':'Africa','GHANA':'Africa',
+            'TANZANIA':'Africa','ALGERIA':'Africa','ANGOLA':'Africa',
+            'MOZAMBIQUE':'Africa','CAMEROON':'Africa','NIGER':'Africa',
+            'MALI':'Africa','SENEGAL':'Africa','CHAD':'Africa','SOMALIA':'Africa',
+            'RWANDA':'Africa','ZAMBIA':'Africa','ZIMBABWE':'Africa',
+            'MOROCCO':'Africa','TUNISIA':'Africa','LIBYA':'Africa','SUDAN':'Africa',
+            'SOUTH SUDAN':'Africa',
+            'AUSTRALIA':'Oceania','NEW ZEALAND':'Oceania',
+            'PAPUA NEW GUINEA':'Oceania','FIJI':'Oceania'
+        };
+
+        var GCMD_TOP = { 'CONTINENT':true, 'OCEAN':true, 'GEOGRAPHIC REGION':true,
+                         'VERTICAL LOCATION':true, 'WATERSHED':true };
+
+        var CONT_ORDER = ['North America','South America','Europe','Asia',
+                          'Africa','Oceania','Polar Regions','Ocean Basins'];
+
+        /* ── Classify a bucket value into {continent, country, state} ── */
+
+        function toTitle(str) {
+            if (!str) return str;
+            return str.toLowerCase()
+                .replace(/(?:^|[\s\-\/])\S/g, function (c) { return c.toUpperCase(); });
+        }
+
+        function classifyBucket(value) {
+            var up = value.toUpperCase().trim();
+
+            // Full GCMD hierarchical path (contains ">")
+            if (up.indexOf('>') !== -1) {
+                var parts = up.split('>').map(function (p) { return p.trim(); });
+                var si = GCMD_TOP[parts[0]] ? 1 : 0;
+                var cont = parts[si] || 'Other';
+                if (cont === 'OCEAN' || /\bOCEAN\b/.test(cont)) cont = 'Ocean Basins';
+                else if (cont === 'GEOGRAPHIC REGION') {
+                    cont = (parts[si + 1] && /POLAR|ARCTIC|ANTARCT/.test(parts[si + 1]))
+                        ? 'Polar Regions' : (parts[si + 1] ? toTitle(parts[si + 1]) : 'Other');
+                    si++;
+                }
+                else cont = toTitle(cont);
+                return {
+                    continent: cont,
+                    country:   parts.length > si + 1 ? toTitle(parts[si + 1]) : null,
+                    state:     parts.length > si + 2 ? toTitle(parts[si + 2]) : null,
+                };
+            }
+
+            // Flat value — classify by lookup tables
+            if (US_STATES[up]) return { continent: 'North America', country: 'United States', state: toTitle(value) };
+            if (CA_PROVS[up])  return { continent: 'North America', country: 'Canada',        state: toTitle(value) };
+
+            if (/\bARCTIC\b|\bANTARCT/.test(up))
+                return { continent: 'Polar Regions', country: toTitle(value), state: null };
+
+            if (/\bOCEAN\b|\bSEA\b|\bGULF OF\b|\bBAY OF\b/.test(up))
+                return { continent: 'Ocean Basins', country: toTitle(value), state: null };
+
+            var knownCont = COUNTRY_CONT[up];
+            if (knownCont) return { continent: knownCont, country: toTitle(value), state: null };
+
+            // Default — show as a standalone entry in the continent dropdown
+            return { continent: toTitle(value), country: null, state: null };
+        }
+
+        /* ── Build hierarchy from Globus buckets ─────────────────────── */
+
+        var continentMap = {};
         var continentOrder = [];
 
         buckets.forEach(function (b) {
-            var parts = b.value.split('>').map(function (p) { return p.trim(); });
-            var continent = parts.length > 1 ? parts[1] : parts[0];
-            var country   = parts.length > 2 ? parts[2] : null;
-            var state     = parts.length > 3 ? parts[3] : null;
+            var cls  = classifyBucket(b.value);
+            var cont = cls.continent;
 
-            if (!tree[continent]) {
-                tree[continent] = { bucket: null, countries: {}, countryOrder: [] };
-                continentOrder.push(continent);
+            if (!continentMap[cont]) {
+                continentMap[cont] = { countryMap: {}, countryOrder: [], buckets: [] };
+                continentOrder.push(cont);
             }
-            if (country) {
-                if (!tree[continent].countries[country]) {
-                    tree[continent].countries[country] = { bucket: null, states: {}, stateOrder: [] };
-                    tree[continent].countryOrder.push(country);
+
+            if (cls.country) {
+                var ctry = cls.country;
+                if (!continentMap[cont].countryMap[ctry]) {
+                    continentMap[cont].countryMap[ctry] = { stateMap: {}, stateOrder: [], buckets: [] };
+                    continentMap[cont].countryOrder.push(ctry);
                 }
-                if (state) {
-                    tree[continent].countries[country].states[state] = b;
-                    tree[continent].countries[country].stateOrder.push(state);
+                if (cls.state) {
+                    var st = cls.state;
+                    if (!continentMap[cont].countryMap[ctry].stateMap[st]) {
+                        continentMap[cont].countryMap[ctry].stateMap[st] = [];
+                        continentMap[cont].countryMap[ctry].stateOrder.push(st);
+                    }
+                    continentMap[cont].countryMap[ctry].stateMap[st].push(b);
                 } else {
-                    tree[continent].countries[country].bucket = b;
+                    continentMap[cont].countryMap[ctry].buckets.push(b);
                 }
             } else {
-                tree[continent].bucket = b;
+                continentMap[cont].buckets.push(b);
             }
         });
+
+        // Sort continents in preferred order; unknowns alphabetically after
+        continentOrder.sort(function (a, b) {
+            var ai = CONT_ORDER.indexOf(a), bi = CONT_ORDER.indexOf(b);
+            if (ai === -1 && bi === -1) return a.localeCompare(b);
+            return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+        });
+
+        /* ── DOM refs ─────────────────────────────────────────────────── */
 
         var contSel    = document.getElementById('loc-continent');
         var countrySel = document.getElementById('loc-country');
@@ -371,146 +496,123 @@
         var hiddenDiv  = document.getElementById('gdex-location-hidden');
         if (!contSel || !countrySel || !stateSel || !hiddenDiv) return;
 
-        function toTitleCase(str) {
-            return str.toLowerCase().replace(/(?:^|\s|-)\S/g, function (c) { return c.toUpperCase(); });
+        function makeOpt(label) {
+            var o = document.createElement('option');
+            o.value = o.textContent = label;
+            return o;
         }
 
-        function makeOption(label) {
-            var opt = document.createElement('option');
-            opt.value = label;
-            opt.textContent = toTitleCase(label);
-            return opt;
+        // Collect all Globus buckets that match a continent+country+state selection
+        function getBuckets(cont, ctry, st) {
+            var node = continentMap[cont];
+            if (!node) return [];
+            if (!ctry) return node.buckets;
+            var cNode = node.countryMap[ctry];
+            if (!cNode) return [];
+            if (!st) {
+                // country level → include country-level buckets AND all child state buckets
+                var res = cNode.buckets.slice();
+                cNode.stateOrder.forEach(function (s) {
+                    res = res.concat(cNode.stateMap[s]);
+                });
+                return res;
+            }
+            return cNode.stateMap[st] || [];
         }
 
-        function setHiddenInput(bucket) {
+        function setHiddenInputs(bs) {
             hiddenDiv.innerHTML = '';
-            if (!bucket) return;
-            var inp = document.createElement('input');
-            inp.type = 'checkbox';
-            inp.name = bucket.name;
-            inp.value = bucket.value;
-            inp.checked = true;
-            inp.autocomplete = 'off';
-            inp.style.display = 'none';
-            hiddenDiv.appendChild(inp);
+            (bs || []).forEach(function (b) {
+                var inp = document.createElement('input');
+                inp.type = 'checkbox'; inp.checked = true;
+                inp.name = b.name; inp.value = b.value;
+                inp.autocomplete = 'off'; inp.style.display = 'none';
+                hiddenDiv.appendChild(inp);
+            });
         }
 
         function resetState() {
             stateSel.innerHTML = '<option value="">Select state…</option>';
-            stateSel.disabled = true;
-            stateRow.style.display = 'none';
+            stateSel.disabled = true; stateRow.style.display = 'none';
         }
-
         function resetCountry() {
             countrySel.innerHTML = '<option value="">Select country…</option>';
-            countrySel.disabled = true;
-            resetState();
+            countrySel.disabled = true; resetState();
         }
 
-        // Populate continent/region select from bucket data
-        continentOrder.forEach(function (label) {
-            contSel.appendChild(makeOption(label));
-        });
+        /* ── Populate continent dropdown ─────────────────────────────── */
+
+        continentOrder.forEach(function (label) { contSel.appendChild(makeOpt(label)); });
+
+        /* ── Event listeners ─────────────────────────────────────────── */
 
         contSel.addEventListener('change', function () {
             var cv = this.value;
-            resetCountry();
-            hiddenDiv.innerHTML = '';
+            resetCountry(); hiddenDiv.innerHTML = '';
             if (!cv) { customSearch(1); return; }
 
-            var node = tree[cv];
+            var node = continentMap[cv];
             if (!node) return;
 
             if (node.countryOrder.length > 0) {
-                node.countryOrder.forEach(function (label) {
-                    countrySel.appendChild(makeOption(label));
-                });
+                node.countryOrder.forEach(function (l) { countrySel.appendChild(makeOpt(l)); });
                 countrySel.disabled = false;
-                // Wait for country selection before firing search
             } else {
-                // No children (e.g. "ARCTIC") — filter immediately on this bucket
-                setHiddenInput(node.bucket);
+                setHiddenInputs(node.buckets);
                 customSearch(1);
             }
         });
 
         countrySel.addEventListener('change', function () {
-            var cv = contSel.value;
-            var ctv = this.value;
-            resetState();
-            hiddenDiv.innerHTML = '';
+            var cv = contSel.value, ctv = this.value;
+            resetState(); hiddenDiv.innerHTML = '';
             if (!ctv) { customSearch(1); return; }
 
-            var countryNode = tree[cv] && tree[cv].countries[ctv];
-            if (!countryNode) return;
+            var cNode = continentMap[cv] && continentMap[cv].countryMap[ctv];
+            if (!cNode) return;
 
-            if (countryNode.stateOrder.length > 0) {
-                countryNode.stateOrder.forEach(function (label) {
-                    stateSel.appendChild(makeOption(label));
-                });
-                stateSel.disabled = false;
-                stateRow.style.display = '';
+            if (cNode.stateOrder.length > 0) {
+                cNode.stateOrder.forEach(function (l) { stateSel.appendChild(makeOpt(l)); });
+                stateSel.disabled = false; stateRow.style.display = '';
             }
-            // Filter on the country bucket (or continent bucket as fallback)
-            setHiddenInput(countryNode.bucket || (tree[cv] && tree[cv].bucket));
+            setHiddenInputs(getBuckets(cv, ctv, null));
             customSearch(1);
         });
 
         stateSel.addEventListener('change', function () {
-            var cv  = contSel.value;
-            var ctv = countrySel.value;
-            var sv  = this.value;
-            hiddenDiv.innerHTML = '';
-
-            if (!sv) {
-                // Reverted to country level
-                var countryNode = tree[cv] && tree[cv].countries[ctv];
-                setHiddenInput(countryNode && countryNode.bucket);
-            } else {
-                var stateBucket = tree[cv] && tree[cv].countries[ctv] &&
-                                  tree[cv].countries[ctv].states[sv];
-                setHiddenInput(stateBucket);
-            }
+            var cv = contSel.value, ctv = countrySel.value, sv = this.value;
+            setHiddenInputs(getBuckets(cv, ctv, sv || null));
             customSearch(1);
         });
 
-        // Pre-select dropdowns if a location filter is already active on load
+        /* ── Pre-select if filter already active on load ─────────────── */
+
         var checkedBucket = null;
         for (var i = 0; i < buckets.length; i++) {
             if (buckets[i].checked) { checkedBucket = buckets[i]; break; }
         }
         if (checkedBucket) {
-            var pp = checkedBucket.value.split('>').map(function (p) { return p.trim(); });
-            var preContinent = pp.length > 1 ? pp[1] : pp[0];
-            var preCountry   = pp.length > 2 ? pp[2] : null;
-            var preState     = pp.length > 3 ? pp[3] : null;
-
-            contSel.value = preContinent;
-
-            if (preCountry && tree[preContinent]) {
-                tree[preContinent].countryOrder.forEach(function (label) {
-                    countrySel.appendChild(makeOption(label));
+            var cls = classifyBucket(checkedBucket.value);
+            contSel.value = cls.continent;
+            if (cls.country && continentMap[cls.continent]) {
+                continentMap[cls.continent].countryOrder.forEach(function (l) {
+                    countrySel.appendChild(makeOpt(l));
                 });
                 countrySel.disabled = false;
-                countrySel.value = preCountry;
-
-                if (preState && tree[preContinent].countries[preCountry]) {
-                    tree[preContinent].countries[preCountry].stateOrder.forEach(function (label) {
-                        stateSel.appendChild(makeOption(label));
+                countrySel.value = cls.country;
+                if (cls.state && continentMap[cls.continent].countryMap[cls.country]) {
+                    continentMap[cls.continent].countryMap[cls.country].stateOrder.forEach(function (l) {
+                        stateSel.appendChild(makeOpt(l));
                     });
-                    stateSel.disabled = false;
-                    stateRow.style.display = '';
-                    stateSel.value = preState;
+                    stateSel.disabled = false; stateRow.style.display = '';
+                    stateSel.value = cls.state;
                 }
             }
-            setHiddenInput(checkedBucket);
+            setHiddenInputs([checkedBucket]);
         }
 
-        // Allow external code (clear-all chip) to reset the selects
         window._resetLocationSelects = function () {
-            contSel.value = '';
-            resetCountry();
-            hiddenDiv.innerHTML = '';
+            contSel.value = ''; resetCountry(); hiddenDiv.innerHTML = '';
         };
     }());
 
