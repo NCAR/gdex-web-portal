@@ -50,9 +50,9 @@
         {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-summary.html' as it_summary %}
         {% include it_summary %}
 
-        {# Active filter chips — shows which filters are currently applied #}
+        {# Selected filters row — chips + reset button #}
         <div class="gdex-results-filters-row" id="gdex-active-filters-row">
-          <span class="gdex-results-filters-label">Active:</span>
+          <span class="gdex-results-filters-label">Selected filters:</span>
           <div class="gdex-active-filters" id="gdex-active-filters">
             {% for facet in search.facets %}
               {% for field in facet.buckets %}
@@ -87,6 +87,7 @@
             </span>
             {% endif %}
           </div>
+          <button type="button" class="gdex-btn-reset" id="gdex-reset-btn">Reset Search</button>
         </div>
 
         <div id="results">
@@ -109,14 +110,6 @@
 
 {% block extra_js %}
 <script>
-/* Hide the active filters row when no chips are present */
-(function () {
-    var row = document.getElementById('gdex-active-filters-row');
-    if (row && !row.querySelector('.gdex-active-filter-chip')) {
-        row.style.display = 'none';
-    }
-}());
-
 /* Set a time preset: N years back → temporal_start_input, then submit */
 function gdexApplyPreset(radio) {
     var years = parseInt(radio.value, 10);
