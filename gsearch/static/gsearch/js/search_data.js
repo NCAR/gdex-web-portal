@@ -502,21 +502,14 @@
             return o;
         }
 
-        // Collect all Globus buckets that match a continent+country+state selection
+        // Collect only the Globus buckets that directly match the selected level
         function getBuckets(cont, ctry, st) {
             var node = continentMap[cont];
             if (!node) return [];
             if (!ctry) return node.buckets;
             var cNode = node.countryMap[ctry];
             if (!cNode) return [];
-            if (!st) {
-                // country level → include country-level buckets AND all child state buckets
-                var res = cNode.buckets.slice();
-                cNode.stateOrder.forEach(function (s) {
-                    res = res.concat(cNode.stateMap[s]);
-                });
-                return res;
-            }
+            if (!st) return cNode.buckets; // only the direct country-level bucket(s)
             return cNode.stateMap[st] || [];
         }
 
