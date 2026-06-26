@@ -4,7 +4,7 @@
   <article class="gdex-dataset-result">
 
     <div class="gdex-dataset-result__thumb">
-      <img src="{% static 'img/hero_earth.png' %}" alt="{{ result.title }}">
+      <img src="{% static 'img/GDEX_data_icon.png' %}" alt="{{ result.title }}">
     </div>
 
     <div class="gdex-dataset-result__body">
@@ -59,14 +59,17 @@
 
       {# ── Action buttons ── #}
       <div class="gdex-dataset-result__actions">
-        <a href="{{ result.dataset_url }}" class="gdex-btn-access">
+        <a href="{{ result.dataset_url }}dataaccess/" class="gdex-btn-access">
           <i class="fas fa-download"></i> Access Data
         </a>
         <a href="{{ result.dataset_url }}" class="gdex-btn-description">
           <i class="fas fa-file-alt"></i> Description
         </a>
-        <a href="{{ result.dataset_url }}" class="gdex-btn-more">
-          Citations &amp; Metrics <i class="fas fa-chart-bar ms-1"></i>
+        <a href="{{ result.dataset_url }}citation/" class="gdex-btn-citation">
+          <i class="fas fa-quote-right"></i> Citations
+        </a>
+        <a href="{{ result.dataset_url }}?content=metrics" class="gdex-btn-more">
+          Metrics <i class="fas fa-chart-bar ms-1"></i>
         </a>
       </div>
 
