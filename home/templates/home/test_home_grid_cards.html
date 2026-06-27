@@ -17,9 +17,13 @@
                     </div>
                     <h3 class="gdex-feature-card__title">{{ card.title }}</h3>
                     <div class="gdex-feature-card__desc">{{ card.text|richtext }}</div>
-                    <a href="{% if card.card_page %}{{ card.card_page.url }}{% else %}{{ card.card_url }}{% endif %}"
-                       class="gdex-feature-card__link stretched-link"
-                       {% if not card.card_page and card.card_url %}target="_blank" rel="noopener noreferrer"{% endif %}>
+                    {% if card.card_page %}
+                    <a href="{{ card.card_page.url }}" class="gdex-feature-card__link stretched-link">
+                    {% elif card.card_url|slice:":1" == "/" %}
+                    <a href="{{ card.card_url }}" class="gdex-feature-card__link stretched-link">
+                    {% else %}
+                    <a href="{{ card.card_url }}" class="gdex-feature-card__link stretched-link" target="_blank" rel="noopener noreferrer">
+                    {% endif %}
                         {{ card.card_link_text }} &rarr;
                     </a>
                 </div>
