@@ -35,6 +35,14 @@
 24. [Removed / Cleaned Up Code](#24-removed--cleaned-up-code)
 25. [Files NOT Changed (Original Pages)](#25-files-not-changed-original-pages)
 26. [Commit History (Meaningful Commits Only)](#26-commit-history-meaningful-commits-only)
+27. [Location Cascade Filter](#27-location-cascade-filter-search-sidebarhtml-search_datajs)
+28. [Selected Filters Chip System](#28-selected-filters-chip-system-searchhtml-search_datajs-gsearchviewspy)
+29. [Temporal Preset Improvements](#29-temporal-preset-improvements-gsearchviewspy-searchhtml-search-sidebarhtml)
+30. [Browse Datasets Card URL Fix](#30-browse-datasets-card-url-fix-hometemplateshometest_home_grid_cardshtml-homemigrations)
+31. [Non-Scrollable Filter Sidebar](#31-non-scrollable-filter-sidebar-search_datacss-search_datajs-search-sidebarhtml)
+32. [Homepage Hero & Chip Polish](#32-homepage-hero--chip-polish-homestaticcsshome_pagecss-test_home_search_barhtml)
+33. [Ancillary Dataset Badge](#33-ancillary-dataset-badge-search-resultshtml-search_datacss)
+34. [Specialized Dataset Pages — AI-Ready & Popular](#34-specialized-dataset-pages--ai-ready--popular-gsearch)
 
 ---
 
@@ -1503,5 +1511,176 @@ Listed newest-to-oldest (CI image bump commits omitted):
 
 ---
 
+## 27. Location Cascade Filter (`search-sidebar.html`, `search_data.js`)
+
+Replaced flat location checkboxes with a three-level cascade: **Continent → Country → State/Province**.
+
+### How it works
+- Three `<select>` dropdowns live in the sidebar above the location facet checkboxes.
+- Selecting a continent populates the country dropdown; selecting a country populates the state dropdown.
+- Each selection inserts a hidden checkbox into `#facet-form` and calls `customSearch(1)`.
+- On page reload the active URL params (`filter-term.location_*`) are read and the dropdowns are restored to their previous state via `window._restoreLocationSelects()`.
+
+### Files changed
+| File | Change |
+|---|---|
+| `search-sidebar.html` | Added continent/country/state `<select>` elements above location facet group |
+| `search_data.js` | Added `classifyBucket()`, cascade populate logic, hidden checkbox injection, URL-based restore via `_restoreLocationSelects()` |
+| `search_data.css` | Styles for `.gdex-location-cascade` dropdowns |
+
+---
+
+## 28. Selected Filters Chip System (`search.html`, `search_data.js`, `gsearch/views.py`)
+
+Chips in the "Selected Filters" bar now reliably remove their filter when × is clicked.
+
+### Bugs fixed
+| Bug | Root cause | Fix |
+|---|---|---|
+| Temporal chip × didn't remove filter | `customSearch(1)` re-added `filter-range.temporal_range_end` from the URL before the form could strip it | `gdexClearTemporal()` now delegates to `clearTemporalRange()` which calls `removeUrlParameter()` first |
+| `gdexRemoveFilter()` silently failed for values with special chars (`.`, `>`) | CSS attribute selector `[value="..."]` mis-parsed special chars | Replaced with DOM iteration using `inp.name === name && inp.value === value` |
+| Reset Search button did nothing | No `onclick` handler wired up | Added `onclick="gdexResetSearch();"` and defined `gdexResetSearch()` that clears preset radios, resets location selects, and calls `clearFilters()` |
+| `clearFilters()` left temporal URL params in the address bar | `$('#facet-form').submit()` didn't strip temporal params first | Added `removeUrlParameter()` calls for both temporal params before form submit |
+
+### Files changed
+| File | Change |
+|---|---|
+| `search.html` | Added `onclick="gdexResetSearch();"` to Reset Search button; updated chip `onclick` handlers |
+| `search_data.js` | Rewrote `gdexRemoveFilter()`, `gdexClearTemporal()`, `gdexResetSearch()`; updated `clearFilters()` |
+
+---
+
+## 29. Temporal Preset Improvements (`gsearch/views.py`, `search.html`, `search-sidebar.html`)
+
+"Last 1 / 5 / 10 / 25 year" radio buttons no longer fill the custom From/To date fields, and the selected preset is restored correctly on page refresh.
+
+### Changes
+- **`gsearch/views.py`**: After every search request, parses `filter-range.temporal_range_end` from GET params and saves `temporal_start_input` / `temporal_end_input` to the Django session. Also detects if the active date range matches a 1/5/10/25-year preset (±1 day tolerance) and saves `temporal_preset_years` to session.
+- **`search.html`**: `gdexApplyPreset()` no longer writes to the visible From/To inputs. Instead it clears them, removes temporal URL params via `removeUrlParameter()`, injects a hidden `<input name="filter-range.temporal_range_end">` directly into `#facet-form`, then calls `customSearch(1)`. Preset radios are restored server-side via `{% if request.session.temporal_preset_years %}`. The time chip label shows "Last X years" for presets and raw dates for custom ranges.
+- **`search-sidebar.html`**: From/To fields are only pre-populated from session when `temporal_preset_years` is **not** set; date `onchange` deselects preset radios automatically.
+
+### Files changed
+| File | Change |
+|---|---|
+| `gsearch/views.py` | Added temporal parsing block and preset detection block; imports `date as _date` |
+| `search.html` | Rewrote `gdexApplyPreset()`; updated chip template; added preset radio restore script |
+| `search-sidebar.html` | Conditional pre-population of From/To fields; `onchange` deselects presets |
+
+---
+
+## 30. Browse Datasets Card URL Fix (`home/templates/home/test_home_grid_cards.html`, `home/migrations/`)
+
+### Template fix
+The feature card link template now distinguishes internal vs external URLs:
+- `card_page` set → uses Wagtail page URL (no `target="_blank"`)
+- `card_url` starting with `/` → internal link, no new tab
+- `card_url` starting with `http` → external link, opens in new tab
+
+Previously all `card_url` values received `target="_blank"`, causing internal paths to open in a new tab.
+
+### Data migration
+`home/migrations/0015_fix_browse_datasets_card_url.py` — data migration that finds any `TestHomePageFeaturedCard` / `FeaturedCard` record where the title contains "browse" + "dataset" or the linked page resolves to an old search URL (`/lookfordata/`, `/find-data/`, etc.), and updates it to `card_url = '/gsearch/dataset-search/'` with `card_page_id = None`.
+
+> **Note:** This migration has been written to disk but not yet applied. Run `python3 manage.py migrate home 0015` when ready.
+
+### Files changed
+| File | Change |
+|---|---|
+| `test_home_grid_cards.html` | Three-branch link logic: Wagtail page / internal URL / external URL |
+| `home/migrations/0015_fix_browse_datasets_card_url.py` | New data migration (not yet applied) |
+
+---
+
+## 31. Non-Scrollable Filter Sidebar (`search_data.css`, `search_data.js`, `search-sidebar.html`)
+
+The filter sidebar previously had a fixed `max-height: calc(100vh - 2rem)` with an internal scroll body, causing user friction.
+
+### Changes
+- Removed `max-height`, `overflow: hidden`, `overflow-y: auto`, and all scrollbar styles from `.gdex-filters-sidebar` and `.gdex-filters-sidebar__scroll-body`.
+- Added `align-self: flex-start` so the sticky sidebar doesn't stretch to match the results column height.
+- Removed the `::after` fade-gradient overlay and `.gdex-filters-sidebar--at-bottom` class.
+- Removed the `checkScroll()` JS function and its `scroll` event listener from `search_data.js`.
+- Removed `id="gdex-sidebar-body"` from the sidebar template (no longer referenced by JS).
+
+The sidebar now expands to its full natural height and the user scrolls the whole page normally.
+
+### Files changed
+| File | Change |
+|---|---|
+| `search_data.css` | Removed scroll/overflow/scrollbar/fade-gradient rules; added `align-self: flex-start` |
+| `search_data.js` | Removed `checkScroll()`, `sidebarBody` variable, and scroll event listener |
+| `search-sidebar.html` | Removed `id="gdex-sidebar-body"` |
+
+---
+
+## 32. Homepage Hero & Chip Polish (`home/static/css/home_page.css`, `test_home_search_bar.html`)
+
+### Hero heading color
+`GDEX` highlight in the hero heading changed to `#0057c2` — the same blue used by the "Browse Datasets" primary button — for visual consistency.
+
+### Hero overlay
+Dark overlay (`rgba(0,0,0,0.50)`) restored after a brief experiment with removing it; ensures hero text remains readable against any banner image.
+
+### Explore chips icon size
+Icons inside the "Explore specialized datasets" chips increased from `1.1rem` → `1.8rem`, with icon-to-text spacing increased from `me-2` → `me-3`, to better balance with the two-line chip text.
+
+### Files changed
+| File | Change |
+|---|---|
+| `home_page.css` | `.gdex-hero__heading-highlight` color `→ #0057c2`; overlay restored; chip icon `font-size: 1.8rem` |
+| `test_home_search_bar.html` | Icon spacing `me-2 → me-3` on both chip icons |
+
+---
+
+## 33. Ancillary Dataset Badge (`search-results.html`, `search_data.css`)
+
+The large orange warning box for historical/ancillary datasets (`dataset_type == 'H'`) was replaced with a compact inline badge that sits between the dataset title and the DOI line.
+
+### Before
+Full-width `bg-warning` `<div>` spanning the card body, significantly inflating card height.
+
+### After
+A small `<p class="gdex-ancillary-badge">` element with `#faa119` background (the Unity theme warning color), tight padding, and 6px border radius. The full message — *"Ancillary use only — not recommended as a primary research dataset. Likely superseded by newer datasets."* — is always visible inline; no hover required.
+
+### Files changed
+| File | Change |
+|---|---|
+| `search-results.html` | Replaced `<div class="bg-warning ...">` with `<p class="gdex-ancillary-badge">` inside `title-block` |
+| `search_data.css` | Added `.gdex-ancillary-badge` styles using Unity `#faa119` warning color |
+
+---
+
+## 34. Specialized Dataset Pages — AI-Ready & Popular (`gsearch/`)
+
+Two new standalone pages that surface specialized dataset collections, replacing external links to the metrics page.
+
+### AI-Ready Datasets — `/gsearch/ai-ready/`
+- Calls `get_AI_datasets()` from `api.common`, which queries `search.datasets WHERE ai_ready = 'Y'`.
+- Renders up to 200 datasets as search-style cards with title, dataset ID, Access Data / Description buttons, and an "AI-Ready" badge.
+- Auto-grows as new datasets are tagged `ai_ready = 'Y'` in the database — no manual curation needed.
+
+### Popular Datasets — `/gsearch/popular/`
+- Calls `get_top_datasets()` from `api.common`, which reads the `rankingsYear.json` file (top 50).
+- Renders cards with rank number, title, unique users count, and volume downloaded.
+- Auto-updates whenever the rankings file is refreshed.
+
+### Homepage wiring
+- "AI-ready datasets" chip on homepage: changed from external `https://gdex.ucar.edu/metrics/by-the-numbers/` → `/gsearch/ai-ready/`
+- "View all datasets" link in Popular Datasets section: changed from same external URL → `/gsearch/popular/`
+
+### Files changed
+| File | Change |
+|---|---|
+| `gsearch/urls.py` | Added `ai-ready/` and `popular/` routes before the catch-all `<dssearch:index>/` |
+| `gsearch/views.py` | Added `ai_ready_datasets()` and `popular_datasets()` views; imported `get_AI_datasets`, `get_top_datasets` |
+| `gsearch/templates/gsearch/ai-ready-datasets.html` | New template extending `base.html` |
+| `gsearch/templates/gsearch/popular-datasets.html` | New template extending `base.html` |
+| `gsearch/static/gsearch/css/specialized.css` | New shared CSS for both pages (`.gdex-specialized-*` classes) |
+| `test_home_search_bar.html` | AI-ready chip href → `/gsearch/ai-ready/` |
+| `test_home_popular_datasets.html` | "View all" href → `/gsearch/popular/` |
+
+---
+
+*Sections 27–34 added 2026-06-27 covering changes made after initial branch setup.*  
 *Document generated from `git diff main..siparcs26` and `git log main..siparcs26 --oneline --no-merges`.*  
 *Branch: `siparcs26` | Compared against: `main`*

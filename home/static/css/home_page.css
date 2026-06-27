@@ -97,7 +97,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     margin-bottom: 1.1rem;
     text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 }
-.gdex-hero__heading-highlight { color: #0057c2; }
+.gdex-hero__heading-highlight { color: #faa119; }
 .gdex-hero__description {
     color: #ffffff;
     font-size: 1.05rem;

@@ -1,55 +1,77 @@
 {% with last_page=search.pagination.pages|length %}
-<div class="row">
-    <div class="text-center font-weight-bold">
-        <strong>Search results page navigation ({{ last_page }} pages)</strong>
-    </div>
-    <nav class="mt-3 mb-5" aria-label="Search Results Pages">
-        <ul class="pagination justify-content-center">
-            {% if search.pagination.current_page > 1 %}
-            <li class="page-item">
-                <a class="page-link" onclick="customSearch(1);" aria-label="First">
-                    <i aria-hidden="true" class="fas fa-angle-double-left"></i>
-                    <span class="sr-only">First</span>
-                </a>
+<nav class="gdex-pagination" aria-label="Search Results Pages">
+    <ul class="gdex-pagination__list">
+
+        {% if search.pagination.current_page > 1 %}
+        <li>
+            <button class="gdex-pagination__arrow" onclick="customSearch(1);" aria-label="First">
+                <i class="fas fa-angle-double-left"></i>
+            </button>
+        </li>
+        <li>
+            <button class="gdex-pagination__arrow" onclick="customSearch({{ search.pagination.current_page|add:-1 }});" aria-label="Previous">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </li>
+        {% else %}
+        <li>
+            <button class="gdex-pagination__arrow gdex-pagination__arrow--disabled" disabled aria-label="First">
+                <i class="fas fa-angle-double-left"></i>
+            </button>
+        </li>
+        <li>
+            <button class="gdex-pagination__arrow gdex-pagination__arrow--disabled" disabled aria-label="Previous">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </li>
+        {% endif %}
+
+        {% for page in search.pagination.pages %}
+            {% if page.number == search.pagination.current_page %}
+            <li>
+                <button class="gdex-pagination__page gdex-pagination__page--active" aria-current="page">{{ page.number }}</button>
             </li>
-            <li class="page-item">
-                <a class="page-link" onclick="customSearch({{ search.pagination.current_page|add:-1 }});" aria-label="Previous">
-                    <i aria-hidden="true" class="fas fa-angle-left"></i>
-                    <span class="sr-only">Previous</span>
-                </a>
+            {% elif page.number == 1 or page.number == last_page %}
+            <li>
+                <button class="gdex-pagination__page" onclick="customSearch({{ page.number }});">{{ page.number }}</button>
             </li>
+            {% elif page.number|add:-1 == search.pagination.current_page or page.number|add:1 == search.pagination.current_page %}
+            <li>
+                <button class="gdex-pagination__page" onclick="customSearch({{ page.number }});">{{ page.number }}</button>
+            </li>
+            {% elif page.number|add:-2 == search.pagination.current_page or page.number|add:2 == search.pagination.current_page %}
+            <li>
+                <button class="gdex-pagination__page" onclick="customSearch({{ page.number }});">{{ page.number }}</button>
+            </li>
+            {% elif page.number|add:-3 == search.pagination.current_page or page.number|add:3 == search.pagination.current_page %}
+            <li><span class="gdex-pagination__ellipsis">&hellip;</span></li>
             {% endif %}
-            {% for page in search.pagination.pages %}
-            <li class="page-item {% if page.number == search.pagination.current_page %}active{% endif %}">
-                {% if page.number == search.pagination.current_page %}
-                <span class="page-link">{{ page.number }}</span>
-                {% elif page.number == 1 or page.number == last_page %}
-                <a class="page-link" onclick="customSearch({{ page.number }});">{{ page.number }}</a>
-                {% elif page.number|add:-1 == search.pagination.current_page or page.number|add:1 == search.pagination.current_page %}
-                <a class="page-link" onclick="customSearch({{ page.number }});">{{ page.number }}</a>
-                {% elif page.number|add:-2 == search.pagination.current_page or page.number|add:2 == search.pagination.current_page %}
-                <a class="page-link" onclick="customSearch({{ page.number }});">{{ page.number }}</a>
-                {% elif page.number|add:-3 == search.pagination.current_page or page.number|add:3 == search.pagination.current_page %}
-                <span class="ellipsis">...</span>
-                {% else %}
-                {% endif %}
-            </li>
-            {% endfor %}
-            {% if search.pagination.current_page < last_page %}
-            <li class="page-item">
-                <a class="page-link" onclick="customSearch({{ search.pagination.current_page|add:1 }});" aria-label="Next">
-                    <i aria-hidden="true" class="fas fa-angle-right"></i>
-                    <span class="sr-only">Next</span>
-                </a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" onclick="customSearch({{ last_page }});" aria-label="Last">
-                    <i aria-hidden="true" class="fas fa-angle-double-right"></i>
-                    <span class="sr-only">Last</span>
-                </a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
-</div>
+        {% endfor %}
+
+        {% if search.pagination.current_page < last_page %}
+        <li>
+            <button class="gdex-pagination__arrow" onclick="customSearch({{ search.pagination.current_page|add:1 }});" aria-label="Next">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </li>
+        <li>
+            <button class="gdex-pagination__arrow" onclick="customSearch({{ last_page }});" aria-label="Last">
+                <i class="fas fa-angle-double-right"></i>
+            </button>
+        </li>
+        {% else %}
+        <li>
+            <button class="gdex-pagination__arrow gdex-pagination__arrow--disabled" disabled aria-label="Next">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </li>
+        <li>
+            <button class="gdex-pagination__arrow gdex-pagination__arrow--disabled" disabled aria-label="Last">
+                <i class="fas fa-angle-double-right"></i>
+            </button>
+        </li>
+        {% endif %}
+
+    </ul>
+</nav>
 {% endwith %}
