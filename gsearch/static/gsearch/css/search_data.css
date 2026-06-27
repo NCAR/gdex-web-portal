@@ -597,9 +597,9 @@
     display: flex;
     align-items: flex-start;
     gap: 0.4rem;
-    background-color: #fff3cd;
-    border: 1px solid #ffc107;
-    color: #856404;
+    background-color: #faa119;
+    border: 1px solid #d4870d;
+    color: #1a1a1a;
     font-size: 0.78rem;
     font-weight: 500;
     padding: 0.35rem 0.65rem;
