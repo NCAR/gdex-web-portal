@@ -27,20 +27,17 @@
             </button>
             {% endif %}
           </p>
+          {% if result.dataset_type == 'H' %}
+          <p class="gdex-ancillary-badge">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Ancillary use only — not recommended as a primary research dataset. Likely superseded by newer datasets.
+          </p>
+          {% endif %}
         </div>
         <button class="gdex-dataset-result__cloud-btn" title="Cloud access">
           <i class="fas fa-cloud"></i>
         </button>
       </div>
-
-      {# ── Historical dataset warning ── #}
-      {% if result.dataset_type == 'H' %}
-      <div class="mb-2 bg-warning text-dark p-2 rounded" style="font-size:0.8rem;">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-        For ancillary use only — not recommended as a primary research dataset.
-        It has likely been superseded by newer and better datasets.
-      </div>
-      {% endif %}
 
       {# ── Metadata row 1 ── #}
       <div class="gdex-dataset-result__meta">

@@ -593,6 +593,15 @@
     border-bottom-color: #0057c2;
     color: #00357a;
 }
+.gdex-ancillary-badge {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    color: #856404;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin: 0.2rem 0 0;
+}
 .gdex-dataset-result__doi {
     font-size: 0.76rem;
     color: #6b7a99;
