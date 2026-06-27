@@ -43,6 +43,10 @@
 32. [Homepage Hero & Chip Polish](#32-homepage-hero--chip-polish-homestaticcsshome_pagecss-test_home_search_barhtml)
 33. [Ancillary Dataset Badge](#33-ancillary-dataset-badge-search-resultshtml-search_datacss)
 34. [Specialized Dataset Pages — AI-Ready & Popular](#34-specialized-dataset-pages--ai-ready--popular-gsearch)
+35. [Pagination Redesign](#35-pagination-redesign-search-paginationhtml-search_datacss)
+36. [Hero Heading GDEX Color](#36-hero-heading-gdex-color-homestaticcsshome_pagecss)
+37. [Specialized Pages — Spacing & Navigation](#37-specialized-pages--spacing--navigation-ai-ready-datasetshtml-popular-datasetshtml)
+38. [Custom Temporal Range — Apply Button & Reset Fix](#38-custom-temporal-range--apply-button--reset-fix-search-sidebarhtml-searchhtml-search_datacss)
 
 ---
 
@@ -1681,6 +1685,84 @@ Two new standalone pages that surface specialized dataset collections, replacing
 
 ---
 
-*Sections 27–34 added 2026-06-27 covering changes made after initial branch setup.*  
+*Sections 27–34 added 2026-06-27 covering changes made after initial branch setup.*
+
+---
+
+## 35. Pagination Redesign (`search-pagination.html`, `search_data.css`)
+
+Replaced the default Bootstrap pagination with a clean custom design matching modern UI conventions.
+
+### Before
+Bootstrap `.pagination` list with `page-item` / `page-link` classes, styled inconsistently. Title text ("Search results page navigation") was inside a `<div>` above the nav.
+
+### After
+- Custom `.gdex-pagination__list` with `<button>` elements for every control.
+- **Active page**: filled blue rounded square (`#0057c2`) with white text.
+- **Inactive pages**: plain blue text, light blue background on hover — no border.
+- **Arrows**: `<` `>` for prev/next, `«` `»` for first/last — all grayed out and `disabled` when at the boundary.
+- **Label**: `<p class="gdex-pagination__label">Search results page navigation (N pages)</p>` restored above the nav, bold, centered. Correctly pluralises ("1 page" vs "166 pages").
+
+### Files changed
+| File | Change |
+|---|---|
+| `search-pagination.html` | Full rewrite using `gdex-pagination__*` classes and `<button>` elements |
+| `search_data.css` | Replaced Bootstrap pagination overrides with `.gdex-pagination__label`, `.gdex-pagination__list`, `.gdex-pagination__page`, `.gdex-pagination__arrow`, `.gdex-pagination__ellipsis` |
+
+---
+
+## 36. Hero Heading GDEX Color (`home/static/css/home_page.css`)
+
+The "GDEX" highlight in the hero heading was changed to `#faa119` — the Unity theme warning/accent orange — so the platform name stands out visually from the surrounding white heading text against the dark hero overlay.
+
+| Property | Value |
+|---|---|
+| CSS rule | `.gdex-hero__heading-highlight { color: #faa119; }` |
+| Rationale | Orange is already part of the Unity brand palette; it pops strongly on the dark hero background without clashing with the blue CTA buttons |
+
+---
+
+## 37. Specialized Pages — Spacing & Navigation (`ai-ready-datasets.html`, `popular-datasets.html`)
+
+The AI-ready and Popular dataset pages had excessive whitespace at the top because both the `base.html` `<main>` tag (`py-3 pt-md-4`) and the inner container (`py-5`) were adding vertical padding.
+
+### Fix
+- Overrode `{% block main_class %}` in both templates to `container-lg pb-4` (removes the default top padding from base).
+- Changed the inner wrapper from `<div class="container-lg py-5">` to `<div class="pt-3">` for a compact, correctly spaced layout.
+
+### Files changed
+| File | Change |
+|---|---|
+| `gsearch/templates/gsearch/ai-ready-datasets.html` | `main_class` block override; reduced inner top padding |
+| `gsearch/templates/gsearch/popular-datasets.html` | `main_class` block override; reduced inner top padding |
+
+---
+
+## 38. Custom Temporal Range — Apply Button & Reset Fix (`search-sidebar.html`, `search.html`, `search_data.css`)
+
+### Problems fixed
+
+**1. Filter fired after entering only the From date**
+Both date inputs had `onchange="... customSearch(1);"` which triggered a search as soon as the first field was filled, creating an incomplete range. Users had no chance to enter the To date before results updated.
+
+**2. Cancelling the temporal chip didn't reset the date inputs**
+The jQuery UI datepicker held internal state that wasn't cleared when the chip × was clicked, so the From/To fields appeared to retain their values after removal.
+
+### Solution
+
+- **Removed `onchange`** from both `#temporal_start_input` and `#temporal_end_input`.
+- **Added an "Apply Range" button** (`gdex-temporal-apply-btn`) below the date inputs. The button calls `gdexApplyCustomTemporal()` which validates that **both** fields have values before calling `customSearch(1)` — no partial-range searches.
+- **Updated `gdexClearTemporal()`** in `search.html` to explicitly reset the jQuery UI datepicker via `datepicker('setDate', null)` on both inputs AND clear the raw `.value` property before delegating to `clearTemporalRange()`.
+
+### Files changed
+| File | Change |
+|---|---|
+| `search-sidebar.html` | Removed `onchange` from both date inputs; added "Apply Range" `<button>` |
+| `search.html` | Added `gdexApplyCustomTemporal()` function; updated `gdexClearTemporal()` to reset datepicker and clear values explicitly |
+| `search_data.css` | Added `.gdex-temporal-apply-btn` styles (full-width blue button) |
+
+---
+
+*Sections 27–38 added 2026-06-27 covering changes made after initial branch setup.*  
 *Document generated from `git diff main..siparcs26` and `git log main..siparcs26 --oneline --no-merges`.*  
 *Branch: `siparcs26` | Compared against: `main`*

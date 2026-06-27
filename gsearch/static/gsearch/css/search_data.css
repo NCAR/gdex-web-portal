@@ -346,20 +346,27 @@
 }
 .gdex-filter-date-input:focus { border-color: #0057c2; }
 .gdex-temporal-apply-btn {
-    margin-top: 0.5rem;
+    display: block;
+    margin-top: 0.6rem;
     width: 100%;
     background-color: #0057c2;
-    color: #ffffff;
+    color: #ffffff !important;
     border: none;
     border-radius: 6px;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.78rem;
+    padding: 0.45rem 1rem;
+    font-size: 0.8rem;
     font-weight: 600;
     font-family: 'Poppins', sans-serif;
+    letter-spacing: 0.02em;
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    text-align: center;
+    transition: background-color 0.15s ease, transform 0.1s ease;
 }
-.gdex-temporal-apply-btn:hover { background-color: #00357a; }
+.gdex-temporal-apply-btn:hover {
+    background-color: #00357a;
+    transform: translateY(-1px);
+}
+.gdex-temporal-apply-btn:active { transform: translateY(0); }
 .gdex-filter-custom-range__labels {
     display: flex;
     justify-content: space-between;
