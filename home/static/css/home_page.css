@@ -52,7 +52,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     display: flex;
     align-items: flex-start;
     position: relative;
-    background-size: auto;
+    background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-color: #011837;
