@@ -345,6 +345,21 @@
     outline: none;
 }
 .gdex-filter-date-input:focus { border-color: #0057c2; }
+.gdex-temporal-apply-btn {
+    margin-top: 0.5rem;
+    width: 100%;
+    background-color: #0057c2;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+.gdex-temporal-apply-btn:hover { background-color: #00357a; }
 .gdex-filter-custom-range__labels {
     display: flex;
     justify-content: space-between;

@@ -39,7 +39,6 @@
                    class="gdex-filter-date-input"
                    placeholder="YYYY-MM-DD"
                    autocomplete="off"
-                   onchange="document.querySelectorAll('input[name=gdex-time-preset]').forEach(function(r){r.checked=false;}); customSearch(1);"
                    value="{% if request.session.temporal_start_input and not request.session.temporal_preset_years %}{{ request.session.temporal_start_input }}{% endif %}">
             <span class="gdex-filter-custom-range__dash">&ndash;</span>
             <input type="text"
@@ -48,12 +47,12 @@
                    class="gdex-filter-date-input"
                    placeholder="YYYY-MM-DD"
                    autocomplete="off"
-                   onchange="document.querySelectorAll('input[name=gdex-time-preset]').forEach(function(r){r.checked=false;}); customSearch(1);"
                    value="{% if request.session.temporal_end_input and not request.session.temporal_preset_years %}{{ request.session.temporal_end_input }}{% endif %}">
           </div>
           <div class="gdex-filter-custom-range__labels">
             <span>From</span><span>To</span>
           </div>
+          <button type="button" class="gdex-temporal-apply-btn" onclick="gdexApplyCustomTemporal();">Apply Range</button>
         </div>
       </div>
     </div>

@@ -175,8 +175,22 @@ function gdexRemoveFilter(name, value) {
    filter-range.temporal_range_end still in the URL, finds no matching input in
    #facet-form (temporal inputs live outside the form), and silently re-adds the
    filter — making the chip × permanently broken. */
+function gdexApplyCustomTemporal() {
+    var from = document.getElementById('temporal_start_input').value.trim();
+    var to   = document.getElementById('temporal_end_input').value.trim();
+    if (!from || !to) { return; }
+    document.querySelectorAll('input[name="gdex-time-preset"]').forEach(function(r) { r.checked = false; });
+    customSearch(1);
+}
+
 function gdexClearTemporal() {
     document.querySelectorAll('input[name="gdex-time-preset"]').forEach(function(r) { r.checked = false; });
+    if (typeof $ !== 'undefined' && $.fn && $.fn.datepicker) {
+        try { $('#temporal_start_input').datepicker('setDate', null); } catch(e) {}
+        try { $('#temporal_end_input').datepicker('setDate', null); } catch(e) {}
+    }
+    document.getElementById('temporal_start_input').value = '';
+    document.getElementById('temporal_end_input').value = '';
     clearTemporalRange();
 }
 
