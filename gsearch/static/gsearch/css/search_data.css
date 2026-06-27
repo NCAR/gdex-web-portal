@@ -595,12 +595,16 @@
 }
 .gdex-ancillary-badge {
     display: flex;
-    align-items: baseline;
-    gap: 0.35rem;
+    align-items: flex-start;
+    gap: 0.4rem;
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
     color: #856404;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 500;
-    margin: 0.2rem 0 0;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    margin: 0.4rem 0 0.2rem;
 }
 .gdex-dataset-result__doi {
     font-size: 0.76rem;

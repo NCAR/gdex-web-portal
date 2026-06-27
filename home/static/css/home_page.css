@@ -60,7 +60,12 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     width: 100vw;
     margin-left: calc(-50vw + 50%);
 }
-.gdex-hero__overlay { display: none; }
+.gdex-hero__overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.50);
+    z-index: 0;
+}
 .gdex-hero__content {
     z-index: 2;
     width: 100%;
@@ -92,7 +97,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     margin-bottom: 1.1rem;
     text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 }
-.gdex-hero__heading-highlight { color: #5a77a6; }
+.gdex-hero__heading-highlight { color: #0057c2; }
 .gdex-hero__description {
     color: #ffffff;
     font-size: 1.05rem;
