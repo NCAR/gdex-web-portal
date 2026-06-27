@@ -7,8 +7,6 @@
 (function () {
     var chips          = document.getElementById('gdex-active-filters');
     var resetBtn       = document.getElementById('gdex-reset-btn');
-    var sidebarBody    = document.getElementById('gdex-sidebar-body');
-    var sidebar        = document.querySelector('.gdex-filters-sidebar');
     var dateFromPicker, dateToPicker;
 
     /* ---------- group-based chip state ---------- */
@@ -301,18 +299,6 @@
                     });
             }
         });
-    }
-
-    /* ---------- sidebar scroll fade ---------- */
-
-    function checkScroll() {
-        if (!sidebarBody || !sidebar) return;
-        var atEnd = sidebarBody.scrollTop + sidebarBody.clientHeight >= sidebarBody.scrollHeight - 8;
-        sidebar.classList.toggle('gdex-filters-sidebar--at-bottom', atEnd);
-    }
-    if (sidebarBody) {
-        sidebarBody.addEventListener('scroll', checkScroll);
-        checkScroll();
     }
 
     /* ---------- collapsible groups ---------- */
