@@ -12,8 +12,9 @@ from globus_portal_framework.gsearch import (
     get_template_path
 )
 from api.common import (
-    get_wagtail_config, get_search_config, 
-    init_connection_new, close_connection
+    get_wagtail_config, get_search_config,
+    init_connection_new, close_connection,
+    get_AI_datasets, get_top_datasets,
 )
 
 import logging
@@ -215,3 +216,32 @@ def get_historical_datasets(search_results):
     ]
     
     return filtered_results
+
+
+def ai_ready_datasets(request):
+    try:
+        raw = get_AI_datasets(limit=200)
+        datasets = [{'dsid': row[0], 'title': row[1]} for row in raw]
+    except Exception:
+        datasets = []
+    return render(request, 'gsearch/ai-ready-datasets.html', {'datasets': datasets})
+
+
+def popular_datasets(request):
+    try:
+        raw = get_top_datasets(top=50)
+        if isinstance(raw, str):
+            raw = []
+        datasets = [
+            {
+                'dsid': ds.get('dataset', ''),
+                'title': ds.get('OName', ''),
+                'rank': ds.get('index', ''),
+                'users': ds.get('Total Number of Unique Users', 'N/A'),
+                'volume_tb': ds.get('Total Volume Downloaded (TB)', 'N/A'),
+            }
+            for ds in raw
+        ]
+    except Exception:
+        datasets = []
+    return render(request, 'gsearch/popular-datasets.html', {'datasets': datasets})

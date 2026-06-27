@@ -5,6 +5,8 @@ from . import views
 register_custom_index('dssearch', ['dataset-search'])
 
 urlpatterns = [
+    path('ai-ready/', views.ai_ready_datasets, name='ai_ready_datasets'),
+    path('popular/', views.popular_datasets, name='popular_datasets'),
     # Override the default Globus portal framework search view with the custom gsearch view
     path('<dssearch:index>/', views.dataset_search, name='search'),
     # Globus portal framework URLs
