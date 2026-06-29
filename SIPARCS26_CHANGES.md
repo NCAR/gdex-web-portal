@@ -214,7 +214,7 @@ FieldPanel('banner_image'),
 
 **Effect:** Wagtail CMS editors can now:
 - Upload a custom hero background image (falls back to `hero_earth.png` if blank)
-- Edit the hero heading with a separately highlighted prefix word (shown in blue)
+- Edit the hero heading with a separately highlighted prefix word (shown in orange)
 - Write the hero description as rich text
 
 These are all optional — the template has sensible defaults if they are left blank.
