@@ -1,0 +1,13 @@
+{% extends "datasets/custom-subset-page-base.html" %}
+
+{% block content %}
+  <h1>{{ dataset.name }}</h1>
+  <p>{{ dataset.description }}</p>
+
+  <h2>Subset Information</h2>
+  <ul>
+    {% for subset in dataset.subsets %}
+      <li>{{ subset.name }}: {{ subset.description }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
