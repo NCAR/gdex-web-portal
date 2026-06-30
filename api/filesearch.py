@@ -1,4 +1,5 @@
 import copy
+import os
 import psycopg2
 import pytz
 import re
@@ -29,7 +30,9 @@ PAGE_SIZE = 1000
 files_response = {'dsid': "", 'datatype': "", 'restrictions': {},
                   'files': {
                       'https_base': settings.RDA_DATA_BASE_URL,
-                      'ncar_hpc_base': settings.GDEX_CANONICAL_DATA_PATH},
+                      'ncar_hpc_base': settings.GDEX_CANONICAL_DATA_PATH,
+                      'files': []
+                   },
                   'pagination': {}}
 
 
@@ -458,7 +461,12 @@ def files(request, dsid, datatype):
                         f"limit {PAGE_SIZE} offset 0",
                         (files_response['pagination']['result_id'], ))
 
-            files_response['files']['paths'] = (
+            files_response['files']['http_base'] = (
+                    os.path.join(files_response['files']['http_base'], dsid))
+            files_response['files']['ncar_hpc_base'] = (
+                    os.path.join(files_response['files']['ncar_hpc_base'],
+                                 dsid))
+            files_response['files']['paths'].extend(
                     [e[0] for e in cursor.fetchall()])
             return JsonResponse(files_response, status=200)
 
@@ -542,7 +550,11 @@ def serve_result_set(request, dsid, result_id, page_num):
                 "file_code where f.result_id = %s order by w.id limit "
                 f"{PAGE_SIZE} offset {offset}", (result_id, ))
         res = cursor.fetchall()
-        files_response['files']['paths'] = [e[0] for e in res]
+        files_response['files']['http_base'] = (
+                os.path.join(files_response['files']['http_base'], dsid))
+        files_response['files']['ncar_hpc_base'] = (
+                os.path.join(files_response['files']['ncar_hpc_base'], dsid))
+        files_response['files']['paths'].extend([e[0] for e in res])
         files_response['pagination']['num_per_page'] = min(len(res), PAGE_SIZE)
         files_response['pagination']['current_page'] = offset // PAGE_SIZE + 1
         if len(res) == PAGE_SIZE:
