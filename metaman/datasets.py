@@ -2684,7 +2684,7 @@ def get_manual_cmd_values(root):
     elist = root.findall("levels/layer")
     for e in elist:
         levels.append("[!]".join([e.get("type"), e.get("top"), e.get("bottom"),
-                                  e.get("units")]))
+                                  (e.get("units") or "")]))
 
     d['levels'] = "\n".join(levels)
     elist = root.findall("geospatialCoverage/grid")
