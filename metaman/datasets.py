@@ -407,6 +407,7 @@ def commit_changes(request, dsid):
                         .replace("<", "&lt;")
                         .replace(">", "&gt;"))
                 ctx.update({'error': ("Unable to write XML file: non-ASCII "
+
                                       "characters (denoted by diamonds) in "
                                       "<i>{}</i>")
                            .format(sub_s)})
@@ -904,6 +905,7 @@ def update_metadata_database(ctx, conn, **kwargs):
             except Exception as e:
                 err = str(e)
                 break
+
 
         try:
             cursor.execute((
@@ -1638,7 +1640,7 @@ def edit(request, dsid):
                         root, ns)})
         ctx.update({
                 'dataset_type_options': get_dataset_type_options(
-                        root, ns, has_doi)})
+                        root, ns, res[0]['dataset_type'], has_doi)})
         if show_manual_cmd:
             ctx.update({'data_format_options': get_data_format_options()})
 
@@ -2007,6 +2009,7 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
         errs.insert(0, ("The Summary/Abstract MUST contain at least fifty "
                         "words. (This is a JSON-LD requirement)"))
 
+
     if len(errs) > 0:
         errors.update({'summary': "<br>".join(errs)})
 
@@ -2238,6 +2241,7 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
                 "usage_restrictions, access_code, variables, contacts, "
                 "platforms, instruments, projects, supports_projects, "
                 "iso_topic, keywords, _references, reflists, acknowledgement, "
+
                 "related_resources, related_dois, related_datasets, "
                 "publication_date, redundancys, license, content_metadata) "
                 "values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
@@ -2558,17 +2562,23 @@ def get_update_frequency_options(root, ns):
     return ufrequencies
 
 
-def get_dataset_type_options(root, ns, has_doi):
+def get_dataset_type_options(root, ns, ds_type, has_doi):
     elist = root.findall(("./xsd:simpleType[@name='datasetType']/xsd:"
                           "restriction/xsd:enumeration"), ns)
     types = []
     for e in elist:
         v = e.get("value")
+        appinfo = e.find("xsd:annotation/xsd:appinfo", ns).text
+        opts = []
+        if appinfo is not None:
+            opts = appinfo.split(",")
+
         if v != "internal" or not has_doi:
-            types.append({
-                'value': v,
-                'description': e.find(
-                        "xsd:annotation/xsd:documentation", ns).text})
+            if ds_type in opts:
+                types.append({
+                    'value': v,
+                    'description': e.find(
+                            "xsd:annotation/xsd:documentation", ns).text})
 
     return types
 
