@@ -2574,7 +2574,7 @@ def get_dataset_type_options(root, ns, ds_type, has_doi):
             opts = appinfo.split(",")
 
         if v != "internal" or not has_doi:
-            if ds_type in opts:
+            if ds_type == v or ds_type in opts:
                 types.append({
                     'value': v,
                     'description': e.find(
