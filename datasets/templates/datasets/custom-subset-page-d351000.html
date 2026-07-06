@@ -15,17 +15,14 @@
 
 <div id="subset-form-div">
 
-   <h2>Dataset {{ subset.dsid }} - Submit a Subset Data Request</h2>
+   <h2>{{ subset.header }}</h2>
    <div class="p-2 bg-light">
       <p class="mb-0">This form allows a user to request a temporal and spatial subset from the following dataset:
          <ul>
             <li>{{ subset.dstitle }}</li>
             <li>Valid date range: <span class="fw-bold">{{ subset.date_start }}</span>&nbsp;to&nbsp;<span class="fw-bold">{{ subset.date_end }}</span></li>
          </ul>
-         Also included is the option to select data by record type and individual parameters.
-         Once this form is completed and submitted you will be notified via email when the
-         data are ready for download. The output data is converted from BUFR format to an
-         RDA flat ASCII format.
+         {{ subset.description|richtext|safe }}
       </p>
    </div>
 
@@ -226,7 +223,7 @@
 </div>
 
 <div id="subset-review-div" class="d-none">
-   <h2 class="py-2">NCEP ADP PREPBUFR Observations Data Request</h2>
+   <h2 class="py-2">{{ subset.header }}</h2>
    <div>
       Following is a summary of your data request selections.  Click the 'Submit Request' button below
       if the information is <span class="fw-bold">correct</span>, otherwise select
