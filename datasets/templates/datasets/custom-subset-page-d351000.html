@@ -233,7 +233,7 @@
       <pre><code id="rnote-text"></code></pre>
    </div>
    <div id="submit-form-container">
-      <form action="{% url 'submit_web_data_request' subset.dsid %}" id="submit-form" method="post">
+      <form action="{% url 'submit_web_data_request' page.dsid %}" id="submit-form" method="post">
          <div id="submit-buttons" class="mt-1">
             <button class="btn btn-primary mt-1 p-1 rounded" type="submit" style="font-size:1rem" id="submit_request">Submit request</button>
             <button class="btn btn-outline-primary mt-1 p-1 rounded" type="button" style="font-size:1rem" id="cancel_request" onclick="cancelRequest();">Cancel</button>
