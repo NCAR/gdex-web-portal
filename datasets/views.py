@@ -685,6 +685,10 @@ def custom_subset(request, dsid):
 
     if d:
         ctx.update({'page': d})
+        logger.info("Added dataset description context to custom subset page for dataset {}".format(dsid))
+    
+    logger.info("Page context for custom subset page: {}".format(ctx))
+    logger.info("Custom subset context: {}".format(subset_context))
 
     if dsid == 'd351000':
         ctx['form'] = BUFRD351SubsetForm(
