@@ -471,7 +471,7 @@ def commit_changes(request, dsid):
     env = os.environ.copy()
     env['USER'] = "apache"
     env['QUERY_STRING'] = "X"
-    if ctx['ds_type'] in ("primary", "historical"):
+    if ctx['ds_type'] in ("primary", "historical", "dead"):
         o = subprocess.run((
                 "dsgen --mdb='" +
                 json.dumps(settings.RDADB['metadata_config_pg']) + "' " +
