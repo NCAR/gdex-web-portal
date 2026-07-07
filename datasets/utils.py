@@ -53,13 +53,13 @@ def get_custom_subset_context(dsid, gindex=None):
     query_params = {'dsid': dsid}
     if gindex is not None:
         query_params['gindex'] = gindex
-    qs = Page.objects.type(CustomSubsetPage).filter(**query_params).live().specific()
+    
+    qs = CustomSubsetPage.objects.filter(**query_params).live().specific()
     if len(qs) > 0:
         context = {
             'header': qs[0].header,
             'description': qs[0].description,
         }
-    
     dsperiod = get_dataset_period(dsid, gindex)
     if dsperiod:
         context.update(dsperiod)
