@@ -15,27 +15,16 @@
 
 <div id="subset-form-div">
 
-   {% comment %}
-   Summary description of the subset request form
-   {% endcomment %}
-
-   <h2>Dataset {{ subset.dsid }} - Submit a Subset Data Request</h2>
+   <h2>{{ subset.header }}</h2>
    <div class="p-2 bg-light">
       <p class="mb-0">This form allows a user to request a temporal and spatial subset from the following dataset:
          <ul>
             <li>{{ subset.dstitle }}</li>
             <li>Valid date range: <span class="fw-bold">{{ subset.date_start }}</span>&nbsp;to&nbsp;<span class="fw-bold">{{ subset.date_end }}</span></li>
          </ul>
-         Also included is the option to select data by record type and individual parameters.
-         Once this form is completed and submitted you will be notified via email when the
-         data are ready for download. The output data is converted from BUFR format to an
-         RDA flat ASCII format.
+         {{ subset.description|richtext|safe }}
       </p>
    </div>
-
-   {% comment %}
-   Begin subset request form
-   {% endcomment %}
 
    <div id="request-form" class="component webform yellow-orange-border p-2 mb-4">
 
