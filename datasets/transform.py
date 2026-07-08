@@ -83,7 +83,14 @@ def transform_obml(request, dsid, ctx):
         data_format, file_code = file_data(file, dsid, markup_type, cursor)
         if file_code is not None:
             ctx['transform']['data_format'] = snake_to_capital(data_format)
-            cursor.execute(f'select o.obs_type, p.platform_type, l.data_type from "{markup_type}".{dsid}_data_types_list as l left join "{markup_type}".{dsid}_data_types as t on t.data_type_code = l.code left join "{markup_type}".obs_types as o on o.code = l.observation_type_code left join "{markup_type}".platform_types as p on p.code = l.platform_type_code where file_code = %s', (file_code, ))
+            cursor.execute(
+                    "select o.obs_type, p.platform_type, l.data_type from "
+                    f'"{markup_type}".{dsid}_data_types_list as l left join '
+                    f'"{markup_type}".{dsid}_data_types as t on t.'
+                    f'data_type_code = l.code left join "{markup_type}".'
+                    "obs_types as o on o.code = l.observation_type_code left "
+                    f'join "{markup_type}".platform_types as p on p.code = l.'
+                    "platform_type_code where file_code = %s", (file_code, ))
             res = cursor.fetchall()
             ctx['obs_types'] = {}
             for e in res:
@@ -95,7 +102,8 @@ def transform_obml(request, dsid, ctx):
                 if platform_type not in ctx['obs_types'][obs_type]:
                     ctx['obs_types'][obs_type]['platforms'][platform_type] = []
 
-                ctx['obs_types'][obs_type]['platforms'][platform_type].append(e[2])
+                ctx['obs_types'][obs_type]['platforms'][platform_type].append(
+                        e[2])
 
         else:
             ctx['transform']['error'] = "File does not exist"
