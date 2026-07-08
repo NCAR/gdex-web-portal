@@ -38,7 +38,7 @@ from globus.views import get_guest_collection_url
 from gdexwebserver.utils import make_tempdir, remove_tempdir
 from dashboard.utils import get_user_email, is_internal_user
 
-from .forms import DatasetRequestForm, BUFRD351SubsetForm
+from .forms import DatasetRequestForm, BUFRSubsetForm
 from rda_python_dsrqst.PgRDARqst import rda_request
 
 import logging
@@ -687,8 +687,8 @@ def custom_subset(request, dsid):
         ctx.update({'page': d})
         logger.info("Added dataset description context to custom subset page for dataset {}".format(dsid))
     
-    if dsid == 'd351000':
-        ctx['form'] = BUFRD351SubsetForm(
+    if dsid in ['d351000', 'd461000']:
+        ctx['form'] = BUFRSubsetForm(
             auto_id='%s',
             initial={
                 'dsid':      dsid,
@@ -697,8 +697,8 @@ def custom_subset(request, dsid):
                 'startDate': subset_context.get('date_start', ''),
                 'endDate':   subset_context.get('date_end', ''),
                 'compr':     'gz',
-                'rectypes':  [c[0] for c in BUFRD351SubsetForm.RECTYPE_CHOICES],
-                'parms':     [c[0] for c in BUFRD351SubsetForm.PARM_CHOICES],
+                'rectypes':  [c[0] for c in BUFRSubsetForm.RECTYPE_CHOICES],
+                'parms':     [c[0] for c in BUFRSubsetForm.PARAM_CHOICES],
             },
         )
 

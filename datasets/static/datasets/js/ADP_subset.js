@@ -10,8 +10,7 @@
  ***********************************************************************************/
  
 
-// var dates, stations, rectypes, allbasic, parms, xparms, compr, vars, flts, rinfo;
-var dates, stations, rectypes, parms, compr, rinfo, allbasic;
+var dates, stations, rectypes, params, compr, rinfo, allbasic;
 var stationNum, countValid;
 var ivals, evals;
 
@@ -44,7 +43,7 @@ function getsubsetvals() {
     ss.stations = stn; 
 
     ss.rectypes = countchecked('rectypes');
-    ss.params = countchecked('parms');
+    ss.params = countchecked('params');
     return ss
 }
 
@@ -98,7 +97,7 @@ function sflagtest(b,e) {
     for (var key in b) {
 
       // variable
-      if (key === 'rectypes' || key === 'parms') {
+      if (key === 'rectypes' || key === 'params') {
         if (b[key] !== e[key]) { varflag = 1 }
       }
 
@@ -483,7 +482,7 @@ function goodCoordinate(value, islat)
 }
 
 /**
- * Validate parms checkbox selections
+ * Validate parameter checkbox selections
  */
 
 function checkParameters()
@@ -499,18 +498,18 @@ function checkParameters()
   var checkedArray = new Array();
 
   allbasic = "y";
-  parms = "";
+  params = "";
 
-  num_checkboxes = document.form.parms.length;
+  num_checkboxes = document.form.params.length;
   
-  for (i=0; i < document.form.parms.length; i++) 
+  for (i=0; i < document.form.params.length; i++) 
   {
-    if (document.form.parms[i].type == "checkbox" && document.form.parms[i].checked) 
+    if (document.form.params[i].type == "checkbox" && document.form.params[i].checked) 
     {
       num_checked++;
-      checkedArray.push(document.form.parms[i].value)
+      checkedArray.push(document.form.params[i].value)
     }
-    if (document.form.parms[i].type == "checkbox" && !document.form.parms[i].checked)  {
+    if (document.form.params[i].type == "checkbox" && !document.form.params[i].checked)  {
         allbasic = "n";
      }
   }
@@ -522,7 +521,7 @@ function checkParameters()
   } 
   else 
   {
-    parms = checkedArray.join(" ");
+    params = checkedArray.join(" ");
   }
   return true;
 }
@@ -622,8 +621,8 @@ function gather_request_info()
    // rqstinfo   += "\nAll Basic Parameters      : " + allbasic;
    rinfo += "&allbasic=" + allbasic;
 
-   rqstinfo   += "\nParameters                : " + parms; 
-   rinfo += "&parms=" + parms;
+   rqstinfo   += "\nParameters                : " + params; 
+   rinfo += "&params=" + params;
 
    rqstinfo   += "\nCompression               : " + compr; 
    rinfo += "&compr=" + compr;
@@ -706,7 +705,7 @@ function reviewRequest()
 $(document).ready(function() {
    initvals();
    selectAllRectypes();
-   selectAllParms();
+   selectAllParams();
 
    $("#submit-form").on("submit", function(event) {
       event.preventDefault();
@@ -732,28 +731,28 @@ function cancelRequest()
 }
 
 /**
- * Select all parms
+ * Select all parameters
  */
-function selectAllParms()
+function selectAllParams()
 {
-  for (var i=0; i<document.form.parms.length; i++) 
+  for (var i=0; i<document.form.params.length; i++) 
   {
-    if(!document.form.parms[i].disabled)
+    if(!document.form.params[i].disabled)
     {
-      document.form.parms[i].checked = true;
+      document.form.params[i].checked = true;
     }
   }
   //allbasic = "y";
 }
 
 /**
- * Clear parms selections
+ * Clear parameter selections
  */
-function selectNoParms()
+function selectNoParams()
 {
-  for (var i=0; i<document.form.parms.length; i++) 
+  for (var i=0; i<document.form.params.length; i++) 
   {
-    document.form.parms[i].checked = false;
+    document.form.params[i].checked = false;
   }
   //allbasic = "n";
 }

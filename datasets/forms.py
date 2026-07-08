@@ -5,34 +5,62 @@ from facbrowse.utils import get_groups
 
 
 # ---------------------------------------------------------------------------
-# BUFR upper-air subset form (d351000)
+# BUFR subset form (d351000 and d461000 datasets)
 # ---------------------------------------------------------------------------
 
-class BUFRD351SubsetForm(forms.Form):
+class BUFRSubsetForm(forms.Form):
+    """ BUFR subset form for datasets d351000 and d461000."""
+
+    RECTYPE_CHOICES_BY_DSID = {
+        'd351000': [
+            ('ADPUPA',       'ADPUPA — Rawinsonde, PIBAL, fixed/mobile land and ship'),
+            ('AIRCAR AIRCFT', 'AIRCAR AIRCFT — AIREP, PIREP, ACARS, (T)AMDAR, etc.'),
+            ('SATWND',       'SATWND — Satellite Derived Winds'),
+        ],
+        'd461000': [
+            ('ADPSFC', 'ADPSFC — Surface (land, ship, buoy, etc.)'),
+            ('SFCSHP', 'SFCSHP — Surface Ship'),
+        ],
+    }
+
+    PARAM_CHOICES_BY_DSID = {
+        'd351000': [
+            ('PRLC', 'PRLC — Pressure'),
+            ('PSAL', 'PSAL — Pressure altitude relative to mean sea level pressure'),
+            ('GP10', 'GP10 — Geopotential'),
+            ('GP07', 'GP07 — Geopotential'),
+            ('FLVL', 'FLVL — Flight level'),
+            ('WDIR', 'WDIR — Wind direction'),
+            ('WSPD', 'WSPD — Wind speed'),
+            ('TMDB', 'TMDB — Temperature/dry bulb temperature'),
+            ('TMDP', 'TMDP — Dew-point temperature'),
+            ('REHU', 'REHU — Relative humidity'),
+        ],
+        'd461000': [
+            ('PRES', 'PRES - Pressure'),
+            ('PMSL', 'PMSL - Pressure reduced to mean sea level'),
+            ('TMDB', 'TMDB - Air Temperature/dry bulb temperature'),
+            ('TMDP', 'TMDP - Dew-point temperature'),
+            ('REHU', 'REHU - Relative humidity'),
+            ('WDIR', 'WDIR - Wind direction'),
+            ('WSPD', 'WSPD - Wind speed'),
+            ('TP03', 'TP03 - Precipitation amount (3-hour)'),
+            ('TP24', 'TP24 - Precipitation amount (24-hour)'),
+            ('ALSE', 'ALSE - Altimeter setting'),
+            ('HOVI', 'HOVI - Horizontal visibility'),
+        ],
+    }
+
+    def __init__(self, *args, **kwargs):
+        self.dsid = kwargs.pop('dsid', None)
+        super(BUFRSubsetForm, self).__init__(*args, **kwargs)
+        self.fields['rectypes'].choices = self.RECTYPE_CHOICES_BY_DSID.get(self.dsid, [])
+        self.fields['params'].choices = self.PARAM_CHOICES_BY_DSID.get(self.dsid, [])
 
     SPATIAL_CHOICES = [
-        ('-1', ''),
+        ('-1', 'Choose a spatial subset preference'),
         ('0', 'Select latitude/longitude region via map'),
         ('1', 'Select location by station ID'),
-    ]
-
-    RECTYPE_CHOICES = [
-        ('ADPUPA',       'ADPUPA — Rawinsonde, PIBAL, fixed/mobile land and ship'),
-        ('AIRCAR AIRCFT', 'AIRCAR AIRCFT — AIREP, PIREP, ACARS, (T)AMDAR, etc.'),
-        ('SATWND',       'SATWND — Satellite Derived Winds'),
-    ]
-
-    PARM_CHOICES = [
-        ('PRLC', 'PRLC — Pressure'),
-        ('PSAL', 'PSAL — Pressure altitude relative to mean sea level pressure'),
-        ('GP10', 'GP10 — Geopotential'),
-        ('GP07', 'GP07 — Geopotential'),
-        ('FLVL', 'FLVL — Flight level'),
-        ('WDIR', 'WDIR — Wind direction'),
-        ('WSPD', 'WSPD — Wind speed'),
-        ('TMDB', 'TMDB — Temperature/dry bulb temperature'),
-        ('TMDP', 'TMDP — Dew-point temperature'),
-        ('REHU', 'REHU — Relative humidity'),
     ]
 
     COMPRESSION_CHOICES = [
@@ -101,7 +129,7 @@ class BUFRD351SubsetForm(forms.Form):
     # ------------------------------------------------------------------
     rectypes = forms.MultipleChoiceField(
         required=False,
-        choices=RECTYPE_CHOICES,
+        choices=[],
         label='Record Types',
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
     )
@@ -109,9 +137,9 @@ class BUFRD351SubsetForm(forms.Form):
     # ------------------------------------------------------------------
     # Parameters
     # ------------------------------------------------------------------
-    parms = forms.MultipleChoiceField(
+    params = forms.MultipleChoiceField(
         required=False,
-        choices=PARM_CHOICES,
+        choices=[],
         label='Parameters',
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
     )
@@ -126,7 +154,7 @@ class BUFRD351SubsetForm(forms.Form):
         initial='gz',
         widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
     )
-
+    
     def clean(self):
         cleaned = super().clean()
         start = cleaned.get('startDate')
@@ -134,7 +162,7 @@ class BUFRD351SubsetForm(forms.Form):
         if start and end and start > end:
             raise forms.ValidationError('Start date must not be later than end date.')
         return cleaned
-
+    
 def validate_dsid(value):
     if not re.match(r'^[a-z]{1}[0-9]{6}$', value):
         raise forms.ValidationError("Dataset ID format must be 'd123456'.")
