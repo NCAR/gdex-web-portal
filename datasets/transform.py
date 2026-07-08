@@ -78,7 +78,7 @@ def transform_grml(request, dsid, ctx):
     return render(request, "datasets/transform/grml.html", ctx)
 
 
-def transform_grml(request, dsid, ctx):
+def transform_obml(request, dsid, ctx):
     return render(request, "datasets/transform/obml.html", ctx)
 
 
