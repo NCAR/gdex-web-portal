@@ -1,5 +1,14 @@
 {% extends "datasets/transform/transform_base.html" %}
 {% block transform_content %}
 <center>
+    {% for key, value in obs_types.items %}
+    <table>
+        <thead>
+            <th align="center"><b>Observation Type:</b> {{ key }}</th>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    {% endfor %}
 </center>
 {% endblock %}
