@@ -71,8 +71,6 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     width: 100%;
     padding-top: 3.5rem;
     padding-bottom: 2rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
 }
 .gdex-hero__eyebrow {
     display: inline-block;
