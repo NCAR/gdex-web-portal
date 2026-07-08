@@ -21,11 +21,7 @@ def transform_grml(request, dsid, ctx):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
-        cursor.execute(
-                f'select f.format, w.code from "{markup_type}".{dsid}'
-                f'_webfiles2 as w left join "{markup_type}".formats as f on f.'
-                "code = w.format_code where w.id = %s", (file, ))
-        data_format, file_code = cursor.fetchone() or (None, None)
+        data_format, file_code = file_data(file, dsid, markup_type, cursor)
         if file_code is not None:
             ctx['transform']['data_format'] = snake_to_capital(data_format)
             cursor.execute(
@@ -79,6 +75,23 @@ def transform_grml(request, dsid, ctx):
 
 
 def transform_obml(request, dsid, ctx):
+    markup_type = ctx['transform']['markup_type']
+    file = ctx['transform']['file']
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        data_format, file_code = file_data(file, dsid, markup_type, cursor)
+        if file_code is not None:
+            ctx['transform']['data_format'] = snake_to_capital(data_format)
+        else:
+            ctx['transform']['error'] = "File does not exist"
+
+    except Exception:
+        ctx['transform']['error'] = "Database error"
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
     return render(request, "datasets/transform/obml.html", ctx)
 
 
@@ -240,3 +253,12 @@ def product_detail(request, dsid, markup_type, time_range_code,
                                    grid_definition_code, file)
 
     return HttpResponse("Bad request.")
+
+
+def file_data(file, dsid, markup_type, cursor):
+    cursor.execute(
+            f'select f.format, w.code from "{markup_type}".{dsid}_webfiles2 '
+            f'as w left join "{markup_type}".formats as f on f.code = w.'
+            "format_code where w.id = %s", (file, ))
+    data_format, file_code = cursor.fetchone() or (None, None)
+    return (data_format, file_code)
