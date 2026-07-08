@@ -78,11 +78,17 @@ def transform_grml(request, dsid, ctx):
     return render(request, "datasets/transform/grml.html", ctx)
 
 
+def transform_grml(request, dsid, ctx):
+    return render(request, "datasets/transform/obml.html", ctx)
+
+
 def transform(request, dsid, markup_type, file):
     d = views.get_dataset_description_context(dsid)
     ctx = {'page': d, 'transform': {'markup_type': markup_type, 'file': file}}
     if markup_type[-4:] == "GrML":
         return transform_grml(request, dsid, ctx)
+    elif markup_type[-4:] == "ObML":
+        return transform_obml(request, dsid, ctx)
 
     return render(request, "404.html")
 
