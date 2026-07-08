@@ -27,10 +27,8 @@
                                 e.preventDefault();
                             }
                         });
-                        if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
                         window.addEventListener('pageshow', function () {
                             document.getElementById('gdex-home-search-input').value = '';
-                            window.scrollTo(0, 0);
                         });
                     </script>
                 </div>
