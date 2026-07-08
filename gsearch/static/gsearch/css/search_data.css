@@ -20,12 +20,6 @@
     background-repeat: no-repeat;
     z-index: 0;
 }
-.gdex-find-data-hero__overlay {
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.62);
-    z-index: 1;
-}
 .gdex-find-data-hero__content {
     z-index: 2;
     padding-top: 2.75rem;
