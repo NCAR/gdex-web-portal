@@ -301,11 +301,27 @@
         });
     }
 
+    /* ---------- sidebar sticky/unstick when content outgrows viewport ---------- */
+
+    var sidebarEl = document.querySelector('.gdex-filters-sidebar');
+
+    function checkScroll() {
+        if (!sidebarEl) return;
+        var fitsViewport = sidebarEl.scrollHeight <= (window.innerHeight - 32);
+        sidebarEl.classList.toggle('gdex-filters-sidebar--unstuck', !fitsViewport);
+    }
+
+    window.addEventListener('resize', checkScroll);
+
     /* ---------- collapsible groups ---------- */
 
     document.querySelectorAll('[data-gdex-toggle]').forEach(function (h) {
         h.addEventListener('click', function () {
-            this.closest('.gdex-filter-group').classList.toggle('gdex-filter-group--collapsed');
+            var group = this.closest('.gdex-filter-group');
+            group.classList.toggle('gdex-filter-group--collapsed');
+            if (group.classList.contains('gdex-filter-group--collapsed') && group._gdexResetSeeMore) {
+                group._gdexResetSeeMore();
+            }
             checkScroll();
         });
     });
@@ -662,7 +678,14 @@
                     });
                     seeMoreBtn.textContent = 'see ' + overflow + ' more…';
 
-                    seeMoreBtn.addEventListener('click', function () {
+                    var topSeeMoreBtn = document.createElement('button');
+                    topSeeMoreBtn.type = 'button';
+                    topSeeMoreBtn.className = 'gdex-filter-see-more gdex-filter-see-more--top';
+                    topSeeMoreBtn.textContent = 'see less';
+                    topSeeMoreBtn.style.display = 'none';
+                    optionsEl.parentNode.insertBefore(topSeeMoreBtn, optionsEl);
+
+                    function toggleSeeMore() {
                         expanded = !expanded;
                         labels.forEach(function (lbl, i) {
                             if (i >= LIMIT) {
@@ -674,8 +697,22 @@
                             }
                         });
                         seeMoreBtn.textContent = expanded ? 'see less' : 'see ' + overflow + ' more…';
+                        topSeeMoreBtn.style.display = expanded ? '' : 'none';
                         checkScroll();
-                    });
+                    }
+
+                    seeMoreBtn.addEventListener('click', toggleSeeMore);
+                    topSeeMoreBtn.addEventListener('click', toggleSeeMore);
+
+                    group._gdexResetSeeMore = function () {
+                        if (!expanded) return;
+                        expanded = false;
+                        labels.forEach(function (lbl, i) {
+                            if (i >= LIMIT) lbl.classList.add('gdex-filter-option--overflow');
+                        });
+                        seeMoreBtn.textContent = 'see ' + overflow + ' more…';
+                        topSeeMoreBtn.style.display = 'none';
+                    };
                 }
             }
 
@@ -708,7 +745,10 @@
                 });
 
                 noResult.hidden = !q || anyVisible;
-                if (seeMoreBtn && overflow > 0) seeMoreBtn.style.display = q ? 'none' : '';
+                if (seeMoreBtn && overflow > 0) {
+                    seeMoreBtn.style.display = q ? 'none' : '';
+                    topSeeMoreBtn.style.display = (q || !expanded) ? 'none' : '';
+                }
                 checkScroll();
             }
 
@@ -802,5 +842,6 @@
         pop.addEventListener('mouseleave', hide);
     }());
 
+    checkScroll();
 
 }());

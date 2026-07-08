@@ -99,7 +99,7 @@
     position: absolute;
     right: 0;
     top: 0;
-    bottom: 0;
+    height: 100vh;
     width: 38%;
     background-image: var(--waves-url);
     background-size: cover;
@@ -138,6 +138,12 @@
     position: sticky;
     top: 1rem;
     align-self: flex-start;
+}
+/* When expanded content (e.g. "see more") makes the sidebar taller than the
+   viewport, drop the sticky pin so it scrolls in normal page flow instead of
+   getting stuck with its lower portion off-screen. */
+.gdex-filters-sidebar--unstuck {
+    position: static;
 }
 .gdex-filters-sidebar__header {
     display: flex;
@@ -196,9 +202,9 @@
     gap: 0.4rem;
     font-size: 0.8rem;
     color: #3a4a60;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.22rem;
     cursor: pointer;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 .gdex-filter-radio input[type="radio"] {
@@ -313,6 +319,19 @@
     transition: opacity 0.15s ease;
 }
 .gdex-filter-see-more:hover { text-decoration: underline; }
+.gdex-filter-see-more--top {
+    margin-top: 0;
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.gdex-filter-see-more--top::before {
+    content: '\f077';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 0.65rem;
+}
 .gdex-filter-option--overflow { display: none; }
 .gdex-filter-option--search-hidden { display: none; }
 
