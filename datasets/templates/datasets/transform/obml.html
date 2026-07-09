@@ -1,13 +1,13 @@
 {% extends "datasets/transform/transform_base.html" %}
 {% block transform_content %}
 <center>
-    {% for obs_type, dict in obs_types.items %}
+    {% for obs_type, odict in obs_types.items %}
     <table style="width: 93%" class="mt-2">
         <thead>
             <th class="text-center"><b>Observation Type:</b> {{ obs_type }}</th>
         </thead>
         <tbody>
-            {% for platform_type, data_types in dict.platforms.items %}
+            {% for platform_type, pdict in odict.platforms.items %}
             <tr>
                 <td>
                     <center>
@@ -16,6 +16,14 @@
                                 <tr>
                                     <td>
                                         <b>Observing Platform:</b> {{ platform_type }}
+                                        <br>
+                                        <b>Temporal Range (Year-Month-Day):</b>
+                                        <br>
+                                        <b>Total Number of Observations:</b>
+                                        <br>
+                                        <b>Number of Available Data Types:</b> {{ pdict.data_types|length }}
+                                        <br>
+                                        <b>Total Number of Platform IDs:</b>
                                     </td>
                                 </tr>
                             </tbody>
