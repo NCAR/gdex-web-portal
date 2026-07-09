@@ -129,15 +129,7 @@
     background: #f8f8f8;
     border: 1.5px solid #dce8f8;
     border-radius: 14px;
-    position: sticky;
-    top: 1rem;
     align-self: flex-start;
-}
-/* When expanded content (e.g. "see more") makes the sidebar taller than the
-   viewport, drop the sticky pin so it scrolls in normal page flow instead of
-   getting stuck with its lower portion off-screen. */
-.gdex-filters-sidebar--unstuck {
-    position: static;
 }
 .gdex-filters-sidebar__header {
     display: flex;
@@ -900,7 +892,7 @@ a.gdex-btn-more:hover { color: #0057c2; text-decoration: none; }
    ------------------------------------------------------------ */
 @media (max-width: 991px) {
     .gdex-find-data-layout { flex-direction: column; }
-    .gdex-filters-sidebar { width: 100%; position: static; max-height: none; }
+    .gdex-filters-sidebar { width: 100%; max-height: none; }
     .gdex-dataset-result__thumb { width: 110px; min-width: 110px; }
 }
 
