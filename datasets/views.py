@@ -248,15 +248,22 @@ def examples_page(request, dsnum):
 def get_software_table(request, dsnum):
     hostname = get_hostname()
     dsid = format_dataset_id(dsnum)
-    api_uri = '/api/datasets/{}/software'.format(dsid)
+    api_uri = f'/api/datasets/{dsid}/software'
     url = hostname + api_uri
     software = requests.get(url)
     software = software.content
     software_json = json.loads(software)
-    return description(request, dsnum,
-                       template="datasets/software_table.html",
-                       page_context=software_json)
 
+    template = "datasets/software_table.html"
+    
+    if "HTTP_X_REQUESTED_WITH" in request.META:
+        return render(request,
+                      template,
+                      software_json)
+    else:
+        return description(request, dsnum,
+                           template=template,
+                           page_context=software_json)
 
 def get_filelist_table(request, dsnum, groupid=None):
     hostname = get_hostname()
