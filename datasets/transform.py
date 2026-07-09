@@ -100,10 +100,12 @@ def transform_obml(request, dsid, ctx):
 
                 platform_type = snake_to_capital(e[1])
                 if platform_type not in ctx['obs_types'][obs_type]:
-                    ctx['obs_types'][obs_type]['platforms'][platform_type] = []
+                    ctx['obs_types'][obs_type]['platforms'][platform_type] = (
+                            {'data_types': [], 'num_obs': None,
+                             'start_date': None, 'end_date': None, 'IDs': []})
 
-                ctx['obs_types'][obs_type]['platforms'][platform_type].append(
-                        e[2])
+                (ctx['obs_types'][obs_type]['platforms'][platform_type]
+                    ['data_types']).append(e[2])
 
         else:
             ctx['transform']['error'] = "File does not exist"
