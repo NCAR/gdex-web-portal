@@ -176,80 +176,21 @@
    </div>
 
    <div class="row">
+      {% for widget in form.params %}
       <div class="col-12 col-md-6">
          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="PRES" id="PRES">
-            <label class="form-check-label" for="PRES">
-               PRES &mdash; <em>Station Pressure</em>
-            </label>
-         </div>
-         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="PMSL" id="PMSL">
-            <label class="form-check-label" for="PMSL">
-               PMSL &mdash; <em>Mean Sea Level Pressure</em>
-            </label>
-         </div>
-         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="TMDB" id="TMDB">
-            <label class="form-check-label" for="TMDB">
-               TMDB &mdash; <em>Air Temperature</em>
-            </label>
-         </div>
-         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="ALSE" id="ALSE">
-            <label class="form-check-label" for="ALSE">
-               ALSE &mdash; <em>Altimeter Setting</em>
-            </label>
-         </div>
-         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="TMDP" id="TMDP">
-            <label class="form-check-label" for="TMDP">
-               TMDP &mdash; <em>Dewpoint Temperature</em>
-            </label>
-         </div>
-         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="REHU" id="REHU">
-            <label class="form-check-label" for="REHU">
-               REHU &mdash; <em>Relative Humidity</em>
+            {{ widget.tag }}
+            <label class="form-check-label" for="{{ widget.id_for_label }}">
+               {{ widget.data.label }}
             </label>
          </div>
       </div>
-      <div class="col-12 col-md-6">
-         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="WDIR" id="WDIR">
-            <label class="form-check-label" for="WDIR">
-               WDIR &mdash; <em>Wind Direction</em>
-            </label>
-         </div>
-         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="WSPD" id="WSPD">
-            <label class="form-check-label" for="WSPD">
-               WSPD &mdash; <em>Wind Speed</em>
-            </label>
-         </div>
-         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="TP03" id="TP03">
-            <label class="form-check-label" for="TP03">
-               TP03 &mdash; <em>Total Precipitation, Past 3 Hours</em>
-            </label>
-         </div>
-         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="TP24" id="TP24">
-            <label class="form-check-label" for="TP24">
-               TP24 &mdash; <em>Total Precipitation, Past 24 Hours</em>
-            </label>
-         </div>
-         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="parms" value="HOVI" id="HOVI">
-            <label class="form-check-label" for="HOVI">
-               HOVI &mdash; <em>Horizontal Visibility</em>
-            </label>
-         </div>
-      </div>
+      {% endfor %}
+
    </div>
    <div class="mt-2">
-      <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" id="allparms" onClick="selectAllParms()">
-      <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" id="clearparms" onClick="selectNoParms()">
+      <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" id="allparms" onClick="selectAllParams()">
+      <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" id="clearparms" onClick="selectNoParams()">
    </div>
 </div>
 
@@ -265,19 +206,14 @@
    <div class="mb-1">
       File compression is recommended to minimize the network transfer time required to move your data files to your host computer.
    </div>
-
+   {% for widget in form.compression %}
    <div class="form-check">
-      <input class="form-check-input" type="radio" name="compr" id="gzinput" value="gz" checked>
-      <label class="form-check-label" for="gzinput">
-         .gz (GNU Zip)
+      {{ widget.tag }}
+      <label class="form-check-label" for="{{ widget.id_for_label }}">
+         {{ widget.data.label }}
       </label>
    </div>
-   <div class="form-check">
-      <input class="form-check-input" type="radio" name="compr" id="nocompinput" value="no">
-      <label class="form-check-label" for="nocompinput">
-         No compression
-      </label>
-   </div>
+   {% endfor %}
 </div>
 
 <hr class="my-1">

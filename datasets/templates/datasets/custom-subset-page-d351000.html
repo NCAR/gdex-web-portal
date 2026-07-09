@@ -164,16 +164,16 @@
    </div>
 
    <div class="row">
-   {% for widget in form.params %}
-   <div class="col-12 col-md-6">
-      <div class="form-check">
-         {{ widget.tag }}
-         <label class="form-check-label" for="{{ widget.id_for_label }}">
-            {{ widget.data.label }}
-         </label>
+      {% for widget in form.params %}
+      <div class="col-12 col-md-6">
+         <div class="form-check">
+            {{ widget.tag }}
+            <label class="form-check-label" for="{{ widget.id_for_label }}">
+               {{ widget.data.label }}
+            </label>
+         </div>
       </div>
-   </div>
-   {% endfor %}
+      {% endfor %}
    </div>
 
    <div class="mt-2">
