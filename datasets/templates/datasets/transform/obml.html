@@ -8,11 +8,21 @@
         </thead>
         <tbody>
             {% for platform_type, data_types in dict.platforms.items %}
-            <table style="width: 70%" class="panel">
-                <tbody>
-                    <tr><b>Observing Platform:</b> {{ platform_type }}</tr>
-                </tbody>
-            </table>
+            <tr>
+                <td>
+                    <center>
+                        <table style="width: 95%" class="panel">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <b>Observing Platform:</b> {{ platform_type }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </center>
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
