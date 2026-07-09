@@ -7,7 +7,7 @@
             <th class="text-center"><b>Observation Type:</b> {{ obs_type }}</th>
         </thead>
         <tbody>
-            {% for platform_type, data_types in platforms %}
+            {% for platform_type, data_types in platforms.items %}
             <table style="width: 70%" class="panel">
                 <tbody>
                     <tr><b>Observing Platform:</b> {{ platform_type }}</tr>
