@@ -267,20 +267,35 @@
     position: relative;
     margin-bottom: 0.6rem;
 }
+.gdex-filter-search-wrapper::before {
+    content: '\f002';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 0.72rem;
+    color: #6b7a94;
+    position: absolute;
+    left: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
 .gdex-filter-search-input {
     width: 100%;
     border: 1.5px solid #c5d0e0;
     border-radius: 6px;
     padding: 0.32rem 0.6rem;
+    background: #f4f7fb;
     font-family: 'Poppins', sans-serif;
     font-size: 0.78rem;
     color: #1a1a2e;
     outline: none;
     box-sizing: border-box;
 }
-.gdex-filter-search-input:focus { border-color: #0057c2; }
+.gdex-filter-search-input::placeholder { color: #6b7a94; }
+.gdex-filter-search-input:focus { border-color: #0057c2; background: #fff; }
 .gdex-filter-search-wrapper .gdex-filter-search-input {
     margin-bottom: 0;
+    padding-left: 1.7rem;
     padding-right: 1.6rem;
 }
 .gdex-filter-search-clear {
