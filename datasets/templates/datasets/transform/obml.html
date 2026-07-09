@@ -1,13 +1,13 @@
 {% extends "datasets/transform/transform_base.html" %}
 {% block transform_content %}
 <center>
-    {% for obs_type, platforms in obs_types.items %}
+    {% for obs_type, dict in obs_types.items %}
     <table style="width: 93%" class="mt-2">
         <thead>
             <th class="text-center"><b>Observation Type:</b> {{ obs_type }}</th>
         </thead>
         <tbody>
-            {% for platform_type, data_types in platforms.items %}
+            {% for platform_type, data_types in dict.platforms.items %}
             <table style="width: 70%" class="panel">
                 <tbody>
                     <tr><b>Observing Platform:</b> {{ platform_type }}</tr>
