@@ -120,11 +120,13 @@ def transform_obml(request, dsid, ctx):
                     ['data_types']).append(e[4])
 
                 cursor.execute(
-                        "select i.id, i.sw_lat, i.sw_lon, i.ne_lat, i.ne_lon, "
-                        "l.num_observations, l.start_date, l.end_date from "
-                        f'"{markup_type}".{dsid}_id_list as l left join '
-                        f'"{markup_type}".{dsid}_ids as i on i.code = l.'
-                        "id_code where l.observation_type_code = %s and l."
+                        "select i.id, round(i.sw_lat/10000.::numeric, 2), "
+                        "round(i.sw_lon/10000.::numeric, 2), round(i.ne_lat"
+                        "/10000.::numeric, 2), round(i.ne_lon/10000."
+                        "::numeric, 2), l.num_observations, l.start_date, l."
+                        f'end_date from "{markup_type}".{dsid}_id_list as l '
+                        f'left join "{markup_type}".{dsid}_ids as i on i.code '
+                        "= l.id_code where l.observation_type_code = %s and l."
                         "platform_type_code = %s", (e[0], e[2]))
                 ires = cursor.fetchall()
                 num_obs = 0
