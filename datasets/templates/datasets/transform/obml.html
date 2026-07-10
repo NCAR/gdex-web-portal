@@ -7,7 +7,7 @@ function toggleStationData(i) {
   let v = document.getElementById(i + ".verb");
   if (e.classList.contains("d-none")) {
     if (!station_set.has(i)) {
-      getAjaxContent("GET", null, "/datasets/{{ page.dsid }}/metadata_view/{{ transform.markup_type }}/{{ transform.file }}?show="+i, i);
+      getAjaxContent("GET", null, "/datasets/{{ page.dsid }}/metadata_view/{{ transform.markup_type }}/{{ transform.file }}?show="+i, i+".map");
       station_set.add(i);
     }
     e.classList.replace("d-none", "d-block");
@@ -46,9 +46,27 @@ function toggleStationData(i) {
                                         <br>
                                         [ <a href="javascript:void(0)" onclick="toggleStationData('{{ obs_type }}.{{ platform_type }}')"><span id="{{ obs_type }}.{{ platform_type }}.verb">show</span> {% if pdict.can_map %}station map + {% endif %}ID list </a>]
                                         <div id="{{ obs_type }}.{{ platform_type }}" class="d-none">
-                                            <div class="mt-2 ms-3">
-                                                Fetching content ...
+                                            <div id="{{ obs_type }}.{{ platform_type }}.map">
+                                                <div class="mt-2 ms-3">
+                                                    Loading map ...
+                                                </div>
                                             </div>
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Lat/Lon<br>or<br>Bounding Box</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for ID in pdict.IDs %}
+                                                    <tr>
+                                                        <td>{{ ID.ID }}</td>
+                                                        <td>{% if ID.sw_lat == ID.ne_lat %}{{ ID.sw_lat }}, {{ ID.ne_lon }}{% else %}{{ ID.sw_lat }}, {{ ID.sw_lon }} to {{ ID.ne_lat }}, {{ ID.ne_lon }}{% endif %}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </td>
                                 </tr>
