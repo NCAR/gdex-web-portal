@@ -1,5 +1,20 @@
 {% extends "datasets/transform/transform_base.html" %}
 {% block transform_content %}
+<script id="transformObML_utils_script" language="javascript">
+var station_set = new Set();
+function toggleStationData(i) {
+  let e = document.getElementById(i);
+  if (e.classList.contains("d-none")) {
+    if (!station_set.has(i)) {
+      getAjaxContent("GET", null, "/datasets/{{ page.dsid }}/metadata_view/{{ transform.markup_type }}/{{ transform.file }}?show={{ obs_type }}.{{ platform_type}}", "{{ obs_type }}.{{ platform_type }}");
+      station_set.add(i);
+    }
+    e.classList.replace("d-none", "d-block");
+  } else {
+    e.classList.replace("d-block", "d-none");
+  }
+}
+</script>
 <center>
     {% for obs_type, odict in obs_types.items %}
     <table style="width: 93%" class="mt-2">
@@ -26,7 +41,8 @@
                                         <br>
                                         <b>Total Number of Platform IDs:</b> {{ pdict.IDs|length }}
                                         <br>
-                                        [ <a href="javascript:void(0)">show {% if pdict.can_map %}station map + {% endif %}ID list </a>]
+                                        [ <a href="javascript:void(0)" onclick="toggleStationData('{{ obs_type }}.{{ platform_type }}')">show {% if pdict.can_map %}station map + {% endif %}ID list </a>]
+                                        <div id="{{ obs_type }}.{{ platform_type }}" class="d-none"></div>
                                     </td>
                                 </tr>
                             </tbody>
