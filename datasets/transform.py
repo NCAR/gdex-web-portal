@@ -102,11 +102,39 @@ def transform_obml(request, dsid, ctx):
                 platform_type = snake_to_capital(e[3])
                 if platform_type not in ctx['obs_types'][obs_type]:
                     ctx['obs_types'][obs_type]['platforms'][platform_type] = (
-                            {'data_types': [], 'num_obs': None,
-                             'start_date': None, 'end_date': None, 'IDs': []})
+                            {'data_types': [], 'num_obs': 0,
+                             'start_date': 99999999999999, 'end_date': 0,
+                             'IDs': []})
 
                 (ctx['obs_types'][obs_type]['platforms'][platform_type]
                     ['data_types']).append(e[4])
+
+                cursor.execute(
+                        "select i.id, i.sw_lat, i.sw_lon, i.ne_lat, i.ne_lon, "
+                        "l.num_observations, l.start_date, l.end_date from "
+                        f'"{markup_type}".{dsid}_id_list as l left join '
+                        f'"{markup_type}".{dsid}_ids as i on i.code = l.'
+                        "id_code where l.observation_type_code = %s and l."
+                        "platform_type_code = %s", (e[0], e[2]))
+                ires = cursor.fetchall()
+                num_obs = 0
+                for ie in ires:
+                    (ctx['obs_types'][obs_type]['platforms'][platform_type]
+                        ['IDs']).append({'ID': ie[0], 'sw_lat': ie[1],
+                                         'sw_lon': ie[2], 'ne_lat': ie[3],
+                                         'ne_lon': ie[4]})
+                    (ctx['obs_types'][obs_type]['platforms'][platform_type]
+                        ['num_obs']) += ie[5]
+                    (ctx['obs_types'][obs_type]['platforms'][platform_type]
+                        ['start_date']) = min(
+                                ie[6],
+                                (ctx['obs_types'][obs_type]['platforms']
+                                    [platform_type]['start_date']))
+                    (ctx['obs_types'][obs_type]['platforms'][platform_type]
+                        ['end_date']) = max(
+                                ie[7],
+                                (ctx['obs_types'][obs_type]['platforms']
+                                    [platform_type]['end_date']))
 
         else:
             ctx['transform']['error'] = "File does not exist"
