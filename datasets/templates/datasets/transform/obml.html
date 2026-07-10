@@ -8,6 +8,7 @@
         </thead>
         <tbody>
             {% for platform_type, pdict in odict.platforms.items %}
+            {% with sdate=pdict.start_date|stringformat:"i" edate=pdict.end_date|stringformat:"i" %}
             <tr>
                 <td>
                     <center>
@@ -17,13 +18,13 @@
                                     <td>
                                         <b>Observing Platform:</b> {{ platform_type }}
                                         <br>
-                                        <b>Temporal Range (Year-Month-Day):</b>
+                                        <b>Temporal Range (Year-Month-Day):</b> {{ sdate|slice:"0:4" }}-{{ sdate|slice:"4:6" }}-{{ sdate|slice:"6:8" }} to {{ edate|slice:"0:4" }}-{{ edate|slice:"4:6" }}-{{ edate|slice:"6:8" }}
                                         <br>
-                                        <b>Total Number of Observations:</b>
+                                        <b>Total Number of Observations:</b> {{ pdict.num_obs }}
                                         <br>
                                         <b>Number of Available Data Types:</b> {{ pdict.data_types|length }}
                                         <br>
-                                        <b>Total Number of Platform IDs:</b>
+                                        <b>Total Number of Platform IDs:</b> {{ pdict.IDs|length }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -31,6 +32,7 @@
                     </center>
                 </td>
             </tr>
+            {% endwith %}
             {% endfor %}
         </tbody>
     </table>
