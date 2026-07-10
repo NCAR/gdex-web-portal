@@ -75,6 +75,9 @@ def transform_grml(request, dsid, ctx):
 
 
 def transform_obml(request, dsid, ctx):
+    if 'show' in request.GET:
+        return HttpResponse(request.GET['show'])
+
     markup_type = ctx['transform']['markup_type']
     file = ctx['transform']['file']
     try:
