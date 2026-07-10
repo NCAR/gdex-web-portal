@@ -25,6 +25,8 @@
                                         <b>Number of Available Data Types:</b> {{ pdict.data_types|length }}
                                         <br>
                                         <b>Total Number of Platform IDs:</b> {{ pdict.IDs|length }}
+                                        <br>
+                                        [ <a href="javascript:void(0)">show {% if pdict.can_map %}station map + {% endif %}ID list </a>]
                                     </td>
                                 </tr>
                             </tbody>
