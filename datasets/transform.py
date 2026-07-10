@@ -101,10 +101,17 @@ def transform_obml(request, dsid, ctx):
 
                 platform_type = snake_to_capital(e[3])
                 if platform_type not in ctx['obs_types'][obs_type]:
+                    if (e[3] in ("land_station", "wind_profiler", "fixed_ship")
+                            or (e[3] == "coastal_station"
+                                and e[1] == "surface")):
+                        can_map = True
+                    else:
+                        can_map = False
+
                     ctx['obs_types'][obs_type]['platforms'][platform_type] = (
                             {'data_types': [], 'num_obs': 0,
                              'start_date': 99999999999999, 'end_date': 0,
-                             'IDs': []})
+                             'IDs': [], 'can_map': can_map})
 
                 (ctx['obs_types'][obs_type]['platforms'][platform_type]
                     ['data_types']).append(e[4])
