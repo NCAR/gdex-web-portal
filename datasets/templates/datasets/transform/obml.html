@@ -18,7 +18,7 @@
                                     <td>
                                         <b>Observing Platform:</b> {{ platform_type }}
                                         <br>
-                                        <b>Temporal Range (Year-Month-Day):</b> {{ sdate|slice:"0:4" }}-{{ sdate|slice:"4:6" }}-{{ sdate|slice:"6:8" }} to {{ edate|slice:"0:4" }}-{{ edate|slice:"4:6" }}-{{ edate|slice:"6:8" }}
+                                        <b>Temporal Range:</b> {{ sdate|slice:"0:4" }}-{{ sdate|slice:"4:6" }}-{{ sdate|slice:"6:8" }} to {{ edate|slice:"0:4" }}-{{ edate|slice:"4:6" }}-{{ edate|slice:"6:8" }}
                                         <br>
                                         <b>Total Number of Observations:</b> {{ pdict.num_obs }}
                                         <br>
