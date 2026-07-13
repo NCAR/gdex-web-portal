@@ -55,14 +55,20 @@ function toggleStationData(i) {
                                                 <thead>
                                                     <tr>
                                                         <th>ID</th>
-                                                        <th>Lat/Lon<br>or<br>Bounding Box</th>
+                                                        <th>Lat, Lon or<br>Bounding Box</th>
+                                                        <th>Start Date/Time</th>
+                                                        <th>End Date/Time</th>
+                                                        <th># of<br>Observations</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {% for ID in pdict.IDs %}
                                                     <tr>
-                                                        <td>{{ ID.ID }}</td>
-                                                        <td>{% if ID.sw_lat == ID.ne_lat %}{{ ID.sw_lat }}, {{ ID.ne_lon }}{% else %}{{ ID.sw_lat }}, {{ ID.sw_lon }} to {{ ID.ne_lat }}, {{ ID.ne_lon }}{% endif %}</td>
+                                                        <td align="center">{{ ID.ID }}</td>
+                                                        <td align="center">{% if ID.sw_lat == ID.ne_lat %}{{ ID.sw_lat }}, {{ ID.ne_lon }}{% else %}{{ ID.sw_lat }}, {{ ID.sw_lon }} to {{ ID.ne_lat }}, {{ ID.ne_lon }}{% endif %}</td>
+                                                        <td align="center">{{ ID.start_date }}</td>
+                                                        <td align="center">{{ ID.end_date }}</td>
+                                                        <td align="center">{{ ID.num_obs }}</td>
                                                     </tr>
                                                     {% endfor %}
                                                 </tbody>
