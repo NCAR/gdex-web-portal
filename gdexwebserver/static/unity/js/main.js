@@ -112,18 +112,34 @@
       var toggle = item.querySelector('.dropdown-toggle')
       if (!toggle) return
 
-      item.addEventListener('mouseenter', function () {
+      var menu = item.querySelector('.dropdown-menu')
+      var closeTimer
+
+      function openMenu() {
+        clearTimeout(closeTimer)
         if (window.innerWidth >= 1024) {
           bootstrap.Dropdown.getOrCreateInstance(toggle).show()
           dropdown_items_click()
         }
-      })
+      }
 
-      item.addEventListener('mouseleave', function () {
-        if (window.innerWidth >= 1024) {
-          bootstrap.Dropdown.getOrCreateInstance(toggle).hide()
-        }
-      })
+      function scheduleClose() {
+        closeTimer = setTimeout(function () {
+          if (window.innerWidth >= 1024) {
+            bootstrap.Dropdown.getOrCreateInstance(toggle).hide()
+          }
+        }, 300)
+      }
+
+      item.addEventListener('mouseenter', openMenu)
+      item.addEventListener('mouseleave', scheduleClose)
+
+      if (menu) {
+        menu.addEventListener('mouseenter', function () {
+          clearTimeout(closeTimer)
+        })
+        menu.addEventListener('mouseleave', scheduleClose)
+      }
     })
   }
 
