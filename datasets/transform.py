@@ -1,6 +1,7 @@
 import os
 import psycopg2
 
+from datetime import datetime
 from functools import cmp_to_key
 from lxml import etree
 
@@ -132,9 +133,25 @@ def transform_obml(request, dsid, ctx):
                 num_obs = 0
                 for ie in ires:
                     (ctx['obs_types'][obs_type]['platforms'][platform_type]
-                        ['IDs']).append({'ID': ie[0], 'sw_lat': ie[1],
-                                         'sw_lon': ie[2], 'ne_lat': ie[3],
-                                         'ne_lon': ie[4]})
+                        ['IDs']).append(
+                                {'ID': ie[0],
+                                 'sw_lat': (str(abs(ie[1])) +
+                                            ("S" if ie[1] < 0. else "N")),
+                                 'sw_lon': (str(abs(ie[2])) +
+                                            ("W" if ie[2] < 0. else "E")),
+                                 'ne_lat': (str(abs(ie[3])) +
+                                            ("S" if ie[3] < 0. else "N")),
+                                 'ne_lon': (str(abs(ie[4])) +
+                                            ("W" if ie[4] < 0. else "E")),
+                                 'num_obs': ie[5],
+                                 'start_date': (
+                                         datetime.strptime(str(ie[6]),
+                                                           "%Y%m%d%H%M%S")
+                                         .strftime("%Y-%m-%d %H:%M")),
+                                 'end_date': (
+                                         datetime.strptime(str(ie[7]),
+                                                           "%Y%m%d%H%M%S")
+                                         .strftime("%Y-%m-%d %H:%M"))})
                     (ctx['obs_types'][obs_type]['platforms'][platform_type]
                         ['num_obs']) += ie[5]
                     (ctx['obs_types'][obs_type]['platforms'][platform_type]
