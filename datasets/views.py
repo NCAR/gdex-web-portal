@@ -31,6 +31,7 @@ import api.common
 
 from dataaccess.matrix import Matrix
 from dataset_description.models import DatasetDescriptionPage
+from dataset_quality.utils import has_quality_checklist
 from home.utils import slug_list
 from globus.views import get_guest_collection_url
 from gdexwebserver.utils import make_tempdir, remove_tempdir
@@ -101,6 +102,7 @@ def description(request, dsid, **kwargs):
     ctx['has_software'] = bool(software_data.get('files'))
     documentation_data = api.common.get_dataset_documentation(ctx['page'].dsid)
     ctx['has_documentation'] = bool(documentation_data.get('files'))
+    ctx['has_quality_checklist'] = has_quality_checklist(ctx['page'].dsid)
     if 'page_context' in kwargs:
         ctx.update(kwargs['page_context'])
 

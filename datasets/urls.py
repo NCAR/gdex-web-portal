@@ -23,6 +23,7 @@ urlpatterns = [
     re_path(r"^(d[0-9]{6})/example/$", views.example_view),
     re_path(r"^(d[0-9]{6})/facbrowse/", include("facbrowse.urls")),
     re_path(r"^(d[0-9]{6})/provenance/", include("dataset_provenance.urls")),
+    re_path(r"^(d[0-9]{6})/quality/", include("dataset_quality.urls")),
     re_path(r"^(d[0-9]{6})/native/", views.get_native),
     re_path(r"^request/(?P<rqstid>\w+[0-9]+)/$", views.get_request),
     re_path(r"^(d[0-9]{6})/request/", views.submit_web_data_request, name="submit_web_data_request"),

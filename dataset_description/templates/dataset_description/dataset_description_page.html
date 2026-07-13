@@ -48,6 +48,8 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
             setActiveTab("documentation-tab");
           } else if (path.indexOf("software") == 0) {
             setActiveTab("software-tab");
+          } else if (path.indexOf("quality") == 0) {
+            setActiveTab("quality-tab");
           } else if (path.indexOf("metrics") == 0 || qs.indexOf("content=metrics") >= 0) {
             setActiveTab("metrics-tab");
           } else {
@@ -163,6 +165,11 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
             {% if has_software %}
             <li class="nav-item" role="dataset">
                 <a class="nav-link px-3 py-2 {% if page.dstype == "D" %}disabled-tab{% endif %}" id="software-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="software" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/software/', 'Software')">Software</a>
+            </li>
+            {% endif %}
+            {% if has_quality_checklist %}
+            <li class="nav-item" role="dataset">
+                <a class="nav-link px-3 py-2" id="quality-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="quality" aria-selected="false" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/quality/', 'Quality Checklist')">Quality Checklist</a>
             </li>
             {% endif %}
             <li class="nav-item" role="dataset">
