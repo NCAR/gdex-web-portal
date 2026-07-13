@@ -105,9 +105,32 @@
     dropdown_menu_offscreen();
   }
 
+  function enableNavDropdownHover() {
+    var navDropdowns = document.querySelectorAll('.navbar .nav-item.dropdown')
+
+    navDropdowns.forEach(function (item) {
+      var toggle = item.querySelector('.dropdown-toggle')
+      if (!toggle) return
+
+      item.addEventListener('mouseenter', function () {
+        if (window.innerWidth >= 1024) {
+          bootstrap.Dropdown.getOrCreateInstance(toggle).show()
+          dropdown_items_click()
+        }
+      })
+
+      item.addEventListener('mouseleave', function () {
+        if (window.innerWidth >= 1024) {
+          bootstrap.Dropdown.getOrCreateInstance(toggle).hide()
+        }
+      })
+    })
+  }
+
   webformValidation();
   siteNameSplit();
   addOpenNavClass();
+  enableNavDropdownHover();
 
   let buttons = document.querySelectorAll('.btn.dropdown-toggle');
   for (let i of buttons) {
