@@ -1,0 +1,79 @@
+<div class="quality-checklist p-1">
+    <style>
+    .quality-tier-badge {
+        display: inline-block;
+        padding: .4em .9em;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    .quality-tier-badge.acceptable { background: #d4edda; color: #155724; }
+    .quality-tier-badge.analysis-ready { background: #cce5ff; color: #004085; }
+    .quality-tier-badge.ai-optimized { background: #e2d9f3; color: #432874; }
+    .quality-tier-badge.unassessed { background: #e2e3e5; color: #383d41; }
+    .quality-indicator {
+        display: flex;
+        gap: .6rem;
+        align-items: flex-start;
+        padding: .6rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .quality-indicator:last-child { border-bottom: none; }
+    .quality-indicator .status-icon { flex: 0 0 auto; margin-top: .2rem; }
+    .quality-indicator .status-icon.met { color: #198754; }
+    .quality-indicator .status-icon.unmet { color: #adb5bd; }
+    .quality-indicator .indicator-body { flex: 1 1 auto; }
+    .quality-indicator .indicator-tier {
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        color: #6c757d;
+    }
+    .quality-indicator .indicator-description { color: #495057; }
+    .quality-indicator .indicator-note {
+        font-size: .9rem;
+        color: #495057;
+        margin-top: .25rem;
+        padding-left: .6rem;
+        border-left: 3px solid #dee2e6;
+    }
+    .quality-dimension h5 { margin-top: 1.75rem; margin-bottom: .25rem; }
+    </style>
+
+    <div class="mb-2">
+        <span class="text-muted">Overall tier reached:</span>
+        {% if achieved_tier %}
+        <span class="quality-tier-badge {{ achieved_tier|slugify }}">{{ achieved_tier }}</span>
+        {% else %}
+        <span class="quality-tier-badge unassessed">Not yet Acceptable</span>
+        {% endif %}
+    </div>
+    <p class="text-muted small">
+        Tiers are cumulative &mdash; a dataset reaches a tier only once every
+        criterion at that tier and below is satisfied. This checklist is a
+        preliminary, illustrative assessment for this dataset.
+    </p>
+
+    {% for dimension in dimensions %}
+    <div class="quality-dimension">
+        <h5>{{ dimension.name }}</h5>
+        {% for indicator in dimension.indicators %}
+        <div class="quality-indicator">
+            <span class="status-icon {% if indicator.met %}met{% else %}unmet{% endif %}">
+                <i class="fas {% if indicator.met %}fa-check-circle{% else %}fa-circle{% endif %}"></i>
+            </span>
+            <div class="indicator-body">
+                <div>
+                    <strong>{{ indicator.criterion }}</strong>
+                    <span class="indicator-tier">&middot; {{ indicator.tier }}</span>
+                </div>
+                <div class="indicator-description">{{ indicator.description }}</div>
+                {% if indicator.note %}
+                <div class="indicator-note">{{ indicator.note }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
