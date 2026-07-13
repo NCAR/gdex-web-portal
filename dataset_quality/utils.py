@@ -245,7 +245,12 @@ def build_checklist_context(dsid):
     for dimension_name in DIMENSION_ORDER:
         indicators = [r for r in rows if r["dimension"] == dimension_name]
         if indicators:
-            dimensions.append({"name": dimension_name, "indicators": indicators})
+            dimensions.append({
+                "name": dimension_name,
+                "indicators": indicators,
+                "met_count": sum(1 for r in indicators if r["met"]),
+                "total_count": len(indicators),
+            })
 
     return {
         "achieved_tier": achieved_tier,
