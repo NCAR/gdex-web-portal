@@ -55,23 +55,20 @@
 
    <fieldset class="py-2">
       <div class="form-group row py-1">
-         <label class="form-label" for="startDate">
-            Start Date
-         </label>
-         <input type="text" value="{{ subset.date_start }}" id="startDate" name="startDate" size="10" maxlength="10" placeholder="YYYY-MM-DD" aria-describedby="startDateHelp">
-         <small class="form-text text-muted" id="startDateHelp">
-            (Format: YYYY-MM-DD)
-         </small>
+         <label class="form-label" for="startDate">{{ form.startDate.label }}</label>
+         {{ form.startDate }}
+         <small class="form-text text-muted" id="startDateHelp">(Format: YYYY-MM-DD)</small>
       </div>
       <div class="form-group row py-1">
-         <label class="form-label" for="endDate">
-            End Date
-         </label>
-         <input type="text" value="{{ subset.date_end }}" id="endDate" name="endDate" size="10" maxlength="10" placeholder="YYYY-MM-DD" aria-describedby="endDateHelp">
-         <small class="form-text text-muted" id="endDateHelp">
-            (Format: YYYY-MM-DD)
-         </small>
+         <label class="form-label" for="endDate">{{ form.endDate.label }}</label>
+         {{ form.endDate }}
+         <small class="form-text text-muted" id="endDateHelp">(Format: YYYY-MM-DD)</small>
       </div>
+      {% if form.startDate.errors or form.endDate.errors or form.non_field_errors %}
+      <div class="alert alert-danger py-1 mt-1">
+         {{ form.startDate.errors }}{{ form.endDate.errors }}{{ form.non_field_errors }}
+      </div>
+      {% endif %}
       <div class="mt-2">
          <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear dates" id="cleardates" onClick="clearTemporalRange()">
       </div>
@@ -90,24 +87,15 @@
    <div class="mb-1">
       Select a spatial subsetting option for your data request.
    </div>
-   <select class="custom-select" id="gridSelection" name="gridSelection" onchange="displayGridSelection(document.form.gridSelection.value)" required>
-      <option value="-1" disabled selected>&nbsp;</option>
-      <option value="0" id="mapOption">Select latitude/longitude region via map</option>
-      <option value="1" id="stationOption">Select location by station ID</option>
-   </select>
+   {{ form.gridSelection }}
 </div>
 
 <!-- Spatial range selection via Google map -->
-
 <div class="py-1" style="display: none" id="mapselect">
    {% include "datasets/google-map.html" %}
 </div>
 
-<!-- Hidden placeholder required by ADP_subset.js displayGoogleMap() -->
-<div id="manselect" style="display: none"></div>
-
 <!-- Select location by station ID -->
-
 <div class="py-2" style="display: none" id="stationSelect">
    <div class="pb-2">
       Please enter one or more station identifiers to retain from the dataset,
@@ -120,7 +108,6 @@
    </div>
    <label for="station0">Station IDs (comma separated): </label>
    <textarea class="form-control" name="station0" id="station0" rows="4"></textarea>
-   </div>
 </div>
 
 <hr class="my-1">
@@ -130,7 +117,7 @@
 <div id="rectypeSelect" class="py-2">
    <h4 class="py-1">
       <i class="fa-solid fa-list-check"></i>
-      Record Types
+      {{ form.rectypes.label }}
    </h4>
    <div class="mb-1">
       Select BUFR record types to retain in your data request. All will be retained if none
@@ -140,21 +127,18 @@
       <i class="fa-solid fa-arrow-up-right-from-square"></i>
    </div>
 
+   {% for widget in form.rectypes %}
    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="rectypes" value="ADPSFC" id="ADPSFC">
-      <label class="form-check-label" for="ADPSFC">
-         ADPSFC &mdash; <em>Observations from Land Surface Stations</em>
+      {{ widget.tag }}
+      <label class="form-check-label" for="{{ widget.id_for_label }}">
+         {{ widget.data.label }}
       </label>
    </div>
-   <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="rectypes" value="SFCSHP" id="SFCSHP">
-      <label class="form-check-label" for="SFCSHP">
-         SFCSHP &mdash; <em>Observations from Marine Platforms (ships, buoys, etc.)</em>
-      </label>
-   </div>
+   {% endfor %}
+
    <div class="mt-2">
-      <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" id="allrectypes" onClick="selectAllRectypes()">
-      <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" id="clearrectypes" onClick="selectNoRectypes()">
+      <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" onClick="selectAllRectypes()">
+      <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" onClick="selectNoRectypes()">
    </div>
 </div>
 
@@ -165,7 +149,7 @@
 <div id="paramSelect" class="py-2">
    <h4 class="py-1">
       <i class="fa-solid fa-sliders"></i>
-      Parameters
+      {{ form.params.label }}
    </h4>
    <div class="mb-1">
       Select parameters to retain in your data request. All will be retained if none
@@ -237,7 +221,7 @@
 </div>
 
 <div id="subset-review-div" class="d-none">
-   <h2 class="py-2">NCEP ADP PREPBUFR Surface Observations Data Request</h2>
+   <h2 class="py-2">{{ subset.header }}</h2>
    <div>
       Following is a summary of your data request selections.  Click the 'Submit Request' button below
       if the information is <span class="fw-bold">correct</span>, otherwise select
