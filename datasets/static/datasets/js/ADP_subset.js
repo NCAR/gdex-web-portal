@@ -308,7 +308,7 @@ function checkSpatial()
  */
 function checkLatLon()
 {
-   var form = document.form;
+   var form = $('#subset-form')[0];
    var i, j;
    var min, max;
    var value, unit;
