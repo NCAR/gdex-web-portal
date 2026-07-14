@@ -534,7 +534,6 @@ function displayGoogleMap(act)
    if(act == 1) 
    {
       $("#mapselect").show();
-      refreshMap('DrawBox');
       document.form.mapdisplayed.value = 1;
       document.form.latlondisplayed.value=1;
    } 

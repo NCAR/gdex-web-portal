@@ -115,6 +115,7 @@ class BUFRSubsetForm(forms.Form):
         label='Spatial Subset Preference',
         widget=forms.Select(attrs={
             'class': 'custom-select',
+            'id': 'gridSelectionMenu',
             'onchange': 'displayGridSelection(document.form.gridSelection.value)',
         }),
     )
