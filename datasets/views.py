@@ -690,6 +690,7 @@ def custom_subset(request, dsid):
     if dsid in ['d351000', 'd461000']:
         ctx['form'] = BUFRSubsetForm(
             auto_id='%s',
+            dsid=dsid,
             initial={
                 'dsid':      dsid,
                 'gindex':    subset_context.get('gindex', 1),
@@ -697,8 +698,6 @@ def custom_subset(request, dsid):
                 'startDate': subset_context.get('date_start', ''),
                 'endDate':   subset_context.get('date_end', ''),
                 'compr':     'gz',
-                'rectypes':  [c[0] for c in BUFRSubsetForm.RECTYPE_CHOICES],
-                'parms':     [c[0] for c in BUFRSubsetForm.PARAM_CHOICES],
             },
         )
 
