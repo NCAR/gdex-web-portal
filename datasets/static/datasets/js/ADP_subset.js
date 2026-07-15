@@ -316,7 +316,7 @@ function checkLatLon()
    i = 0;
 
    gridSelection = $('[name="gridSelection"]').val();
-   if(gridSelection == 1) setSpaceValues();
+   if(gridSelection == 0) setSpaceValues();
    
    max = goodCoordinate(form.tlat.value, true);
    if(max == 999) 
