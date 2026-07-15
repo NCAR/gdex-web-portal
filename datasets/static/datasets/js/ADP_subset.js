@@ -16,7 +16,7 @@ var ivals, evals;
 
 /* 
    Function is a constructor for an object {struct} that holds current state of 
-   subsetting values whn called. Current implementation is to call at load and submit
+   subsetting values when called. Current implementation is to call at load and submit
    to compare initial and ending values and set bit flag accordingly.
 
    Returns: Object whose attributes are current values
