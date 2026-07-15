@@ -531,18 +531,11 @@ function checkParameters()
  */
 function displayGoogleMap(act)
 {
-   if(act == 1) 
-   {
+   if(act == 1) {
       $("#mapselect").show();
-      document.form.mapdisplayed.value = 1;
-      document.form.latlondisplayed.value=1;
-   } 
-   else 
-   {
+   } else {
       setSpaceValues();
       $("#mapselect").hide();
-      document.form.mapdisplayed.value = 0;
-      document.form.latlondisplayed.value=1;
    }
 }
 
@@ -552,30 +545,21 @@ function displayGoogleMap(act)
 function displayGridSelection(value)
 {
   // Null selection
-  if (value == -1) 
-  {
+  if (value == -1) {
     $("#mapselect").hide();
     $("#stationSelect").hide();
-    document.form.mapdisplayed.value=0;
-    document.form.latlondisplayed.value=0;
-    document.form.stationdisplayed.value=0;
   }
   
   // Google map lat/lon selection
-  if (value == 0) 
-  {
+  if (value == 0) {
     displayGoogleMap(1);
     $("#stationSelect").hide();
-    document.form.stationdisplayed.value=0;
   }
 
   // Station ID
   if (value == 1) {
     $("#mapselect").hide();
     $("#stationSelect").show();
-    document.form.mapdisplayed.value=0;
-    document.form.latlondisplayed.value=0;
-    document.form.stationdisplayed.value=1;
   }
 }
 
@@ -604,12 +588,14 @@ function gather_request_info()
    rqstinfo    = "\nDate Limits               : " + dates;
    rinfo  = "&dates=" + dates;
 
-   if(form.latlondisplayed.value == 1) 
+   // check lat/lon values if Google map is used, otherwise check station ID values
+   gridSelection = $('[name="gridSelection"]').val();
+   if(gridSelection == 0)
    {
      rqstinfo += "\nLatitude Limits           : " + lats +
                  "\nLongitude Limits          : " + lons;
      rinfo += "&lats=" + lats + "&lons=" + lons;
-   }  else if (form.stationdisplayed.value == 1) {
+   }  else if (gridSelection == 1) {
      rqstinfo += "\nStation ID                : " + stations;
      rinfo += "&station=" + stations;
    }
@@ -662,7 +648,6 @@ function reviewRequest()
 // Validate form inputs
    if(!checkSpatial()) return;
    if(!checkDates()) return;
-   if(form.latlondisplayed.value == 1 && !checkLatLon()) return;
    if(!checkParameters()) return;
    if(!checkRectypes()) return;
 
