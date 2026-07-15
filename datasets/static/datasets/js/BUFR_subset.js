@@ -1,15 +1,3 @@
-/***********************************************************************************
- * 
- *     Title : ADP_subset.js
- *    Author : Thomas Cram (tcram@ucar.edu),
- *      Date : 12/15/2010
- *   Purpose : javascript program to validate the form inputs for subset requests from 
- *             the NCEP ADP BUFR datasets (d351000 and d461000).
- * Work File : $DSSWEB/js/ADP_subset.js
- * Test File : $DSSWEB/js/ADP_subset_test.js
- ***********************************************************************************/
- 
-
 var dates, stations, rectypes, params, compr, rinfo, allbasic;
 var stationNum, countValid;
 var ivals, evals;
