@@ -76,7 +76,7 @@ def get_result_list(config, query):
 
     return res_list
 
-def description(request, dsid):
+def description(request, dsid, **kwargs):
     qs = Page.objects.type(DatasetDescriptionPage).filter(
                            slug__in=slug_list(dsid)).live().specific()
     if len(qs) == 0:
@@ -85,7 +85,10 @@ def description(request, dsid):
     if "HTTP_X_REQUESTED_WITH" in request.META:
         template = "datasets/description.html"
     else:
-        template = "dataset_description/dataset_description_page.html"
+        if 'template' in kwargs:
+            template = kwargs['template']
+        else:
+            template = "dataset_description/dataset_description_page.html"
 
     ctx = qs[0].get_context(request)
     ctx['page'].dsid = ng_gdex_id(dsid)
@@ -93,14 +96,13 @@ def description(request, dsid):
             ctx['page'].acknowledgement.encode("latin-1")
                                        .decode("unicode-escape"))
     ctx['has_arco'] = api.common.has_arco(ctx['page'].dsid)
-    if ctx['has_arco']:
-        tmp_vars = api.common.get_arco_variables(ctx['page'].dsid)
-        ctx['arco_assets'] = tmp_vars[1:]
-        ctx['arco_headers'] = tmp_vars[0]
     software_data = api.common.get_dataset_software(ctx['page'].dsid)
     ctx['has_software'] = bool(software_data.get('files'))
     documentation_data = api.common.get_dataset_documentation(ctx['page'].dsid)
     ctx['has_documentation'] = bool(documentation_data.get('files'))
+    if 'page_context' in kwargs:
+        ctx.update(kwargs['page_context'])
+
     return render(request, template, ctx)
 
 
