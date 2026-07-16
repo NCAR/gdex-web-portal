@@ -1,10 +1,11 @@
 /**
  * Leaflet/OpenStreetMap-based replacement for the legacy Google Maps
  * bounding-box selector. Preserves the element IDs and global function
- * names (zoomIn, zoomOut, defineDrag, checkInput, resetToFullGlobalSelection,
- * refreshMap, map.handles.drawbox) relied on by the dataset-specific subset
- * scripts (BUFR_subset.js, prepbufr_subset.js, ispdv4_subset.js, etc.)
- * and by the markup in google-map.html.
+ * names (defineDrag, checkInput, resetToFullGlobalSelection, refreshMap,
+ * map.handles.drawbox) relied on by the dataset-specific subset scripts
+ * (BUFR_subset.js, prepbufr_subset.js, ispdv4_subset.js, etc.) and by the
+ * markup in google-map.html. Zoom in/out is handled by Leaflet's own
+ * on-map zoom control rather than a custom widget.
  */
 var map = {
   handles: { drawbox: null },
@@ -31,28 +32,6 @@ function clampBounds(nlat, slat, wlon, elon) {
     wlon: Math.max(-179, wlon),
     elon: Math.min(179, elon)
   };
-}
-
-function zoomOut(map_handle, min_zoom, mark_id) {
-  if (!map_handle) return;
-  var zoom_level = map_handle.getZoom();
-  if (zoom_level > min_zoom) {
-    zoom_level--;
-    var m = qsById(mark_id);
-    m.style.left = (parseInt(m.style.left) - 6) + "px";
-  }
-  map_handle.setZoom(zoom_level);
-}
-
-function zoomIn(map_handle, max_zoom, mark_id) {
-  if (!map_handle) return;
-  var zoom_level = map_handle.getZoom();
-  if (zoom_level < max_zoom) {
-    zoom_level++;
-    var m = qsById(mark_id);
-    m.style.left = (parseInt(m.style.left) + 6) + "px";
-  }
-  map_handle.setZoom(zoom_level);
 }
 
 function refreshMap(h) {
@@ -237,7 +216,7 @@ function initDrawBoxMap() {
     zoom: 1,
     minZoom: 1,
     maxZoom: 10,
-    zoomControl: false,
+    zoomControl: true,
     scrollWheelZoom: false,
     doubleClickZoom: false,
     boxZoom: false,
@@ -257,10 +236,6 @@ function initDrawBoxMap() {
   drawboxBoxLayer = L.layerGroup().addTo(drawbox);
 
   drawbox.on("mousedown", drawboxOnMapMouseDown);
-  drawbox.on("zoomend", function() {
-    var m = qsById("mark");
-    if (m) m.style.left = ((drawbox.getZoom() - 1) * 6) + "px";
-  });
   if (!window.__osmDrawboxDocListenersAttached) {
     document.addEventListener("mousemove", function(e) { drawboxOnDocMouseMove(e); });
     document.addEventListener("mouseup", function(e) { drawboxOnDocMouseUp(e); });
