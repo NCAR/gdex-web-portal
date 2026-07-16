@@ -1,12 +1,10 @@
-/* ============================================================
+/* 
    GDEX — Search Data Page Styles
-   Loaded on search.html via search-base.html {% block search_head %}
-   ============================================================ */
+   Loaded on search.html via search-base.html {% block search_head %} 
+*/
 
 
-/* ------------------------------------------------------------
-   Hero banner
-   ------------------------------------------------------------ */
+/* Hero banner*/
 .gdex-find-data-hero {
     min-height: 280px;
     display: flex;
@@ -79,9 +77,7 @@
 .gdex-find-data-hero__search-btn:hover { background: #00357a; }
 
 
-/* ------------------------------------------------------------
-   Page body (below hero)
-   ------------------------------------------------------------ */
+/* Page body (below hero) */
 .gdex-find-data-body {
     background: #f2f2f2;
     min-height: 600px;
@@ -109,9 +105,7 @@
 }
 
 
-/* ------------------------------------------------------------
-   Two-column layout: sidebar + results
-   ------------------------------------------------------------ */
+/* Two-column layout: sidebar + results */
 .gdex-find-data-layout {
     display: flex;
     gap: 1.75rem;
@@ -120,9 +114,7 @@
 }
 
 
-/* ------------------------------------------------------------
-   Filters sidebar
-   ------------------------------------------------------------ */
+/* Filters sidebar */
 .gdex-filters-sidebar {
     width: 300px;
     flex-shrink: 0;
@@ -144,17 +136,15 @@
 .gdex-filters-sidebar__title {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     color: #1a1a2e;
     margin: 0;
 }
-.gdex-filters-sidebar__clear { font-size: 0.78rem; color: #0057c2; text-decoration: none; }
+.gdex-filters-sidebar__clear { font-size: 0.85rem; color: #0057c2; text-decoration: none; }
 .gdex-filters-sidebar__clear:hover { text-decoration: underline; }
 
 
-/* ------------------------------------------------------------
-   Filter groups
-   ------------------------------------------------------------ */
+/* Filter groups */
 .gdex-filter-group {
     border-bottom: 1px solid #e0e8f4;
     padding: 0.85rem 0;
@@ -170,11 +160,11 @@
 .gdex-filter-group__name {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
-    font-size: 0.855rem;
+    font-size: 0.95rem;
     color: #1a1a2e;
 }
 .gdex-filter-group__chevron {
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     color: #6b7a99;
     transition: transform 0.2s ease;
 }
@@ -186,7 +176,7 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: #3a4a60;
     margin-bottom: 0.22rem;
     cursor: pointer;
@@ -249,7 +239,7 @@
 }
 .gdex-filter-count {
     color: #9aabbf;
-    font-size: 0.75rem;
+    font-size: 0.82rem;
     flex-shrink: 0;
     margin-left: auto;
 }
@@ -263,7 +253,7 @@
     content: '\f002';
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     color: #6b7a94;
     position: absolute;
     left: 0.6rem;
@@ -278,7 +268,7 @@
     padding: 0.32rem 0.6rem;
     background: #f4f7fb;
     font-family: 'Poppins', sans-serif;
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     color: #1a1a2e;
     outline: none;
     box-sizing: border-box;
@@ -299,7 +289,7 @@
     border: none;
     color: #9aabbf;
     cursor: pointer;
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     padding: 0;
     line-height: 1;
     display: none;
@@ -311,7 +301,7 @@
     background: none;
     border: none;
     color: #0057c2;
-    font-size: 0.76rem;
+    font-size: 0.83rem;
     cursor: pointer;
     padding: 0;
     text-align: left;
@@ -338,7 +328,7 @@
 
 
 .gdex-filter-no-results {
-    font-size: 0.76rem;
+    font-size: 0.83rem;
     color: #9aabbf;
     font-style: italic;
     margin: 0.15rem 0 0;
@@ -346,18 +336,18 @@
 }
 
 .gdex-filter-custom-range { margin-top: 0.75rem; }
-.gdex-filter-custom-range__label { font-size: 0.78rem; color: #5a6a80; margin-bottom: 0.4rem; }
+.gdex-filter-custom-range__label { font-size: 0.85rem; color: #5a6a80; margin-bottom: 0.4rem; }
 .gdex-filter-custom-range__inputs {
     display: flex;
     align-items: center;
     gap: 0.35rem;
 }
-.gdex-filter-custom-range__dash { font-size: 0.75rem; color: #9aabbf; flex-shrink: 0; }
+.gdex-filter-custom-range__dash { font-size: 0.82rem; color: #9aabbf; flex-shrink: 0; }
 .gdex-filter-date-input {
     border: 1.5px solid #c5d0e0;
     border-radius: 4px;
     padding: 0.25rem 0.4rem;
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-family: 'Poppins', sans-serif;
     width: 0;
     flex: 1;
@@ -374,7 +364,7 @@
     border: none;
     border-radius: 6px;
     padding: 0.45rem 1rem;
-    font-size: 0.8rem;
+    font-size: 0.88rem;
     font-weight: 600;
     font-family: 'Poppins', sans-serif;
     letter-spacing: 0.02em;
@@ -390,15 +380,13 @@
 .gdex-filter-custom-range__labels {
     display: flex;
     justify-content: space-between;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     color: #9aabbf;
     margin-top: 0.2rem;
 }
 
 
-/* ------------------------------------------------------------
-   Location cascade filter
-   ------------------------------------------------------------ */
+/* Location cascade filter */
 .gdex-location-cascade {
     display: flex;
     flex-direction: column;
@@ -411,7 +399,7 @@
     gap: 0.18rem;
 }
 .gdex-location-cascade__label {
-    font-size: 0.68rem;
+    font-size: 0.76rem;
     font-weight: 600;
     color: #9aabbf;
     text-transform: uppercase;
@@ -423,7 +411,7 @@
     border-radius: 6px;
     padding: 0.38rem 1.9rem 0.38rem 0.6rem;
     font-family: 'Poppins', sans-serif;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: #1a1a2e;
     outline: none;
     background-color: #ffffff;
@@ -448,9 +436,7 @@
 }
 
 
-/* ------------------------------------------------------------
-   Results area
-   ------------------------------------------------------------ */
+/* Results area */
 .gdex-results-area { flex: 1; min-width: 0; }
 .gdex-results-list { display: flex; flex-direction: column; }
 .gdex-results-empty {
@@ -554,9 +540,7 @@
 .gdex-btn-reset:hover { background: #00357a; color: #ffffff; text-decoration: none; }
 
 
-/* ------------------------------------------------------------
-   Dataset result cards
-   ------------------------------------------------------------ */
+/* Dataset result cards */
 .gdex-dataset-result {
     display: flex;
     background: #f8f8f8;
@@ -580,9 +564,9 @@
 .gdex-dataset-result:hover { box-shadow: 0 4px 18px rgba(41, 82, 196, 0.1); }
 
 .gdex-dataset-result__thumb {
-    width: 150px;
-    min-width: 150px;
-    min-height: 140px;
+    width: 110px;
+    min-width: 110px;
+    min-height: 110px;
     background: #00357a;
     display: flex;
     align-items: center;
@@ -609,7 +593,6 @@
 .gdex-dataset-result__title {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
-    font-size: 1.25rem;
     margin: 0 0 0.2rem;
     line-height: 1.45;
 }
@@ -620,7 +603,7 @@
     transition: border-color 0.15s ease, color 0.15s ease;
 }
 .gdex-dataset-result__ext-icon {
-    font-size: 0.65rem;
+    font-size: 0.72rem;
     margin-left: 0.35rem;
     opacity: 0.55;
     vertical-align: middle;
@@ -643,14 +626,14 @@
     background-color: #faa119;
     border: 1px solid #d4870d;
     color: #1a1a1a;
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     font-weight: 500;
     padding: 0.35rem 0.65rem;
     border-radius: 6px;
     margin: 0.4rem 0 0.2rem;
 }
 .gdex-dataset-result__doi {
-    font-size: 0.76rem;
+    font-size: 0.85rem;
     color: #FAA119;
     margin: 0;
     display: flex;
@@ -663,7 +646,7 @@
     color: #9aabbf;
     cursor: pointer;
     padding: 0;
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     display: inline-flex;
     align-items: center;
     transition: color 0.15s ease;
@@ -690,7 +673,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem 1.25rem;
-    font-size: 0.76rem;
+    font-size: 0.85rem;
     color: #5a6a80;
     margin-bottom: 0.35rem;
 }
@@ -698,7 +681,7 @@
 
 .gdex-dataset-result__actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 0.6rem;
     margin-top: auto;
     padding-top: 0.65rem;
@@ -715,7 +698,7 @@ a.gdex-btn-access:visited {
     border-radius: 6px;
     padding: 0.38rem 0.85rem;
     font-family: 'Poppins', sans-serif;
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
@@ -888,12 +871,10 @@ a.gdex-btn-more:hover { color: #0057c2; text-decoration: none; }
 .gdex-pagination__ellipsis { color: #9aabbf; font-size: 0.9rem; padding: 0 0.2rem; line-height: 36px; }
 
 
-/* ------------------------------------------------------------
-   Mobile responsive
-   ------------------------------------------------------------ */
+/*  Mobile responsive */
 @media (max-width: 991px) {
-    .gdex-find-data-layout { flex-direction: column; }
-    .gdex-filters-sidebar { width: 100%; max-height: none; }
+    .gdex-find-data-layout { gap: 1rem; }
+    .gdex-filters-sidebar { width: 220px; }
     .gdex-dataset-result__thumb { width: 110px; min-width: 110px; }
 }
 
@@ -902,6 +883,11 @@ a.gdex-btn-more:hover { color: #0057c2; text-decoration: none; }
     .gdex-find-data-hero__content { padding-top: 2rem; padding-bottom: 2rem; }
     .gdex-find-data-hero__heading { font-size: clamp(2rem, 8vw, 3rem); }
     .gdex-find-data-hero__search-btn { padding: 1rem 1.1rem; }
+    .gdex-find-data-layout { gap: 0.6rem; }
+    .gdex-filters-sidebar { width: 150px; }
+    .gdex-filters-sidebar__title { font-size: 0.95rem; }
+    .gdex-filter-group__name { font-size: 0.8rem; }
+    .gdex-filter-radio, .gdex-filter-checkbox { font-size: 0.76rem; }
     .gdex-dataset-result { flex-direction: column; }
     .gdex-dataset-result__thumb { width: 100%; min-width: unset; height: 120px; }
     .gdex-dataset-result__meta { gap: 0.25rem 0.75rem; }
@@ -909,12 +895,11 @@ a.gdex-btn-more:hover { color: #0057c2; text-decoration: none; }
 }
 
 
-/* ------------------------------------------------------------
-   Override legacy gsearch.css rules that bleed into the hero.
+/* Override legacy gsearch.css rules that bleed into the hero.
    gsearch.css sets #search-form { display:flex; flex-direction:row }
    which collapses the form to content-width. We reset it to block
    so .gdex-find-data-hero__search-bar stretches to the form width.
-   ------------------------------------------------------------ */
+ */
 .gdex-find-data-hero #search-form {
     display: block;
     width: 100%;
