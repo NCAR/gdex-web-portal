@@ -388,18 +388,14 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     z-index: 11;
 }
 .gdex-dataset-card:hover {
-    background-color: #0057c2;
+    background-color: #f8faff;
     border-radius: 12px;
-    border-bottom-color: #0057c2;
+    border-bottom-color: #ccdeff;
     text-decoration: none;
-    color: #ffffff;
-    box-shadow: 0 4px 16px rgba(0, 87, 194, 0.3);
-    transform: translateY(-2px);
+    color: inherit;
+    box-shadow: 0 12px 32px rgba(0, 87, 194, 0.13);
+    transform: translateY(-6px);
 }
-.gdex-dataset-card:hover .gdex-dataset-card__circle { border-color: #ffffff; }
-.gdex-dataset-card:hover .gdex-dataset-card__size { color: rgba(255, 255, 255, 0.8); }
-.gdex-dataset-card:hover .gdex-dataset-card__name { color: #ffffff !important; }
-.gdex-dataset-card:hover .gdex-dataset-card__badge { background-color: rgba(255, 255, 255, 0.2); color: #ffffff; }
 .gdex-dataset-card__circle {
     width: 140px;
     height: 140px;
