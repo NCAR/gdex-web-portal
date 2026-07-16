@@ -14,6 +14,7 @@ try:
     from urllib.parse import urlencode
 except Exception:
     from urllib import urlencode
+from datasets.models import CustomSubsetPage
 from wagtail.models import Page
 
 from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
@@ -36,7 +37,7 @@ from globus.views import get_guest_collection_url
 from gdexwebserver.utils import make_tempdir, remove_tempdir
 from dashboard.utils import get_user_email, is_internal_user
 
-from .forms import DatasetRequestForm
+from .forms import DatasetRequestForm, BUFRSubsetForm
 from rda_python_dsrqst.PgRDARqst import rda_request
 
 import logging
@@ -75,7 +76,6 @@ def get_result_list(config, query):
         res_list.append(res[0])
 
     return res_list
-
 
 def description(request, dsid, **kwargs):
     qs = Page.objects.type(DatasetDescriptionPage).filter(
@@ -666,9 +666,11 @@ def custom_subset(request, dsid):
          - dataset period context (date_start, time_start, date_end, time_end)
 
     """
+    _DATASET_SPECIFIC_TEMPLATES = {'d132002', 'd351000', 'd461000'}
+
     d = None
     if "HTTP_X_REQUESTED_WITH" in request.META:
-        if dsid in ['d132002']:
+        if dsid in _DATASET_SPECIFIC_TEMPLATES:
             template = f"datasets/custom-subset-page-{dsid}.html"
         else:
             template = "datasets/custom-subset-page-base.html"
@@ -704,6 +706,21 @@ def custom_subset(request, dsid):
 
     if d:
         ctx.update({'page': d})
+        logger.info("Added dataset description context to custom subset page for dataset {}".format(dsid))
+    
+    if dsid in ['d351000', 'd461000']:
+        ctx['form'] = BUFRSubsetForm(
+            auto_id='%s',
+            dsid=dsid,
+            initial={
+                'dsid':      dsid,
+                'gindex':    subset_context.get('gindex', 1),
+                'rtype':     'S',
+                'startDate': subset_context.get('date_start', ''),
+                'endDate':   subset_context.get('date_end', ''),
+                'compr':     'gz',
+            },
+        )
 
     return render(request, template, ctx)
 

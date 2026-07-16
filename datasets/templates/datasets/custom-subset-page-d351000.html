@@ -1,0 +1,251 @@
+{% load wagtailcore_tags static %}
+
+<link rel="stylesheet" href="{% static 'datasets/css/subset.css' %}">
+<link rel="stylesheet" href="{% static 'datasets/css/gmap.css' %}">
+
+{{ gmap_api_key|safe|json_script:"gmap_api_key" }}
+{{ gmap_api_url|safe|json_script:"gmap_api_url" }}
+
+<script id="gmaps3_script" type="text/javascript" src="{% static 'datasets/js/gmaps3.js' %}"></script>
+<script id="gmapkey3_script" type="text/javascript" src="{% static 'datasets/js/gmapkey3.js' %}"></script>
+<script id="drawboxmap_script" type="text/javascript" src="{% static 'js/gmap_drawbox.js' %}"></script>
+
+<script id="bufr_subset_script" type="text/javascript" src="{% static 'datasets/js/BUFR_subset.js' %}"></script>
+<script id="custom_subset_script" type="text/javascript" src="{% static 'datasets/js/custom_subset.js' %}"></script>
+
+<div id="subset-form-div">
+
+   <h2>{{ subset.header }}</h2>
+   <div class="p-2 bg-light">
+      <p class="mb-0">This form allows a user to request a temporal and spatial subset from the following dataset:
+         <ul>
+            <li>{{ subset.dstitle }}</li>
+            <li>Valid date range: <span class="fw-bold">{{ subset.date_start }}</span>&nbsp;to&nbsp;<span class="fw-bold">{{ subset.date_end }}</span></li>
+         </ul>
+         {{ subset.description|richtext|safe }}
+      </p>
+   </div>
+
+   <div id="request-form" class="component webform yellow-orange-border p-2 mb-4">
+
+   <form id="subset-form" name="form">
+
+   {# --- Hidden fields rendered directly from the form --- #}
+   {{ form.dsid }}
+   {{ form.gindex }}
+   {{ form.rtype }}
+   {{ form.tlat }}
+   {{ form.blat }}
+   {{ form.llon }}
+   {{ form.rlon }}
+
+   {# minDate / maxDate feed the jQuery datepicker min/max – not user inputs #}
+   <input type="hidden" id="minDate" value="{{ subset.date_start }}">
+   <input type="hidden" id="maxDate" value="{{ subset.date_end }}">
+
+<!-- Temporal range selection -->
+<div class="py-2" id="dateSelect">
+   <h4 class="py-1">
+      <i class="fa-solid fa-calendar-days"></i>
+      Temporal Range
+   </h4>
+   <div class="mb-1">
+      Select the start and end dates for your data request. Please limit your request
+      to one year to avoid processing delays caused by the large volume of data per year.
+   </div>
+
+   <fieldset class="py-2">
+      <div class="form-group row py-1">
+         <label class="form-label" for="startDate">{{ form.startDate.label }}</label>
+         {{ form.startDate }}
+         <small class="form-text text-muted" id="startDateHelp">(Format: YYYY-MM-DD)</small>
+      </div>
+      <div class="form-group row py-1">
+         <label class="form-label" for="endDate">{{ form.endDate.label }}</label>
+         {{ form.endDate }}
+         <small class="form-text text-muted" id="endDateHelp">(Format: YYYY-MM-DD)</small>
+      </div>
+      {% if form.startDate.errors or form.endDate.errors or form.non_field_errors %}
+      <div class="alert alert-danger py-1 mt-1">
+         {{ form.startDate.errors }}{{ form.endDate.errors }}{{ form.non_field_errors }}
+      </div>
+      {% endif %}
+      <div class="mt-2">
+         <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear dates" id="cleardates" onClick="clearTemporalRange()">
+      </div>
+   </fieldset>
+</div>
+
+<hr class="my-1">
+
+<!-- Spatial range selection -->
+
+<div class="py-2" id="regionSelect">
+   <h4 class="py-1">
+      <i class="fa-solid fa-globe"></i>
+      Spatial Range
+   </h4>
+   <div class="mb-1">
+      Select a spatial subsetting option for your data request.
+   </div>
+   {{ form.gridSelection }}
+</div>
+
+<!-- Spatial range selection via Google map -->
+<div class="py-1" style="display: none" id="mapselect">
+   {% include "datasets/google-map.html" %}
+</div>
+
+<!-- Select location by station ID -->
+<div class="py-2" style="display: none" id="stationSelect">
+   <div class="pb-2">
+      Please enter one or more station identifiers to retain from the dataset,
+      given as a comma-separated list of the 5-digit WMO index number (e.g., enter &quot;72565&quot; to
+      select Denver International Airport). A blank entry will retain all stations
+      in the database.
+      Click <a href="https://oscar.wmo.int/surface/#/" target="_blank">here</a>
+      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+      to search for station information in the WMO Oscar/Surface WIGOS metadata repository.
+   </div>
+   <label for="station0">Station IDs (comma separated): </label>
+   <textarea class="form-control" name="station0" id="station0" rows="4"></textarea>
+</div>
+
+<hr class="my-1">
+
+<!-- Record type selection -->
+
+<div id="rectypeSelect" class="py-2">
+   <h4 class="py-1">
+      <i class="fa-solid fa-list-check"></i>
+      {{ form.rectypes.label }}
+   </h4>
+   <div class="mb-1">
+      Select BUFR record types to retain in your data request. All will be retained if none
+      are selected. Detailed descriptors of record types can be found at
+      <a href="https://www.emc.ncep.noaa.gov/mmb/data_processing/data_dumping.doc/table_1.htm" target="_blank">
+      www.emc.ncep.noaa.gov/mmb/data_processing/data_dumping.doc/table_1.htm</a>
+      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+   </div>
+
+   {% for widget in form.rectypes %}
+   <div class="form-check">
+      {{ widget.tag }}
+      <label class="form-check-label" for="{{ widget.id_for_label }}">
+         {{ widget.data.label }}
+      </label>
+   </div>
+   {% endfor %}
+
+   <div class="mt-2">
+      <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" onClick="selectAllRectypes()">
+      <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" onClick="selectNoRectypes()">
+   </div>
+</div>
+
+<hr class="my-1">
+
+<!-- Parameter selection -->
+
+<div id="paramSelect" class="py-2">
+   <h4 class="py-1">
+      <i class="fa-solid fa-sliders"></i>
+      {{ form.params.label }}
+   </h4>
+   <div class="mb-1">
+      Select parameters to retain in your data request. All will be retained if none
+      are selected. Detailed descriptors of parameters can be found at
+      <a href="https://www.emc.ncep.noaa.gov/emc/pages/infrastructure/bufrlib/tables/bufrtab_tableb.html" target="_blank">
+      www.emc.ncep.noaa.gov/emc/pages/infrastructure/bufrlib/tables/bufrtab_tableb.html</a>
+      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+   </div>
+
+   <div class="row">
+      {% for widget in form.params %}
+      <div class="col-12 col-md-6">
+         <div class="form-check">
+            {{ widget.tag }}
+            <label class="form-check-label" for="{{ widget.id_for_label }}">
+               {{ widget.data.label }}
+            </label>
+         </div>
+      </div>
+      {% endfor %}
+   </div>
+
+   <div class="mt-2">
+      <input type="button" class="btn btn-primary button-small p-1 rounded" value="Select all" onClick="selectAllParams()">
+      <input type="button" class="btn btn-outline-primary button-small p-1 rounded" value="Clear" onClick="selectNoParams()">
+   </div>
+</div>
+
+<hr class="my-1">
+
+<!-- File compression selection -->
+
+<div id="compressionSelect" class="py-2">
+   <h4 class="py-1">
+      <i class="fa-solid fa-file-zipper"></i>
+      {{ form.compression.label }}
+   </h4>
+   <div class="mb-1">
+      File compression is recommended to minimize the network transfer time required to move your data files to your host computer.
+   </div>
+
+   {% for widget in form.compression %}
+   <div class="form-check">
+      {{ widget.tag }}
+      <label class="form-check-label" for="{{ widget.id_for_label }}">
+         {{ widget.data.label }}
+      </label>
+   </div>
+   {% endfor %}
+</div>
+
+<hr class="my-1">
+
+<div class="py-2" id="review-button">
+   <h4 class="py-1">
+      <i class="fa-solid fa-file-circle-check"></i>
+      Review and Submit
+   </h4>
+   <div class="mb-2">
+      Click the 'Continue' button to review your subset request options before submitting the request.
+   </div>
+   <div>
+      <button type="button" class="btn btn-primary mx-1 p-1 rounded" style="font-size:1rem" onClick="reviewRequest()"><b>Continue</b></button>
+      <button type="reset" class="btn btn-outline-primary mx-1 p-1 rounded" style="font-size:1rem">Reset Form</button>
+   </div>
+</div>
+
+</form>
+</div>
+</div>
+
+<div id="subset-review-div" class="d-none">
+   <h2 class="py-2">{{ subset.header }}</h2>
+   <div>
+      Following is a summary of your data request selections.  Click the 'Submit Request' button below
+      if the information is <span class="fw-bold">correct</span>, otherwise select
+      'Cancel' to modify your selections or start over.
+   </div>
+   <div class="py-2">
+      <pre><code id="rnote-text"></code></pre>
+   </div>
+   <div id="submit-form-container">
+      <form action="{% url 'submit_web_data_request' subset.dsid %}" id="submit-form" method="post">
+         <div id="submit-buttons" class="mt-1">
+            <button class="btn btn-primary mt-1 p-1 rounded" type="submit" style="font-size:1rem" id="submit_request">Submit request</button>
+            <button class="btn btn-outline-primary mt-1 p-1 rounded" type="button" style="font-size:1rem" id="cancel_request" onclick="cancelRequest();">Cancel</button>
+         </div>
+      </form>
+   </div>
+</div>
+<div id="loading-button" class="d-none">
+   <button class="btn btn-primary mt-1 p-1" type="button" disabled>
+      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      Loading...
+   </button>
+</div>
+
+<img src="/images/transpace.gif" onload="ajaxCallback()">
