@@ -1,11 +1,12 @@
 /**
  * Leaflet/OpenStreetMap-based replacement for the legacy Google Maps
  * bounding-box selector. Preserves the element IDs and global function
- * names (defineDrag, checkInput, resetToFullGlobalSelection, refreshMap,
+ * names (checkInput, resetToFullGlobalSelection, refreshMap,
  * map.handles.drawbox) relied on by the dataset-specific subset scripts
  * (BUFR_subset.js, prepbufr_subset.js, ispdv4_subset.js, etc.) and by the
- * markup in google-map.html. Zoom in/out is handled by Leaflet's own
- * on-map zoom control rather than a custom widget.
+ * markup in google-map.html. Zoom in/out uses Leaflet's own on-map zoom
+ * control, and pan/draw-box mode is toggled via an on-map pencil-icon
+ * control (drawboxMode) rather than the old external radio buttons.
  */
 var map = {
   handles: { drawbox: null },
@@ -16,6 +17,8 @@ var map = {
 
 var drawboxBoxLayer = null;
 var drawboxDragStart = null;
+var drawboxMode = "pan";
+var drawToggleLink = null;
 
 function qsById(id) {
   return document.getElementById(id);
@@ -44,7 +47,7 @@ function refreshMap(h) {
 function defineDrag() {
   var drawbox = map.handles.drawbox;
   if (!drawbox) return;
-  var panMode = qsById("pan").checked;
+  var panMode = drawboxMode === "pan";
   if (panMode) {
     drawbox.dragging.enable();
   } else {
@@ -53,6 +56,36 @@ function defineDrag() {
   ["gdrawboxmap_nlat", "gdrawboxmap_slat", "gdrawboxmap_wlon", "gdrawboxmap_elon"].forEach(function(id) {
     qsById(id).disabled = panMode;
   });
+  if (drawToggleLink) {
+    drawToggleLink.style.backgroundColor = panMode ? "" : "#c3d7ee";
+  }
+}
+
+function toggleDrawboxMode() {
+  drawboxMode = (drawboxMode === "draw") ? "pan" : "draw";
+  defineDrag();
+}
+
+function createDrawToggleControl() {
+  var DrawToggleControl = L.Control.extend({
+    options: { position: "topright" },
+    onAdd: function() {
+      var container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+      var link = L.DomUtil.create("a", "", container);
+      link.href = "#";
+      link.title = "Toggle draw-box mode";
+      link.setAttribute("role", "button");
+      link.innerHTML = '<i class="fa-solid fa-pen"></i>';
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.on(link, "click", function(e) {
+        L.DomEvent.stop(e);
+        toggleDrawboxMode();
+      });
+      drawToggleLink = link;
+      return container;
+    }
+  });
+  return new DrawToggleControl();
 }
 
 function clearBox() {
@@ -186,7 +219,7 @@ function drawboxUpdateFromDrag(startLatLng, endLatLng) {
 }
 
 function drawboxOnMapMouseDown(e) {
-  if (!qsById("draw") || !qsById("draw").checked) return;
+  if (drawboxMode !== "draw") return;
   drawboxDragStart = e.latlng;
   drawboxUpdateFromDrag(e.latlng, e.latlng);
 }
@@ -230,6 +263,7 @@ function initDrawBoxMap() {
   }).addTo(drawbox);
 
   L.control.scale().addTo(drawbox);
+  createDrawToggleControl().addTo(drawbox);
 
   map.handles.drawbox = drawbox;
   window.__osmDrawboxMapInstance = drawbox;
@@ -242,9 +276,7 @@ function initDrawBoxMap() {
     window.__osmDrawboxDocListenersAttached = true;
   }
 
-  if (qsById("pan")) {
-    qsById("pan").checked = true;
-  }
+  drawboxMode = "pan";
   defineDrag();
 }
 
