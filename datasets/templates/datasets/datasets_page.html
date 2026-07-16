@@ -9,11 +9,13 @@
                 <div class="main-content clearfix">{{ page.description|richtext }}</div>
                 <div class="component list">
                     {% for child in page.get_children.specific %}
+                    {% if child.content_type.model == "datasetdescriptionpage" %}
                         <div class="list-item p-3">
                             {% with dsid=child.dsid|format_dsid %}
                             <div><a href="{{ dsid|ds_slug }}/">{{ dsid }}</a> - {{ child.dstitle }}</div>
                             {% endwith %}
                         </div>
+                    {% endif %}
                     {% endfor %}
                 </div>
             </article>

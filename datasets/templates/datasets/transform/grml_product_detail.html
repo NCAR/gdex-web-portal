@@ -1,0 +1,32 @@
+{% if detail.error %}
+<p>
+    <b>An error occurred: </b><font color="red">{{ detail.error }}</font>
+</p>
+{% else %}
+<table class="w-100">
+    <thead>
+        <tr>
+            <th class="text-center">Level/Layer</th>
+            <th class="text-center">Parameter</th>
+            <th class="text-center">Valid Date/Time Range</th>
+            <th class="text-center"># Grids</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for key, parameters in detail.items %}
+        {% with even=forloop.counter0|divisibleby:"2" %}
+        {% for param in parameters %}
+        <tr class="transform-grml-bg{% if even %}0{% else %}1{% endif %}">
+            {% if forloop.counter0 == 0 %}
+            <td class="text-center" rowspan="{{ parameters|length }}">{{ key }}</td>
+            {% endif %}
+            <td class="text-center">{{ param.name }}</td>
+            <td class="text-center">{{ param.datetime_range }}</td>
+            <td class="text-center">{{ param.num_grids }}</td>
+        </tr>
+        {% endfor %}
+        {% endwith %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}

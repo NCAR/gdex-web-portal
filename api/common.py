@@ -218,16 +218,23 @@ def get_param_info(full_code, key_change=None):
     add_to_cache('param_codes', tablename, params)
     return params[code]
 
-def get_level_info(map_name, code):
+def get_level_info(file_format, map_val, code):
     """Return level information given code.
+    Falls back to the generic '<file_format>.xml' table (e.g.
+    'WMO_GRIB2.xml') if no map-specific '<file_format>.<map_val>.xml'
+    file exists.
     """
     #level_dict = check_cache('level_codes', map_name)
     #if level_dict is not None:
     #    return level_dict[code]
 
     xml_location = os.path.join(XML_DIR,'LevelTables/')
+    map_name = file_format+'.'+map_val
     glob_str = xml_location + '*'+map_name+'.xml'
     filenames = glob.glob(glob_str)
+    if len(filenames) == 0 and file_format:
+        glob_str = xml_location + '*'+file_format+'.xml'
+        filenames = glob.glob(glob_str)
     if len(filenames) > 1:
         #raise ValueError('Glob should only return 1 filename')
         levels = {}
@@ -474,11 +481,10 @@ def get_level_definition(code, file_format="", key_change=None):
     # Get remainder of info from XML
     if file_format is None:
         file_format = '' #'WMO_GRIB2'
-    map_name = file_format+'.'+return_obj['map']
     type_code = return_obj['type']
     if '-' in type_code:
         type_code = type_code.split('-')[0]
-    level_info = get_level_info(map_name, type_code)
+    level_info = get_level_info(file_format, return_obj['map'], type_code)
     return_obj.pop('map')
     return_obj.pop('type')
     return_obj.update(level_info)

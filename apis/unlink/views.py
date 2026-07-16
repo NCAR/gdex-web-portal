@@ -24,41 +24,36 @@ def unlink(request):
         return render(request, "404.html", status=404)
 
     if 'API-key' not in request.headers:
-        return HttpResponse("Missing API key.", status=400,
-                            reason="Bad Request")
+        return HttpResponse("Missing API key.", status=400)
 
     if request.headers['API-key'] not in settings.LOCAL_API_KEYS['unlink']:
-        return HttpResponse("Invalid API key.", status=403, reason="Forbidden")
+        return HttpResponse("Invalid API key.", status=403)
 
     if 'path' not in request.POST:
-        return HttpResponse("Missing path.", status=400, reason="Bad Request")
+        return HttpResponse("Missing path.", status=400)
 
     is_good_path = good_path(
             (settings.LOCAL_API_KEYS['unlink']
              [request.headers['API-key']]), request.POST['path'])
     if not is_good_path:
-        return HttpResponse("Invalid path.", status=400,
-                            reason="Bad Request")
+        return HttpResponse("Invalid path.", status=400)
 
     path = os.path.join(
             settings.LOCAL_API_KEYS['unlink'][request.headers['API-key']],
             request.POST['path'])
     if not os.path.exists(path):
-        return HttpResponse("Path does not exist.", status=400,
-                            reason="Bad Request")
+        return HttpResponse("Path does not exist.", status=404)
 
     if path[-1] == '/':
         try:
             shutil.rmtree(path)
         except Exception as err:
-            return HttpResponse("Remove failed: {}".format(err), status=500,
-                                reason="Internal Server Error")
+            return HttpResponse("Remove failed: {}".format(err), status=500)
 
     else:
         try:
             os.remove(path)
         except Exception as err:
-            return HttpResponse("Remove failed: {}".format(err), status=500,
-                                reason="Internal Server Error")
+            return HttpResponse("Remove failed: {}".format(err), status=500)
 
-    return HttpResponse("Success.")
+    return HttpResponse("Success.", status=200)
