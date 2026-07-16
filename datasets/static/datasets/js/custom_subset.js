@@ -86,3 +86,15 @@ function showChangedSelections() {
     changed_selection = true;
   }
 }
+
+function setActiveTabNew(tabId) {
+  var datasetTab = $('#datasetTab');
+
+  // Remove 'active' class from all tabs
+  datasetTab.find('.nav-link').removeClass('active');
+  datasetTab.find('.nav-link').attr('aria-selected', 'false');
+
+  // Add 'active' class to the selected tab
+  $('#' + tabId).addClass('active');
+  $('#' + tabId).attr('aria-selected', 'true');
+}
