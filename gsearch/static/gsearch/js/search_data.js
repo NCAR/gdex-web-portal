@@ -792,12 +792,8 @@
             var p = document.createElement('p');
             p.className   = 'gdex-summary-popover__text';
             p.textContent = anchor.dataset.summary || '';
-            var hint = document.createElement('span');
-            hint.className = 'gdex-summary-popover__hint';
-            hint.innerHTML = 'Click <strong>Description</strong> for the full dataset page';
             pop.appendChild(lbl);
             pop.appendChild(p);
-            pop.appendChild(hint);
 
             var rect   = anchor.getBoundingClientRect();
             var maxW   = Math.min(420, window.innerWidth - 32);

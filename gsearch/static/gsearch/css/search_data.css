@@ -582,6 +582,7 @@
 .gdex-dataset-result__thumb {
     width: 150px;
     min-width: 150px;
+    min-height: 140px;
     background: #00357a;
     display: flex;
     align-items: center;
@@ -608,7 +609,7 @@
 .gdex-dataset-result__title {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
-    font-size: 0.885rem;
+    font-size: 1.25rem;
     margin: 0 0 0.2rem;
     line-height: 1.45;
 }
@@ -650,7 +651,7 @@
 }
 .gdex-dataset-result__doi {
     font-size: 0.76rem;
-    color: #6b7a99;
+    color: #FAA119;
     margin: 0;
     display: flex;
     align-items: center;
@@ -697,7 +698,7 @@
 
 .gdex-dataset-result__actions {
     display: flex;
-    align-items: center;
+    justify-content: flex-end;
     gap: 0.6rem;
     margin-top: auto;
     padding-top: 0.65rem;

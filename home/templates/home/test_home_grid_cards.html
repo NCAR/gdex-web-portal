@@ -15,8 +15,9 @@
                             <i class="{{ card.icomoon_icon_name }}"></i>
                         {% endif %}
                     </div>
-                    <h3 class="gdex-feature-card__title">{{ card.title }}</h3>
+                    <h4 class="gdex-feature-card__title">{{ card.title }}</h4>
                     <div class="gdex-feature-card__desc">{{ card.text|richtext }}</div>
+                   
                     {% if card.card_page %}
                     <a href="{{ card.card_page.url }}" class="gdex-feature-card__link stretched-link">
                     {% elif card.card_url|slice:":1" == "/" %}
@@ -26,6 +27,7 @@
                     {% endif %}
                         {{ card.card_link_text }} &rarr;
                     </a>
+                
                 </div>
             </div>
             {% endfor %}

@@ -36,28 +36,17 @@
         </div>
       </div>
 
-      {# ── Metadata row 1 ── #}
+      {# ── Metadata row ── #}
       <div class="gdex-dataset-result__meta">
         <span><strong>ID:</strong> {{ result.dataset_id }}</span>
-        <span><strong>Size:</strong> {{ result.size }}</span>
-        <span><strong>Data Type:</strong> {{ result.data_type_display }}</span>
         <span><strong>Temporal Range:</strong> {{ result.temporal_range }}</span>
-        <span><strong>Data Source:</strong> {{ result.data_source }}</span>
-      </div>
-
-      {# ── Metadata row 2 ── #}
-      <div class="gdex-dataset-result__meta">
         <span><strong>Data Format:</strong> {{ result.data_format_display }}</span>
-        <span><strong>Time Resolution:</strong> {{ result.time_resolution_display }}</span>
       </div>
 
-      {# ── Action buttons ── #}
+      {# ── Access-data button ── #}
       <div class="gdex-dataset-result__actions">
         <a href="{{ result.dataset_url }}/dataaccess/" class="gdex-btn-access">
           <i class="fas fa-download"></i> Access Data
-        </a>
-        <a href="{{ result.dataset_url }}/" class="gdex-btn-description">
-          <i class="fas fa-file-alt"></i> Description
         </a>
       </div>
 

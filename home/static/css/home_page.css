@@ -1,7 +1,5 @@
-/* ============================================================
-   TEST HOME PAGE
-   Overrides base layout; loaded only on test_home_page.html
-   ============================================================ */
+/* TEST HOME PAGE: Overrides base layout; loaded only on test_home_page.html */
+
 body { overflow-x: hidden; }
 main:has(.gdex-hero) { padding-top: 0 !important; }
 main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
@@ -22,9 +20,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 
 
-/* ============================================================
-   UCAR WAVES — single image spans features + popular + metrics
-   ============================================================ */
+/* UCAR WAVES — single image spans features + popular + metrics */
 .gdex-waves-wrapper {
     position: relative;
     width: 100vw;
@@ -44,9 +40,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 
 
-/* ============================================================
-   HERO
-   ============================================================ */
+/* HERO */
 .gdex-hero {
     min-height: 540px;
     display: flex;
@@ -141,9 +135,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 
 
-/* ============================================================
-   SEARCH OUTER — overlaps hero via negative margin (test: full-width)
-   ============================================================ */
+/* SEARCH OUTER — overlaps hero via negative margin (test: full-width) */
 .gdex-search-outer {
     margin-top: -6rem;
     position: relative;
@@ -216,9 +208,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 
 
-/* ============================================================
-   CHIPS (test: full-width)
-   ============================================================ */
+/* CHIPS (test: full-width) */
 .gdex-search-chips {
     background-color: #ffffff;
     text-align: center;
@@ -248,7 +238,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
                 color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 .gdex-chip strong { display: block; font-weight: 600; color: #00357a; }
-.gdex-chip small { font-weight: 400; font-size: 0.75rem; color: #5a6a80; }
+.gdex-chip small { font-weight: 400; font-size: 0.75rem; color: #333333; }
 .gdex-chip i { color: #0057c2; font-size: 1.8rem; flex-shrink: 0; }
 .gdex-chip:hover {
     background-color: #0057c2;
@@ -263,9 +253,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-chip:hover i { color: #ffffff; }
 
 
-/* ============================================================
-   FEATURE CARDS
-   ============================================================ */
+/* FEATURE CARDS */
 .gdex-features-section {
     background-color: #f2f2f2;
     padding: 4rem 0 5rem;
@@ -273,6 +261,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-feature-card {
     position: relative;
     background-color: #f8f8f8;
+    border: 4px solid rgba(41, 82, 196, 0.9);
     border-radius: 25px;
     padding: 2.25rem 1.75rem;
     height: 100%;
@@ -281,32 +270,15 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     flex-direction: column;
     align-items: center;
     text-align: center;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     cursor: pointer;
     box-shadow: 0 2px 12px rgba(41, 82, 196, 0.07);
     z-index: 11;
 }
-.gdex-feature-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(41, 82, 196, 0.13); }
-.gdex-feature-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 25px;
-    padding: 4px;
-    background: linear-gradient(to top right,
-        rgba(41,82,196,0.35) 0%, rgba(41,82,196,0.65) 40%,
-        rgba(41,82,196,0.90) 75%, rgba(41,82,196,1.00) 100%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-    pointer-events: none;
-    transition: background 0.25s ease;
-}
-.gdex-feature-card:hover::before {
-    background: linear-gradient(to top right,
-        rgba(41,82,196,0.60) 0%, rgba(41,82,196,0.85) 40%,
-        rgba(41,82,196,1.00) 75%, rgba(41,82,196,1.00) 100%);
+.gdex-feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(41, 82, 196, 0.13);
+    border-color: rgba(41, 82, 196, 1);
 }
 .gdex-feature-card__icon {
     width: 60px;
@@ -329,12 +301,12 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 .gdex-feature-card__desc {
     font-size: 0.875rem;
-    color: #5a6a80;
+    color: #333333;
     line-height: 1.6;
     flex: 1;
     margin-bottom: 1rem;
 }
-.gdex-feature-card__desc p { margin: 0; color: #5a6a80; }
+.gdex-feature-card__desc p { margin: 0; color: #333333; }
 .gdex-feature-card__link {
     margin-top: auto;
     color: #0057c2 !important;
@@ -346,9 +318,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-feature-card__link:hover { color: #00357a !important; text-decoration: underline; }
 
 
-/* ============================================================
-   POPULAR DATASETS
-   ============================================================ */
+/* POPULAR DATASETS */
 .gdex-popular-section {
     background-color: #ffffff;
     padding: 5rem 0 4.5rem;
@@ -479,9 +449,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 
 
-/* ============================================================
-   METRICS
-   ============================================================ */
+/* METRICS */
 .gdex-metrics-section {
     background-color: #011837;
     background-size: cover;
@@ -536,16 +504,14 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-metric__label {
     font-size: 0.78rem;
     font-weight: 500;
-    color: #6b7a99;
+    color: #333333;
     line-height: 1.4;
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
 
 
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* MOBILE */
 @media (max-width: 767px) {
     .gdex-hero { min-height: 320px; padding-bottom: 4rem; }
     .gdex-hero__content { padding-top: 2rem; padding-bottom: 1.5rem; }
