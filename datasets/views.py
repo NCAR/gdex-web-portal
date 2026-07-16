@@ -700,8 +700,6 @@ def custom_subset(request, dsid):
 
     ctx = {
         'subset': subset_context,
-        'gmap_api_key': settings.GMAP_API_KEY,
-        'gmap_api_url': settings.GMAP_API_URL
         }
 
     if d:
