@@ -50,8 +50,10 @@ function defineDrag() {
   var panMode = drawboxMode === "pan";
   if (panMode) {
     drawbox.dragging.enable();
+    drawbox.scrollWheelZoom.enable();
   } else {
     drawbox.dragging.disable();
+    drawbox.scrollWheelZoom.disable();
   }
   ["gdrawboxmap_nlat", "gdrawboxmap_slat", "gdrawboxmap_wlon", "gdrawboxmap_elon"].forEach(function(id) {
     qsById(id).disabled = panMode;
