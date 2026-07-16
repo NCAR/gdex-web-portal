@@ -274,32 +274,47 @@ function initDrawBoxMap() {
 }
 
 (function() {
-  var mapSelectDiv = document.getElementById("mapselect");
-  if (!mapSelectDiv) return;
+  function setup() {
+    var mapSelectDiv = document.getElementById("mapselect");
+    if (!mapSelectDiv) return;
 
-  var initAttempts = 0;
-  var retryInterval = null;
+    var initAttempts = 0;
+    var retryInterval = null;
 
-  function tryInit() {
-    if (mapSelectDiv.style.display === "none") return;
-    if (map.handles.drawbox) {
-      map.handles.drawbox.invalidateSize();
-      return;
-    }
-    if (typeof L == "undefined") {
-      initAttempts++;
-      if (initAttempts == 20) {
-        clearInterval(retryInterval);
-        alert("The interactive map failed to load. You can still enter the bounding coordinates manually in the boxes below.");
+    function tryInit() {
+      if (mapSelectDiv.style.display === "none") return;
+      if (map.handles.drawbox) {
+        map.handles.drawbox.invalidateSize();
+        return;
       }
-      return;
+      if (typeof L == "undefined") {
+        initAttempts++;
+        if (initAttempts == 20) {
+          clearInterval(retryInterval);
+          alert("The interactive map failed to load. You can still enter the bounding coordinates manually in the boxes below.");
+        }
+        return;
+      }
+      initDrawBoxMap();
+      clearInterval(retryInterval);
     }
-    initDrawBoxMap();
-    clearInterval(retryInterval);
+
+    var observer = new MutationObserver(tryInit);
+    observer.observe(mapSelectDiv, { attributes: true, attributeFilter: ["style"] });
+    tryInit();
+    retryInterval = setInterval(tryInit, 100);
   }
 
-  var observer = new MutationObserver(tryInit);
-  observer.observe(mapSelectDiv, { attributes: true, attributeFilter: ["style"] });
-  tryInit();
-  retryInterval = setInterval(tryInit, 100);
+  // On a full page load, this script's own <script src> tag is parsed (and
+  // executed synchronously) before the parser reaches #mapselect further
+  // down the same document, so it must wait for DOMContentLoaded. When this
+  // file is instead re-run because an AJAX tab-swap injected a fresh copy of
+  // this markup via jQuery's .html() (which executes embedded scripts only
+  // after inserting their DOM), the document has long since finished
+  // loading and setup() must run immediately.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setup);
+  } else {
+    setup();
+  }
 })();
