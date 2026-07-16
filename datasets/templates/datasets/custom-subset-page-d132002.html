@@ -2,13 +2,10 @@
 
 <link rel="stylesheet" href="{% static 'datasets/css/subset.css' %}">
 <link rel="stylesheet" href="{% static 'datasets/css/gmap.css' %}">
+<link rel="stylesheet" href="{% static 'datasets/vendor/leaflet/leaflet.css' %}">
 
-{{ gmap_api_key|safe|json_script:"gmap_api_key" }}
-{{ gmap_api_url|safe|json_script:"gmap_api_url" }}
-
-<script id="gmaps3_script" type="text/javascript" src="{% static 'datasets/js/gmaps3.js' %}"></script>
-<script id="gmapkey3_script" type="text/javascript" src="{% static 'datasets/js/gmapkey3.js' %}"></script>
-<script id="drawboxmap_script" type="text/javascript" src="{% static 'js/gmap_drawbox.js' %}"></script>
+<script type="text/javascript" src="{% static 'datasets/vendor/leaflet/leaflet.js' %}"></script>
+<script id="drawboxmap_script" type="text/javascript" src="{% static 'datasets/js/osm_drawbox.js' %}"></script>
 
 <script id="ispd_subset_script" type="text/javascript" src="{% static 'datasets/js/ispdv4_subset.js' %}"></script>
 <script id="custom_subset_script" type="text/javascript" src="{% static 'datasets/js/custom_subset.js' %}"></script>
@@ -108,7 +105,7 @@
    </select>
 </div>
 
-<!-- Spatial range selection via Google map -->
+<!-- Spatial range selection via interactive map -->
 
 <div class="py-1" style="display: none" id="mapselect">
    {% include "datasets/google-map.html" %}
