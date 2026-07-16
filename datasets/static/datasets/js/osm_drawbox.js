@@ -4,7 +4,7 @@
  * names (checkInput, resetToFullGlobalSelection, refreshMap,
  * map.handles.drawbox) relied on by the dataset-specific subset scripts
  * (BUFR_subset.js, prepbufr_subset.js, ispdv4_subset.js, etc.) and by the
- * markup in google-map.html. Zoom in/out uses Leaflet's own on-map zoom
+ * markup in leaflet-osm-map.html. Zoom in/out uses Leaflet's own on-map zoom
  * control, and pan/draw-box mode is toggled via an on-map pencil-icon
  * control (drawboxMode) rather than the old external radio buttons.
  */
