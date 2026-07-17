@@ -19,32 +19,40 @@
               <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon"></i>
             </a>
           </h3>
-          <p class="gdex-dataset-result__doi">
-            DOI: {{ result.doi }}
-            {% if result.doi != 'N/A' %}
-            <button class="gdex-doi-copy" title="Copy DOI" data-doi="{{ result.doi }}">
-              <i class="fas fa-copy"></i>
-            </button>
-            {% endif %}
-          </p>
-          {% if result.dataset_type == 'H' %}
-          <p class="gdex-ancillary-badge">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            Ancillary use only — not recommended as a primary research dataset. Likely superseded by newer datasets.
-          </p>
-          {% endif %}
         </div>
       </div>
 
-      {# ── Metadata row ── #}
-      <div class="gdex-dataset-result__meta">
-        <span><strong>ID:</strong> {{ result.dataset_id }}</span>
-        <span><strong>Temporal Range:</strong> {{ result.temporal_range }}</span>
-        <span><strong>Data Format:</strong> {{ result.data_format_display }}</span>
-      </div>
+      <p class="gdex-dataset-result__doi">
+        DOI: {{ result.doi }}
+        {% if result.doi != 'N/A' %}
+        <button class="gdex-doi-copy" title="Copy DOI" data-doi="{{ result.doi }}">
+          <i class="fas fa-copy"></i>
+        </button>
+        {% endif %}
+      </p>
+      {% if result.dataset_type == 'H' %}
+      <p class="gdex-ancillary-badge">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Ancillary use only — not recommended as a primary research dataset. Likely superseded by newer datasets.
+      </p>
+      {% endif %}
 
-      {# ── Access-data button ── #}
-      <div class="gdex-dataset-result__actions">
+      {# ── Metadata + access button row ── #}
+      <div class="gdex-dataset-result__bottom">
+        <div class="gdex-dataset-result__meta">
+          <div class="gdex-dataset-result__meta-item">
+            <span class="gdex-dataset-result__meta-label">ID</span>
+            <span class="gdex-dataset-result__meta-value">{{ result.dataset_id }}</span>
+          </div>
+          <div class="gdex-dataset-result__meta-item">
+            <span class="gdex-dataset-result__meta-label">Temporal Range</span>
+            <span class="gdex-dataset-result__meta-value">{{ result.temporal_range }}</span>
+          </div>
+          <div class="gdex-dataset-result__meta-item">
+            <span class="gdex-dataset-result__meta-label">Data Format</span>
+            <span class="gdex-dataset-result__meta-value">{{ result.data_format_display }}</span>
+          </div>
+        </div>
         <a href="{{ result.dataset_url }}/dataaccess/" class="gdex-btn-access">
           <i class="fas fa-download"></i> Access Data
         </a>

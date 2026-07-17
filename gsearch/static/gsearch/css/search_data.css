@@ -582,13 +582,12 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 }
 .gdex-dataset-result__top {
     display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin-bottom: 0.9rem;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
 }
 .gdex-dataset-result__title-block { flex: 1; min-width: 0; }
 .gdex-dataset-result__title {
@@ -636,16 +635,21 @@
 }
 .gdex-dataset-result__doi {
     font-size: 0.85rem;
-    color: #FAA119;
-    margin: 0;
-    display: flex;
+    font-weight: 600;
+    color: #b3690c;
+    background-color: #fdf1de;
+    border-radius: 8px;
+    padding: 0.3rem 0.7rem;
+    margin: 0 0 0.9rem;
+    display: inline-flex;
+    width: fit-content;
     align-items: center;
     gap: 0.3rem;
 }
 .gdex-doi-copy {
     background: none;
     border: none;
-    color: #9aabbf;
+    color: #6b7a80;
     cursor: pointer;
     padding: 0;
     font-size: 0.85rem;
@@ -671,15 +675,41 @@
 }
 .gdex-dataset-result__cloud-btn:hover { color: #0057c2; border-color: #0057c2; }
 
+.gdex-dataset-result__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: auto;
+}
 .gdex-dataset-result__meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem 1.75rem;
-    font-size: 0.98rem;
-    color: #5a6a80;
-    margin-bottom: 0.8rem;
+    align-items: center;
+    gap: 1rem 2.25rem;
+    background-color: #eef0f4;
+    border-radius: 12px;
+    padding: 0.85rem 1.1rem;
+    flex: 1;
+    min-width: 0;
 }
-.gdex-dataset-result__meta strong { color: #1a1a2e; font-weight: 600; }
+.gdex-dataset-result__meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.gdex-dataset-result__meta-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7a99;
+}
+.gdex-dataset-result__meta-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
 
 .gdex-dataset-result__actions {
     display: flex;
@@ -692,6 +722,7 @@ a.gdex-btn-access:link,
 a.gdex-btn-access:visited {
     display: inline-flex;
     align-items: center;
+    flex-shrink: 0;
     gap: 0.4rem;
     background: #0057c2;
     color: #ffffff;

@@ -237,9 +237,9 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     transition: background-color 0.2s ease, border-color 0.2s ease,
                 color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
-.gdex-chip strong { display: block; font-weight: 600; font-size: 1.2rem; color: #00357a; }
-.gdex-chip small { font-weight: 400; font-size: 1rem; color: #333333; }
-.gdex-chip i { color: #0057c2; font-size: 1.8rem; flex-shrink: 0; }
+.gdex-chip strong { display: block; font-weight: 600; font-size: 1rem; color: #00357a; }
+.gdex-chip small { font-weight: 400; font-size: 0.85rem; color: #333333; }
+.gdex-chip i { color: #0057c2; font-size: 1.5rem; flex-shrink: 0; }
 .gdex-chip:hover {
     background-color: #0057c2;
     border-color: #0057c2;
