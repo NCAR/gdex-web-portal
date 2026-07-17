@@ -34,18 +34,20 @@
   {% if datasets %}
   <div class="gdex-specialized-list">
     {% for ds in datasets %}
-    <article class="gdex-specialized-card">
-      <div class="gdex-specialized-card__thumb gdex-specialized-card__thumb--rank">
+    <article class="gdex-dataset-result">
+      <div class="gdex-dataset-result__thumb gdex-specialized-card__thumb--rank">
         <span class="gdex-specialized-card__rank">#{{ ds.rank }}</span>
       </div>
-      <div class="gdex-specialized-card__body">
-        <div class="gdex-specialized-card__top">
-          <h3 class="gdex-specialized-card__title">
-            <a href="/datasets/{{ ds.dsid }}/">
-              {{ ds.title }}
-              <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon"></i>
-            </a>
-          </h3>
+      <div class="gdex-dataset-result__body">
+        <div class="gdex-dataset-result__top">
+          <div class="gdex-dataset-result__title-block">
+            <h3 class="gdex-dataset-result__title">
+              <a href="/datasets/{{ ds.dsid }}/">
+                {{ ds.title }}
+                <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon"></i>
+              </a>
+            </h3>
+          </div>
         </div>
         <p class="gdex-dataset-result__doi">ID: {{ ds.dsid }}</p>
         <div class="gdex-dataset-result__actions">

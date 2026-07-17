@@ -35,7 +35,9 @@
     function fmt(n) { return Number(n).toLocaleString(); }
     function fmtVol(tb) {
         var n = parseFloat(tb);
-        return n >= 1000 ? (n / 1000).toFixed(1) + ' PB' : Math.round(n) + ' TB';
+        if (n >= 1000) return (n / 1000).toFixed(1) + ' PB';
+        if (n < 1) return Math.round(n * 1024) + ' GB';
+        return Math.round(n) + ' TB';
     }
 
     fetch(apiUrl)

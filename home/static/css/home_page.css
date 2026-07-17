@@ -225,10 +225,10 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 .gdex-chip {
     display: inline-flex;
-    align-items: center;
+    align-items: flex-start;
     min-width: 295px;
     background-color: #ffffff;
-    border: 2px solid #0057c2;
+    border: 1.5px solid rgba(0, 87, 194, 0.35);
     color: #00357a;
     border-radius: 8px;
     padding: 0.6rem 1rem;
@@ -423,7 +423,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #9aabbf;
+    color: #333333;
 }
 .gdex-dataset-card__name {
     font-family: 'Poppins', sans-serif;
