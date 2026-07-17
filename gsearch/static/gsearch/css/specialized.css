@@ -120,12 +120,13 @@
 .gdex-specialized-card__badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    font-size: 0.75rem;
+    gap: 0.4rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    padding: 0.2rem 0.6rem;
-    border-radius: 20px;
+    padding: 0.35rem 0.85rem;
+    border-radius: 25px;
     white-space: nowrap;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .gdex-specialized-card__badge--ai {
     background-color: #e8f0fb;
@@ -136,13 +137,18 @@
 .gdex-specialized-card__meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.6rem;
 }
 .gdex-specialized-card__meta .gdex-specialized-card__badge {
-    background-color: #f4f7fc;
-    color: #5a6a80;
-    border: 1px solid #dce8f8;
-    font-weight: 500;
+    background-color: #eef4ff;
+    color: #0057c2;
+    border: 1.5px solid #cfe0f9;
+    box-shadow: 0 2px 8px rgba(0, 87, 194, 0.08);
+}
+.gdex-specialized-card__meta .gdex-specialized-card__badge i { color: #0057c2; }
+.gdex-specialized-card__meta .gdex-specialized-card__badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 87, 194, 0.15);
 }
 
 @media (max-width: 576px) {

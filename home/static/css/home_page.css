@@ -228,7 +228,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     align-items: center;
     min-width: 295px;
     background-color: #ffffff;
-    border: 2px solid #0057c2;
+    border: 2px solid #faa119;
     color: #00357a;
     border-radius: 8px;
     padding: 0.6rem 1rem;
@@ -237,8 +237,8 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     transition: background-color 0.2s ease, border-color 0.2s ease,
                 color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
-.gdex-chip strong { display: block; font-weight: 600; color: #00357a; }
-.gdex-chip small { font-weight: 400; font-size: 0.75rem; color: #333333; }
+.gdex-chip strong { display: block; font-weight: 600; font-size: 1.2rem; color: #00357a; }
+.gdex-chip small { font-weight: 400; font-size: 1rem; color: #333333; }
 .gdex-chip i { color: #0057c2; font-size: 1.8rem; flex-shrink: 0; }
 .gdex-chip:hover {
     background-color: #0057c2;
@@ -310,7 +310,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-feature-card__link {
     margin-top: auto;
     color: #0057c2 !important;
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 600;
     text-decoration: none;
     transition: color 0.2s ease;
@@ -330,7 +330,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     color: #00357a;
 }
 .gdex-popular-section__view-all {
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #0057c2 !important;
     text-decoration: none;
@@ -428,7 +428,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-dataset-card__name {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
-    font-size: 1.05rem;
+    font-size: 1.2rem;
     color: #00357a !important;
     line-height: 1.45;
     margin: 0;
