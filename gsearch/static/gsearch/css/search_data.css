@@ -636,8 +636,9 @@
 .gdex-dataset-result__doi {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #FAA119;
+    color: #000000;
     background-color: #F1F0EE;
+    border: 1px solid #d8d6d2;
     border-radius: 8px;
     padding: 0.3rem 0.7rem;
     margin: 0 0 0.9rem;
@@ -647,6 +648,7 @@
     gap: 0.3rem;
 }
 .gdex-doi-copy {
+    position: relative;
     background: none;
     border: none;
     color: #6b7a80;
@@ -660,6 +662,22 @@
 .gdex-doi-copy:hover { color: #0057c2; }
 .gdex-doi-copy--copied,
 .gdex-doi-copy--copied:hover { color: #18a05b; cursor: default; }
+.gdex-doi-copy--copied::after {
+    content: 'Copied!';
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 5;
+}
 
 .gdex-dataset-result__cloud-btn {
     background: none;
@@ -690,7 +708,7 @@
     gap: 0.15rem;
 }
 .gdex-dataset-result__meta-label {
-    font-size: 0.72rem;
+    font-size: 0.85rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
