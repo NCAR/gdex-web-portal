@@ -140,9 +140,9 @@
     gap: 0.6rem;
 }
 .gdex-specialized-card__meta .gdex-specialized-card__badge {
-    background-color: #FFDD31;
+    background-color: #eef4ff;
     color: #0057c2;
-    border: 1.5px solid #FFDD31;
+    border: 1.5px solid #cfe0f9;
     box-shadow: 0 2px 8px rgba(0, 87, 194, 0.08);
 }
 .gdex-specialized-card__meta .gdex-specialized-card__badge i { color: #0057c2; }

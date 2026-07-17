@@ -440,7 +440,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 .gdex-dataset-card__meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.25rem; }
 .gdex-dataset-card__badge {
-    background-color: #eef2fb;
+    background-color: #F1F0EE;
     color: #0057c2;
     font-size: 0.72rem;
     font-weight: 600;
@@ -475,15 +475,21 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 .gdex-metric {
     text-align: center;
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 25px;
     padding: 1.5rem 1rem;
-    border: 1px solid #dce8f8;
-    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
     position: relative;
     z-index: 11;
 }
-.gdex-metric:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0, 87, 194, 0.28); }
+.gdex-metric:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(0, 87, 194, 0.28);
+    background: rgba(255, 255, 255, 0.14);
+}
 .gdex-metric__icon {
     width: 54px;
     height: 54px;
@@ -500,14 +506,15 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
     font-size: clamp(1.4rem, 2.5vw, 1.95rem);
-    color: #00357a;
+    color: #ffffff;
     line-height: 1.1;
     margin-bottom: 0.4rem;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
 }
 .gdex-metric__label {
     font-size: 0.78rem;
     font-weight: 500;
-    color: #333333;
+    color: rgba(255, 255, 255, 0.78);
     line-height: 1.4;
     text-transform: uppercase;
     letter-spacing: 0.04em;
