@@ -37,7 +37,7 @@ from globus.views import get_guest_collection_url
 from gdexwebserver.utils import make_tempdir, remove_tempdir
 from dashboard.utils import get_user_email, is_internal_user
 
-from .forms import DatasetRequestForm, BUFRSubsetForm
+from .forms import DatasetRequestForm, BUFRSubsetForm, ISPDSubsetForm
 from rda_python_dsrqst.PgRDARqst import rda_request
 
 import logging
@@ -706,22 +706,28 @@ def custom_subset(request, dsid):
         ctx.update({'page': d})
         logger.info("Added dataset description context to custom subset page for dataset {}".format(dsid))
     
+    initial_form_data = {
+        'dsid': dsid,
+        'gindex': subset_context.get('gindex', 1),
+        'rtype': 'S',
+        'startDate': subset_context.get('date_start', ''),
+        'endDate': subset_context.get('date_end', ''),
+        'compr': 'gz',
+    }
     if dsid in ['d351000', 'd461000']:
         ctx['form'] = BUFRSubsetForm(
             auto_id='%s',
             dsid=dsid,
-            initial={
-                'dsid':      dsid,
-                'gindex':    subset_context.get('gindex', 1),
-                'rtype':     'S',
-                'startDate': subset_context.get('date_start', ''),
-                'endDate':   subset_context.get('date_end', ''),
-                'compr':     'gz',
-            },
+            initial=initial_form_data,
+        )
+    if dsid == 'd132002':
+        ctx['form'] = ISPDSubsetForm(
+            auto_id='%s',
+            dsid=dsid,
+            initial=initial_form_data,
         )
 
     return render(request, template, ctx)
-
 
 def example_view(request, dsid):
     """Displays page to get code examples."""

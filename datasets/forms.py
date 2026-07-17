@@ -192,6 +192,10 @@ class ISPDSubsetForm(forms.Form):
         ('None', 'No compression'),
     ]
 
+    def __init__(self, *args, **kwargs):
+        self.dsid = kwargs.pop('dsid', None)
+        super(ISPDSubsetForm, self).__init__(*args, **kwargs)
+
     start_date = forms.DateField(
         required=False, 
         label='Start Date', 
@@ -257,7 +261,7 @@ class ISPDSubsetForm(forms.Form):
 
     dsid = forms.CharField(widget=forms.HiddenInput, required=False)
     gindex = forms.IntegerField(widget=forms.HiddenInput, required=False, initial=1)
-    rtype = forms.CharField(widget=forms.HiddenInput, required=False, initial='S')
+    rtype = forms.CharField(widget=forms.HiddenInput, required=False, initial='T')
     tlat = forms.CharField(widget=forms.HiddenInput, required=False)
     blat = forms.CharField(widget=forms.HiddenInput, required=False)
     llon = forms.CharField(widget=forms.HiddenInput, required=False)
