@@ -636,8 +636,8 @@
 .gdex-dataset-result__doi {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #b3690c;
-    background-color: #fdf1de;
+    color: #FAA119;
+    background-color: #F1F0EE;
     border-radius: 8px;
     padding: 0.3rem 0.7rem;
     margin: 0 0 0.9rem;
@@ -675,23 +675,14 @@
 }
 .gdex-dataset-result__cloud-btn:hover { color: #0057c2; border-color: #0057c2; }
 
-.gdex-dataset-result__bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-top: auto;
-}
 .gdex-dataset-result__meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 1rem 2.25rem;
-    background-color: #eef0f4;
-    border-radius: 12px;
-    padding: 0.85rem 1.1rem;
-    flex: 1;
-    min-width: 0;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    padding: 0.85rem 0;
+    margin-top: auto;
 }
 .gdex-dataset-result__meta-item {
     display: flex;
@@ -713,9 +704,17 @@
 
 .gdex-dataset-result__actions {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 0.6rem;
     padding-top: 0.65rem;
+}
+.gdex-dataset-result__actions-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-left: auto;
 }
 a.gdex-btn-access,
 a.gdex-btn-access:link,

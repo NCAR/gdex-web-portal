@@ -52,12 +52,14 @@
         </div>
         <p class="gdex-dataset-result__doi">ID: {{ ds.dsid }}</p>
         <div class="gdex-dataset-result__actions">
-          <a href="/datasets/{{ ds.dsid }}/dataaccess/" class="gdex-btn-access">
-            <i class="fas fa-download"></i> Access Data
-          </a>
-          <a href="/datasets/{{ ds.dsid }}/" class="gdex-btn-description">
-            <i class="fas fa-file-alt"></i> Description
-          </a>
+          <div class="gdex-dataset-result__actions-buttons">
+            <a href="/datasets/{{ ds.dsid }}/dataaccess/" class="gdex-btn-access">
+              <i class="fas fa-download"></i> Access Data
+            </a>
+            <a href="/datasets/{{ ds.dsid }}/" class="gdex-btn-description">
+              <i class="fas fa-file-alt"></i> Description
+            </a>
+          </div>
         </div>
       </div>
     </article>

@@ -37,21 +37,19 @@
       </p>
       {% endif %}
 
-      {# ── Metadata + access button row ── #}
-      <div class="gdex-dataset-result__bottom">
-        <div class="gdex-dataset-result__meta">
-          <div class="gdex-dataset-result__meta-item">
-            <span class="gdex-dataset-result__meta-label">ID</span>
-            <span class="gdex-dataset-result__meta-value">{{ result.dataset_id }}</span>
-          </div>
-          <div class="gdex-dataset-result__meta-item">
-            <span class="gdex-dataset-result__meta-label">Temporal Range</span>
-            <span class="gdex-dataset-result__meta-value">{{ result.temporal_range }}</span>
-          </div>
-          <div class="gdex-dataset-result__meta-item">
-            <span class="gdex-dataset-result__meta-label">Data Format</span>
-            <span class="gdex-dataset-result__meta-value">{{ result.data_format_display }}</span>
-          </div>
+      {# ── Metadata row (includes access button) ── #}
+      <div class="gdex-dataset-result__meta">
+        <div class="gdex-dataset-result__meta-item">
+          <span class="gdex-dataset-result__meta-label">ID</span>
+          <span class="gdex-dataset-result__meta-value">{{ result.dataset_id }}</span>
+        </div>
+        <div class="gdex-dataset-result__meta-item">
+          <span class="gdex-dataset-result__meta-label">Temporal Range</span>
+          <span class="gdex-dataset-result__meta-value">{{ result.temporal_range }}</span>
+        </div>
+        <div class="gdex-dataset-result__meta-item">
+          <span class="gdex-dataset-result__meta-label">Data Format</span>
+          <span class="gdex-dataset-result__meta-value">{{ result.data_format_display }}</span>
         </div>
         <a href="{{ result.dataset_url }}/dataaccess/" class="gdex-btn-access">
           <i class="fas fa-download"></i> Access Data
