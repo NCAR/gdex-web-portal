@@ -118,18 +118,18 @@ class BUFRSubsetForm(forms.Form):
     )
 
     # ------------------------------------------------------------------
-    # Station IDs (comma-separated list of 5-digit WMO numbers)
+    # Station IDs (comma-separated list of 5 or 6 digit WMO numbers)
     # ------------------------------------------------------------------
-    station0  = forms.CharField(
+    stationIDs  = forms.CharField(
         required=False,
-        min_length=5, 
-        max_length=5,
+        min_length=5,
+        max_length=6,
         label='Station IDs (comma-separated)',
         widget=forms.Textarea(attrs={
             'class': 'form-control stns', 
             'rows': '4', 
             'tabindex': '1',
-            'id': 'station0',
+            'id': 'stationIDs',
         }),
     )
 

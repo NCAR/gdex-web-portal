@@ -193,7 +193,7 @@ function checkStations()
    // check stations
    countValid = 0;   // Count the valid entries
 
-   stationInput = document.getElementById("station0").value;
+   stationInput = document.getElementById("stationIDs").value;
    if (stationInput == "" || stationInput == null) {
       alert("Please enter at least one station ID or select a different spatial range option.");
       return false;
