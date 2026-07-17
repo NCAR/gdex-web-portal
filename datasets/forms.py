@@ -123,7 +123,6 @@ class BUFRSubsetForm(forms.Form):
     stationIDs  = forms.CharField(
         required=False,
         min_length=5,
-        max_length=6,
         label='Station IDs (comma-separated)',
         widget=forms.Textarea(attrs={
             'class': 'form-control stns', 
