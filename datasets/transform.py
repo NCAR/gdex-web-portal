@@ -98,6 +98,7 @@ def transform_obml(request, dsid, ctx):
                     "platform_type_code where file_code = %s", (file_code, ))
             res = cursor.fetchall()
             ctx['obs_types'] = {}
+            ctx['add_map'] = False
             for e in res:
                 obs_type = snake_to_capital(e[1])
                 if obs_type not in ctx['obs_types']:
@@ -109,6 +110,7 @@ def transform_obml(request, dsid, ctx):
                             or (e[3] == "coastal_station"
                                 and e[1] == "surface")):
                         can_map = True
+                        ctx['add_map'] = True
                     else:
                         can_map = False
 
