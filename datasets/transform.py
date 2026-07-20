@@ -100,12 +100,12 @@ def transform_obml(request, dsid, ctx):
             ctx['obs_types'] = {}
             ctx['add_map'] = False
             for e in res:
-                obs_type = snake_to_capital(e[1])
-                if obs_type not in ctx['obs_types']:
-                    ctx['obs_types'][obs_type] = {'platforms': {}}
+                if e[1] not in ctx['obs_types']:
+                    ctx['obs_types'][e[1]] = (
+                            {'long_name': snake_to_capital(e[1]),
+                             'platforms': {}})
 
-                platform_type = snake_to_capital(e[3])
-                if platform_type not in ctx['obs_types'][obs_type]:
+                if e[3] not in ctx['obs_types'][e[1]]:
                     if (e[3] in ("land_station", "wind_profiler", "fixed_ship")
                             or (e[3] == "coastal_station"
                                 and e[1] == "surface")):
@@ -114,13 +114,14 @@ def transform_obml(request, dsid, ctx):
                     else:
                         can_map = False
 
-                    ctx['obs_types'][obs_type]['platforms'][platform_type] = (
-                            {'data_types': [], 'num_obs': 0,
+                    ctx['obs_types'][e[1]]['platforms'][e[3]] = (
+                            {'long_name': snake_to_capital(e[3]),
+                             'data_types': [], 'num_obs': 0,
                              'start_date': 99999999999999, 'end_date': 0,
                              'IDs': [], 'can_map': can_map})
 
-                (ctx['obs_types'][obs_type]['platforms'][platform_type]
-                    ['data_types']).append(e[4])
+                (ctx['obs_types'][e[1]]['platforms'][e[3]]['data_types']
+                    .append(e[4]))
 
                 cursor.execute(
                         "select i.id, round(i.sw_lat/10000.::numeric, 2), "
@@ -134,8 +135,7 @@ def transform_obml(request, dsid, ctx):
                 ires = cursor.fetchall()
                 num_obs = 0
                 for ie in ires:
-                    (ctx['obs_types'][obs_type]['platforms'][platform_type]
-                        ['IDs']).append(
+                    (ctx['obs_types'][e[1]]['platforms'][e[3]]['IDs']).append(
                                 {'ID': ie[0],
                                  'sw_lat': (str(abs(ie[1])) +
                                             ("S" if ie[1] < 0. else "N")),
@@ -154,18 +154,16 @@ def transform_obml(request, dsid, ctx):
                                          datetime.strptime(str(ie[7]),
                                                            "%Y%m%d%H%M%S")
                                          .strftime("%Y-%m-%d %H:%M"))})
-                    (ctx['obs_types'][obs_type]['platforms'][platform_type]
-                        ['num_obs']) += ie[5]
-                    (ctx['obs_types'][obs_type]['platforms'][platform_type]
-                        ['start_date']) = min(
-                                ie[6],
-                                (ctx['obs_types'][obs_type]['platforms']
-                                    [platform_type]['start_date']))
-                    (ctx['obs_types'][obs_type]['platforms'][platform_type]
-                        ['end_date']) = max(
-                                ie[7],
-                                (ctx['obs_types'][obs_type]['platforms']
-                                    [platform_type]['end_date']))
+                    ctx['obs_types'][e[1]]['platforms'][e[3]]['num_obs'] += (
+                            ie[5])
+                    ctx['obs_types'][e[1]]['platforms'][e[3]]['start_date'] = (
+                            min(ie[6],
+                                (ctx['obs_types'][e[1]]['platforms'][e[3]]
+                                 ['start_date'])))
+                    ctx['obs_types'][e[1]]['platforms'][e[3]]['end_date'] = (
+                            max(ie[7],
+                                (ctx['obs_types'][e[1]]['platforms'][e[3]]
+                                 ['end_date'])))
 
         else:
             ctx['transform']['error'] = "File does not exist"
