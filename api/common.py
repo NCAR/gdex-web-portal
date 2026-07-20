@@ -1308,7 +1308,7 @@ def get_child_groups(dsid, gindex):
     con,cur = init_connection_new()
     columns = ('grpid','gindex','inote','mnote','dwebcnt','webcnt','title','webpath')
     columns_str = ','.join(columns)
-    query = 'select '+columns_str+' from dsgroup where dsid=%s and pindex=%s order by gindex asc'
+    query = 'select '+columns_str+' from dsgroup where dsid=%s and pindex=%s and (dwebcnt>0 or webcnt>0) order by gindex asc'
     cur.execute(query,(dsid,gindex))
     data = cur.fetchall()
     close_connection(con,cur)
