@@ -225,8 +225,9 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 .gdex-chip {
     display: inline-flex;
-    align-items: flex-start;
+    align-items: center;
     text-align: left;
+    gap: 0.5rem;
     min-width: 295px;
     background-color: #ffffff;
     border: 1.5px solid rgba(0, 87, 194, 0.35);

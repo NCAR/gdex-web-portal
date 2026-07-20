@@ -715,7 +715,7 @@
 }
 .gdex-dataset-result__meta-value {
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 400;
     color: #1a1a2e;
 }
 
@@ -847,7 +847,7 @@ a.gdex-btn-more:hover { color: #0057c2; text-decoration: none; }
     margin: 0 0 0.4rem;
 }
 .gdex-summary-popover__text {
-    font-size: 0.82rem;
+    font-size: 0.98rem;
     color: #3a4a6b;
     line-height: 1.6;
     margin: 0 0 0.55rem;
