@@ -110,7 +110,7 @@ function toggleStationData(i) {
     {% for obs_type, odict in obs_types.items %}
     <table style="width: 93%" class="mt-2">
         <thead>
-            <th class="text-center"><b>Observation Type:</b> {{ obs_type }}</th>
+            <th class="text-center"><b>Observation Type:</b> {{ obs_type.long_name }}</th>
         </thead>
         <tbody>
             {% for platform_type, pdict in odict.platforms.items %}
@@ -122,7 +122,7 @@ function toggleStationData(i) {
                             <tbody>
                                 <tr>
                                     <td>
-                                        <b>Observing Platform:</b> {{ platform_type }}
+                                        <b>Observing Platform:</b> {{ platform_type.long_name }}
                                         <br>
                                         <b>Temporal Range:</b> {{ sdate|slice:"0:4" }}-{{ sdate|slice:"4:6" }}-{{ sdate|slice:"6:8" }} to {{ edate|slice:"0:4" }}-{{ edate|slice:"4:6" }}-{{ edate|slice:"6:8" }}
                                         <br>
