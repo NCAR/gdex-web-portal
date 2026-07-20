@@ -193,7 +193,7 @@ function checkStations()
    // check stations
    countValid = 0;   // Count the valid entries
 
-   stationInput = document.getElementById("station0").value;
+   stationInput = document.getElementById("stationIDs").value;
    if (stationInput == "" || stationInput == null) {
       alert("Please enter at least one station ID or select a different spatial range option.");
       return false;
@@ -515,19 +515,6 @@ function checkParameters()
 }
 
 /**
- * function to show/hide google map
- */
-function displayGoogleMap(act)
-{
-   if(act == 1) {
-      $("#mapselect").show();
-   } else {
-      setSpaceValues();
-      $("#mapselect").hide();
-   }
-}
-
-/**
  * function to show appropriate spatial subsetting selection
  */
 function displayGridSelection(value)
@@ -540,7 +527,7 @@ function displayGridSelection(value)
   
   // Google map lat/lon selection
   if (value == 0) {
-    displayGoogleMap(1);
+    $("#mapselect").show();
     $("#stationSelect").hide();
   }
 

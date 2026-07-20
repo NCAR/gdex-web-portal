@@ -118,16 +118,18 @@ class BUFRSubsetForm(forms.Form):
     )
 
     # ------------------------------------------------------------------
-    # Station IDs (comma-separated list of 5-digit WMO numbers)
+    # Station IDs (comma-separated list of 5 or 6 digit WMO numbers)
     # ------------------------------------------------------------------
-    station0  = forms.CharField(
-        required=False, 
-        max_length=5, 
-        label='Station 1',  
+    stationIDs  = forms.CharField(
+        required=False,
+        min_length=5,
+        label='Station IDs (comma-separated)',
         widget=forms.Textarea(attrs={
             'class': 'form-control stns', 
-            'rows': '4', 'tabindex': '1'
-            }),
+            'rows': '4', 
+            'tabindex': '1',
+            'id': 'stationIDs',
+        }),
     )
 
     # ------------------------------------------------------------------
@@ -169,6 +171,110 @@ class BUFRSubsetForm(forms.Form):
             raise forms.ValidationError('Start date must not be later than end date.')
         return cleaned
     
+class ISPDSubsetForm(forms.Form):
+    """ ISPD subset form for dataset d132002 """
+
+    SPATIAL_CHOICES = [
+        ('-1', 'Choose a spatial subset preference'),
+        ('0', 'Select latitude/longitude region via map'),
+        ('1', 'Select location by station ID'),
+        ('2', 'Select location by location name'),
+    ]
+    OBSERVATION_TYPE_CHOICES = [
+        ('RADIOSONDE', 'Radiosonde observations'),
+        ('DROPSONDE', 'Dropsonde observations'),
+        ('MARINE', 'Marine observations'),
+        ('SFC_STATION', 'Surface station observations'),
+        ('TC_BEST_TRACK', 'Tropical Cyclone Best Track observations'),
+    ]
+    COMPRESSION_CHOICES = [
+        ('gz', '.gz (Gzip)'),
+        ('None', 'No compression'),
+    ]
+
+    def __init__(self, *args, **kwargs):
+        self.dsid = kwargs.pop('dsid', None)
+        super(ISPDSubsetForm, self).__init__(*args, **kwargs)
+
+    start_date = forms.DateField(
+        required=False, 
+        label='Start Date', 
+        input_formats=['%Y-%m-%d'], 
+        widget=forms.TextInput(attrs={
+            'placeholder': 'YYYY-MM-DD', 
+            'size': '10', 
+            'maxlength': '10'
+            }
+        ),
+    )
+    end_date = forms.DateField(
+        required=False, 
+        label='End Date', 
+        input_formats=['%Y-%m-%d'], 
+        widget=forms.TextInput(attrs={
+            'placeholder': 'YYYY-MM-DD', 
+            'size': '10', 
+            'maxlength': '10'
+            }
+        ),
+    )
+    grid_selection = forms.ChoiceField(
+        required=True, 
+        choices=SPATIAL_CHOICES, 
+        label='Spatial Subset Preference',
+        widget=forms.Select(attrs={
+            'class': 'custom-select', 
+            'id': 'gridSelectionMenu', 
+            'onchange': 'displayGridSelection(document.form.grid_selection.value)'
+            }
+        ),
+    )
+    station_ids = forms.CharField(
+        required=False, 
+        min_length=5, 
+        label='Station IDs (comma-separated)',
+        widget=forms.Textarea(attrs={
+            'class': 'form-control stns', 
+            'rows': '4', 
+            'tabindex': '1', 
+            'id': 'stationIDs'
+            }
+        ),
+    )
+    location_names = forms.CharField(
+        required=False, 
+        label='Location Names (comma-separated)',
+        widget=forms.Textarea(attrs={
+            'class': 'form-control locs', 
+            'rows': '4', 
+            'tabindex': '1', 
+            'id': 'locationNames'
+            }
+        ),
+    )
+    observation_types = forms.MultipleChoiceField(
+        required=False, 
+        choices=OBSERVATION_TYPE_CHOICES,
+        label='Observation Types',
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+    )
+
+    dsid = forms.CharField(widget=forms.HiddenInput, required=False)
+    gindex = forms.IntegerField(widget=forms.HiddenInput, required=False, initial=1)
+    rtype = forms.CharField(widget=forms.HiddenInput, required=False, initial='T')
+    tlat = forms.CharField(widget=forms.HiddenInput, required=False)
+    blat = forms.CharField(widget=forms.HiddenInput, required=False)
+    llon = forms.CharField(widget=forms.HiddenInput, required=False)
+    rlon = forms.CharField(widget=forms.HiddenInput, required=False)
+
+    def clean(self):
+        cleaned = super().clean()
+        start = cleaned.get('startDate')
+        end   = cleaned.get('endDate')
+        if start and end and start > end:
+            raise forms.ValidationError('Start date must not be later than end date.')
+        return cleaned
+
 def validate_dsid(value):
     if not re.match(r'^[a-z]{1}[0-9]{6}$', value):
         raise forms.ValidationError("Dataset ID format must be 'd123456'.")

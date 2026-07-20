@@ -117,7 +117,7 @@ function checkDates() {
 /** Validate and process spatial selection */
 function checkSpatial()
 {
-   regionSelection = $('#regionSelectMenu').val();
+   regionSelection = $('#gridSelectionMenu').val();
 
    if (regionSelection == "-1" || regionSelection == null) {
       alert("Please select a spatial range option from the dropdown menu.");
@@ -152,7 +152,7 @@ function checkStations()
    // check stations
    countValid = 0;   // Count the valid entries
 
-   stationInput = document.getElementById("station0").value;
+   stationInput = document.getElementById("stationIDs").value;
    if (stationInput == "" || stationInput == null) {
       alert("Please enter at least one station ID or select a different spatial range option.");
       return false;
@@ -260,7 +260,7 @@ function checkLatLon()
    var value, unit;
    
    i = 0;
-   if(form.mapdisplayed.value == 1) setSpaceValues();
+   setSpaceValues();
    
    max = goodCoordinate(form.tlat.value, true);
    if(max == 999) {
@@ -490,139 +490,24 @@ function getTypes()
   return true;  
 }
 
-function regionSelectChange()
+function displayGridSelection(value)
 {
-   var selectedValue = $('#regionSelectMenu').val();
-
-   if (selectedValue === "-1") {
-      hideRegionSelection();
-   } else if(selectedValue == "1") {
-      displayGoogleMap(1);
-   } else if(selectedValue == "2") {
-      displayStationSelection(1);
-   } else if(selectedValue == "3") {
-      displayLocationSelection(1);
-   }
-}
-
-/** Hide all region selection sections */
-function hideRegionSelection()
-{
-   $("#mapselect").hide();
-   $("#manselect").hide();
-   $("#stationSelect").hide();
-   $("#locationSelect").hide();
-
-   $("form input[name='mapdisplayed']").val(0);
-   $("form input[name='mandisplayed']").val(0);
-   $("form input[name='latlondisplayed']").val(0);
-   $("form input[name='stationdisplayed']").val(0);
-   $("form input[name='locationdisplayed']").val(0);
-}
-
-/**
- * function to show/hide google map
- */
-function displayGoogleMap(act)
-{
-   var mapdisp = $("#mapselect");
-   var mandisp = $("#manselect");
-   var stationdisp = $("#stationSelect");
-   var locationdisp = $("#locationSelect");
-
-   if(act == 1) {
-      mapdisp.show();
-      mandisp.hide();
-      stationdisp.hide();
-      locationdisp.hide();
-
-      document.form.mapdisplayed.value = 1;
-      document.form.mandisplayed.value = 0;
-      document.form.latlondisplayed.value = 1;
-      document.form.stationdisplayed.value = 0;
-      document.form.locationdisplayed.value = 0;
-   } else {
-      setSpaceValues();
-      mapdisp.hide();
-      mandisp.hide();
-      stationdisp.hide();
-      locationdisp.hide();
-
-      document.form.mapdisplayed.value = 0;
-      document.form.mandisplayed.value = 0;
-      document.form.latlondisplayed.value = 0;
-      document.form.stationdisplayed.value = 0;
-      document.form.locationdisplayed.value = 0;
-   }
-}
-
-/**
- * function to show/hide station ID selection
- */
-function displayStationSelection(action)
-{
-   var stationdisp = $("#stationSelect");
-   var locationdisp = $("#locationSelect");
-   var mapdisp     = $("#mapselect");
-   var mandisp     = $("#manselect");
-   
-   if(action == 1) {
-      stationdisp.show();
-      mapdisp.hide();
-      mandisp.hide();
-      locationdisp.hide();
-
-      document.form.latlondisplayed.value = 0;
-      document.form.mapdisplayed.value = 0;
-      document.form.mandisplayed.value = 0;
-      document.form.stationdisplayed.value = 1;
-      document.form.locationdisplayed.value = 0;
-   } else {
-      stationdisp.hide();
-      mapdisp.hide();
-      mandisp.hide();
-      locationdisp.hide();
-      
-      document.form.latlondisplayed.value = 0;
-      document.form.mapdisplayed.value = 0;
-      document.form.mandisplayed.value = 0;
-      document.form.stationdisplayed.value = 0;
-      document.form.locationdisplayed.value = 0;
-   }
-}
-
-/**
- * function to show/hide station ID selection
- */
-function displayLocationSelection(action)
-{
-   var stationdisp = $("#stationSelect");
-   var locationdisp = $("#locationSelect");
-   var mapdisp     = $("#mapselect");
-   var mandisp     = $("#manselect");
-   
-   if(action == 1) {
-      locationdisp.show();
-      mapdisp.hide();
-      mandisp.hide();
-      stationdisp.hide();
-
-      document.form.latlondisplayed.value = 0;
-      document.form.mapdisplayed.value = 0;
-      document.form.mandisplayed.value = 0;
-      document.form.stationdisplayed.value = 0;
-      document.form.locationdisplayed.value = 1;
-   } else {
-      locationdisp.hide();
-      mapdisp.hide();
-      mandisp.hide();
-      stationdisp.hide();
-      
-      document.form.latlondisplayed.value = 0;
-      document.form.mapdisplayed.value = 0;
-      document.form.mandisplayed.value = 0;
-      document.form.stationdisplayed.value = 0;
-      document.form.locationdisplayed.value = 0;
+   if (value === "-1") {
+      $('#mapselect').hide();
+      $('#stationSelect').hide();
+      $('#locationSelect').hide();
+   } else if(value == "0") {
+      $('#mapselect').show();
+      $('#stationSelect').hide();
+      $('#locationSelect').hide();
+   } else if(value == "1") {
+      $('#stationSelect').show();
+      $('#mapselect').hide();
+      $('#locationSelect').hide();
+   } else if(value == "2") {
+      $('#locationSelect').show();
+      $('#mapselect').hide();
+      $('#stationSelect').hide();
    }
 }
 
@@ -708,22 +593,22 @@ function gather_request_info()
    lons = form.llon.value + ", " + form.rlon.value;
    getTypes();
    comp = get_compress_info();
-//   fmt = get_fmt_info();
    fmt = "ascii";
 
    rnote = "Date Limits           : " + dates;
    rinfo = "dates=" + dates;
 
-   if(form.latlondisplayed.value == 1) {
+   gridSelection = $('[name="gridSelection"]').val();
+   if(gridSelection == "0") {
      rnote += "\nLatitude Limits       : " + lats +
               "\nLongitude Limits      : " + lons;
      rinfo += "&lats=" + lats + "&lons=" + lons;
-   } else if (locations && form.locationdisplayed.value == 1) {
-     rnote += "\nLocations              : " + locations;
-     rinfo += "&loc=" + locations;
-   } else if (stations && form.stationdisplayed.value == 1) {
+   } else if (gridSelection == "1") {
      rnote += "\nStation ID            : " + stations;
      rinfo += "&stn=" + stations;
+   } else if (gridSelection == "2") {
+     rnote += "\nLocations              : " + locations;
+     rinfo += "&loc=" + locations;
    }   
 
    if(types){
@@ -769,66 +654,6 @@ function get_fmt_info()
       }
    }
    return "ascii";
-}
-
-/**
- * Add additional fields to station ID form input
- */
-function addStation()
-{
-  if (stationCounter == stationLimit) {
-    alert("You have reached the limit of " + stationCounter + " station inputs");
-  } else if (stationCounter < stationLimit/2) {
-    var tbl = document.getElementById('stationTable');
-    var lastRow = tbl.rows.length;
-    var row = tbl.insertRow(lastRow);
-    
-    // Left cell
-    var cellLeft = row.insertCell(0);
-//    var fontElem = document.createElement('font');
-//    fontElem.style.fontSize="small";
-//    fontElem.style.color="#000000";
-//    fontElem.appendChild(document.createTextNode('Station '+(stationCounter+1)+' '));
-//    cellLeft.appendChild(fontElem);
-    cellLeft.className="body";
-    cellLeft.style.textAlign="left";
-    cellLeft.appendChild(document.createTextNode('Station '+(stationCounter+1)+' '));
-
-    // Right cell
-    var cellRight = row.insertCell(1);
-    var elem = document.createElement('input');
-    elem.type = 'text';
-    elem.name = 'station' + stationCounter;
-    elem.id = 'station' + stationCounter;
-    elem.size = 6;
-    elem.maxlength = 6;
-    cellRight.appendChild(elem);
-    
-    // Add two more blank cells
-    var cellThree = row.insertCell(2);
-    cellThree.className="body";
-    cellThree.style.textAlign="left";
-    var cellFour  = row.insertCell(3);
-  
-    stationCounter++;
-  } else {
-    var tbl = document.getElementById('stationTable');
-    var thisRow = stationCounter-(stationLimit/2);
-//    var fontElem = document.createElement('font');
-//    fontElem.style.fontSize="small";
-//    fontElem.style.color="#000000";
-//    fontElem.appendChild(document.createTextNode('Station '+(stationCounter+1)+' '));
-//    tbl.rows[thisRow].cells[2].appendChild(fontElem);
-    tbl.rows[thisRow].cells[2].appendChild(document.createTextNode('Station '+(stationCounter+1)+' '));
-    var elem = document.createElement('input');
-    elem.type = 'text';
-    elem.name = 'station' + stationCounter;
-    elem.id = 'station' + stationCounter;
-    elem.size = 6;
-    elem.maxlength = 6;
-    tbl.rows[thisRow].cells[3].appendChild(elem);
-    stationCounter++;
-  }
 }
 
 /**

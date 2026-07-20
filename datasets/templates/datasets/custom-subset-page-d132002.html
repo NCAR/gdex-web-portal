@@ -34,20 +34,19 @@
    <div id="request-form" class="component webform yellow-orange-border p-2 mb-4">
 
    <form id="subset-form" name="form">
-   <input type="hidden" name="dsid" value="{{ subset.dsid }}">
-   <input type="hidden" name="gindex" value="{{ subset.gindex|default:'1' }}">
-   <input type="hidden" name="rtype" value="T">
-   <input type="hidden" id="minDate" value="{{ subset.date_start }}">
-   <input type="hidden" id="maxDate" value="{{ subset.date_end }}">
-   <input type="hidden" name="mapdisplayed" value=0>
-   <input type="hidden" name="mandisplayed" value=0>
-   <input type="hidden" name="latlondisplayed" value=0>
-   <input type="hidden" name="stationdisplayed" value=0>
-   <input type="hidden" name="locationdisplayed" value=0>
-   <input type="hidden" name="tlat" type="text" value="">
-   <input type="hidden" name="blat" type="text" value="">
-   <input type="hidden" name="llon" type="text" value="">
-   <input type="hidden" name="rlon" type="text" value="">
+
+      {# --- Hidden fields rendered directly from the form --- #}
+      {{ form.dsid }}
+      {{ form.gindex }}
+      {{ form.rtype }}
+      {{ form.tlat }}
+      {{ form.blat }}
+      {{ form.llon }}
+      {{ form.rlon }}
+
+   {# minDate / maxDate feed the jQuery datepicker min/max – not user inputs #}
+      <input type="hidden" id="minDate" value="{{ subset.date_start }}">
+      <input type="hidden" id="maxDate" value="{{ subset.date_end }}">
 
 <!-- Temporal range selection -->
 <div class="py-2" id="dateSelect">
@@ -124,8 +123,8 @@
       look up station IDs in the ISPD version 4 inventory 
       <a href="https://osdata.gdex.ucar.edu/web/datasets/d132002/docs/ispd_history_v4.00.txt">here</a>.
    </div>
-   <label for="station0">Station IDs (comma separated): </label>
-   <textarea class="form-control" name="station0" id="station0" rows="4"></textarea>
+   <label class="form-label" for="stationIDs">Station IDs (comma separated): </label>
+   <textarea class="form-control" name="stationIDs" id="stationIDs" rows="4"></textarea>
 </div>
 
 <!-- Select location by location name -->
@@ -148,7 +147,7 @@
       for London Heathrow Airport, London Gatwick Airport, and other observation
       records with "London" in the station name field.
    </div>
-   <label for="location0">Enter locations (comma separated): </label>
+   <label class="form-label" for="location0">Enter locations (comma separated): </label>
    <textarea class="form-control" name="location0" id="location0" rows="1" cols="50"></textarea>
 </div>
 
