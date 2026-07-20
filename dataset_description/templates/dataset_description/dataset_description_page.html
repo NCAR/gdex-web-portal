@@ -19,28 +19,23 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
     <script src="{% static 'js/hashchange.js' %}"></script>
 {% endcomment %}
     <script type="text/javascript">
-        function setActiveTab(i) {
-          var li_list = document.getElementById('datasetTab').getElementsByTagName('li');
-          for (n = 0; n < li_list.length; ++n) {
-            var a_list = li_list[n].getElementsByTagName('a');
-            if (a_list.length > 0) {
-              var a = a_list[0];
-              if (a.id == i) {
-                a.classList.add('active');
-                a.ariaSelected = true;
-              } else {
-                a.classList.remove('active');
-                a.ariaSelected = false;
-              }
-            }
-          }
+        function setActiveTab(tabId) {
+            var datasetTab = $('#datasetTab');
+            
+            // Remove 'active' class from all tabs
+            datasetTab.find('.nav-link').removeClass('active');
+            datasetTab.find('.nav-link').attr('aria-selected', 'false');
+
+            // Add 'active' class to the selected tab
+            $('#' + tabId).addClass('active');
+            $('#' + tabId).attr('aria-selected', 'true');
         }
 
         function setTab() {
           path = document.location.pathname.substr(document.location.pathname.indexOf("/datasets") + 10);
           path = path.substr(path.indexOf("/") + 1)
           qs = document.location.search;
-          if (path.indexOf("dataaccess") == 0 || qs.indexOf("content=dataaccess") >= 0 || path.indexOf("listopt") == 0) {
+          if (path.indexOf("dataaccess") == 0 || qs.indexOf("content=dataaccess") >= 0 || path.indexOf("listopt") == 0 || path.indexOf("custom-subset") == 0) {
             setActiveTab("data-access-tab");
           } else if (path.indexOf("citation") == 0) {
             setActiveTab("citation-tab");

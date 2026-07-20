@@ -1,25 +1,10 @@
-/***********************************************************************************
- * 
- *     Title : ADP_subset.js
- *    Author : Thomas Cram (tcram@ucar.edu),
- *      Date : 12/15/2010
- *   Purpose : javascript program to validate the form inputs for subset requests from 
- *             the NCEP ADP BUFR datasets (d351000 and d461000).
- * Work File : $DSSWEB/js/ADP_subset.js
- * Test File : $DSSWEB/js/ADP_subset_test.js
- ***********************************************************************************/
- 
-
-// var dates, stations, rectypes, allbasic, parms, xparms, compr, vars, flts, rinfo;
-var dates, stations, rectypes, parms, compr, rinfo, allbasic;
-var stationCounter = 1;
-var stationLimit = 20;
+var dates, stations, rectypes, params, compr, rinfo, allbasic;
 var stationNum, countValid;
 var ivals, evals;
 
 /* 
    Function is a constructor for an object {struct} that holds current state of 
-   subsetting values whn called. Current implementation is to call at load and submit
+   subsetting values when called. Current implementation is to call at load and submit
    to compare initial and ending values and set bit flag accordingly.
 
    Returns: Object whose attributes are current values
@@ -46,7 +31,7 @@ function getsubsetvals() {
     ss.stations = stn; 
 
     ss.rectypes = countchecked('rectypes');
-    ss.params = countchecked('parms');
+    ss.params = countchecked('params');
     return ss
 }
 
@@ -100,7 +85,7 @@ function sflagtest(b,e) {
     for (var key in b) {
 
       // variable
-      if (key === 'rectypes' || key === 'parms') {
+      if (key === 'rectypes' || key === 'params') {
         if (b[key] !== e[key]) { varflag = 1 }
       }
 
@@ -197,44 +182,53 @@ function checkDates()
  */
 function checkStations()
 {
-   var i, j;
-   var form = document.form;
-   var stationSubmit;
-   var countEmpty;
-
-   // check station IDs
-   countValid = 0;   // Count the valid entries
-   countEmpty = 0;   // Count the empty entries
-//   for($i=1; $i<=stationCounter; $i++) {
-   for($i=1; $i<=stationLimit; $i++) {
-     stationNum = "station"+String($i-1);
-     stationSubmit = document.getElementById(stationNum).value;
-     if (stationSubmit == "") {
-         countEmpty++;
-     } else if (stationSubmit.length < 4) {
-         alert("Invalid value entered for station "+($i)+" - must be 4 or 5 characters");
-         return false;
-     } else {
-         countValid++;
-     }
-   }
-
-   // Fill stations field
+   var i;
+   var stationInput;
+   var countEmpty, countValid;
+   var stns, stn;
+   var patt = new RegExp(/^\s*$/);
+   
    stations = "";
-//   for($i=1; $i<=stationCounter; $i++) {
-   for($i=1; $i<=stationLimit; $i++) {
-       stationNum = "station"+String($i-1);
-     if (countValid == 0) {
-         stations = "ALL";
-     } else if (document.getElementById(stationNum).value != "") {
-         var stationstr = document.getElementById(stationNum).value;
-         if(!stations) {
-           stations = stationstr.toUpperCase();
-         } else {
-           stations += " " + stationstr.toUpperCase();
-         }
-     }
+   
+   // check stations
+   countValid = 0;   // Count the valid entries
+
+   stationInput = document.getElementById("station0").value;
+   if (stationInput == "" || stationInput == null) {
+      alert("Please enter at least one station ID or select a different spatial range option.");
+      return false;
    }
+
+// trim any leading and/or trailing commas, white space.
+   if (stationInput != "") {
+     stationInput = stationInput.replace(/(^\s*)|(,\s*$)/g, "");
+     stationInput = stationInput.replace(/(^,)|(,$)/g, "");
+     countValid++;
+   }
+
+// Validate input for 5 or 6 character length
+   stns = stationInput.split(",");
+   for(i=0; i<=stns.length-1; i++) {
+     stn = stns[i].trim();
+
+     // skip if blank string
+     if (patt.test(stn)) {
+       continue;
+     }
+     
+     // return false if invalid value
+     if (stn.length < 5 || stn.length > 6) {
+       alert("Invalid value entered for station "+stn+" - must be 5 or 6 digits");
+       return false;
+     }
+     
+     if (!stations) {
+       stations = stn;
+     } else {
+       stations += "," + stn;
+     }
+   }   
+   
    return true;
 }
 
@@ -276,18 +270,24 @@ function checkRectypes()
  * Validate spatial subset preference
  *
  */
-function checkSpatialPref()
+function checkSpatial()
 {
+  gridSelection = $('[name="gridSelection"]').val();
 
-   if( (form.mapdisplayed.value == 0) && (form.latlondisplayed.value == 0) && (form.stationdisplayed.value == 0) ) 
-   {
-     alert("Please select a spatial subset preference");
-     return false;
-   } 
-   else 
-   {
-     return true;
-   }
+  if(gridSelection == -1)
+  {
+    alert("Please select a spatial subset preference");
+    return false;
+  } 
+  else if(gridSelection == 0)
+  {
+    return checkLatLon();
+  }
+  else if(gridSelection == 1)
+  {
+    return checkStations();
+  }
+  return true;
 }
 
 /**
@@ -296,13 +296,15 @@ function checkSpatialPref()
  */
 function checkLatLon()
 {
-   var form = document.form;
+   var form = $('#subset-form')[0];
    var i, j;
    var min, max;
    var value, unit;
 
    i = 0;
-   if(form.mapdisplayed.value == 1) setSpaceValues();
+
+   gridSelection = $('[name="gridSelection"]').val();
+   if(gridSelection == 0) setSpaceValues();
    
    max = goodCoordinate(form.tlat.value, true);
    if(max == 999) 
@@ -310,6 +312,7 @@ function checkLatLon()
       alert("Top latitude was entered improperly.\nRe-enter as a positive number, followed by a space, followed by 'N' or 'S'.");
       return false;
    }
+   
 // Verify a space exists between the lat/lon coordinate number and direction
    value = form.tlat.value;
    unit = value.charAt(value.length - 1);
@@ -382,7 +385,7 @@ function setSpaceValues()
    var form = document.form;
    var tmp;
    
-   tmp = document.getElementById("gdrawboxmap_nlat").value;
+   tmp = $("#gdrawboxmap_nlat").val();
    if(tmp >= 0.) 
    {
       form.tlat.value = tmp + ".0 N";
@@ -391,7 +394,7 @@ function setSpaceValues()
    {
       form.tlat.value = (-tmp) + ".0 S";
    }
-   tmp = document.getElementById("gdrawboxmap_slat").value;
+   tmp = $("#gdrawboxmap_slat").val();
    if(tmp >= 0.) 
    {
       form.blat.value = tmp + ".0 N";
@@ -400,7 +403,7 @@ function setSpaceValues()
    {
       form.blat.value = (-tmp) + ".0 S";
    }
-   tmp = document.getElementById("gdrawboxmap_wlon").value;
+   tmp = $("#gdrawboxmap_wlon").val();
    if(tmp >= 0.) 
    {
       form.llon.value = tmp + ".0 E";
@@ -409,7 +412,7 @@ function setSpaceValues()
    {
       form.llon.value = (-tmp)+".0 W";
    }
-   tmp = document.getElementById("gdrawboxmap_elon").value;
+   tmp = $("#gdrawboxmap_elon").val();
    if(tmp >= 0.) 
    {
       document.form.rlon.value = tmp + ".0 E";
@@ -467,7 +470,7 @@ function goodCoordinate(value, islat)
 }
 
 /**
- * Validate parms checkbox selections
+ * Validate parameter checkbox selections
  */
 
 function checkParameters()
@@ -483,18 +486,18 @@ function checkParameters()
   var checkedArray = new Array();
 
   allbasic = "y";
-  parms = "";
+  params = "";
 
-  num_checkboxes = document.form.parms.length;
+  num_checkboxes = document.form.params.length;
   
-  for (i=0; i < document.form.parms.length; i++) 
+  for (i=0; i < document.form.params.length; i++) 
   {
-    if (document.form.parms[i].type == "checkbox" && document.form.parms[i].checked) 
+    if (document.form.params[i].type == "checkbox" && document.form.params[i].checked) 
     {
       num_checked++;
-      checkedArray.push(document.form.parms[i].value)
+      checkedArray.push(document.form.params[i].value)
     }
-    if (document.form.parms[i].type == "checkbox" && !document.form.parms[i].checked)  {
+    if (document.form.params[i].type == "checkbox" && !document.form.params[i].checked)  {
         allbasic = "n";
      }
   }
@@ -506,57 +509,9 @@ function checkParameters()
   } 
   else 
   {
-    parms = checkedArray.join(" ");
+    params = checkedArray.join(" ");
   }
   return true;
-}
-
-
-/**
- * open a help window
- */
-
-function openHelpWindow(helpkey)
-{
-   notewin = window.open("", "DescWin", "width=600,height=400,scrollbars=yes,resizable=yes");
-
-   notewin.document.write("<html><head><title>Help Document</title></head>\n" +
-                          "<body style=\"font-size: 100%; font-family: helvetica,arial,verdana,sans-serif;\">\n");
-   if(helpkey == "temp") { // temporal range help
-      notewin.document.write("<table width=\"100%\">\n" +
-                "<tr style=\"background-color: #336699\">\n" +
-                "<th style=\"color: #ffffff; text-align:center; padding: 5px;\">\n" +
-                "Usage of Temporal Range Selection</th></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "Choose the starting and ending dates that define the bounding dates for\n" +
-                "your request, using the format YYYY-MM-DD. The bounding dates and all dates\n" +
-                "in between will be included in the output data set.  The ending date must \n" + 
-                "be later than or equal to the starting date.  Due to the large amount of data\n" +
-                "produced for long temporal subset periods, please limit your request to one\n" +
-                "year.  If you need more than one year of data, submit multiple data requests.\n" + 
-                "</td></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "Click 'Reset Range' to re-select the full period of record.\n" +
-                "</td></tr></table>\n");
-   }
-   if(helpkey == "spatial") { // Spatial subset preference help
-      notewin.document.write("<table width=\"100%\">\n" +
-                "<tr style=\"background-color: #336699\">\n" +
-                "<th style=\"color: #ffffff; text-align:center; padding: 5px;\">\n" +
-                "Spatial Subset Selection</th></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "The options for spatial subsetting are as follows:" +
-                "</td></tr>\n" +
-                "<tr><td style=\"font-size: medium; padding: 5px;\">\n" +
-                "<ul>\n" + 
-                "<li>Select region by latitude and longitude coordinates via Google map</li>\n" + 
-                "</ul></td></tr></table>\n");
-
-   }
-   notewin.document.write("<form><center><input type=\"button\" value=\"Close This Window\" " +
-           "onClick=\"self.close()\"></center></form>\n</body></html>\n");
-   notewin.document.close();
-   notewin.focus();
 }
 
 /**
@@ -564,65 +519,36 @@ function openHelpWindow(helpkey)
  */
 function displayGoogleMap(act)
 {
-   var mapdisp = document.getElementById("mapselect");
-   var mandisp = document.getElementById("manselect");
-
-   if(act == 1) 
-   {
-      mapdisp.style.display="block";
-      mandisp.style.display="none";
-      refreshMap('DrawBox');
-      document.form.mapdisplayed.value = 1;
-      document.form.latlondisplayed.value=1;
-   } 
-   else 
-   {
+   if(act == 1) {
+      $("#mapselect").show();
+   } else {
       setSpaceValues();
-      mapdisp.style.display="none";
-      mandisp.style.display="block";
-      document.form.mapdisplayed.value = 0;
-      document.form.latlondisplayed.value=1;
+      $("#mapselect").hide();
    }
 }
 
 /**
  * function to show appropriate spatial subsetting selection
  */
-function displayGridSelection(act)
+function displayGridSelection(value)
 {
-   var mapdisp     = document.getElementById("mapselect");
-   var mandisp     = document.getElementById("manselect");
-   var stationdisp = document.getElementById("stationSelect");
-
   // Null selection
-  if (act == -1) 
-  {
-    mapdisp.style.display="none";
-    mandisp.style.display="none";
-    stationdisp.style.display="none";
-    document.form.mapdisplayed.value=0;
-    document.form.latlondisplayed.value=0;
-    document.form.stationdisplayed.value=0;
+  if (value == -1) {
+    $("#mapselect").hide();
+    $("#stationSelect").hide();
   }
   
   // Google map lat/lon selection
-  if (act == 0) 
-  {
+  if (value == 0) {
     displayGoogleMap(1);
-    stationdisp.style.display="none";
-    document.form.stationdisplayed.value=0;
-//    loadDrawBoxMap('drawboxmap',20,0);
+    $("#stationSelect").hide();
   }
 
   // Station ID
-  if (act == 1) {
-    mapdisp.style.display="none";
-    stationdisp.style.display="block";
-    document.form.mapdisplayed.value=0;
-    document.form.latlondisplayed.value=0;
-    document.form.stationdisplayed.value=1;
+  if (value == 1) {
+    $("#mapselect").hide();
+    $("#stationSelect").show();
   }
-
 }
 
 /**
@@ -650,12 +576,14 @@ function gather_request_info()
    rqstinfo    = "\nDate Limits               : " + dates;
    rinfo  = "&dates=" + dates;
 
-   if(form.latlondisplayed.value == 1) 
+   // check lat/lon values if Google map is used, otherwise check station ID values
+   gridSelection = $('[name="gridSelection"]').val();
+   if(gridSelection == 0)
    {
      rqstinfo += "\nLatitude Limits           : " + lats +
                  "\nLongitude Limits          : " + lons;
      rinfo += "&lats=" + lats + "&lons=" + lons;
-   }  else if (form.stationdisplayed.value == 1) {
+   }  else if (gridSelection == 1) {
      rqstinfo += "\nStation ID                : " + stations;
      rinfo += "&station=" + stations;
    }
@@ -666,8 +594,8 @@ function gather_request_info()
    // rqstinfo   += "\nAll Basic Parameters      : " + allbasic;
    rinfo += "&allbasic=" + allbasic;
 
-   rqstinfo   += "\nParameters                : " + parms; 
-   rinfo += "&parms=" + parms;
+   rqstinfo   += "\nParameters                : " + params; 
+   rinfo += "&params=" + params;
 
    rqstinfo   += "\nCompression               : " + compr; 
    rinfo += "&compr=" + compr;
@@ -685,7 +613,7 @@ function gather_request_info()
 function get_compress_info()
 {
    var i, idx;
-   var comprs = document.form.elements['compr'];
+   var comprs = document.form.elements['compression'];
    
    idx = 0;
    for(i = 0; i < comprs.length; i++) {
@@ -693,25 +621,21 @@ function get_compress_info()
          return comprs[i].value;
       }
    }
-   return "no";
+   return "None";
 }
 
 /**
- * Review subset selections and submit to dsrqst.php
+ * Review subset selections and submit request
  */
 function reviewRequest()
 {
    var dsid, rindex, rtype;
    var rnote;
    var form = document.form;
-   var specialist = document.form.specialist.value;
-   var email = document.form.email.value;
 
 // Validate form inputs
-   if(!checkSpatialPref()) return;
+   if(!checkSpatial()) return;
    if(!checkDates()) return;
-   if(!checkStations()) return;
-   if(form.latlondisplayed.value == 1 && !checkLatLon()) return;
    if(!checkParameters()) return;
    if(!checkRectypes()) return;
 
@@ -737,7 +661,7 @@ function reviewRequest()
       rinfo: rinfo,
       rnote: rnote
    };
-   if (compr != "no") {
+   if (compr != "None") {
       postData.afmt = compr;
    }
    for (var key in postData) {
@@ -750,6 +674,10 @@ function reviewRequest()
 }
 
 $(document).ready(function() {
+   initvals();
+   selectAllRectypes();
+   selectAllParams();
+
    $("#submit-form").on("submit", function(event) {
       event.preventDefault();
 
@@ -774,81 +702,28 @@ function cancelRequest()
 }
 
 /**
- * Add additional fields to station ID form input
+ * Select all parameters
  */
-function addStation()
+function selectAllParams()
 {
-  if (stationCounter == stationLimit) {
-    alert("You have reached the limit of " + stationCounter + " station inputs");
-  } else if (stationCounter < stationLimit/2) {
-    var tbl = document.getElementById('stationTable');
-    var lastRow = tbl.rows.length;
-    var row = tbl.insertRow(lastRow);
-
-    // Left cell
-    var cellLeft = row.insertCell(0);
-    cellLeft.className="body";
-    cellLeft.style.textAlign="left";
-    cellLeft.appendChild(document.createTextNode('Station '+(stationCounter+1)+' '));
-
-    // Right cell
-    var cellRight = row.insertCell(1);
-    var elem = document.createElement('input');
-    elem.type = 'text';
-    elem.name = 'station' + stationCounter;
-    elem.id = 'station' + stationCounter;
-    elem.className = 'stns';
-    elem.size = 5;
-    elem.maxlength = 5;
-    cellRight.appendChild(elem);
-
-    // Add two more blank cells
-    var cellThree = row.insertCell(2);
-    cellThree.className="body";
-    cellThree.style.textAlign="left";
-    var cellFour  = row.insertCell(3);
-
-    stationCounter++;
-  } else {
-    var tbl = document.getElementById('stationTable');
-    var thisRow = stationCounter-(stationLimit/2);
-    tbl.rows[thisRow].cells[2].appendChild(document.createTextNode('Station '+(stationCounter+1)+' '));
-    var elem = document.createElement('input');
-    elem.type = 'text';
-    elem.name = 'station' + stationCounter;
-    elem.id = 'station' + stationCounter;
-    elem.className = 'stns';
-    elem.size = 5;
-    elem.maxlength = 5;
-    tbl.rows[thisRow].cells[3].appendChild(elem);
-    stationCounter++;
-  }
-}
-
-
-/**
- * Select all parms
- */
-function selectAllParms()
-{
-  for (var i=0; i<document.form.parms.length; i++) 
+  for (var i=0; i<document.form.params.length; i++) 
   {
-    if(!document.form.parms[i].disabled)
+    if(!document.form.params[i].disabled)
     {
-      document.form.parms[i].checked = true;
+      document.form.params[i].checked = true;
     }
   }
   //allbasic = "y";
 }
 
 /**
- * Clear parms selections
+ * Clear parameter selections
  */
-function selectNoParms()
+function selectNoParams()
 {
-  for (var i=0; i<document.form.parms.length; i++) 
+  for (var i=0; i<document.form.params.length; i++) 
   {
-    document.form.parms[i].checked = false;
+    document.form.params[i].checked = false;
   }
   //allbasic = "n";
 }

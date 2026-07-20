@@ -707,7 +707,6 @@ function gather_request_info()
    lats = form.blat.value + ", " + form.tlat.value;
    lons = form.llon.value + ", " + form.rlon.value;
    getTypes();
-   getLocations();
    comp = get_compress_info();
 //   fmt = get_fmt_info();
    fmt = "ascii";
