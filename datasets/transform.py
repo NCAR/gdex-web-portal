@@ -99,6 +99,10 @@ def transform_obml(request, dsid, ctx):
             res = cursor.fetchall()
             ctx['obs_types'] = {}
             ctx['add_map'] = False
+            min_lat = 99.
+            max_lat = -99.
+            min_lon = 199.
+            max_lon = -199.
             for e in res:
                 if e[1] not in ctx['obs_types']:
                     ctx['obs_types'][e[1]] = (
@@ -164,7 +168,14 @@ def transform_obml(request, dsid, ctx):
                             max(ie[7],
                                 (ctx['obs_types'][e[1]]['platforms'][e[3]]
                                  ['end_date'])))
+                    min_lat = min(ie[1], min_lat)
+                    max_lat = max(ie[3], max_lat)
+                    min_lon = min(ie[2], min_lon)
+                    max_lon = max(ie[4], max_lon)
 
+                ctx['obs_types'][e[1]]['platforms'][e[3]]['map'] = (
+                        {'center_lat': (min_lat + max_lat) / 2.,
+                         'center_lon': (min_lon + max_lon) / 2.})
         else:
             ctx['transform']['error'] = "File does not exist"
 
