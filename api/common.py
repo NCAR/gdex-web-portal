@@ -218,16 +218,23 @@ def get_param_info(full_code, key_change=None):
     add_to_cache('param_codes', tablename, params)
     return params[code]
 
-def get_level_info(map_name, code):
+def get_level_info(file_format, map_val, code):
     """Return level information given code.
+    Falls back to the generic '<file_format>.xml' table (e.g.
+    'WMO_GRIB2.xml') if no map-specific '<file_format>.<map_val>.xml'
+    file exists.
     """
     #level_dict = check_cache('level_codes', map_name)
     #if level_dict is not None:
     #    return level_dict[code]
 
     xml_location = os.path.join(XML_DIR,'LevelTables/')
+    map_name = file_format+'.'+map_val
     glob_str = xml_location + '*'+map_name+'.xml'
     filenames = glob.glob(glob_str)
+    if len(filenames) == 0 and file_format:
+        glob_str = xml_location + '*'+file_format+'.xml'
+        filenames = glob.glob(glob_str)
     if len(filenames) > 1:
         #raise ValueError('Glob should only return 1 filename')
         levels = {}
@@ -474,11 +481,10 @@ def get_level_definition(code, file_format="", key_change=None):
     # Get remainder of info from XML
     if file_format is None:
         file_format = '' #'WMO_GRIB2'
-    map_name = file_format+'.'+return_obj['map']
     type_code = return_obj['type']
     if '-' in type_code:
         type_code = type_code.split('-')[0]
-    level_info = get_level_info(map_name, type_code)
+    level_info = get_level_info(file_format, return_obj['map'], type_code)
     return_obj.pop('map')
     return_obj.pop('type')
     return_obj.update(level_info)
@@ -1302,7 +1308,7 @@ def get_child_groups(dsid, gindex):
     con,cur = init_connection_new()
     columns = ('grpid','gindex','inote','mnote','dwebcnt','webcnt','title','webpath')
     columns_str = ','.join(columns)
-    query = 'select '+columns_str+' from dsgroup where dsid=%s and pindex=%s order by gindex asc'
+    query = 'select '+columns_str+' from dsgroup where dsid=%s and pindex=%s and (dwebcnt>0 or webcnt>0) order by gindex asc'
     cur.execute(query,(dsid,gindex))
     data = cur.fetchall()
     close_connection(con,cur)
@@ -1313,12 +1319,13 @@ def get_total_webfiles_gindex(dsid, gindex, filter_wfile=None):
     dsid = format_dataset_id(dsid)
     con,cur = init_connection_new()
     if filter_wfile:
+        filter_wfile = f'%{filter_wfile.replace("*", "%")}%'
         if settings.SPLIT_WFILE:
             query = 'SELECT count(wfile) FROM wfile_{} WHERE gindex=%s AND wfile LIKE %s'.format(dsid)
-            cur.execute(query, (gindex,f'%{filter_wfile}%'))
+            cur.execute(query, (gindex, filter_wfile))
         else:
             query = 'SELECT count(wfile) FROM wfile WHERE dsid=%s AND gindex=%s AND wfile LIKE %s'
-            cur.execute(query, (dsid,gindex,f'%{filter_wfile}%'))
+            cur.execute(query, (dsid, gindex, filter_wfile))
     else:
         if settings.SPLIT_WFILE:
             query = 'SELECT count(wfile) FROM wfile_{} WHERE gindex=%s'.format(dsid)
@@ -1340,12 +1347,13 @@ def get_web_files_from_gindex(dsid, gindex, page=0, filter_wfile=None):
     offset = int(page) * file_limit
 
     if filter_wfile:
+        filter_wfile = f'%{filter_wfile.replace("*", "%")}%'
         if settings.SPLIT_WFILE:
             query = 'SELECT '+columns_str+' FROM wfile_{} WHERE gindex=%s AND wfile LIKE %s ORDER BY disp_order ASC LIMIT {} OFFSET {}'.format(dsid, file_limit, offset)
-            cur.execute(query,(gindex, f'%{filter_wfile}%'))
+            cur.execute(query,(gindex, filter_wfile))
         else:
             query = 'SELECT '+columns_str+' FROM wfile WHERE dsid=%s AND gindex=%s AND wfile LIKE %s ORDER BY disp_order ASC LIMIT {} OFFSET {}'.format(file_limit, offset)
-            cur.execute(query,(dsid, gindex, f'%{filter_wfile}%'))
+            cur.execute(query,(dsid, gindex, filter_wfile))
     else:
         if settings.SPLIT_WFILE:
             query = 'SELECT '+columns_str+' FROM wfile_{} WHERE gindex=%s ORDER BY disp_order ASC LIMIT {} OFFSET {}'.format(dsid, file_limit, offset)
@@ -2707,6 +2715,8 @@ def get_all_datasets():
         'count': len(datasets_list),
         'datasets': datasets_list
     }
+
+    return response
 
 
 def get_dataset_users(dsid, since):

@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', include(wagtailadmin_urls)),
     path('documents/', include(wagtaildocs_urls)),
     re_path(r'^citations(\..*?){0,1}/', include("apis.citations.urls"), name='output_format'),
+    path('robots.txt', views.robots_txt),
     path('contact-us/', views.contact_us),
     path('error/', views.error),
     path('search/', search_views.search, name='search'),
@@ -35,19 +36,17 @@ urlpatterns = [
     path('metrics/', include('home.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('datasets/', include('datasets.urls')),
+    path('exchange/', include('exchange.urls')),
     path('globus/', include('globus.urls')),
-    path('gsearch/', include('gsearch.urls')),
+    path('gsearch/', include('gsearch.urls'), name='gsearch'),
     path('oai/', include("oai.urls")),
     path('metaman/', include('metaman.urls')),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
     path('login/', RedirectView.as_view(url='/accounts/login/')),
     path('redeploy/<pkg>/', redeploys.redeploy),
-    path('unlink/', views.unlink),
-    path('upload/', views.upload),
     path('dataset/<old_gdex_path>/', views.do_redirect),
     re_path(r'^accounts/profile/$', login_required(TemplateView.as_view(template_name='account/profile.html')), name='user_profile'),
-    path('test-home/', home_views.test_home, name='test_home'), # New test home view
 ]
 
 urlpatterns += staticfiles_urlpatterns()

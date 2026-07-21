@@ -114,6 +114,27 @@ function checkDates() {
  return true; 
 } 
 
+/** Validate and process spatial selection */
+function checkSpatial()
+{
+   regionSelection = $('#regionSelectMenu').val();
+
+   if (regionSelection == "-1" || regionSelection == null) {
+      alert("Please select a spatial range option from the dropdown menu.");
+      return false;
+   }
+   if(regionSelection == "1") {
+      return checkLatLon();
+   }
+   if(regionSelection == "2") {
+      return checkStations();
+   }
+   if(regionSelection == "3") {
+      return getLocations();
+   }
+   return true;
+}
+
 /**
  * Validate location selection
  *
@@ -132,6 +153,10 @@ function checkStations()
    countValid = 0;   // Count the valid entries
 
    stationInput = document.getElementById("station0").value;
+   if (stationInput == "" || stationInput == null) {
+      alert("Please enter at least one station ID or select a different spatial range option.");
+      return false;
+   }
 
 // trim any leading and/or trailing commas, white space.
    if (stationInput != "") {
@@ -187,6 +212,10 @@ function getLocations()
    countValid = 0;   // Count the valid entries
 
    locationInput = document.getElementById("location0").value;
+   if (locationInput == "" || locationInput == null) {
+      alert("Please enter at least one location name or select a different spatial range option.");
+      return false;
+   }
 
 // trim any leading and/or trailing commas, white space
    if (locationInput != "") {
@@ -465,7 +494,7 @@ function regionSelectChange()
 {
    var selectedValue = $('#regionSelectMenu').val();
 
-   if (selectedValue === "") {
+   if (selectedValue === "-1") {
       hideRegionSelection();
    } else if(selectedValue == "1") {
       displayGoogleMap(1);
@@ -598,7 +627,7 @@ function displayLocationSelection(action)
 }
 
 /**
- * Review subset selections and submit to dsrqst.php
+ * Review subset selections and submit request
  */
 function reviewRequest()
 {
@@ -610,8 +639,7 @@ function reviewRequest()
    
 // Validate form inputs
    if(!checkDates()) return;
-   if(form.stationdisplayed.value == 1 && !checkStations()) return;
-   if(form.latlondisplayed.value == 1 && !checkLatLon()) return;
+   if(!checkSpatial()) return;
 
    rtype = form.rtype.value;
    gindex = form.gindex.value;
@@ -679,7 +707,6 @@ function gather_request_info()
    lats = form.blat.value + ", " + form.tlat.value;
    lons = form.llon.value + ", " + form.rlon.value;
    getTypes();
-   getLocations();
    comp = get_compress_info();
 //   fmt = get_fmt_info();
    fmt = "ascii";

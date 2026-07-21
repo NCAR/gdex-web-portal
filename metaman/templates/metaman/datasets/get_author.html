@@ -26,8 +26,7 @@ function wellFormedOrcidId(o) {
   }
   return true;
 }
-{% if orcid_id or inst_name %}
-{% if orcid_id %}
+
 function doFMLSubmit() {
   var f = document.person_form.first_name.value;
   if (f.length == 0) {
@@ -76,30 +75,18 @@ function doFMLSubmit() {
     m += '.';
   }
   {% if replace_item %}
-  replaceItemPos('authors_field', document.person_form.item_num.value, f + '[!]' + m + '[!]' + l + '[!]' + o + '[!]' + document.person_form.uuid.value + "!");
+  new_val = f + '[!]' + m + '[!]' + l + '[!]' + o + '[!]';
+  if (document.person_form.uuid.value.length > 0) {
+    new_val += document.person_form.uuid.value + "!";
+  }
+  replaceItemPos('authors_field', document.person_form.item_num.value, new_val);
   {% else %}
   addAuthor(f, m, l, o, document.person_form.uuid.value);
   {% endif %}
   hideModalWindow();
   return true;
 }
-{% else %}
-function doInstitutionSubmit() {
-  var n = document.institution_form.name.value;
-  if (n.length < 2) {
-    alert("Error: missing or invalid institution name");
-    return false;
-  }
-  n += "[!]" + document.institution_form.uuid.value;
-  {% if replace_item %}
-  replaceItemPos('authors_field', document.institution_form.item_num.value, n + "!");
-  {% else %}
-  addAuthor(n)
-  {% endif %}
-  hideModalWindow();
-  return true;
-}
-{% endif %}
+
 function addAuthor(f, m, l, o, u) {
   var auth_list = document.getElementById("authors_field");
   if (auth_list.value.length > 0 && auth_list.value.charAt(auth_list.value.length-1) != "\n") {
@@ -115,7 +102,7 @@ function addAuthor(f, m, l, o, u) {
   auth_list.scrollTop = auth_list.scrollHeight;
   changed_authors_field = true;
 }
-{% else %}
+
 function doOrcidCheck() {
   if (!wellFormedOrcidId(document.orcid_form.orcid_id.value)) {
     return;
@@ -124,11 +111,30 @@ function doOrcidCheck() {
   document.getElementById('orcid_search').innerHTML = "Searching...";
 }
 
+function doInstitutionSubmit() {
+  var n = document.institution_form.name.value;
+  if (n.length < 2) {
+    alert("Error: missing or invalid institution name");
+    return false;
+  }
+  n += "[!]" + document.institution_form.uuid.value;
+  {% if replace_item %}
+  new_val = n;
+  if (document.institution_form.uuid.value.length > 0) {
+    new_val += "!";
+  }
+  replaceItemPos('authors_field', document.institution_form.item_num.value, new_val);
+  {% else %}
+  addAuthor(n)
+  {% endif %}
+  hideModalWindow();
+  return true;
+}
+
 function toggleAuthorView(show, hide) {
     document.getElementById(show + "_view").classList.replace("d-none", "d-block");
     document.getElementById(hide + "_view").classList.replace("d-block", "d-none");
 }
-{% endif %}
 </script>
 <center>
     <h2>{% if replace_item %}Edit Author{% else %}Add an Author{% endif %}</h2>
@@ -169,7 +175,7 @@ function toggleAuthorView(show, hide) {
                             <br>
                             <span class="text-muted">(unicode sequences '\uxxxx' allowed)</span>
                             {% else %}
-                            <span class="fs-6 fw-bold">{{ fname }}<span>
+                            <span class="fs-6 fw-bold">{{ fname_display }}<span>
                             <input type="hidden" name="first_name" value="{{ fname }}" />
                             {% endif %}
                         </div>
@@ -194,7 +200,7 @@ function toggleAuthorView(show, hide) {
                             Last Name:
                         </div>
                         <div class="col-12 col-md-6 text-start">
-                            <span class="fs-6 fw-bold">{{ lname }}<span>
+                            <span class="fs-6 fw-bold">{{ lname_display }}<span>
                             <input type="hidden" name="last_name" value="{{ lname }}" />
                         </div>
                     </div>
@@ -210,7 +216,7 @@ function toggleAuthorView(show, hide) {
                     </div>
                 </div>
                 <center>
-                    <button class="btn btn-primary px-2 py-1 border-1"{% if fname_mutable or mname_mutable %} onclick="document.person_form.submit()"{% else %} disabled{% endif %}>{% if replace_item %}Update{% else %}Add{% endif %} This Author</button>
+                    <button class="btn btn-primary px-2 py-1 border-1"{% if not replace_item or fname_mutable or mname_mutable %} onclick="document.person_form.submit()"{% else %} disabled{% endif %}>{% if replace_item %}Update{% else %}Add{% endif %} This Author</button>
                 </center>
                 <input type="hidden" name="uuid" value="{{ uuid }}">
                 <input type="hidden" name="item_num" value="{{ item_num }}">

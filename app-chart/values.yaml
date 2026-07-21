@@ -10,7 +10,7 @@ webapp:
     fqdnAPI: api.gdex.ucar.edu
     secretName: incommon-cert-gdex-webserver
   container: 
-    image: docker.io/dattore/gdex-web-portal:v414
+    image: docker.io/dattore/gdex-web-portal:v484
     port: 8080
     requests:
       memory: 32Gi
@@ -19,7 +19,7 @@ webapp:
       memory: 128Gi
       cpu: 6
     responseTimeout: 180
-    maxUploadSize: 60m
+    maxUploadSize: 1000m
   ingress:
     ingressClassName: nginx-external
 
@@ -28,3 +28,20 @@ volume:
     name: gdexdata
     size: 2Ti
     mountPath: /data
+
+backup:
+  enabled: true                          
+  prefix: gdex-web-data                   # destination prefix in s3://gdex/
+  schedule: "17 2 * * *"                  # cron schedule (UTC)
+  image: docker.io/rclone/rclone:1.74
+  endpoint: https://boreas.hpc.ucar.edu:6443
+  bucket: gdex
+  credentialsSecret: backup-s3-creds
+  logLevel: NOTICE                        # NOTICE | INFO | DEBUG
+  rclone:
+    transfers: 8
+    checkers: 16
+    chunkSizeMB: 64
+    uploadConcurrency: 4
+    extraFlags: []                        # e.g. ["--exclude", "*.tmp"]
+  runAsUser: 33                           # match PVC ownership

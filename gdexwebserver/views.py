@@ -4,7 +4,6 @@ import smtplib
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.csrf import csrf_exempt
 from email.message import EmailMessage
 
 from . import utils
@@ -66,14 +65,16 @@ def error(request):
     return HttpResponse("Bad request.")
 
 
-@csrf_exempt
-def unlink(request):
-    return utils.unlink(request)
-
-
-@csrf_exempt
-def upload(request):
-    return utils.upload(request)
+def robots_txt(request):
+    lines = [
+        "User-agent: *",
+        "Disallow: /admin/",
+        "Disallow: /accounts/",
+        "Disallow: /api/",
+        "Disallow: /metaman/",
+        "Disallow: /redeploy/",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
 
 
 def do_redirect(request, old_gdex_path):

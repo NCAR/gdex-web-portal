@@ -1,0 +1,16 @@
+name: PR Source Branch Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-source-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Block PRs from restricted branch
+        if: github.head_ref == 'siparcs26'
+        run: |
+          echo "Pull requests from branch 'siparcs26' into main are not allowed."
+          exit 1

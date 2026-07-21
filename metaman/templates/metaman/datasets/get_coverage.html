@@ -398,7 +398,7 @@ function do_computeGLLDxDy() {
                 <select name="slonh" onchange="clearTimeout(ll_compute_timeout);computeLLDxDy()">
                     <option value=""></option>
                     <option value="E"{% if data.grid_slon_h == "E" %} selected{% endif %} >E</option>
-                <    option value="W"{% if data.grid_slon_h == "W" %} selected{% endif %} >W</option>
+                    <option value="W"{% if data.grid_slon_h == "W" %} selected{% endif %} >W</option>
                 </select>
                 </span>Latitude:<span style="margin-left: 5px; margin-right: 15px"><input type="text" name="slat" class="fixedWidth14" size="9" value="{{ data.grid_slat }}">&nbsp;
                 <select name="slath">

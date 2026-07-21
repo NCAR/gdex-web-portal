@@ -407,6 +407,7 @@ def commit_changes(request, dsid):
                         .replace("<", "&lt;")
                         .replace(">", "&gt;"))
                 ctx.update({'error': ("Unable to write XML file: non-ASCII "
+
                                       "characters (denoted by diamonds) in "
                                       "<i>{}</i>")
                            .format(sub_s)})
@@ -440,12 +441,13 @@ def commit_changes(request, dsid):
                               "CVS commit")})
         return render(request, "metaman/datasets/commit_msg.html", ctx)
 
-    err = commit_dsoverview(
-            tdir_name, dsid, iuser, request.POST['cvscomment'])
-    if len(err) > 0:
-        ctx.update({'error': err})
-        remove_tempdir(tdir_name)
-        return render(request, "metaman/datasets/commit_msg.html", ctx)
+    if request.POST['cvscomment'] != "fake":
+        err = commit_dsoverview(
+                tdir_name, dsid, iuser, request.POST['cvscomment'])
+        if len(err) > 0:
+            ctx.update({'error': err})
+            remove_tempdir(tdir_name)
+            return render(request, "metaman/datasets/commit_msg.html", ctx)
 
     ctx.update({'overview_committed': True})
     cursor.execute(("delete from metautil.metaman where dsid = %s"),
@@ -469,7 +471,7 @@ def commit_changes(request, dsid):
     env = os.environ.copy()
     env['USER'] = "apache"
     env['QUERY_STRING'] = "X"
-    if ctx['ds_type'] in ("primary", "historical"):
+    if ctx['ds_type'] in ("primary", "historical", "dead"):
         o = subprocess.run((
                 "dsgen --mdb='" +
                 json.dumps(settings.RDADB['metadata_config_pg']) + "' " +
@@ -903,6 +905,7 @@ def update_metadata_database(ctx, conn, **kwargs):
             except Exception as e:
                 err = str(e)
                 break
+
 
         try:
             cursor.execute((
@@ -1637,7 +1640,7 @@ def edit(request, dsid):
                         root, ns)})
         ctx.update({
                 'dataset_type_options': get_dataset_type_options(
-                        root, ns, has_doi)})
+                        root, ns, res[0]['dataset_type'], has_doi)})
         if show_manual_cmd:
             ctx.update({'data_format_options': get_data_format_options()})
 
@@ -2006,6 +2009,7 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
         errs.insert(0, ("The Summary/Abstract MUST contain at least fifty "
                         "words. (This is a JSON-LD requirement)"))
 
+
     if len(errs) > 0:
         errors.update({'summary': "<br>".join(errs)})
 
@@ -2237,6 +2241,7 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
                 "usage_restrictions, access_code, variables, contacts, "
                 "platforms, instruments, projects, supports_projects, "
                 "iso_topic, keywords, _references, reflists, acknowledgement, "
+
                 "related_resources, related_dois, related_datasets, "
                 "publication_date, redundancys, license, content_metadata) "
                 "values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
@@ -2557,17 +2562,23 @@ def get_update_frequency_options(root, ns):
     return ufrequencies
 
 
-def get_dataset_type_options(root, ns, has_doi):
+def get_dataset_type_options(root, ns, ds_type, has_doi):
     elist = root.findall(("./xsd:simpleType[@name='datasetType']/xsd:"
                           "restriction/xsd:enumeration"), ns)
     types = []
     for e in elist:
         v = e.get("value")
+        appinfo = e.find("xsd:annotation/xsd:appinfo", ns).text
+        opts = []
+        if appinfo is not None:
+            opts = appinfo.split(",")
+
         if v != "internal" or not has_doi:
-            types.append({
-                'value': v,
-                'description': e.find(
-                        "xsd:annotation/xsd:documentation", ns).text})
+            if ds_type == v or ds_type in opts:
+                types.append({
+                    'value': v,
+                    'description': e.find(
+                            "xsd:annotation/xsd:documentation", ns).text})
 
     return types
 
@@ -2683,7 +2694,7 @@ def get_manual_cmd_values(root):
     elist = root.findall("levels/layer")
     for e in elist:
         levels.append("[!]".join([e.get("type"), e.get("top"), e.get("bottom"),
-                                  e.get("units")]))
+                                  (e.get("units") or "")]))
 
     d['levels'] = "\n".join(levels)
     elist = root.findall("geospatialCoverage/grid")
