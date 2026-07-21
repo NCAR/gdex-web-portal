@@ -76,8 +76,14 @@ def transform_grml(request, dsid, ctx):
 
 
 def transform_obml(request, dsid, ctx):
-    if 'show' in request.GET:
-        return HttpResponse(request.GET['show'])
+    if 'markers' in request.GET:
+        #if "HTTP_X_REQUESTED_WITH" not in request.META:
+        #    return render(request, "404.html")
+
+        if request.GET['markers'] == "all":
+            pass
+
+        return HttpResponse(request.GET['markers'])
 
     markup_type = ctx['transform']['markup_type']
     file = ctx['transform']['file']
