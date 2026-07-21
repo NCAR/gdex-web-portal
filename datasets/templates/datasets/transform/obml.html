@@ -98,7 +98,11 @@ document.body.appendChild(scr);
 {% endif %}
 <script id="transformObML_utils_script" language="javascript">
 
-var load_ivals = [];
+function do_map_update(mmap) {
+alert("map updated");
+}
+
+var ivals = [];
 
 function load_marker_map(ident, clat, clon, zoom, ctrl_size) {
   eval('var mmap = ' + ident + '_map');
@@ -109,13 +113,22 @@ function load_marker_map(ident, clat, clon, zoom, ctrl_size) {
     zoom_level: zoom,
     control_size: ctrl_size
   };
-  load_ivals.push(null);
-  setInterval((mmap, mmap_init, load_ival) => {
-    if (mmap != null && mmap.handles.marker == null) {
-      clearInterval(load_ival);
-      mmap.handles.marker = mmap.load(mmap_init);
-    }
-  }, 1000, mmap, mmap_init, load_ivals[-1]);
+  ivals.push(null);
+  ivals[ivals.length-1] = setInterval(
+      (mmap, mmap_init, ival_idx) => {
+        if (mmap != null && mmap.handles.marker == null) {
+          clearInterval(ivals[ival_idx]);
+          mmap.handles.marker = mmap.load(mmap_init);
+        }
+      }, 1000, mmap, mmap_init, ivals.length-1);
+  ivals.push(null);
+  ivals[ivals.length-1] = setInterval(
+      (mmap, ival_idx) => {
+        if (typeof mmap.loaded != "undefined" && mmap.loaded) {
+          clearInterval(ivals[ival_idx]);
+          do_map_update(mmap);
+        }
+      }, 1000, mmap, ivals.length-1);
 }
 
 var station_set = new Set();
