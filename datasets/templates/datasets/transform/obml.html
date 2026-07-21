@@ -8,21 +8,27 @@ function doMapUpdate() {
 <script id="gmap_script" src="/js/gmaps3.js" type="text/javascript"></script>
 <script id="gmapkey_script_3" language="javascript">
 var ival_gmap_callback = null;
-var ival_custom_callback = null;
 var ival_count = 0;
-
-function doCustomCallback() {
-  if (typeof map.loaded != "undefined" && map.loaded) {
-    clearInterval(ival_custom_callback);
-    doMapUpdate();
-  }
-}
 
 {% for obs_type, odict in obs_types.items %}
 {% for platform_type, pdict in odict.platforms.items %}
 var {{ obs_type }}_{{ platform_type }}_map = null;
 {% endfor %}
 {% endfor %}
+
+var fixed_station_icon = null;
+var moved_station_icon = null;
+var box_data = {
+  strokeColor: '#ff695a',
+  strokeOpacity: 0.0,
+  fillColor: '#ff695a',
+  fillOpacity: 0.2
+};
+var line_data = {
+  strokeColor: '#ff695a',
+  strokeOpacity: 0.7,
+  strokeWeight: 1
+};
 
 function do_gmap3_callback() {
   ++ival_count;
@@ -73,12 +79,26 @@ function do_gmap3_callback() {
         {{ obs_type }}_{{ platform_type }}_map.loaded = true;
         return handle;
       },
+      obs_type_code: {{ odict.code }},
+      platform_type_code: {{ pdict.code }},
       markers: [],
       bubbles: [],
       boxes: []
     };
     {% endfor %}
     {% endfor %}
+    fixed_station_icon = {
+      anchor: new google.maps.Point(16, 32),
+      origin: new google.maps.Point(0, 0),
+      size: new google.maps.Size(32, 32),
+      url: 'https://gdex.ucar.edu/images/gmaps/blue-dot.png'
+    },
+    moved_station_icon = {
+      anchor: new google.maps.Point(16, 32),
+      origin: new google.maps.Point(0, 0),
+      size: new google.maps.Size(32, 32),
+      url: 'https://gdex.ucar.edu/images/gmaps/red.png'
+    }
     clearInterval(ival_gmap_callback);
   }
 }
@@ -109,6 +129,20 @@ function clear_map(mmap) {
   for (n = 0; n < mmap.boxes.length; mmap.boxes[n++].setMap(null));
 }
 
+function add_markers(mmap, marker_data) {
+  marker_data.stations.forEach((station) => {
+    if (station.fixed) {
+      mmap.markers.push(new google.maps.Marker(
+          { position: new google.maps.LatLng(station.lat, station.lon),
+            icon: fixed_station_icon
+          }
+      ));
+      mmap.markers[mmap.markers.length-1].setMap(mmap.handles.marker);
+    } else {
+    }
+  });
+}
+
 function do_map_update(mmap) {
   clear_map(mmap);
   ivals.push(null);
@@ -118,7 +152,9 @@ function do_map_update(mmap) {
         bounds = mmap.handles.marker.getBounds();
         if (bounds) {
           clearInterval(ivals[ival_idx]);
-console.log(bounds);
+          let response = getContentFromSynchronousRequest(null, window.location.pathname + "?markers=all&sw_lat=" + bounds.getSouthWest().lat() + "&sw_lon=" + bounds.getSouthWest().lng() + "&ne_lat=" + bounds.getNorthEast().lat() + "&ne_lon=" + bounds.getNorthEast().lng(), null, null);
+          let marker_data = eval("(" + response + ")");
+          add_markers(mmap, marker_data);
         }
       }, 100, mmap, ivals.length-1);
 }
