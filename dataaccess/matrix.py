@@ -25,6 +25,7 @@ DataFormatConversionType = Enum('DataFormatConversionType',
 )
 ResultType = Enum('ResultType', 'ONE MANY')
 
+
 class Matrix:
     def __init__(self, dsid, duser):
         self.dsid = dsid.replace("-", ".")
@@ -51,7 +52,7 @@ class Matrix:
         if result[0] != '0':
             web_data['home'] = config.webhome_path + "/" + self.dsid
 
-        web_data['locflag'] = result[2] 
+        web_data['locflag'] = result[2]
         self.columns['web_files'] = True
         self.columns['globus'] = True
         logger.debug("dsid: {}, locflag: {}".format(self.dsid, web_data['locflag']))
@@ -86,7 +87,7 @@ class Matrix:
         if res_tup[0][0] == 0 or res_tup[0][1] == "N":
             self.error.set("No Public Access", "This dataset contains data files that are not currently publicly accessible. For assistance, please <a href=\"/contact-us/\">submit a request</a> for access to the data in this dataset. Be sure to include the dataset title in your request.", None)
             return {}
-        
+
         return self.fill_download_file_data(res_tup[0])
 
     def set_custom_request_data(self):
