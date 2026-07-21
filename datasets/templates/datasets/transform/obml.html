@@ -7,7 +7,7 @@ function doMapUpdate() {
 </script>
 <script id="gmap_script" src="/js/gmaps3.js" type="text/javascript"></script>
 <script id="gmapkey_script_3" language="javascript">
-var ival_gmapkey_callback = null;
+var ival_gmap_callback = null;
 var ival_custom_callback = null;
 var ival_count = 0;
 
@@ -18,17 +18,26 @@ function doCustomCallback() {
   }
 }
 
-function doGMapKeyCallback() {
-  ival_count++;
+{% for obs_type, odict in obs_types.items %}
+{% for platform_type, pdict in odict.platforms.items %}
+var {{ obs_type }}_{{ platform_type }}_map = null;
+{% endfor %}
+{% endfor %}
+
+function do_gmap3_callback() {
+  ++ival_count;
   if (typeof google == "undefined") {
     if (ival_count > 20) {
-       clearInterval(ival_gmapkey_callback);
-       alert("Google Maps failed to load - the Google server is not responding. If reloading the page doesn't help, you will need to enter coordinates manually. In some cases, spatial subsetting may not be available at all.");
+       clearInterval(ival_gmap_callback);
+       alert("Google Maps failed to load - the Google server is not " +
+             "responding. Please try again later");
     }
     return;
   }
-  if (typeof google.maps.MapTypeId != "undefined" && typeof loadMarkerMapJS != "undefined" && typeof doMapUpdate == "function") {
-    map = {
+  if (typeof google.maps.MapTypeId != "undefined") {
+    {% for obs_type, odict in obs_types.items %}
+    {% for platform_type, pdict in odict.platforms.items %}
+    {{ obs_type }}_{{ platform_type }}_map = {
       loaded: false,
       options: {
         streetViewControl: false,
@@ -43,7 +52,8 @@ function doGMapKeyCallback() {
       },
       load: function(o) {
         var map_div = document.getElementById(o.map_div_id);
-        var handle = new google.maps.Map(map_div, map.options);
+        var handle = new google.maps.Map(map_div,
+            {{ obs_type }}_{{ platform_type }}_map.options);
         handle.setCenter(new google.maps.LatLng(o.center_lat, o.center_lon));
         handle.setZoom(o.zoom_level);
         if (o.control_size == null || o.control_size.length == 0) {
@@ -53,49 +63,69 @@ function doGMapKeyCallback() {
           handle.set('panControl', true);
           handle.set('zoomControl', true);
           if (o.control_size == "small") {
-            handle.set('zoomControlOptions', {style: google.maps.ZoomControlStyle.SMALL});
+            handle.set('zoomControlOptions',
+                {style: google.maps.ZoomControlStyle.SMALL});
           } else if (o.control_size == "large") {
-            handle.set('zoomControlOptions', {style: google.maps.ZoomControlStyle.LARGE});
+            handle.set('zoomControlOptions',
+                {style: google.maps.ZoomControlStyle.LARGE});
           }
         }
-        map.loaded = true;
+        {{ obs_type }}_{{ platform_type }}_map.loaded = true;
         return handle;
       }
     };
-    clearInterval(ival_gmapkey_callback);
-//    loadMarkerMapJS('markermap', center_lat, center_lon, 3, 'small');
-//    clearInterval(ival_custom_callback);
-//    ival_custom_callback = setInterval("doCustomCallback()", 1000);
+    {% endfor %}
+    {% endfor %}
+    clearInterval(ival_gmap_callback);
   }
 }
 
 var callback_called = false;
-function gmap3_key_callback() {
+function gmap3_callback() {
   if (callback_called) {
     return;
   }
-  clearInterval(ival_gmapkey_callback);
-  ival_gmapkey_callback = setInterval("doGMapKeyCallback()", 100);
+  clearInterval(ival_gmap_callback);
+  ival_gmap_callback = setInterval(do_gmap3_callback, 100);
   callback_called = true;
 }
-if (typeof gmap3_loaded != "undefined" && !gmap3_loaded) {
-  var scr = document.createElement('script');
-  scr.setAttribute('type', 'text/javascript');
-  scr.setAttribute('src', 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCq1CBM4CV4arGAxnveRiEnez_W18wt2IU&loading=async&callback=gmap3_key_callback');
-  document.body.appendChild(scr);
-  gmap3_loaded = true;
-}
-registerAjaxCallback('gmap3_key_callback');
+
+var scr = document.createElement('script');
+scr.setAttribute('type', 'text/javascript');
+scr.setAttribute('src', 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCq1CBM4CV4arGAxnveRiEnez_W18wt2IU&loading=async&callback=gmap3_callback');
+document.body.appendChild(scr);
 </script>
 {% endif %}
 <script id="transformObML_utils_script" language="javascript">
+
+var load_ivals = [];
+
+function load_marker_map(ident, clat, clon, zoom, ctrl_size) {
+  eval('var mmap = ' + ident + '_map');
+  let mmap_init = {
+    map_div_id: ident + "_map",
+    center_lat: clat,
+    center_lon: clon,
+    zoom_level: zoom,
+    control_size: ctrl_size
+  };
+  load_ivals.push(null);
+  setInterval((mmap, mmap_init, load_ival) => {
+    if (mmap != null && mmap.handles.marker == null) {
+      clearInterval(load_ival);
+      mmap.handles.marker = mmap.load(mmap_init);
+    }
+  }, 1000, mmap, mmap_init, load_ivals[-1]);
+}
+
 var station_set = new Set();
+
 function toggleStationData(i, cla, clo, zoom) {
   let e = document.getElementById(i);
-  let v = document.getElementById(i + ".verb");
+  let v = document.getElementById(i + "_verb");
   if (e.classList.contains("d-none")) {
     if (!station_set.has(i)) {
-      loadMarkerMapJS(i+".map", cla, clo, zoom, 'small');
+      load_marker_map(i, cla, clo, zoom, 'small');
       station_set.add(i);
     }
     e.classList.replace("d-none", "d-block");
@@ -132,11 +162,11 @@ function toggleStationData(i, cla, clo, zoom) {
                                         <br>
                                         <b>Total Number of Platform IDs:</b> {{ pdict.IDs|length }}
                                         <br>
-                                        [ <a href="javascript:void(0)" onclick="toggleStationData('{{ obs_type }}.{{ platform_type }}', {{ pdict.map.center_lat }}, {{ pdict.map.center_lon }}, {{ pdict.map.zoom_level }})"><span id="{{ obs_type }}.{{ platform_type }}.verb">show</span> {% if pdict.can_map %}station map + {% endif %}ID list </a>]
-                                        <div id="{{ obs_type }}.{{ platform_type }}" class="d-none mt-1">
+                                        [ <a href="javascript:void(0)" onclick="toggleStationData('{{ obs_type }}_{{ platform_type }}', {{ pdict.map.center_lat }}, {{ pdict.map.center_lon }}, {{ pdict.map.zoom_level }})"><span id="{{ obs_type }}_{{ platform_type }}_verb">show</span> {% if pdict.can_map %}station map + {% endif %}ID list </a>]
+                                        <div id="{{ obs_type }}_{{ platform_type }}" class="d-none mt-1">
                                             {% if pdict.can_map %}
                                             <div class="d-flex mb-2">
-                                                <div id="{{ obs_type }}.{{ platform_type }}.map" style="width: 700px; height: 600px" class="flex-shrink-0 border border-black border-1">
+                                                <div id="{{ obs_type }}_{{ platform_type }}_map" style="width: 700px; height: 600px" class="flex-shrink-0 border border-black border-1">
                                                 </div>
                                                 <div class="flex-fill ps-2">
                                                     After you pan and zoom to an area of interest, you should [ Update ] the station markers and station list
