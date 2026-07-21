@@ -173,9 +173,27 @@ def transform_obml(request, dsid, ctx):
                     min_lon = min(ie[2], min_lon)
                     max_lon = max(ie[4], max_lon)
 
+                clon = (min_lon + max_lon) / 2.
+                lon_diff = max_lon - min_lon
+                if min_lon < 0. and max_lon >= 0.:
+                    a = 180. + min_lon
+                    b = 180. - max_lon
+                    if (a + b) < lon_diff:
+                        lon_diff = a + b
+                        clon = (max_lon + 360. + min_lon) / 2.
+                        if clon >= 180.:
+                            clon -= 360.
+
+                if lon_diff < 70.:
+                    zl = 4
+                elif lon_diff < 140.:
+                    zl = 3
+                else:
+                    zl = 2
+
                 ctx['obs_types'][e[1]]['platforms'][e[3]]['map'] = (
                         {'center_lat': (min_lat + max_lat) / 2.,
-                         'center_lon': (min_lon + max_lon) / 2.})
+                         'center_lon': clon, 'zoom_level': zl})
         else:
             ctx['transform']['error'] = "File does not exist"
 
