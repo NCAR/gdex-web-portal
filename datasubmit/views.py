@@ -2,6 +2,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
 
 from .forms import (
     ACCESS_METHOD_CHOICES,
@@ -19,7 +20,7 @@ from .forms import (
 )
 from .models import SUBMISSION_TYPE_CHOICES, DatasetLocation, Submission
 
-
+@login_required
 @never_cache
 def data_submission_welcome(request):
     """Landing page with the Submit Data / Suggest Dataset cards. Deliberately
@@ -146,7 +147,7 @@ def _format_dataset_size(size_mb):
         return f"{size_mb / 1024:.2f} GB"
     return f"{size_mb:.2f} MB"
 
-
+@login_required
 @never_cache
 def submission_confirmation(request):
     submission_id = request.session.pop('last_submission_id', None)
@@ -180,7 +181,7 @@ def submission_confirmation(request):
         'locations': locations,
     })
 
-
+@login_required
 @never_cache
 def submission_advisor(request):
     wizard_data = request.session.get(SESSION_KEY, {})
@@ -208,7 +209,7 @@ def submission_advisor(request):
         'has_help_text': any(field.help_text for field in form),
     })
 
-
+@login_required
 @never_cache
 def data_submission_zenodo_recommendation(request):
     wizard_data = request.session.get(SESSION_KEY, {})
@@ -237,7 +238,7 @@ def data_submission_zenodo_recommendation(request):
 
     return render(request, 'datasubmit/data_submission_zenodo_recommendation.html', {'form': form})
 
-
+@login_required
 @never_cache
 def data_submission_zenodo_next_steps(request):
     wizard_data = request.session.get(SESSION_KEY, {})
@@ -247,7 +248,7 @@ def data_submission_zenodo_next_steps(request):
 
     return render(request, 'datasubmit/data_submission_zenodo_next_steps.html', {'reason': reason})
 
-
+@login_required
 @never_cache
 def data_submission_gdex_next_steps(request):
     wizard_data = request.session.get(SESSION_KEY, {})
@@ -290,7 +291,7 @@ def _wizard_gate_redirect(wizard_data, step):
 
     return None
 
-
+@login_required
 @never_cache
 def data_submission_contributors(request):
     step = 2
@@ -351,7 +352,7 @@ def data_submission_contributors(request):
         'prev_url': _step_url(step - 1),
     })
 
-
+@login_required
 @never_cache
 def gdex_submission_form_step(request, step_slug):
     if step_slug not in SLUG_TO_STEP:

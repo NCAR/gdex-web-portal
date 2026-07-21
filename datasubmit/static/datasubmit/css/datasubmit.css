@@ -18,14 +18,6 @@
 .data-submission-page .is-invalid {
     border-color: #97999b;
 }
-.data-submission-page .form-control,
-.data-submission-page .form-select {
-    border-radius: 0.5rem !important;
-}
-.data-submission-page .btn {
-    border-radius: 0.75rem;
-}
-
 /* Wizard step indicator (steps 1..N across the top of each page) */
 .data-submission-page .step-indicator {
     display: flex;

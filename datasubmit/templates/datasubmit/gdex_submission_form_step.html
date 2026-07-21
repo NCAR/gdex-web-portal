@@ -19,13 +19,6 @@
     .data-submission-page .is-invalid {
         border-color: #97999b;
     }
-    .data-submission-page .form-control,
-    .data-submission-page .form-select {
-        border-radius: 0.5rem !important;
-    }
-    .data-submission-page .btn {
-        border-radius: 0.75rem;
-    }
     .data-submission-page .step-indicator {
         display: flex;
     }
@@ -74,13 +67,13 @@
         color: #000;
     }
 
-    .card-header {
+    .data-submission-page .card-header {
         background-color: #0057c2;
         color: white;
-        border-radius: 4rem 4rem 4rem 4rem;
     }
 </style>
-
+<div class="fs-5 mb-1 mt-4 text-uppercase text-secondary">GDEX Data Submission</div>
+<div class="bg-white p-4 border-top border-primary border-4">
 {% if messages %}
     {% for message in messages %}
         <div class="alert alert-success">{{ message }}</div>
