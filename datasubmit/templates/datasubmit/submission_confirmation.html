@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body_class %} data-submission-page{% endblock %}
+
+{% block headextras %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'datasubmit/css/datasubmit.css' %}">
+{% endblock %}
+
+{% block content %}
+<style>
+    .data-submission-page .summary-row {
+        border-bottom: 1px solid #f1f3f5;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    .data-submission-page .summary-row:last-child {
+        border-bottom: none;
+    }
+    .data-submission-page .summary-label {
+        font-weight: bold;
+        color: #495057;
+    }
+    .data-submission-page .summary-value {
+        white-space: pre-wrap;
+    }
+</style>
+<p class="visually-hidden">Step {{ step_display }} of {{ step_count }}: Confirmation</p>
+<nav aria-label="Submission progress">
+    <ol class="step-indicator list-unstyled d-flex mb-3">
+        {% for s in steps %}
+        <li class="step-item">
+            <div class="step-circle {% if s.real_num == step %}active{% endif %}" {% if s.real_num == step %}aria-current="step"{% endif %}>{{ s.num }}</div>
+            <div class="step-title {% if s.real_num == step %}active{% endif %}">{{ s.title }}</div>
+        </li>
+        {% endfor %}
+    </ol>
+</nav>
+
+<div class="card rounded-4 p-4">
+    <div class="card-body text-center py-3">
+        <div class="result-icon success mb-4 mx-auto" aria-hidden="true">
+            <i class="fas fa-check"></i>
+        </div>
+        <h1 class="h2 mb-3">Thank you for your submission!</h1>
+        <p class="fs-5 text-muted">
+            We've received your dataset submission. A member of the GDEX team will review the
+            details you provided and reach out with next steps, including any additional
+            information we may need before the dataset is archived.
+        </p>
+        <!-- Placeholder destination until a real target is provided -->
+        <a href="#" class="btn btn-primary btn-lg mt-3">View your Current Submissions</a>
+    </div>
+
+    {% if submission %}
+    <div class="text-start mt-2">
+        <h2 class="h4 mb-3 mt-2">Summary of Your Submission</h2>
+        <p class="text-muted">
+            This is a read-only record of what you submitted. It cannot be edited from this page.
+        </p>
+
+        <div class="card rounded-4 mb-3">
+            <div class="card-header"><h3 class="h5 mb-0">Dataset Information</h3></div>
+            <div class="card-body">
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Dataset Title</div>
+                    <div class="col-sm-8 summary-value">{{ submission.dataset_title }}</div>
+                </div>
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Abstract</div>
+                    <div class="col-sm-8 summary-value">{{ submission.dataset_abstract }}</div>
+                </div>
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Additional Details</div>
+                    <div class="col-sm-8 summary-value">{{ submission.dataset_details|default:"—" }}</div>
+                </div>
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Approximate Size</div>
+                    <div class="col-sm-8 summary-value">{{ dataset_size_display }}</div>
+                </div>
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Needs NCAR HPC Access</div>
+                    <div class="col-sm-8 summary-value">{% if submission.hpc_access %}Yes{% else %}No{% endif %}</div>
+                </div>
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Part of CIF/FARE Program</div>
+                    <div class="col-sm-8 summary-value">{% if submission.cif_fare_contributors %}Yes{% else %}No{% endif %}</div>
+                </div>
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Submitter is an NCAR/UCAR Employee</div>
+                    <div class="col-sm-8 summary-value">{% if submission.is_ncar_employee %}Yes{% else %}No{% endif %}</div>
+                </div>
+            </div>
+        </div>
+
+        {% for loc in locations %}
+        <div class="card rounded-4 mb-3">
+            <div class="card-header">
+                <h3 class="h5 mb-0">Dataset Access Info{% if locations|length > 1 %} ({{ forloop.counter }} of {{ locations|length }}){% endif %}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Access Method</div>
+                    <div class="col-sm-8 summary-value">{{ loc.access_method_label }}</div>
+                </div>
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Dataset Location</div>
+                    <div class="col-sm-8 summary-value">{{ loc.location }}</div>
+                </div>
+                {% if loc.access_verification == 'readable' or loc.access_verification == 'reachable' %}
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Read Access</div>
+                    <div class="col-sm-8 summary-value text-success">
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                        Verified {{ loc.access_verification }}.
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="card rounded-4 mb-3">
+            <div class="card-header"><h3 class="h5 mb-0">Terms &amp; Conditions</h3></div>
+            <div class="card-body">
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Data Policy Agreement</div>
+                    <div class="col-sm-8 summary-value">{% if submission.data_policy_agreement %}Agreed{% else %}Not agreed{% endif %}</div>
+                </div>
+                {% if not submission.is_ncar_employee %}
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Data Deposit Agreement</div>
+                    <div class="col-sm-8 summary-value">{% if submission.data_deposit_agreement %}Agreed{% else %}Not agreed{% endif %}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

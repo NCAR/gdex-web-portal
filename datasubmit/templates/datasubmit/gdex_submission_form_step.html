@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block body_class %} data-submission-page{% endblock %}
+
+{% block content %}
+<style>
+    .data-submission-page .alert-danger {
+        background-color: #ffd2d2;
+        color: #0A0A0A;
+        border-color: #ffbcbc;
+        border-radius: 0.25rem;
+    }
+    .data-submission-page .invalid-feedback {
+        /* #842029 (Bootstrap's danger-text-emphasis) passes WCAG AA contrast
+           on white; #ff1f1f only hit ~3.84:1, below the 4.5:1 minimum. */
+        color: #ff0015;
+        font-size: 1rem;
+    }
+    .data-submission-page .is-invalid {
+        border-color: #97999b;
+    }
+    .data-submission-page .form-control,
+    .data-submission-page .form-select {
+        border-radius: 0.5rem !important;
+    }
+    .data-submission-page .btn {
+        border-radius: 0.75rem;
+    }
+    .data-submission-page .step-indicator {
+        display: flex;
+    }
+    .data-submission-page .step-item {
+        flex: 1;
+        position: relative;
+        text-align: center;
+    }
+    .data-submission-page .step-item:not(:first-child)::before {
+        content: '';
+        position: absolute;
+        top: 30px;
+        left: -50%;
+        width: 100%;
+        height: 2px;
+        background-color: #dee2e6;
+        z-index: 0;
+    }
+    .data-submission-page .step-circle {
+        position: relative;
+        z-index: 1;
+        width: 60px;
+        height: 60px;
+        margin: 0 auto;
+        border-radius: 50%;
+        border: 2px solid #dee2e6;
+        background-color: #fff;
+        color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        padding: 0;
+        font-size: 1.5rem;
+    }
+    .data-submission-page .step-circle.active {
+        background-color: #0057c2;
+        border-color: #0057c2;
+        color: #fff;
+    }
+    .data-submission-page .step-title {
+        margin-top: 0.5rem;
+        font-size: 1.15rem;
+    }
+    .data-submission-page .step-title.active {
+        color: #000;
+    }
+
+    .card-header {
+        background-color: #0057c2;
+        color: white;
+        border-radius: 4rem 4rem 4rem 4rem;
+    }
+</style>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<p class="visually-hidden">Step {{ step_display }} of {{ step_count }}: {{ step_title }}</p>
+<nav aria-label="Submission progress">
+    <ol class="step-indicator list-unstyled d-flex mb-3">
+        {% for s in steps %}
+        <li class="step-item">
+            <div class="step-circle {% if s.real_num == step %}active{% endif %}" {% if s.real_num == step %}aria-current="step"{% endif %}>{{ s.num }}</div>
+            <div class="step-title {% if s.real_num == step %}active{% endif %}">{{ s.title }}</div>
+        </li>
+        {% endfor %}
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <div class="{% if has_help_text %}col-lg-8{% else %}col-lg-12{% endif %}">
+        <div class="card rounded-4">
+            <div class="card-header">
+                <h1 class="h5 mb-0">{{ step_title }}</h1>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate id="step-form">
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                        <div class="alert alert-danger mb-3" id="form-errors-summary" role="alert" tabindex="-1">Please correct the highlighted field(s) below before continuing.</div>
+                    {% endif %}
+
+                    <div class="row g-0">
+                    {% for field in form %}
+                        {% if field.name == 'dataset_size' %}
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold fs-5" for="{{ field.id_for_label }}">
+                                {{ field.label }}{% if field.field.required %} <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span>{% endif %}
+                            </label>
+                            <div class="input-group">
+                                {{ field }}
+                                {{ form.dataset_size_units }}
+                            </div>
+                            {% if field.errors %}
+                            <div id="{{ field.auto_id }}_error" class="invalid-feedback d-block">
+                                {% for error in field.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if form.dataset_size_units.errors %}
+                            <div id="{{ form.dataset_size_units.auto_id }}_error" class="invalid-feedback d-block">
+                                {% for error in form.dataset_size_units.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% elif field.name == 'dataset_location' %}
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold fs-5" for="{{ field.id_for_label }}">
+                                {{ field.label }}{% if field.field.required %} <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            <div id="dataset_location-help" class="form-text"></div>
+                            {% if field.errors %}
+                            <div id="{{ field.auto_id }}_error" class="invalid-feedback d-block">
+                                {% for error in field.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                            {% endif %}
+                            <button type="button" id="add-location-btn" class="btn btn-outline-primary btn-sm mt-2{% if form.dataset_location_2.value or form.dataset_location_2.errors %} d-none{% endif %}">
+                                <i class="fas fa-plus" aria-hidden="true"></i> Add another location
+                            </button>
+                        </div>
+                        {% elif field.name == 'dataset_location_2' %}
+                        <div class="col-12 mb-3{% if not field.value and not field.errors %} d-none{% endif %}" id="dataset-location-2-wrapper">
+                            <label class="form-label fw-bold fs-5" for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                            </label>
+                            {{ field }}
+                            <div id="dataset_location_2-help" class="form-text"></div>
+                            {% if field.errors %}
+                            <div id="{{ field.auto_id }}_error" class="invalid-feedback d-block">
+                                {% for error in field.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="text-danger mt-2">
+                                Ideally, all the files you are trying to submit should be under one
+                                parent directory. Please try to fit your data under one directory.
+                            </div>
+                        </div>
+                        {% elif field.name != 'data_policy_agreement' and field.name != 'data_deposit_agreement' and field.name != 'dataset_size_units' %}
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold fs-5" for="{{ field.id_for_label }}">
+                                {{ field.label }}{% if field.field.required %} <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div id="{{ field.auto_id }}_error" class="invalid-feedback d-block">
+                                {% for error in field.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+
+                    {% if step == 4 %}
+                    <fieldset class="mb-4">
+                        <legend class="h5">Acknowledgement of Data Policy <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></legend>
+                        <p class="text-muted fs-5 mb-3">
+                            By choosing to provide dataset information for appraisal and selection considerations,
+                            the dataset submitter acknowledges and accepts the
+                            <a href="https://www.ucar.edu/privacy-notice" target="_blank" rel="noopener">UCAR Privacy Notice <i class="fas fa-external-link-alt" aria-hidden="true"></i><span class="visually-hidden"> (opens in a new tab)</span></a>.
+                            In addition, if a dataset is selected for inclusion in an NCAR repository, the dataset
+                            submitter acknowledges and accepts the
+                            <a href="https://www.ucar.edu/terms-of-use/data" target="_blank" rel="noopener">UCAR Data Terms of Use <i class="fas fa-external-link-alt" aria-hidden="true"></i><span class="visually-hidden"> (opens in a new tab)</span></a>.
+                        </p>
+                        <div class="form-check fs-5">
+                            {{ form.data_policy_agreement }}
+                            <label class="form-check-label" for="{{ form.data_policy_agreement.id_for_label }}">
+                                {{ form.data_policy_agreement.label }}
+                            </label>
+                            {% if form.data_policy_agreement.errors %}
+                            <div id="{{ form.data_policy_agreement.auto_id }}_error" class="invalid-feedback d-block">
+                                {% for error in form.data_policy_agreement.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+
+                    {% if show_deposit_agreement %}
+                    <hr class="my-4">
+                    <fieldset class="mb-4">
+                        <legend class="h5">Acknowledgement of Data Deposit Agreement (Non-UCAR Contributors) <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></legend>
+                        <p class="text-muted fs-5 mb-3">
+                            By checking this box, I acknowledge and agree to the Data Deposit Agreement, which
+                            grants UCAR a non-exclusive license to distribute and preserve my dataset through GDEX.
+                            I understand that my data will be openly accessible to the research community under a
+                            CC-BY-4.0 license and that I have the legal rights to deposit this data. I confirm that
+                            I accept the terms described in the
+                            <a href="https://gdex.ucar.edu/documents/57/gdex_dda.pdf" target="_blank" rel="noopener">full agreement <i class="fas fa-external-link-alt" aria-hidden="true"></i><span class="visually-hidden"> (opens in a new tab)</span></a>.
+                        </p>
+                        <div class="form-check fs-5">
+                            {{ form.data_deposit_agreement }}
+                            <label class="form-check-label" for="{{ form.data_deposit_agreement.id_for_label }}">
+                                {{ form.data_deposit_agreement.label }}
+                            </label>
+                            {% if form.data_deposit_agreement.errors %}
+                            <div id="{{ form.data_deposit_agreement.auto_id }}_error" class="invalid-feedback d-block">
+                                {% for error in form.data_deposit_agreement.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+                    {% endif %}
+                    {% endif %}
+
+                    {% if is_last_step %}
+                    <div class="d-flex align-items-center">
+                        <div class="flex-fill">
+                            <a href="{{ prev_url }}" class="btn btn-outline-primary btn-lg">Back</a>
+                        </div>
+                        <div class="flex-fill text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                        </div>
+                        <div class="flex-fill"></div>
+                    </div>
+                    {% else %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ prev_url }}" class="btn btn-outline-primary btn-lg">Back</a>
+                        <button type="submit" id="next-btn" class="btn btn-primary btn-lg">Next</button>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if has_help_text %}
+    <div class="col-lg-4">
+        <div class="card rounded-4">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Field Guidance</h2>
+            </div>
+            <div class="card-body">
+                {% for field in form %}
+                    {% if field.help_text %}
+                    <div class="mb-3">
+                        <h3 class="h6 fw-bold">{{ field.label }}</h3>
+                        <p class="text-muted small mb-0">{{ field.help_text }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{{ access_method_info|json_script:"access-method-info-data" }}
+{{ access_method_detection_order|json_script:"access-method-detection-order-data" }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.form-control[data-maxlength]').forEach(function (field) {
+        var maxLength = parseInt(field.dataset.maxlength, 10);
+        var counter = document.createElement('div');
+        counter.className = 'form-text text-end small';
+        field.insertAdjacentElement('afterend', counter);
+
+        function updateCount() {
+            var length = field.value.length;
+            var over = length - maxLength;
+            if (over > 0) {
+                counter.textContent = length + ' / ' + maxLength + ' characters (' + over + ' over the limit)';
+                counter.classList.add('text-danger');
+            } else {
+                counter.textContent = length + ' / ' + maxLength + ' characters';
+                counter.classList.remove('text-danger');
+            }
+        }
+        field.addEventListener('input', updateCount);
+        updateCount();
+    });
+
+    var infoDataEl = document.getElementById('access-method-info-data');
+    var orderDataEl = document.getElementById('access-method-detection-order-data');
+    var locationField = document.getElementById('id_dataset_location');
+    var locationHelp = document.getElementById('dataset_location-help');
+    var location2Field = document.getElementById('id_dataset_location_2');
+    var location2Help = document.getElementById('dataset_location_2-help');
+    var location2Wrapper = document.getElementById('dataset-location-2-wrapper');
+    var addLocationBtn = document.getElementById('add-location-btn');
+
+    if (infoDataEl && orderDataEl && locationField && locationHelp) {
+        var methodInfo = JSON.parse(infoDataEl.textContent);
+        var detectionOrder = JSON.parse(orderDataEl.textContent);
+
+        // Mirrors forms.py's detect_access_method() -- access method is no
+        // longer picked from a dropdown, it's inferred from what's typed here.
+        function detectAccessMethod(value) {
+            for (var i = 0; i < detectionOrder.length; i++) {
+                var method = detectionOrder[i];
+                var pattern = methodInfo[method].pattern;
+                if (pattern && new RegExp(pattern).test(value)) {
+                    return method;
+                }
+            }
+            return 'other';
+        }
+
+        function updateLocationHelpFor(field, help) {
+            var method = field.value.trim() ? detectAccessMethod(field.value.trim()) : null;
+            var info = method ? methodInfo[method] : null;
+            help.textContent = info
+                ? info.help_text
+                : 'Enter an HTTPS URL, FTP/SFTP address, S3 URI, absolute /glade path, or DOI -- ' +
+                  "we'll detect which one automatically.";
+        }
+        locationField.addEventListener('input', function () { updateLocationHelpFor(locationField, locationHelp); });
+        updateLocationHelpFor(locationField, locationHelp);
+
+        if (location2Field && location2Help) {
+            location2Field.addEventListener('input', function () { updateLocationHelpFor(location2Field, location2Help); });
+            updateLocationHelpFor(location2Field, location2Help);
+        }
+
+        // Capped at two locations total -- the button disappears once the
+        // second field is revealed, so there's no way to ask for a third;
+        // the reminder to consolidate under one parent directory lives
+        // permanently under the second field instead (see the template).
+        if (addLocationBtn && location2Wrapper && location2Field) {
+            addLocationBtn.addEventListener('click', function () {
+                location2Wrapper.classList.remove('d-none');
+                location2Field.focus();
+                addLocationBtn.classList.add('d-none');
+            });
+        }
+
+        // The actual readability check now runs server-side, in
+        // AccessInfoForm.clean(), the moment this form is POSTed -- it's a
+        // real requirement (you cannot advance past an unreadable /glade
+        // path or https URL), not just a client-side nicety. This listener
+        // is purely cosmetic: since a slow recursive file scan can take a
+        // few seconds, make it obvious the page is working rather than stuck.
+        var CHECKED_METHODS = ['path', 'https'];
+        var stepForm = document.getElementById('step-form');
+        var nextBtn = document.getElementById('next-btn');
+        if (stepForm && nextBtn) {
+            stepForm.addEventListener('submit', function () {
+                var checkingLocation1 = CHECKED_METHODS.indexOf(detectAccessMethod(locationField.value.trim())) !== -1;
+                var checkingLocation2 = location2Field && location2Field.value.trim() &&
+                    CHECKED_METHODS.indexOf(detectAccessMethod(location2Field.value.trim())) !== -1;
+                if (!checkingLocation1 && !checkingLocation2) {
+                    return;
+                }
+                nextBtn.disabled = true;
+                nextBtn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' +
+                    'Please be patient, reading files&hellip;';
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

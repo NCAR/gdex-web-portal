@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'dataset_citation',
     'dataset_description',
     'dataset_provenance',
+    'datasubmit',
     'doi',
     'facbrowse',
     #'globus',
