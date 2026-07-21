@@ -72,7 +72,10 @@ function do_gmap3_callback() {
         }
         {{ obs_type }}_{{ platform_type }}_map.loaded = true;
         return handle;
-      }
+      },
+      markers: [],
+      bubbles: [],
+      boxes: []
     };
     {% endfor %}
     {% endfor %}
@@ -100,7 +103,14 @@ document.body.appendChild(scr);
 
 var ivals = [];
 
+function clear_map(mmap) {
+  for (n = 0; n < mmap.markers.length; mmap.markers[n++].setMap(null));
+  for (n = 0; n < mmap.bubbles.length; mmap.bubbles[n++].setMap(null));
+  for (n = 0; n < mmap.boxes.length; mmap.boxes[n++].setMap(null));
+}
+
 function do_map_update(mmap) {
+  clear_map(mmap);
   ivals.push(null);
   // wait for the map geometry to become available
   ivals[ivals.length-1] = setInterval(
