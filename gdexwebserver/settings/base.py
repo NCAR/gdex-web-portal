@@ -294,7 +294,7 @@ SOCIAL_AUTH_GLOBUS_SECRET = local_settings.globus_app_client_secret
 
 # This is a general Django setting if views need to redirect to login
 # https://docs.djangoproject.com/en/3.2/ref/settings/#login-url
-LOGIN_URL = '/login/globus'
+LOGIN_URL = 'gsearch/login/globus'
 
 # Scopes will be requested on each user login
 SOCIAL_AUTH_GLOBUS_SCOPE = [

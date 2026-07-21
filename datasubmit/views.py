@@ -20,7 +20,7 @@ from .forms import (
 )
 from .models import SUBMISSION_TYPE_CHOICES, DatasetLocation, Submission
 
-@login_required
+
 @never_cache
 def data_submission_welcome(request):
     """Landing page with the Submit Data / Suggest Dataset cards. Deliberately
