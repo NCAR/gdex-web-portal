@@ -98,11 +98,20 @@ document.body.appendChild(scr);
 {% endif %}
 <script id="transformObML_utils_script" language="javascript">
 
-function do_map_update(mmap) {
-alert("map updated");
-}
-
 var ivals = [];
+
+function do_map_update(mmap) {
+  ivals.push(null);
+  // wait for the map geometry to become available
+  ivals[ivals.length-1] = setInterval(
+      (mmap, ival_idx) => {
+        bounds = mmap.handles.marker.getBounds();
+        if (bounds) {
+          clearInterval(ivals[ival_idx]);
+console.log(bounds);
+        }
+      }, 100, mmap, ivals.length-1);
+}
 
 function load_marker_map(ident, clat, clon, zoom, ctrl_size) {
   eval('var mmap = ' + ident + '_map');
