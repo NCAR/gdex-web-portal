@@ -81,8 +81,57 @@ def transform_obml(request, dsid, ctx):
         #    return render(request, "404.html")
 
         marker_data = {'stations': []}
-        if request.GET['markers'] == "all":
+        try:
+            conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+            cursor = conn.cursor()
+            if request.GET['markers'] == "all":
+                sw_lat = int(round(float(request.GET['sw_lat']), 4) * 10000.)
+                ne_lat = int(round(float(request.GET['ne_lat']), 4) * 10000.)
+                sw_lon = int(round(float(request.GET['sw_lon']), 4) * 10000.)
+                ne_lon = int(round(float(request.GET['ne_lon']), 4) * 10000.)
+                cursor.execute(
+                       "select id, sw_lat, sw_lon, ne_lat, ne_lon from "
+                       f'"WObML".{dsid}_ids where sw_lat <= %s and ne_lat >= '
+                       "%s and sw_lon <= %s and ne_lon >= %s",
+                       (ne_lat, sw_lat, ne_lon, sw_lon))
+                res = cursor.fetchall()
+                stations = {}
+                for e in res:
+                    key = ",".join([str(e[1]), str(e[2]), str(e[3]),
+                                    str(e[4])])
+                    if key not in stations:
+                        stations[key] = {'bubble': {'IDs': []}}
+
+                    stations[key]['bubble']['IDs'].append(e[0])
+
+                for key, value in stations.items():
+                    marker_data['stations'].append({})
+                    kparts = key.split(",")
+                    if kparts[0] == kparts[2] and kparts[1] == kparts[3]:
+                        marker_data['stations'][-1]['fixed'] = True
+                        marker_data['stations'][-1]['lat'] = (
+                                float(kparts[0]) / 10000.)
+                        marker_data['stations'][-1]['lon'] = (
+                                float(kparts[1]) / 10000.)
+                    else:
+                        marker_data['stations'][-1]['fixed'] = False
+                        marker_data['stations'][-1]['sw_lat'] = (
+                                float(kparts[0]) / 10000.)
+                        marker_data['stations'][-1]['sw_lon'] = (
+                                float(kparts[1]) / 10000.)
+                        marker_data['stations'][-1]['ne_lat'] = (
+                                float(kparts[2]) / 10000.)
+                        marker_data['stations'][-1]['ne_lon'] = (
+                                float(kparts[3]) / 10000.)
+
+                    marker_data['stations'][-1]['bubble'] = (
+                            stations[key]['bubble'])
+
+        except Exception:
             pass
+        finally:
+            if 'conn' in locals():
+                conn.close()
 
         return JsonResponse(marker_data)
 
