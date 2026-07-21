@@ -20,7 +20,6 @@ DataFormatConversionType = Enum('DataFormatConversionType',
                                 [('GLOBAL', 'global'), ('GROUP', 'group'),])
 ResultType = Enum('ResultType', 'ONE MANY')
 
-
 class Matrix:
     def __init__(self, dsid, duser):
         self.dsid = dsid.replace("-", ".")
