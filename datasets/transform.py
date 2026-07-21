@@ -112,7 +112,7 @@ def transform_obml(request, dsid, ctx):
             for e in res:
                 if e[1] not in ctx['obs_types']:
                     ctx['obs_types'][e[1]] = (
-                            {'long_name': snake_to_capital(e[1]),
+                            {'code': e[0], 'long_name': snake_to_capital(e[1]),
                              'platforms': {}})
 
                 if e[3] not in ctx['obs_types'][e[1]]:
@@ -125,7 +125,7 @@ def transform_obml(request, dsid, ctx):
                         can_map = False
 
                     ctx['obs_types'][e[1]]['platforms'][e[3]] = (
-                            {'long_name': snake_to_capital(e[3]),
+                            {'code': e[2], 'long_name': snake_to_capital(e[3]),
                              'data_types': [], 'num_obs': 0,
                              'start_date': 99999999999999, 'end_date': 0,
                              'IDs': [], 'can_map': can_map})
