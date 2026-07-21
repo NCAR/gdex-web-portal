@@ -6,7 +6,7 @@ from functools import cmp_to_key
 from lxml import etree
 
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
@@ -80,10 +80,11 @@ def transform_obml(request, dsid, ctx):
         #if "HTTP_X_REQUESTED_WITH" not in request.META:
         #    return render(request, "404.html")
 
+        marker_data = {'stations': []}
         if request.GET['markers'] == "all":
             pass
 
-        return HttpResponse(request.GET['markers'])
+        return JsonResponse(marker_data)
 
     markup_type = ctx['transform']['markup_type']
     file = ctx['transform']['file']
