@@ -10,7 +10,7 @@ SUBMISSION_TYPE_CHOICES = [
 
 class Submission(models.Model):
     submitted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
-    created = models.DateTimeField(default=timezone.now, auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now)
     submission_type = models.CharField(max_length=20, choices=SUBMISSION_TYPE_CHOICES, default='own')
     # Placeholder for the GDEX dataset ID (e.g. 'd123456') assigned once a
     # submission is accepted and archived. Not yet set anywhere in the
