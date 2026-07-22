@@ -197,74 +197,33 @@ def transform_obml(request, dsid, ctx):
 
                     ctx['obs_types'][e[1]]['platforms'][e[3]] = (
                             {'code': e[2], 'long_name': snake_to_capital(e[3]),
-                             'data_types': [], 'num_obs': 0,
-                             'start_date': 99999999999999, 'end_date': 0,
-                             'IDs': [], 'can_map': can_map})
+                             'data_types': [], 'can_map': can_map})
 
                 (ctx['obs_types'][e[1]]['platforms'][e[3]]['data_types']
                     .append(e[4]))
 
                 cursor.execute(
-                        "select i.id, t.id_type, round(i.sw_lat/10000."
-                        "::numeric, 2)::float, round(i.sw_lon/10000."
-                        "::numeric, 2)::float, round(i.ne_lat/10000."
-                        "::numeric, 2)::float, round(i.ne_lon/10000."
-                        "::numeric, 2)::float, l.num_observations, l."
-                        f'start_date, l.end_date from "{markup_type}".{dsid}'
-                        f'_id_list as l left join "{markup_type}".{dsid}_ids '
-                        "as i on i.code = l.id_code left join "
-                        f'"{markup_type}".ID_types as t on t.code = i.'
-                        "id_type_code where l.file_code = %s and l."
+                        "select min(l.start_date), max(l.end_date), sum(l."
+                        "num_observations), avg(i.sw_lat)::float, avg(i."
+                        "sw_lon)::float, avg(i.ne_lat)::float, avg(i.ne_lon)"
+                        "::float, min(i.sw_lon), max(i.ne_lon), count(i.id) "
+                        f'from "{markup_type}".{dsid}_id_list as l left join '
+                        f'"{markup_type}".{dsid}_ids as i on i.code = l.'
+                        "id_code where l.file_code = %s and l."
                         "observation_type_code = %s and l.platform_type_code "
                         "= %s", (file_code, e[0], e[2]))
-                ires = cursor.fetchall()
-                num_obs = 0
-                for ie in ires:
-                    (ctx['obs_types'][e[1]]['platforms'][e[3]]['IDs']).append(
-                                {'ID': ie[0], 'network': ie[1],
-                                 'sw_lat': (str(abs(ie[2])) +
-                                            ("S" if ie[2] < 0. else "N")),
-                                 'sw_lon': (str(abs(ie[3])) +
-                                            ("W" if ie[3] < 0. else "E")),
-                                 'ne_lat': (str(abs(ie[4])) +
-                                            ("S" if ie[4] < 0. else "N")),
-                                 'ne_lon': (str(abs(ie[5])) +
-                                            ("W" if ie[5] < 0. else "E")),
-                                 'num_obs': ie[6],
-                                 'start_date': (
-                                         datetime.strptime(str(ie[7]),
-                                                           "%Y%m%d%H%M%S")
-                                         .strftime("%Y-%m-%d %H:%M")),
-                                 'end_date': (
-                                         datetime.strptime(str(ie[8]),
-                                                           "%Y%m%d%H%M%S")
-                                         .strftime("%Y-%m-%d %H:%M"))})
-                    ctx['obs_types'][e[1]]['platforms'][e[3]]['num_obs'] += (
-                            ie[6])
-                    ctx['obs_types'][e[1]]['platforms'][e[3]]['start_date'] = (
-                            min(ie[7],
-                                (ctx['obs_types'][e[1]]['platforms'][e[3]]
-                                 ['start_date'])))
-                    ctx['obs_types'][e[1]]['platforms'][e[3]]['end_date'] = (
-                            max(ie[8],
-                                (ctx['obs_types'][e[1]]['platforms'][e[3]]
-                                 ['end_date'])))
-                    min_lat = min(ie[2], min_lat)
-                    max_lat = max(ie[4], max_lat)
-                    min_lon = min(ie[3], min_lon)
-                    max_lon = max(ie[5], max_lon)
-
-                clon = (min_lon + max_lon) / 2.
-                lon_diff = max_lon - min_lon
-                if min_lon < 0. and max_lon >= 0.:
-                    a = 180. + min_lon
-                    b = 180. - max_lon
-                    if (a + b) < lon_diff:
-                        lon_diff = a + b
-                        clon = (max_lon + 360. + min_lon) / 2.
-                        if clon >= 180.:
-                            clon -= 360.
-
+                sres = cursor.fetchone()
+                ctx['obs_types'][e[1]]['platforms'][e[3]]['start_date'] = (
+                        datetime.strptime(str(sres[0]), "%Y%m%d%H%M%S")
+                        .strftime("%Y-%m-%d"))
+                ctx['obs_types'][e[1]]['platforms'][e[3]]['end_date'] = (
+                        datetime.strptime(str(sres[1]), "%Y%m%d%H%M%S")
+                        .strftime("%Y-%m-%d"))
+                ctx['obs_types'][e[1]]['platforms'][e[3]]['num_obs'] = (
+                        sres[2])
+                ctx['obs_types'][e[1]]['platforms'][e[3]]['num_ids'] = (
+                        sres[9])
+                lon_diff = sres[8] - sres[7]
                 if lon_diff < 70.:
                     zl = 4
                 elif lon_diff < 140.:
@@ -273,8 +232,9 @@ def transform_obml(request, dsid, ctx):
                     zl = 2
 
                 ctx['obs_types'][e[1]]['platforms'][e[3]]['map'] = (
-                        {'center_lat': (min_lat + max_lat) / 2.,
-                         'center_lon': clon, 'zoom_level': zl})
+                        {'center_lat': (sres[3] + sres[5]) / 20000.,
+                         'center_lon': (sres[4] + sres[6]) / 20000.,
+                         'zoom_level': zl})
         else:
             ctx['transform']['error'] = "File does not exist"
 
