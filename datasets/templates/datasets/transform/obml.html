@@ -213,7 +213,6 @@ function toggleStationData(i, cla, clo, zoom) {
         </thead>
         <tbody>
             {% for platform_type, pdict in odict.platforms.items %}
-            {% with sdate=pdict.start_date|stringformat:"i" edate=pdict.end_date|stringformat:"i" %}
             <tr>
                 <td>
                     <center>
@@ -223,13 +222,13 @@ function toggleStationData(i, cla, clo, zoom) {
                                     <td>
                                         <b>Observing Platform:</b> {{ pdict.long_name }}
                                         <br>
-                                        <b>Temporal Range:</b> {{ sdate|slice:"0:4" }}-{{ sdate|slice:"4:6" }}-{{ sdate|slice:"6:8" }} to {{ edate|slice:"0:4" }}-{{ edate|slice:"4:6" }}-{{ edate|slice:"6:8" }}
+                                        <b>Temporal Range:</b> {{ pdict.start_date }} to {{ pdict.end_date }}
                                         <br>
                                         <b>Total Number of Observations:</b> {{ pdict.num_obs }}
                                         <br>
                                         <b>Number of Available Data Types:</b> {{ pdict.data_types|length }}
                                         <br>
-                                        <b>Total Number of Platform IDs:</b> {{ pdict.IDs|length }}
+                                        <b>Total Number of Platform IDs:</b> {{ pdict.num_ids }}
                                         <br>
                                         [ <a href="javascript:void(0)" onclick="toggleStationData('{{ obs_type }}_{{ platform_type }}', {{ pdict.map.center_lat }}, {{ pdict.map.center_lon }}, {{ pdict.map.zoom_level }})"><span id="{{ obs_type }}_{{ platform_type }}_verb">show</span> {% if pdict.can_map %}station map + {% endif %}ID list </a>]
                                         <div id="{{ obs_type }}_{{ platform_type }}" class="d-none mt-1">
@@ -283,7 +282,6 @@ function toggleStationData(i, cla, clo, zoom) {
                     </center>
                 </td>
             </tr>
-            {% endwith %}
             {% endfor %}
         </tbody>
     </table>
