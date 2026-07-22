@@ -76,6 +76,7 @@ def transform_grml(request, dsid, ctx):
 
 
 def transform_obml(request, dsid, ctx):
+    markup_type = ctx['transform']['markup_type']
     if 'markers' in request.GET:
         #if "HTTP_X_REQUESTED_WITH" not in request.META:
         #    return render(request, "404.html")
@@ -90,19 +91,38 @@ def transform_obml(request, dsid, ctx):
                 sw_lon = int(round(float(request.GET['sw_lon']), 4) * 10000.)
                 ne_lon = int(round(float(request.GET['ne_lon']), 4) * 10000.)
                 cursor.execute(
-                       "select id, sw_lat, sw_lon, ne_lat, ne_lon from "
-                       f'"WObML".{dsid}_ids where sw_lat <= %s and ne_lat >= '
-                       "%s and sw_lon <= %s and ne_lon >= %s",
-                       (ne_lat, sw_lat, ne_lon, sw_lon))
+                       "select i.id, t.id_type, i.sw_lat, i.sw_lon, i.ne_lat, "
+                       "i.ne_lon, l.num_observations, l.start_date, l."
+                       f'end_date, l.time_zone from "{markup_type}".{dsid}'
+                       f'_id_list as l left join "{markup_type}".{dsid}_ids '
+                       f'as i on i.code = l.id_code left join "{markup_type}".'
+                       "ID_types as t on t.code = i.id_type_code where i."
+                       "sw_lat <= %s and i.ne_lat >= %s and i.sw_lon <= %s "
+                       "and i.ne_lon >= %s", (ne_lat, sw_lat, ne_lon, sw_lon))
                 res = cursor.fetchall()
                 stations = {}
                 for e in res:
-                    key = ",".join([str(e[1]), str(e[2]), str(e[3]),
-                                    str(e[4])])
+                    key = ",".join([str(e[2]), str(e[3]), str(e[4]),
+                                    str(e[5])])
                     if key not in stations:
-                        stations[key] = {'bubble': {'IDs': []}}
+                        stations[key] = {'bubble': {
+                                         'IDs': [], 'ID_types': [],
+                                         'nobs': [], 'starts': [], 'ends': []}}
 
                     stations[key]['bubble']['IDs'].append(e[0])
+                    stations[key]['bubble']['ID_types'].append(e[1])
+                    stations[key]['bubble']['nobs'].append(e[6])
+                    tz = f"{e[9]:03}00" if e[9] < 0 else f"+{e[9]:02}00"
+                    d = str(e[7])
+                    d = " ".join(["-".join([d[0:4], d[4:6], d[6:8]]),
+                                  ":".join([d[8:10], d[10:12], d[12:14]]),
+                                  tz])
+                    stations[key]['bubble']['starts'].append(d)
+                    d = str(e[8])
+                    d = " ".join(["-".join([d[0:4], d[4:6], d[6:8]]),
+                                  ":".join([d[8:10], d[10:12], d[12:14]]),
+                                  tz])
+                    stations[key]['bubble']['ends'].append(d)
 
                 for key, value in stations.items():
                     marker_data['stations'].append({})
@@ -135,7 +155,6 @@ def transform_obml(request, dsid, ctx):
 
         return JsonResponse(marker_data)
 
-    markup_type = ctx['transform']['markup_type']
     file = ctx['transform']['file']
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
@@ -220,11 +239,11 @@ def transform_obml(request, dsid, ctx):
                     ctx['obs_types'][e[1]]['platforms'][e[3]]['num_obs'] += (
                             ie[5])
                     ctx['obs_types'][e[1]]['platforms'][e[3]]['start_date'] = (
-                            min(ie[6],
+                            min(ie[7],
                                 (ctx['obs_types'][e[1]]['platforms'][e[3]]
                                  ['start_date'])))
                     ctx['obs_types'][e[1]]['platforms'][e[3]]['end_date'] = (
-                            max(ie[7],
+                            max(ie[8],
                                 (ctx['obs_types'][e[1]]['platforms'][e[3]]
                                  ['end_date'])))
                     min_lat = min(ie[2], min_lat)
