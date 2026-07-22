@@ -143,7 +143,8 @@ function add_markers(mmap, marker_data) {
   });
 }
 
-function do_map_update(mmap) {
+function do_map_update(ident) {
+  eval('var mmap = ' + ident + '_map');
   clear_map(mmap);
   ivals.push(null);
   // wait for the map geometry to become available
@@ -181,7 +182,7 @@ function load_marker_map(ident, clat, clon, zoom, ctrl_size) {
       (mmap, ival_idx) => {
         if (typeof mmap.loaded != "undefined" && mmap.loaded) {
           clearInterval(ivals[ival_idx]);
-          do_map_update(mmap);
+          do_map_update(ident);
         }
       }, 1000, mmap, ivals.length-1);
 }
@@ -237,11 +238,11 @@ function toggleStationData(i, cla, clo, zoom) {
                                                 <div id="{{ obs_type }}_{{ platform_type }}_map" style="width: 700px; height: 600px" class="flex-shrink-0 border border-black border-1">
                                                 </div>
                                                 <div class="flex-fill ps-2">
-                                                    After you pan and zoom to an area of interest, you should [ Update ] the station markers and station list
+                                                    After you pan and zoom to an area of interest, you should <button class="btn btn-primary px-1 py-0" onclick="do_map_update('{{ obs_type}}_{{ platform_type }}')">Update</button> the station markers and station list
                                                     <br><br>
                                                     - OR -
                                                     <br><br>
-                                                    To show the marker(s) for a specific station(s), enter an ID or partial ID: <input id="partid" type="text" size="15">&nbsp;[ Go ]
+                                                    To show the marker(s) for a specific station(s), enter an ID or partial ID: <input id="partid" type="text" size="15">&nbsp;<button class="btn btn-primary px-1 py-0" onclick="">Go</button>
                                                 </div>
                                             </div>
                                             <div class="mb-1">
