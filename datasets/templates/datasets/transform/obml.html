@@ -189,7 +189,10 @@ function toggleStationData(i, cla, clo, zoom) {
   let v = document.getElementById(i + "_verb");
   if (e.classList.contains("d-none")) {
     if (!station_set.has(i)) {
-      load_marker_map(i, cla, clo, zoom, 'small');
+      let e = document.getElementById(i + "_map");
+      if (e != null) {
+        load_marker_map(i, cla, clo, zoom, 'small');
+      }
       station_set.add(i);
     }
     e.classList.replace("d-none", "d-block");
