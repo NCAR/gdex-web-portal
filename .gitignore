@@ -1,5 +1,14 @@
 manage.py
 pyvenv.cfg
+
+# Local-dev-only sandbox (see gdexwebserver/settings/local_dev.py) -- never
+# used by anything the real deployment runs, kept local so it can be used
+# without ever landing in a commit/PR.
+gdexwebserver/settings/local_dev.py
+gdexwebserver/urls_dev.py
+.venv-localdev/
+local_dev_db.sqlite3
+media_local_dev/
 bin/*
 lib64
 rdawebserver/settings/.secret_key.txt

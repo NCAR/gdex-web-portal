@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body_class %} data-submission-page{% endblock %}
+
+{% block headextras %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'datasubmit/css/datasubmit.css' %}">
+{% endblock %}
+
+{% block content %}
+<style>
+    .data-submission-page .card-header {
+        background-color: #0057c2;
+        color: #fff;
+    }
+</style>
+<h1 class="h2 mb-2 mt-3">Submission Advisor</h1>
+<p class="mb-3">Before you submit a dataset, answer the questions below so we can determine whether GDEX is the right fit for it. Depending on your answers, you may be routed to another repository (such as NSF NCAR Zenodo) that better suits your dataset, or continue on to submit your dataset to GDEX — which will ask for basic dataset information, contributor details, and how GDEX staff can access the data. Have this information ready before you begin.</p>
+
+<div class="row g-4">
+    <div class="{% if has_help_text %}col-lg-8{% else %}col-lg-12{% endif %}">
+        <div class="card rounded-4">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Submission Advisor</h2>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                        <div class="alert alert-danger mb-3" id="form-errors-summary" role="alert" tabindex="-1">Please correct the highlighted field(s) below before continuing.</div>
+                    {% endif %}
+
+                    <div class="row g-3">
+                    {% for field in form %}
+                        {% if field.name == 'dataset_size' %}
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold fs-5" for="{{ field.id_for_label }}">
+                                {{ field.label }}{% if field.field.required %} <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span>{% endif %}
+                            </label>
+                            <div class="input-group">
+                                {{ field }}
+                                {{ form.dataset_size_units }}
+                            </div>
+                            {% if field.errors %}
+                            <div id="{{ field.auto_id }}_error" class="invalid-feedback d-block">
+                                {% for error in field.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if form.dataset_size_units.errors %}
+                            <div id="{{ form.dataset_size_units.auto_id }}_error" class="invalid-feedback d-block">
+                                {% for error in form.dataset_size_units.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% elif field.name != 'dataset_size_units' %}
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold fs-5" for="{{ field.id_for_label }}">
+                                {{ field.label }}{% if field.field.required %} <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div id="{{ field.auto_id }}_error" class="invalid-feedback d-block">
+                                {% for error in field.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            Get Repository Determination <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if has_help_text %}
+    <div class="col-lg-4">
+        <div class="card rounded-4">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Field Guidance</h2>
+            </div>
+            <div class="card-body">
+                {% for field in form %}
+                    {% if field.help_text %}
+                    <div class="mb-3">
+                        <h3 class="h6 fw-bold">{{ field.label }}</h3>
+                        <p class="text-muted small mb-0">{{ field.help_text|safe }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var errorSummary = document.getElementById('form-errors-summary');
+    if (errorSummary) {
+        errorSummary.focus();
+    }
+});
+</script>
+{% endblock %}

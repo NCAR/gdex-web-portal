@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body_class %} data-submission-page{% endblock %}
+
+{% block headextras %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'datasubmit/css/datasubmit.css' %}">
+{% endblock %}
+
+{% block content %}
+<h1 class="h2 mb-3">Consider Zenodo for This Dataset</h1>
+<p class="fs-5 mb-2">
+    Based on what you told us — a dataset under 50 GB that doesn't need NCAR HPC access —
+    it may be archived faster through the
+    <a href="https://zenodo.org/communities/nsfncar/" target="_blank" rel="noopener">NSF NCAR community on Zenodo <i class="fas fa-external-link-alt" aria-hidden="true"></i><span class="visually-hidden"> (opens in a new tab)</span></a>,
+    NSF NCAR's Zenodo repository is an open-access repository that can quickly generate a DOI for your dataset once you submit the required information. We'll provide a link to help you get started. If you prefer to archive your dataset in GDEX instead, making it discoverable through the GDEX portal, select "Yes" below to continue the GDEX submission process.
+</p>
+
+<div class="card rounded-4">
+    <div class="card-body p-4">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div class="alert alert-danger mb-3" id="form-errors-summary" role="alert" tabindex="-1">Please correct the highlighted field(s) below before continuing.</div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-12 mb-3">
+                    <label class="form-label fw-bold fs-5" for="{{ form.continue_with_gdex.id_for_label }}">
+                        {{ form.continue_with_gdex.label }} <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span>
+                    </label>
+                    {{ form.continue_with_gdex }}
+                    {% if form.continue_with_gdex.errors %}
+                    <div id="{{ form.continue_with_gdex.auto_id }}_error" class="invalid-feedback d-block">
+                        {% for error in form.continue_with_gdex.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-primary btn-lg">Continue</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var errorSummary = document.getElementById('form-errors-summary');
+    if (errorSummary) {
+        errorSummary.focus();
+    }
+});
+</script>
+{% endblock %}
