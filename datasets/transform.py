@@ -77,6 +77,7 @@ def transform_grml(request, dsid, ctx):
 
 def transform_obml(request, dsid, ctx):
     markup_type = ctx['transform']['markup_type']
+    file = ctx['transform']['file']
     if 'markers' in request.GET:
         #if "HTTP_X_REQUESTED_WITH" not in request.META:
         #    return render(request, "404.html")
@@ -85,6 +86,7 @@ def transform_obml(request, dsid, ctx):
         try:
             conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
             cursor = conn.cursor()
+            data_format, file_code = file_data(file, dsid, markup_type, cursor)
             if request.GET['markers'] == "all":
                 sw_lat = int(round(float(request.GET['sw_lat']), 4) * 10000.)
                 ne_lat = int(round(float(request.GET['ne_lat']), 4) * 10000.)
@@ -96,9 +98,10 @@ def transform_obml(request, dsid, ctx):
                        f'end_date, l.time_zone from "{markup_type}".{dsid}'
                        f'_id_list as l left join "{markup_type}".{dsid}_ids '
                        f'as i on i.code = l.id_code left join "{markup_type}".'
-                       "ID_types as t on t.code = i.id_type_code where i."
-                       "sw_lat <= %s and i.ne_lat >= %s and i.sw_lon <= %s "
-                       "and i.ne_lon >= %s", (ne_lat, sw_lat, ne_lon, sw_lon))
+                       "ID_types as t on t.code = i.id_type_code where l."
+                       "file_code = %s and i.sw_lat <= %s and i.ne_lat >= %s "
+                       "and i.sw_lon <= %s and i.ne_lon >= %s",
+                       (file_code, ne_lat, sw_lat, ne_lon, sw_lon))
                 res = cursor.fetchall()
                 stations = {}
                 for e in res:
@@ -155,7 +158,6 @@ def transform_obml(request, dsid, ctx):
 
         return JsonResponse(marker_data)
 
-    file = ctx['transform']['file']
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
@@ -212,8 +214,9 @@ def transform_obml(request, dsid, ctx):
                         f'_id_list as l left join "{markup_type}".{dsid}_ids '
                         "as i on i.code = l.id_code left join "
                         f'"{markup_type}".ID_types as t on t.code = i.'
-                        "id_type_code where l.observation_type_code = %s and "
-                        "l.platform_type_code = %s", (e[0], e[2]))
+                        "id_type_code where l.file_code = %s and l."
+                        "observation_type_code = %s and l.platform_type_code "
+                        "= %s", (file_code, e[0], e[2]))
                 ires = cursor.fetchall()
                 num_obs = 0
                 for ie in ires:
@@ -237,7 +240,7 @@ def transform_obml(request, dsid, ctx):
                                                            "%Y%m%d%H%M%S")
                                          .strftime("%Y-%m-%d %H:%M"))})
                     ctx['obs_types'][e[1]]['platforms'][e[3]]['num_obs'] += (
-                            ie[5])
+                            ie[6])
                     ctx['obs_types'][e[1]]['platforms'][e[3]]['start_date'] = (
                             min(ie[7],
                                 (ctx['obs_types'][e[1]]['platforms'][e[3]]
