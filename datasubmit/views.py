@@ -2,7 +2,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .forms import (
     ACCESS_METHOD_CHOICES,
@@ -148,6 +148,8 @@ def _format_dataset_size(size_mb):
     return f"{size_mb:.2f} MB"
 
 @login_required
+# TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
+@user_passes_test(lambda u: u.is_superuser)
 @never_cache
 def submission_confirmation(request):
     submission_id = request.session.pop('last_submission_id', None)
@@ -182,6 +184,8 @@ def submission_confirmation(request):
     })
 
 @login_required
+# TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
+@user_passes_test(lambda u: u.is_superuser)
 @never_cache
 def submission_advisor(request):
     wizard_data = request.session.get(SESSION_KEY, {})
@@ -210,6 +214,8 @@ def submission_advisor(request):
     })
 
 @login_required
+# TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
+@user_passes_test(lambda u: u.is_superuser)
 @never_cache
 def data_submission_zenodo_recommendation(request):
     wizard_data = request.session.get(SESSION_KEY, {})
@@ -239,6 +245,8 @@ def data_submission_zenodo_recommendation(request):
     return render(request, 'datasubmit/data_submission_zenodo_recommendation.html', {'form': form})
 
 @login_required
+# TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
+@user_passes_test(lambda u: u.is_superuser)
 @never_cache
 def data_submission_zenodo_next_steps(request):
     wizard_data = request.session.get(SESSION_KEY, {})
@@ -249,6 +257,8 @@ def data_submission_zenodo_next_steps(request):
     return render(request, 'datasubmit/data_submission_zenodo_next_steps.html', {'reason': reason})
 
 @login_required
+# TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
+@user_passes_test(lambda u: u.is_superuser)
 @never_cache
 def data_submission_gdex_next_steps(request):
     wizard_data = request.session.get(SESSION_KEY, {})
@@ -292,6 +302,8 @@ def _wizard_gate_redirect(wizard_data, step):
     return None
 
 @login_required
+# TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
+@user_passes_test(lambda u: u.is_superuser)
 @never_cache
 def data_submission_contributors(request):
     step = 2
@@ -353,6 +365,8 @@ def data_submission_contributors(request):
     })
 
 @login_required
+# TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
+@user_passes_test(lambda u: u.is_superuser)
 @never_cache
 def gdex_submission_form_step(request, step_slug):
     if step_slug not in SLUG_TO_STEP:
@@ -404,6 +418,7 @@ def gdex_submission_form_step(request, step_slug):
                     is_ncar_employee = intro_info['is_ncar_employee'] == 'True'
 
                 submission = Submission.objects.create(
+                    submitted_by=request.user,
                     submission_type=wizard_data.get('welcome', {}).get('submission_type', 'own'),
                     dataset_title=basic_info['dataset_title'],
                     dataset_abstract=basic_info['dataset_abstract'],
