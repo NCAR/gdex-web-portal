@@ -184,35 +184,37 @@ def transform_obml(request, dsid, ctx):
                     .append(e[4]))
 
                 cursor.execute(
-                        "select i.id, round(i.sw_lat/10000.::numeric, 2)::"
-                        "float, round(i.sw_lon/10000.::numeric, 2)::float, "
-                        "round(i.ne_lat/10000.::numeric, 2)::float, round("
-                        "i.ne_lon/10000.::numeric, 2)::float, l."
-                        "num_observations, l.start_date, l.end_date from "
-                        f'"{markup_type}".{dsid}_id_list as l left join '
-                        f'"{markup_type}".{dsid}_ids as i on i.code = l.'
-                        "id_code where l.observation_type_code = %s and l."
-                        "platform_type_code = %s", (e[0], e[2]))
+                        "select i.id, t.id_type, round(i.sw_lat/10000."
+                        "::numeric, 2)::float, round(i.sw_lon/10000."
+                        "::numeric, 2)::float, round(i.ne_lat/10000."
+                        "::numeric, 2)::float, round(i.ne_lon/10000."
+                        "::numeric, 2)::float, l.num_observations, l."
+                        f'start_date, l.end_date from "{markup_type}".{dsid}'
+                        f'_id_list as l left join "{markup_type}".{dsid}_ids '
+                        "as i on i.code = l.id_code left join "
+                        f'"{markup_type}".ID_types as t on t.code = i.'
+                        "id_type_code where l.observation_type_code = %s and "
+                        "l.platform_type_code = %s", (e[0], e[2]))
                 ires = cursor.fetchall()
                 num_obs = 0
                 for ie in ires:
                     (ctx['obs_types'][e[1]]['platforms'][e[3]]['IDs']).append(
-                                {'ID': ie[0],
-                                 'sw_lat': (str(abs(ie[1])) +
-                                            ("S" if ie[1] < 0. else "N")),
-                                 'sw_lon': (str(abs(ie[2])) +
-                                            ("W" if ie[2] < 0. else "E")),
-                                 'ne_lat': (str(abs(ie[3])) +
-                                            ("S" if ie[3] < 0. else "N")),
-                                 'ne_lon': (str(abs(ie[4])) +
-                                            ("W" if ie[4] < 0. else "E")),
-                                 'num_obs': ie[5],
+                                {'ID': ie[0], 'network': ie[1],
+                                 'sw_lat': (str(abs(ie[2])) +
+                                            ("S" if ie[2] < 0. else "N")),
+                                 'sw_lon': (str(abs(ie[3])) +
+                                            ("W" if ie[3] < 0. else "E")),
+                                 'ne_lat': (str(abs(ie[4])) +
+                                            ("S" if ie[4] < 0. else "N")),
+                                 'ne_lon': (str(abs(ie[5])) +
+                                            ("W" if ie[5] < 0. else "E")),
+                                 'num_obs': ie[6],
                                  'start_date': (
-                                         datetime.strptime(str(ie[6]),
+                                         datetime.strptime(str(ie[7]),
                                                            "%Y%m%d%H%M%S")
                                          .strftime("%Y-%m-%d %H:%M")),
                                  'end_date': (
-                                         datetime.strptime(str(ie[7]),
+                                         datetime.strptime(str(ie[8]),
                                                            "%Y%m%d%H%M%S")
                                          .strftime("%Y-%m-%d %H:%M"))})
                     ctx['obs_types'][e[1]]['platforms'][e[3]]['num_obs'] += (
@@ -225,10 +227,10 @@ def transform_obml(request, dsid, ctx):
                             max(ie[7],
                                 (ctx['obs_types'][e[1]]['platforms'][e[3]]
                                  ['end_date'])))
-                    min_lat = min(ie[1], min_lat)
-                    max_lat = max(ie[3], max_lat)
-                    min_lon = min(ie[2], min_lon)
-                    max_lon = max(ie[4], max_lon)
+                    min_lat = min(ie[2], min_lat)
+                    max_lat = max(ie[4], max_lat)
+                    min_lon = min(ie[3], min_lon)
+                    max_lon = max(ie[5], max_lon)
 
                 clon = (min_lon + max_lon) / 2.
                 lon_diff = max_lon - min_lon
