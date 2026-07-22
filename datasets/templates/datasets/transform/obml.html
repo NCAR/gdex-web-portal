@@ -255,6 +255,7 @@ function toggleStationData(i, cla, clo, zoom) {
                                                 <thead>
                                                     <tr>
                                                         <th>ID</th>
+                                                        <th>Network</th>
                                                         <th>Lat, Lon or<br>Bounding Box</th>
                                                         <th>Start Date/Time</th>
                                                         <th>End Date/Time</th>
@@ -265,6 +266,7 @@ function toggleStationData(i, cla, clo, zoom) {
                                                     {% for ID in pdict.IDs %}
                                                     <tr>
                                                         <td align="center">{{ ID.ID }}</td>
+                                                        <td align="center">{{ ID.network }}</td>
                                                         <td align="center">{% if ID.sw_lat == ID.ne_lat %}{{ ID.sw_lat }}, {{ ID.ne_lon }}{% else %}{{ ID.sw_lat }}, {{ ID.sw_lon }} to {{ ID.ne_lat }}, {{ ID.ne_lon }}{% endif %}</td>
                                                         <td align="center">{{ ID.start_date }}</td>
                                                         <td align="center">{{ ID.end_date }}</td>
