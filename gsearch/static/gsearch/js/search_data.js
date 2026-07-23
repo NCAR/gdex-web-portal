@@ -295,7 +295,7 @@
                         var curCount = document.querySelector('.gdex-results-count');
                         if (newList  && curList)  curList.innerHTML  = newList.innerHTML;
                         if (newCount && curCount) curCount.innerHTML = newCount.innerHTML;
-                        history.pushState({}, '', newUrl);
+                        history.replaceState({}, '', newUrl);
                     });
             }
         });

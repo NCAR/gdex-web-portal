@@ -1,9 +1,4 @@
-/* 
-   GDEX — Search Data Page Styles
-   Loaded on search.html via search-base.html {% block search_head %} 
-*/
-
-
+/* GDEX — Search Data Page Styles oaded on search.html via search-base.html {% block search_head %} */
 /* Hero banner*/
 .gdex-find-data-hero {
     min-height: 280px;
@@ -17,6 +12,12 @@
     background-position: center;
     background-repeat: no-repeat;
     z-index: 0;
+}
+.gdex-find-data-hero__bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
 }
 .gdex-find-data-hero__content {
     z-index: 2;
@@ -39,6 +40,7 @@
     line-height: 1.7;
     max-width: 680px;
     margin: 0 auto 1.75rem;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 .gdex-find-data-hero__form {
     max-width: 900px;
@@ -815,9 +817,7 @@ a.gdex-btn-more:visited {
 a.gdex-btn-more:hover { color: var(--gdex-blue); text-decoration: none; }
 
 
-/* ------------------------------------------------------------
-   Dataset summary popover
-   ------------------------------------------------------------ */
+/* Dataset summary popover */
 .gdex-summary-popover {
     position: fixed;
     z-index: 1060;
@@ -862,9 +862,7 @@ a.gdex-btn-more:hover { color: var(--gdex-blue); text-decoration: none; }
 .gdex-summary-popover__hint strong { color: var(--gdex-blue); font-weight: 600; }
 
 
-/* ------------------------------------------------------------
-   Pagination
-   ------------------------------------------------------------ */
+/* Pagination */
 .gdex-pagination__label {
     text-align: center;
     font-family: 'Poppins', sans-serif;
