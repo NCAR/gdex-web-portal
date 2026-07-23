@@ -183,6 +183,24 @@ function load_marker_map(ident, ocode, pcode, clat, clon, zoom, ctrl_size) {
 </script>
 {% endif %}
 <script id="transformObML_utils_script" language="javascript">
+function fill_id_table(ident, station_data) {
+  tbody = document.getElementById(ident + "_table");
+  station_data.stations.forEach((station) => {
+    row = tbody.insertRow(-1);
+    cell0 = row.insertCell(0);
+    cell0.textContent = "aaa";
+    cell1 = row.insertCell(1);
+    cell1.textContent = "bbb";
+    cell2 = row.insertCell(2);
+    cell2.textContent = "ccc";
+    cell3 = row.insertCell(3);
+    cell3.textContent = "ddd";
+    cell4 = row.insertCell(4);
+    cell4.textContent = "eee";
+    cell5 = row.insertCell(5);
+    cell5.textContent = "fff";
+  });
+}
 
 var station_set = new Set();
 
@@ -198,6 +216,7 @@ function toggleStationData(i, ocode, pcode, cla = null, clo = null, zoom = null)
         let response = getContentFromSynchronousRequest(null, window.location.pathname + "?stations=all&obs_code=" + ocode + "&plat_code=" + pcode, null, null);
         var station_data = eval("(" + response + ")");
       }
+      fill_id_table(i, station_data);
       station_set.add(i);
     }
     e.classList.replace("d-none", "d-block");
@@ -264,17 +283,7 @@ function toggleStationData(i, ocode, pcode, cla = null, clo = null, zoom = null)
                                                         <th># of<br>Observations</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
-                                                    {% for ID in pdict.IDs %}
-                                                    <tr>
-                                                        <td align="center">{{ ID.ID }}</td>
-                                                        <td align="center">{{ ID.network }}</td>
-                                                        <td align="center">{% if ID.sw_lat == ID.ne_lat %}{{ ID.sw_lat }}, {{ ID.ne_lon }}{% else %}{{ ID.sw_lat }}, {{ ID.sw_lon }} to {{ ID.ne_lat }}, {{ ID.ne_lon }}{% endif %}</td>
-                                                        <td align="center">{{ ID.start_date }}</td>
-                                                        <td align="center">{{ ID.end_date }}</td>
-                                                        <td align="center">{{ ID.num_obs }}</td>
-                                                    </tr>
-                                                    {% endfor %}
+                                                <tbody id="{{ obs_type }}_{{ platform_type }}_table">
                                                 </tbody>
                                             </table>
                                         </div>
