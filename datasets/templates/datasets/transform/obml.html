@@ -121,8 +121,8 @@ function clear_map(mmap) {
   for (n = 0; n < mmap.boxes.length; mmap.boxes[n++].setMap(null));
 }
 
-function add_markers(mmap, marker_data) {
-  marker_data.stations.forEach((station) => {
+function add_markers(mmap, station_data) {
+  station_data.stations.forEach((station) => {
     if (station.fixed) {
       mmap.markers.push(new google.maps.Marker(
           { position: new google.maps.LatLng(station.lat, station.lon),
@@ -135,7 +135,7 @@ function add_markers(mmap, marker_data) {
   });
 }
 
-function do_map_update(ident) {
+function do_map_update(ident, ocode, pcode) {
   eval('var mmap = ' + ident + '_map');
   clear_map(mmap);
   ivals.push(null);
@@ -145,14 +145,15 @@ function do_map_update(ident) {
         bounds = mmap.handles.marker.getBounds();
         if (bounds) {
           clearInterval(ivals[ival_idx]);
-          let response = getContentFromSynchronousRequest(null, window.location.pathname + "?markers=all&sw_lat=" + bounds.getSouthWest().lat() + "&sw_lon=" + bounds.getSouthWest().lng() + "&ne_lat=" + bounds.getNorthEast().lat() + "&ne_lon=" + bounds.getNorthEast().lng(), null, null);
-          let marker_data = eval("(" + response + ")");
-          add_markers(mmap, marker_data);
+          let response = getContentFromSynchronousRequest(null, window.location.pathname + "?stations=bounded&obs_code=" + ocode + "&plat_code=" + pcode + "&sw_lat=" + bounds.getSouthWest().lat() + "&sw_lon=" + bounds.getSouthWest().lng() + "&ne_lat=" + bounds.getNorthEast().lat() + "&ne_lon=" + bounds.getNorthEast().lng(), null, null);
+          let station_data = eval("(" + response + ")");
+          add_markers(mmap, station_data);
+          return station_data;
         }
       }, 100, mmap, ivals.length-1);
 }
 
-function load_marker_map(ident, clat, clon, zoom, ctrl_size) {
+function load_marker_map(ident, ocode, pcode, clat, clon, zoom, ctrl_size) {
   eval('var mmap = ' + ident + '_map');
   let mmap_init = {
     map_div_id: ident + "_map",
@@ -174,7 +175,8 @@ function load_marker_map(ident, clat, clon, zoom, ctrl_size) {
       (mmap, ival_idx) => {
         if (typeof mmap.loaded != "undefined" && mmap.loaded) {
           clearInterval(ivals[ival_idx]);
-          do_map_update(ident);
+          let station_data = do_map_update(ident, ocode, pcode);
+          return station_data;
         }
       }, 1000, mmap, ivals.length-1);
 }
@@ -184,14 +186,17 @@ function load_marker_map(ident, clat, clon, zoom, ctrl_size) {
 
 var station_set = new Set();
 
-function toggleStationData(i, cla, clo, zoom) {
+function toggleStationData(i, ocode, pcode, cla = null, clo = null, zoom = null) {
   let e = document.getElementById(i);
   let v = document.getElementById(i + "_verb");
   if (e.classList.contains("d-none")) {
     if (!station_set.has(i)) {
       let e = document.getElementById(i + "_map");
       if (e != null) {
-        load_marker_map(i, cla, clo, zoom, 'small');
+        var station_data = load_marker_map(i, ocode, pcode, cla, clo, zoom, 'small');
+      } else {
+        let response = getContentFromSynchronousRequest(null, window.location.pathname + "?stations=all&obs_code=" + ocode + "&plat_code=" + pcode, null, null);
+        var station_data = eval("(" + response + ")");
       }
       station_set.add(i);
     }
@@ -228,14 +233,14 @@ function toggleStationData(i, cla, clo, zoom) {
                                         <br>
                                         <b>Total Number of Platform IDs:</b> {{ pdict.num_ids }}
                                         <br>
-                                        [ <a href="javascript:void(0)" onclick="toggleStationData('{{ obs_type }}_{{ platform_type }}', {{ pdict.map.center_lat }}, {{ pdict.map.center_lon }}, {{ pdict.map.zoom_level }})"><span id="{{ obs_type }}_{{ platform_type }}_verb">show</span> {% if pdict.can_map %}station map + {% endif %}ID list </a>]
+                                        [ <a href="javascript:void(0)" onclick="toggleStationData('{{ obs_type }}_{{ platform_type }}', '{{ odict.code }}', '{{ pdict.code }}'{% if pdict.can_map %}, {{ pdict.map.center_lat }}, {{ pdict.map.center_lon }}, {{ pdict.map.zoom_level }}{% endif %})"><span id="{{ obs_type }}_{{ platform_type }}_verb">show</span> {% if pdict.can_map %}station map + {% endif %}ID list </a>]
                                         <div id="{{ obs_type }}_{{ platform_type }}" class="d-none mt-1">
                                             {% if pdict.can_map %}
                                             <div class="d-flex mb-2">
                                                 <div id="{{ obs_type }}_{{ platform_type }}_map" style="width: 700px; height: 600px" class="flex-shrink-0 border border-black border-1">
                                                 </div>
                                                 <div class="flex-fill ps-2">
-                                                    After you pan and zoom to an area of interest, you should <button class="btn btn-primary px-1 py-0" onclick="do_map_update('{{ obs_type}}_{{ platform_type }}')">Update</button> the station markers and station list
+                                                    After you pan and zoom to an area of interest, you should <button class="btn btn-primary px-1 py-0" onclick="do_map_update('{{ obs_type}}_{{ platform_type }}', '{{ odict.code }}', '{{ pdict.code }}')">Update</button> the station markers and station list
                                                     <br><br>
                                                     - OR -
                                                     <br><br>
