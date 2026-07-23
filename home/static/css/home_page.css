@@ -234,14 +234,15 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 .gdex-chip {
     display: inline-flex;
-    align-items: stretch;
+    align-items: center;
     text-align: left;
+    gap: 0.9rem;
     min-width: 295px;
     background-color: var(--gdex-white);
     border: 1.5px solid rgba(0, 87, 194, 0.35);
     color: var(--gdex-blue-dark);
     border-radius: 12px;
-    overflow: hidden;
+    padding: 0.75rem 1.1rem;
     font-size: 0.875rem;
     text-decoration: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -250,32 +251,27 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(250, 161, 25, 0.15);
-    padding: 0.75rem 1.1rem;
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    border-radius: 14px;
+    background-color: var(--gdex-blue);
     flex-shrink: 0;
-    transition: background-color 0.2s ease;
 }
 .gdex-chip__text-zone {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 0.6rem 1.1rem;
-    transition: background-color 0.2s ease;
 }
 .gdex-chip strong { display: block; font-weight: 600; font-size: 1rem; color: var(--gdex-blue-dark); }
 .gdex-chip small { font-weight: 400; font-size: 0.85rem; color: var(--gdex-text-body); }
-.gdex-chip i { color: var(--gdex-orange); font-size: 2.1rem; transition: color 0.2s ease; }
+.gdex-chip i { color: var(--gdex-white); font-size: 1.45rem; }
 .gdex-chip:hover {
     border-color: var(--gdex-blue);
     text-decoration: none;
     box-shadow: 0 4px 16px rgba(0, 87, 194, 0.3);
     transform: translateY(-2px);
 }
-.gdex-chip:hover .gdex-chip__icon-zone { background-color: var(--gdex-blue); }
-.gdex-chip:hover .gdex-chip__text-zone { background-color: var(--gdex-blue); }
-.gdex-chip:hover i { color: var(--gdex-white); }
-.gdex-chip:hover strong { color: var(--gdex-white); }
-.gdex-chip:hover small { color: rgba(255, 255, 255, 0.8); }
 
 
 /* FEATURE CARDS */
