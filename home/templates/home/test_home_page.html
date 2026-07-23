@@ -23,7 +23,8 @@
     <div class="gdex-hero__content position-relative">
         <div class="container-lg">
         <div class="row">
-            <div class="col-lg-5 col-xl-4">
+            <!--gdex-hero__overlay-panel in bootstrap is: class="col-lg-5 col-xl-4 bg-dark bg-opacity-25 text-white p-4 rounded-3 maxWidth-sm" style="backdrop-filter: blur(8px); max-width: 500px;" -->
+            <div class="col-lg-5 col-xl-4 gdex-hero__overlay-panel">
                 <h1 class="gdex-hero__heading">
                     {% if page.hero_heading_highlight %}<span class="gdex-hero__heading-highlight">{{ page.hero_heading_highlight }}</span> {% endif %}{{ page.hero_heading|default:"The system of record for Earth system science." }}
                 </h1>
