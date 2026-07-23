@@ -87,71 +87,71 @@ def transform_obml(request, dsid, ctx):
             conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
             cursor = conn.cursor()
             data_format, file_code = file_data(file, dsid, markup_type, cursor)
+            query = (
+                   "select i.id, t.id_type, i.sw_lat, i.sw_lon, i.ne_lat, i."
+                   "ne_lon, l.num_observations, l.start_date, l.end_date, l."
+                   f'time_zone from "{markup_type}".{dsid}_id_list as l left '
+                   f'join "{markup_type}".{dsid}_ids as i on i.code = l.'
+                   f'id_code left join "{markup_type}".ID_types as t on t.'
+                   "code = i.id_type_code where l.file_code = %s and l."
+                   "observation_type_code = %s and l.platform_type_code = %s")
+            params = [file_code, int(request.GET['obs_code']),
+                      int(request.GET['plat_code'])]
             if request.GET['stations'] == "bounded":
                 sw_lat = int(round(float(request.GET['sw_lat']), 4) * 10000.)
                 ne_lat = int(round(float(request.GET['ne_lat']), 4) * 10000.)
                 sw_lon = int(round(float(request.GET['sw_lon']), 4) * 10000.)
                 ne_lon = int(round(float(request.GET['ne_lon']), 4) * 10000.)
-                cursor.execute(
-                       "select i.id, t.id_type, i.sw_lat, i.sw_lon, i.ne_lat, "
-                       "i.ne_lon, l.num_observations, l.start_date, l."
-                       f'end_date, l.time_zone from "{markup_type}".{dsid}'
-                       f'_id_list as l left join "{markup_type}".{dsid}_ids '
-                       f'as i on i.code = l.id_code left join "{markup_type}".'
-                       "ID_types as t on t.code = i.id_type_code where l."
-                       "file_code = %s and l.observation_type_code = %s and l."
-                       "platform_type_code = %s and i.sw_lat <= %s and i."
-                       "ne_lat >= %s and i.sw_lon <= %s and i.ne_lon >= %s",
-                       (file_code, int(request.GET['obs_code']),
-                        int(request.GET['plat_code']), ne_lat, sw_lat, ne_lon,
-                        sw_lon))
-                res = cursor.fetchall()
-                stations = {}
-                for e in res:
-                    key = ",".join([str(e[2]), str(e[3]), str(e[4]),
-                                    str(e[5])])
-                    if key not in stations:
-                        stations[key] = {'bubble': {
-                                         'IDs': [], 'ID_types': [],
-                                         'nobs': [], 'starts': [], 'ends': []}}
+                query += (
+                        "and i.sw_lat <= %s and i.ne_lat >= %s and i.sw_lon "
+                        "<= %s and i.ne_lon >= %s")
+                params.extend([ne_lat, sw_lat, ne_lon, sw_lon])
 
-                    stations[key]['bubble']['IDs'].append(e[0])
-                    stations[key]['bubble']['ID_types'].append(e[1])
-                    stations[key]['bubble']['nobs'].append(e[6])
-                    tz = f"{e[9]:03}00" if e[9] < 0 else f"+{e[9]:02}00"
-                    d = str(e[7])
-                    d = " ".join(["-".join([d[0:4], d[4:6], d[6:8]]),
-                                  ":".join([d[8:10], d[10:12], d[12:14]]),
-                                  tz])
-                    stations[key]['bubble']['starts'].append(d)
-                    d = str(e[8])
-                    d = " ".join(["-".join([d[0:4], d[4:6], d[6:8]]),
-                                  ":".join([d[8:10], d[10:12], d[12:14]]),
-                                  tz])
-                    stations[key]['bubble']['ends'].append(d)
+            cursor.execute(query, params)
+            res = cursor.fetchall()
+            stations = {}
+            for e in res:
+                key = ",".join([str(e[2]), str(e[3]), str(e[4]), str(e[5])])
+                if key not in stations:
+                    stations[key] = {'bubble': {
+                                     'IDs': [], 'ID_types': [],
+                                     'nobs': [], 'starts': [], 'ends': []}}
 
-                for key, value in stations.items():
-                    marker_data['stations'].append({})
-                    kparts = key.split(",")
-                    if kparts[0] == kparts[2] and kparts[1] == kparts[3]:
-                        marker_data['stations'][-1]['fixed'] = True
-                        marker_data['stations'][-1]['lat'] = (
-                                float(kparts[0]) / 10000.)
-                        marker_data['stations'][-1]['lon'] = (
-                                float(kparts[1]) / 10000.)
-                    else:
-                        marker_data['stations'][-1]['fixed'] = False
-                        marker_data['stations'][-1]['sw_lat'] = (
-                                float(kparts[0]) / 10000.)
-                        marker_data['stations'][-1]['sw_lon'] = (
-                                float(kparts[1]) / 10000.)
-                        marker_data['stations'][-1]['ne_lat'] = (
-                                float(kparts[2]) / 10000.)
-                        marker_data['stations'][-1]['ne_lon'] = (
-                                float(kparts[3]) / 10000.)
+                stations[key]['bubble']['IDs'].append(e[0])
+                stations[key]['bubble']['ID_types'].append(e[1])
+                stations[key]['bubble']['nobs'].append(e[6])
+                tz = f"{e[9]:03}00" if e[9] < 0 else f"+{e[9]:02}00"
+                d = str(e[7])
+                d = " ".join(["-".join([d[0:4], d[4:6], d[6:8]]),
+                              ":".join([d[8:10], d[10:12], d[12:14]]), tz])
+                stations[key]['bubble']['starts'].append(d)
+                d = str(e[8])
+                d = " ".join(["-".join([d[0:4], d[4:6], d[6:8]]),
+                              ":".join([d[8:10], d[10:12], d[12:14]]), tz])
+                stations[key]['bubble']['ends'].append(d)
 
-                    marker_data['stations'][-1]['bubble'] = (
-                            stations[key]['bubble'])
+            for key, value in stations.items():
+                marker_data['stations'].append({})
+                kparts = key.split(",")
+                if kparts[0] == kparts[2] and kparts[1] == kparts[3]:
+                    marker_data['stations'][-1]['fixed'] = True
+                    marker_data['stations'][-1]['lat'] = (
+                            float(kparts[0]) / 10000.)
+                    marker_data['stations'][-1]['lon'] = (
+                            float(kparts[1]) / 10000.)
+                else:
+                    marker_data['stations'][-1]['fixed'] = False
+                    marker_data['stations'][-1]['sw_lat'] = (
+                            float(kparts[0]) / 10000.)
+                    marker_data['stations'][-1]['sw_lon'] = (
+                            float(kparts[1]) / 10000.)
+                    marker_data['stations'][-1]['ne_lat'] = (
+                            float(kparts[2]) / 10000.)
+                    marker_data['stations'][-1]['ne_lon'] = (
+                            float(kparts[3]) / 10000.)
+
+                marker_data['stations'][-1]['bubble'] = (
+                        stations[key]['bubble'])
 
         except Exception:
             pass
