@@ -100,12 +100,19 @@ def transform_obml(request, dsid, ctx):
             if request.GET['stations'] == "bounded":
                 sw_lat = int(round(float(request.GET['sw_lat']), 4) * 10000.)
                 ne_lat = int(round(float(request.GET['ne_lat']), 4) * 10000.)
+                query += " and i.sw_lat <= %s and i.ne_lat >= %s"
+                params.extend([ne_lat, sw_lat])
                 sw_lon = int(round(float(request.GET['sw_lon']), 4) * 10000.)
                 ne_lon = int(round(float(request.GET['ne_lon']), 4) * 10000.)
-                query += (
-                        " and i.sw_lat <= %s and i.ne_lat >= %s and i.sw_lon "
-                        "<= %s and i.ne_lon >= %s")
-                params.extend([ne_lat, sw_lat, ne_lon, sw_lon])
+                if sw_lon < ne_lon:
+                    query += " and i.sw_lon <= %s and i.ne_lon >= %s"
+                else:
+                    query += (
+                            " and ((i.sw_lon <= %s and i.ne_lon >= -1800000) "
+                            "or (i.sw_lon <= 1800000 and i.ne_lon >= %s) or "
+                            "(i.sw_lon > i.ne_lon))")
+
+                params.extend([ne_lon, sw_lon])
 
             cursor.execute(query, params)
             res = cursor.fetchall()
