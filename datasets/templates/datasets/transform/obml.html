@@ -78,6 +78,7 @@ function do_gmap3_callback() {
       platform_type_code: {{ pdict.code }},
       markers: [],
       bubbles: [],
+      current_bubble: null,
       boxes: []
     };
     {% endfor %}
@@ -154,6 +155,19 @@ function add_markers(mmap) {
       mmap.boxes[mmap.boxes.length-1].setMap(mmap.handles.marker);
     }
     mmap.markers[mmap.markers.length-1].setMap(mmap.handles.marker);
+    mmap.bubbles.push(new google.maps.InfoWindow(
+        { content: "hello" }
+    ));
+    google.maps.event.addListener(mmap.markers[mmap.markers.length-1], "click", function(m, b) {
+      return function() {
+        if (mmap.current_bubble != null) {
+          mmap.current_bubble.close();
+          mmap.current_bubble = null;
+        }
+        b.open(mmap.handles.marker, m);
+        mmap.current_bubble = b;
+      }
+    }(mmap.markers[mmap.markers.length-1], mmap.bubbles[mmap.bubbles.length-1]));
   });
 }
 
