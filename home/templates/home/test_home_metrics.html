@@ -1,8 +1,13 @@
-{% load static %}
-{% static 'img/hero_earth.png' as metrics_bg %}
+{% load static wagtailimages_tags %}
+{% static 'img/bannerimage7.jpg' as metrics_fallback_img %}
 
 <!-- METRICS -->
-<section class="gdex-metrics-section" style="background-image: url('{{ metrics_bg }}');">
+{% if page.metrics_banner_image %}
+    {% image page.metrics_banner_image original as metrics_img %}
+    <section class="gdex-metrics-section" style="background-image: url('{{ metrics_img.url }}');">
+{% else %}
+    <section class="gdex-metrics-section" style="background-image: url('{{ metrics_fallback_img }}');">
+{% endif %}
     <div class="container-lg">
 
         <h2 class="gdex-metrics-section__title">GDEX By the Metrics</h2>

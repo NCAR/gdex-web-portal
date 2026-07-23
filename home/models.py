@@ -455,6 +455,14 @@ class TestHomePage(Page):
         help_text='Main heading text after the highlighted word'
     )
     hero_description = RichTextField(blank=True)
+    metrics_banner_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text='Metrics banner image displayed at the bottom of the home page.',
+    )
 
     content_panels = Page.content_panels + [
         MultiFieldPanel([
@@ -475,6 +483,7 @@ class TestHomePage(Page):
         MultiFieldPanel([
             InlinePanel('featured_cards', label='Featured card'),
         ], heading="Featured cards", classname="collapsible collapsed"),
+        FieldPanel('metrics_banner_image'),
     ]
 
 class TaxonomyTerm(Orderable):
