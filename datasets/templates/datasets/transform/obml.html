@@ -114,6 +114,7 @@ scr.setAttribute('src', 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCq1CB
 document.body.appendChild(scr);
 
 var ivals = [];
+var station_data = null;
 
 function clear_map(mmap) {
   for (n = 0; n < mmap.markers.length; mmap.markers[n++].setMap(null));
@@ -121,7 +122,7 @@ function clear_map(mmap) {
   for (n = 0; n < mmap.boxes.length; mmap.boxes[n++].setMap(null));
 }
 
-function add_markers(mmap, station_data) {
+function add_markers(mmap) {
   station_data.stations.forEach((station) => {
     if (station.fixed) {
       mmap.markers.push(new google.maps.Marker(
@@ -136,6 +137,7 @@ function add_markers(mmap, station_data) {
 }
 
 function do_map_update(ident, ocode, pcode) {
+  station_data = null;
   eval('var mmap = ' + ident + '_map');
   clear_map(mmap);
   ivals.push(null);
@@ -146,9 +148,8 @@ function do_map_update(ident, ocode, pcode) {
         if (bounds) {
           clearInterval(ivals[ival_idx]);
           let response = getContentFromSynchronousRequest(null, window.location.pathname + "?stations=bounded&obs_code=" + ocode + "&plat_code=" + pcode + "&sw_lat=" + bounds.getSouthWest().lat() + "&sw_lon=" + bounds.getSouthWest().lng() + "&ne_lat=" + bounds.getNorthEast().lat() + "&ne_lon=" + bounds.getNorthEast().lng(), null, null);
-          let station_data = eval("(" + response + ")");
-          add_markers(mmap, station_data);
-          return station_data;
+          station_data = eval("(" + response + ")");
+          add_markers(mmap);
         }
       }, 100, mmap, ivals.length-1);
 }
@@ -175,31 +176,49 @@ function load_marker_map(ident, ocode, pcode, clat, clon, zoom, ctrl_size) {
       (mmap, ival_idx) => {
         if (typeof mmap.loaded != "undefined" && mmap.loaded) {
           clearInterval(ivals[ival_idx]);
-          let station_data = do_map_update(ident, ocode, pcode);
-          return station_data;
+          do_map_update(ident, ocode, pcode);
         }
       }, 1000, mmap, ivals.length-1);
 }
 </script>
 {% endif %}
 <script id="transformObML_utils_script" language="javascript">
-function fill_id_table(ident, station_data) {
-  tbody = document.getElementById(ident + "_table");
-  station_data.stations.forEach((station) => {
-    row = tbody.insertRow(-1);
-    cell0 = row.insertCell(0);
-    cell0.textContent = "aaa";
-    cell1 = row.insertCell(1);
-    cell1.textContent = "bbb";
-    cell2 = row.insertCell(2);
-    cell2.textContent = "ccc";
-    cell3 = row.insertCell(3);
-    cell3.textContent = "ddd";
-    cell4 = row.insertCell(4);
-    cell4.textContent = "eee";
-    cell5 = row.insertCell(5);
-    cell5.textContent = "fff";
-  });
+function fill_id_table(ident) {
+  ivals.push(null);
+  ivals[ivals.length-1] = setInterval(
+      (ival_idx) => {
+        if (station_data) {
+          clearInterval(ivals[ival_idx]);
+          tbody = document.getElementById(ident + "_table");
+          station_data.stations.forEach((station) => {
+            row = tbody.insertRow(-1);
+            cell0 = row.insertCell(0);
+            cell0.style.textAlign = "center";
+            cell1 = row.insertCell(1);
+            cell1.style.textAlign = "center";
+            cell2 = row.insertCell(2);
+            cell2.style.textAlign = "center";
+            cell3 = row.insertCell(3);
+            cell3.style.textAlign = "center";
+            cell4 = row.insertCell(4);
+            cell4.style.textAlign = "center";
+            cell5 = row.insertCell(5);
+            cell5.style.textAlign = "center";
+            if (station.bubble.IDs.length == 1) {
+              cell0.textContent = station.bubble.IDs[0];
+              cell1.textContent = station.bubble.ID_types[0];
+              if (station.fixed) {
+                cell2.textContent = station.lat + ", " + station.lon;
+              } else {
+              }
+              cell3.textContent = station.bubble.starts[0];
+              cell4.textContent = station.bubble.ends[0];
+              cell5.textContent = station.bubble.nobs[0];
+            } else {
+            }
+          });
+        }
+      }, 100, ivals.length-1);
 }
 
 var station_set = new Set();
@@ -211,12 +230,13 @@ function toggleStationData(i, ocode, pcode, cla = null, clo = null, zoom = null)
     if (!station_set.has(i)) {
       let e = document.getElementById(i + "_map");
       if (e != null) {
-        var station_data = load_marker_map(i, ocode, pcode, cla, clo, zoom, 'small');
+        station_data = null;
+        load_marker_map(i, ocode, pcode, cla, clo, zoom, 'small');
       } else {
         let response = getContentFromSynchronousRequest(null, window.location.pathname + "?stations=all&obs_code=" + ocode + "&plat_code=" + pcode, null, null);
-        var station_data = eval("(" + response + ")");
+        station_data = eval("(" + response + ")");
       }
-      fill_id_table(i, station_data);
+      fill_id_table(i);
       station_set.add(i);
     }
     e.classList.replace("d-none", "d-block");
