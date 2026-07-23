@@ -78,7 +78,7 @@ def transform_grml(request, dsid, ctx):
 def transform_obml(request, dsid, ctx):
     markup_type = ctx['transform']['markup_type']
     file = ctx['transform']['file']
-    if 'markers' in request.GET:
+    if 'stations' in request.GET:
         #if "HTTP_X_REQUESTED_WITH" not in request.META:
         #    return render(request, "404.html")
 
@@ -87,7 +87,7 @@ def transform_obml(request, dsid, ctx):
             conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
             cursor = conn.cursor()
             data_format, file_code = file_data(file, dsid, markup_type, cursor)
-            if request.GET['markers'] == "all":
+            if request.GET['stations'] == "bounded":
                 sw_lat = int(round(float(request.GET['sw_lat']), 4) * 10000.)
                 ne_lat = int(round(float(request.GET['ne_lat']), 4) * 10000.)
                 sw_lon = int(round(float(request.GET['sw_lon']), 4) * 10000.)
@@ -99,9 +99,12 @@ def transform_obml(request, dsid, ctx):
                        f'_id_list as l left join "{markup_type}".{dsid}_ids '
                        f'as i on i.code = l.id_code left join "{markup_type}".'
                        "ID_types as t on t.code = i.id_type_code where l."
-                       "file_code = %s and i.sw_lat <= %s and i.ne_lat >= %s "
-                       "and i.sw_lon <= %s and i.ne_lon >= %s",
-                       (file_code, ne_lat, sw_lat, ne_lon, sw_lon))
+                       "file_code = %s and l.observation_type_code = %s and l."
+                       "platform_type_code = %s and i.sw_lat <= %s and i."
+                       "ne_lat >= %s and i.sw_lon <= %s and i.ne_lon >= %s",
+                       (file_code, int(request.GET['obs_code']),
+                        int(request.GET['plat_code']), ne_lat, sw_lat, ne_lon,
+                        sw_lon))
                 res = cursor.fetchall()
                 stations = {}
                 for e in res:
