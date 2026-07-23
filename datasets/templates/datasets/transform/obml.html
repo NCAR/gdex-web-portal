@@ -140,6 +140,7 @@ function do_map_update(ident, ocode, pcode) {
   station_data = null;
   eval('var mmap = ' + ident + '_map');
   clear_map(mmap);
+  document.getElementById(ident + "_table").innerHTML = "";
   ivals.push(null);
   // wait for the map geometry to become available
   ivals[ivals.length-1] = setInterval(
