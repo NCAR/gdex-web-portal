@@ -130,9 +130,14 @@ function add_markers(mmap) {
             icon: fixed_station_icon
           }
       ));
-      mmap.markers[mmap.markers.length-1].setMap(mmap.handles.marker);
     } else {
+      mmap.markers.push(new google.maps.Marker(
+          { position: new google.maps.LatLng((station.sw_lat + station.ne_lat) / 2., (station.sw_lon + station.ne_lon) / 2.),
+            icon: moved_station_icon
+          }
+      ));
     }
+    mmap.markers[mmap.markers.length-1].setMap(mmap.handles.marker);
   });
 }
 
@@ -211,6 +216,7 @@ function fill_id_table(ident) {
               if (station.fixed) {
                 cell2.textContent = station.lat + ", " + station.lon;
               } else {
+                cell2.textContent = station.sw_lat + ", " + station.sw_lon + " to " + station.ne_lat + ", " + station.ne_lon;
               }
               cell3.textContent = station.bubble.starts[0];
               cell4.textContent = station.bubble.ends[0];
