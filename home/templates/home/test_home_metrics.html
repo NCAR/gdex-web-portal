@@ -7,7 +7,9 @@
 
         <h2 class="gdex-metrics-section__title">GDEX By the Metrics</h2>
 
-        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-4">
+        {# gdex-metrics-carousel only changes behavior on mobile (see mobile media query in home_page.css) #}
+        <div class="gdex-metrics-carousel">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-4" id="gdex-metrics-row">
             <div class="col">
                 <div class="gdex-metric">
                     <div class="gdex-metric__icon"><i class="icon-data-software-services"></i></div>
@@ -50,6 +52,13 @@
                     <div class="gdex-metric__label">Customized Requests</div>
                 </div>
             </div>
+        </div>
+        <button type="button" class="gdex-metrics-carousel__arrow gdex-metrics-carousel__arrow--prev" aria-label="Show previous metrics">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button type="button" class="gdex-metrics-carousel__arrow gdex-metrics-carousel__arrow--next" aria-label="Show next metrics">
+            <i class="fas fa-chevron-right"></i>
+        </button>
         </div>
 
     </div>
@@ -115,5 +124,21 @@
     } else {
         runAll();
     }
+
+    // Mobile-only: arrow buttons scroll the metrics row by one card's width.
+    // On desktop this row isn't scrollable (see mobile media query in home_page.css),
+    // so the buttons simply have nothing to do there.
+    var row = document.getElementById('gdex-metrics-row');
+    var prevBtn = document.querySelector('.gdex-metrics-carousel__arrow--prev');
+    var nextBtn = document.querySelector('.gdex-metrics-carousel__arrow--next');
+
+    function scrollByOneCard(direction) {
+        var card = row.querySelector('.col');
+        if (!card) return;
+        row.scrollBy({ left: direction * card.offsetWidth, behavior: 'smooth' });
+    }
+
+    prevBtn.addEventListener('click', function () { scrollByOneCard(-1); });
+    nextBtn.addEventListener('click', function () { scrollByOneCard(1); });
 }());
 </script>

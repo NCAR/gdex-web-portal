@@ -542,6 +542,28 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     letter-spacing: 0.04em;
 }
 
+/* Metrics carousel arrows only do anything on mobile (see mobile media query below) */
+.gdex-metrics-carousel { position: relative; }
+.gdex-metrics-carousel__arrow {
+    display: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--gdex-white);
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    cursor: pointer;
+    z-index: 12;
+}
+.gdex-metrics-carousel__arrow--prev { left: -0.25rem; }
+.gdex-metrics-carousel__arrow--next { right: -0.25rem; }
+
 
 /* MOBILE */
 @media (max-width: 767px) {
@@ -550,12 +572,28 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     .gdex-hero__heading { font-size: clamp(1.5rem, 6vw, 2rem); }
     .gdex-hero__description { font-size: 0.95rem; }
 
-    .gdex-search-block { padding: 1.5rem 0; }
+    .gdex-search-outer { margin-top: -1.5rem; }
+    .gdex-search-outer::after { top: 1.5rem; }
+    .gdex-search-outer .container-lg { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .gdex-search-block { padding: 1.5rem 0.5rem; }
     .gdex-search-block__title { font-size: 1.35rem; }
-    .gdex-search-bar { flex-direction: column; gap: 0.5rem; }
-    .gdex-search-bar__btn { justify-content: center; }
+    .gdex-search-bar { flex-direction: column; align-items: center; gap: 0.5rem; }
+    .gdex-search-bar__input { width: 100%; }
+    .gdex-search-bar__btn { width: auto; justify-content: center; padding: 0.85rem 1.75rem; }
+    .gdex-search-bar__btn i { font-size: 1.45rem; }
 
     .gdex-search-chips { padding: 1.5rem 0 2rem; }
+    .gdex-search-chips .d-flex { gap: 0.6rem; flex-wrap: nowrap; }
+    .gdex-chip {
+        min-width: 0;
+        flex: 1 1 0;
+        gap: 0.6rem;
+        padding: 0.6rem 0.7rem;
+    }
+    .gdex-chip__icon-zone { width: 44px; height: 44px; min-width: 44px; border-radius: 10px; }
+    .gdex-chip i { font-size: 1.1rem; }
+    .gdex-chip strong { font-size: 0.82rem; }
+    .gdex-chip small { font-size: 0.68rem; }
 
     .gdex-feature-card { min-height: unset; }
     .gdex-features-section { padding: 3rem 0 3.5rem; }
@@ -563,6 +601,23 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     .gdex-dataset-card__circle { width: 80px; height: 80px; min-width: 80px; }
 
     .gdex-metrics-section { padding: 2.5rem 0 3rem; }
+
+    /* Metrics: same single grid markup, just made horizontally scrollable
+       showing 3 cards at a time instead of wrapping into rows. */
+    #gdex-metrics-row {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    #gdex-metrics-row::-webkit-scrollbar { display: none; }
+    #gdex-metrics-row > .col {
+        flex: 0 0 33.333%;
+        max-width: 33.333%;
+        scroll-snap-align: start;
+    }
+    .gdex-metrics-carousel__arrow { display: flex; }
 
     .gdex-waves-img { display: none; }
 }
