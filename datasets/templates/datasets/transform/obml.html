@@ -280,7 +280,7 @@ function toggleStationData(i, ocode, pcode, cla = null, clo = null, zoom = null)
                                                 <div id="{{ obs_type }}_{{ platform_type }}_map" style="width: 700px; height: 600px" class="flex-shrink-0 border border-black border-1">
                                                 </div>
                                                 <div class="flex-fill ps-2">
-                                                    After you pan and zoom to an area of interest, you should <button class="btn btn-primary px-1 py-0" onclick="do_map_update('{{ obs_type}}_{{ platform_type }}', '{{ odict.code }}', '{{ pdict.code }}')">Update</button> the station markers and station list
+                                                    After you pan and zoom to an area of interest, you should <button class="btn btn-primary px-1 py-0" onclick="do_map_update('{{ obs_type}}_{{ platform_type }}', '{{ odict.code }}', '{{ pdict.code }}');fill_id_table('{{ obs_type}}_{{ platform_type }}')">Update</button> the station markers and station list
                                                     <br><br>
                                                     - OR -
                                                     <br><br>
