@@ -136,6 +136,22 @@ function add_markers(mmap) {
             icon: moved_station_icon
           }
       ));
+      if (station.sw_lat != station.ne_lat && station.sw_lon != station.ne_lon) {
+        mmap.boxes.push(new google.maps.Polygon(box_data));
+        mmap.boxes[mmap.boxes.length-1].setPath([
+            new google.maps.LatLng(station.sw_lat, station.sw_lon),
+            new google.maps.LatLng(station.ne_lat, station.sw_lon),
+            new google.maps.LatLng(station.ne_lat, station.ne_lon),
+            new google.maps.LatLng(station.sw_lat, station.ne_lon)
+        ]);
+      } else {
+        mmap.boxes.push(new google.maps.Polyline(line_data));
+        mmap.boxes[mmap.boxes.length-1].setPath([
+            new google.maps.LatLng(station.sw_lat, station.sw_lon),
+            new google.maps.LatLng(station.ne_lat, station.ne_lon)
+        ]);
+      }
+      mmap.boxes[mmap.boxes.length-1].setMap(mmap.handles.marker);
     }
     mmap.markers[mmap.markers.length-1].setMap(mmap.handles.marker);
   });
