@@ -18,6 +18,7 @@
         </thead>
         <tbody>
             {% for group in data.groups %}
+            {% if group.total_file_count > 0 %}
             <tr>
                 <td>
                     {% if not data.groups.0.gindex|add:"0" < 0  %} 
@@ -32,6 +33,7 @@
                     {{ group.rows|length }}
                 </td>
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
       </table>

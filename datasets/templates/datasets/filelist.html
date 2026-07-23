@@ -44,7 +44,7 @@
 {% else %}
     {# Standard filelist table display #}
     {% for group in data.groups %}
-        {% if group.title and group.title != data.title %}
+        {% if group.title and group.title != data.title and group.total_file_count > 0 %}
             {# Show group title if the group has one and it differs from the page title #}
             <h3 id='{{group.group_id|slugify}}'>
                 {{group.title}}
