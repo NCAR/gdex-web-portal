@@ -80,8 +80,8 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     padding: 1.5rem;
     border-radius: 0.5rem;
     max-width: 500px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 .gdex-hero__heading {
     font-family: 'Poppins', sans-serif;
