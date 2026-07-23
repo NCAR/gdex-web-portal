@@ -103,7 +103,7 @@ def transform_obml(request, dsid, ctx):
                 sw_lon = int(round(float(request.GET['sw_lon']), 4) * 10000.)
                 ne_lon = int(round(float(request.GET['ne_lon']), 4) * 10000.)
                 query += (
-                        "and i.sw_lat <= %s and i.ne_lat >= %s and i.sw_lon "
+                        " and i.sw_lat <= %s and i.ne_lat >= %s and i.sw_lon "
                         "<= %s and i.ne_lon >= %s")
                 params.extend([ne_lat, sw_lat, ne_lon, sw_lon])
 
