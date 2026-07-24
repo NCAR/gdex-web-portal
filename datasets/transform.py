@@ -114,6 +114,7 @@ def transform_obml(request, dsid, ctx):
 
                 params.extend([ne_lon, sw_lon])
 
+            query += " order by t.id_type, i.id"
             cursor.execute(query, params)
             res = cursor.fetchall()
             stations = {}
