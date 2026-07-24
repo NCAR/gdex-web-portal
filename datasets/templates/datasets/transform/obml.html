@@ -155,8 +155,17 @@ function add_markers(mmap) {
       mmap.boxes[mmap.boxes.length-1].setMap(mmap.handles.marker);
     }
     mmap.markers[mmap.markers.length-1].setMap(mmap.handles.marker);
+    if (station.bubble.IDs.length == 1) {
+      bubble_info = `
+        <strong>ID:</strong> ${station.bubble.IDs[0]} (${station.bubble.ID_types[0]})<br>
+        <strong>Temporal (start / end):</strong><br>
+        ${station.bubble.starts[0]} / ${station.bubble.ends[0]}<br>
+        <strong># of Observations:</strong> ${station.bubble.nobs[0]}
+      `;
+    } else {
+    }
     mmap.bubbles.push(new google.maps.InfoWindow(
-        { content: "hello" }
+        { content: bubble_info }
     ));
     google.maps.event.addListener(mmap.markers[mmap.markers.length-1], "click", function(m, b) {
       return function() {
@@ -219,6 +228,13 @@ function load_marker_map(ident, ocode, pcode, clat, clon, zoom, ctrl_size) {
 </script>
 {% endif %}
 <script id="transformObML_utils_script" language="javascript">
+function open_bubble(ident, n) {
+  eval('var mmap = ' + ident + '_map');
+  google.maps.event.trigger(mmap.markers[n], "click");
+  mmap.handles.marker.setCenter({lat: mmap.markers[n].getPosition().lat(), lng: mmap.markers[n].getPosition().lng()});
+  mmap.handles.marker.setZoom(7);
+}
+
 function fill_id_table(ident) {
   ivals.push(null);
   ivals[ivals.length-1] = setInterval(
@@ -226,8 +242,9 @@ function fill_id_table(ident) {
         if (station_data) {
           clearInterval(ivals[ival_idx]);
           tbody = document.getElementById(ident + "_table");
-          station_data.stations.forEach((station) => {
+          station_data.stations.forEach((station, index) => {
             row = tbody.insertRow(-1);
+            row.onclick = () => { open_bubble(ident, index); }
             cell0 = row.insertCell(0);
             cell0.style.textAlign = "center";
             cell1 = row.insertCell(1);
@@ -324,9 +341,13 @@ function toggleStationData(i, ocode, pcode, cla = null, clo = null, zoom = null)
                                                 </div>
                                             </div>
                                             <div class="mb-1">
-                                                <img src="/images/gmaps/blue.png" width="16" height="16" hspace="3">indicates a station that has not moved during the period of record
+                                                marker <img src="/images/gmaps/blue.png" width="16" height="16" hspace="3">indicates a station that has not moved during the period of record
                                                 <br>
-                                                <img src="/images/gmaps/red.png" width="16" height="16" hspace="3">indicates a station that has moved during the period of record; the marker is set at the center of a box bounding the station moves during the period
+                                                marker <img src="/images/gmaps/red.png" width="16" height="16" hspace="3">indicates a station that has moved during the period of record; the marker is set at the center of a box bounding the station moves during the period
+                                                <ul>
+                                                  <li>Click a marker to get more information</li>
+                                                  <li>Click a row in the table below to zoom to that marker</li>
+                                                </ul>
                                             </div>
                                             {% endif %}
                                             <table>
