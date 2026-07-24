@@ -4,7 +4,12 @@
 {% block headextras %}
 <link rel="stylesheet" href="{% static 'css/gdex-theme-vars.css' %}">
 <link rel="stylesheet" href="{% static 'gsearch/css/search_data.css' %}">
-<link rel="stylesheet" href="{% static 'gsearch/css/specialized.css' %}">
+<link rel="stylesheet" href="{% static 'css/ai_ready_popular_datasets.css' %}">
+<script src="{% static 'js/specialized_pagination.js' %}"></script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'gsearch/js/search_data.js' %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}{% endblock %}
@@ -12,10 +17,6 @@
 
 {% block content %}
 <div class="pt-3">
-
-  <div class="mb-3">
-    <a href="/test-home/" class="gdex-specialized-back"><i class="fas fa-arrow-left"></i> Back to Home</a>
-  </div>
 
   <div class="gdex-specialized-header">
     <div class="gdex-specialized-header__icon">
@@ -43,7 +44,7 @@
         <div class="gdex-dataset-result__top">
           <div class="gdex-dataset-result__title-block">
             <h3 class="gdex-dataset-result__title">
-              <a href="/datasets/{{ ds.dsid }}/">
+              <a href="/datasets/{{ ds.dsid }}/" data-summary="{{ ds.summary }}">
                 {{ ds.title }}
                 <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon"></i>
               </a>
@@ -64,15 +65,20 @@
             <a href="/datasets/{{ ds.dsid }}/dataaccess/" class="gdex-btn-access">
               <i class="fas fa-download"></i> Access Data
             </a>
-            <a href="/datasets/{{ ds.dsid }}/" class="gdex-btn-description">
-              <i class="fas fa-file-alt"></i> Description
-            </a>
           </div>
         </div>
       </div>
     </article>
     {% endfor %}
   </div>
+  <nav class="gdex-pagination" aria-label="Popular datasets pages"></nav>
+  <script>
+    gdexInitClientPagination({
+        itemSelector: '.gdex-specialized-list > .gdex-dataset-result',
+        paginationSelector: '.gdex-pagination',
+        perPage: 7
+    });
+  </script>
   {% else %}
   <p class="text-muted">No dataset rankings available.</p>
   {% endif %}

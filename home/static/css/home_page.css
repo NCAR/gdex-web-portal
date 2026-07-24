@@ -20,7 +20,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 }
 
 
-/* UCAR WAVES — single image spans features + popular + metrics */
+/* UCAR WAVES — single image spans features  */
 .gdex-waves-wrapper {
     position: relative;
     width: 100vw;

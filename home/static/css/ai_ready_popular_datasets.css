@@ -1,16 +1,4 @@
-/* ============================================================
-   GDEX — Specialized Dataset Pages (AI-Ready, Popular)
-   ============================================================ */
-
-.gdex-specialized-back {
-    font-size: 0.85rem;
-    color: var(--gdex-blue);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-.gdex-specialized-back:hover { text-decoration: underline; }
+/* GDEX — AI-Ready & Popular Datasets Pages */
 
 .gdex-specialized-header {
     display: flex;
@@ -19,16 +7,16 @@
     margin-bottom: 1.5rem;
 }
 .gdex-specialized-header__icon {
-    width: 56px;
-    height: 56px;
-    min-width: 56px;
-    background-color: var(--gdex-bg-tint);
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    background-color: var(--gdex-blue);
     border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    color: var(--gdex-blue);
+    font-size: 1.45rem;
+    color: var(--gdex-white);
 }
 .gdex-specialized-header__title {
     font-family: 'Poppins', sans-serif;

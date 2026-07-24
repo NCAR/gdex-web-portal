@@ -757,27 +757,6 @@ a.gdex-btn-access:visited {
 }
 a.gdex-btn-access:hover { background: var(--gdex-blue-dark); color: var(--gdex-white); text-decoration: none; }
 
-a.gdex-btn-description,
-a.gdex-btn-description:link,
-a.gdex-btn-description:visited {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: transparent;
-    color: var(--gdex-blue);
-    border: 1.5px solid var(--gdex-blue);
-    border-radius: 6px;
-    padding: 0.34rem 0.85rem;
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-a.gdex-btn-description:hover { background: #e8effe; color: var(--gdex-blue-dark); border-color: var(--gdex-blue-dark); text-decoration: none; }
-
 a.gdex-btn-citation,
 a.gdex-btn-citation:link,
 a.gdex-btn-citation:visited {
