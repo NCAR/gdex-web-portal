@@ -4,6 +4,7 @@ from django.conf import settings
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required, user_passes_test
 
@@ -49,6 +50,19 @@ def data_submission_welcome(request):
     return render(request, 'datasubmit/data_submission_form/data_submission_welcome.html')
 
 
+PORTAL_VIEW_MODE_SESSION_KEY = 'datasubmit_portal_view_mode'
+
+
+def _agent_view_active(request):
+    """Superusers can flip the sidebar toggle to preview My Datasets the way
+    a regular submitter sees it (their own submissions only). Everyone else
+    always sees only their own submissions; superusers default to the agent
+    side (all submissions) until they flip the toggle to customer."""
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return False
+    return request.session.get(PORTAL_VIEW_MODE_SESSION_KEY, 'agent') != 'customer'
+
+
 def _portal_dev_mode():
     """True only under gdexwebserver/settings/local_dev.py, which installs no
     login system at all (no allauth/accounts app -- see that file's own
@@ -90,8 +104,24 @@ def _get_owned_submission(request, pk, prefetch=()):
 
 
 @portal_view
+def data_submission_portal_set_view_mode(request):
+    """Flips the superuser-only agent/customer sidebar toggle. Anyone else
+    posting here is a no-op -- they always see their own submissions
+    regardless of the session value."""
+    if request.method == 'POST' and request.user.is_superuser:
+        view_mode = 'customer' if request.POST.get('view_mode') == 'customer' else 'agent'
+        request.session[PORTAL_VIEW_MODE_SESSION_KEY] = view_mode
+
+    next_url = request.POST.get('next')
+    if not next_url or not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        next_url = reverse('data-submission-portal')
+    return redirect(next_url)
+
+
+@portal_view
 def data_submission_portal(request):
-    datasets = Submission.objects.all() if _portal_dev_mode() else Submission.objects.filter(submitted_by=request.user)
+    show_all = _portal_dev_mode() or _agent_view_active(request)
+    datasets = Submission.objects.all() if show_all else Submission.objects.filter(submitted_by=request.user)
     datasets = datasets.order_by('-created')
 
     query = request.GET.get('q', '').strip()
