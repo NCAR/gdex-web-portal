@@ -5,6 +5,7 @@ urlpatterns = [
     # Entry point: explains the two-stage process, links into the Advisor below.
     path('datasubmit/', views.data_submission_welcome, name='data-submission-welcome'),
     path('submitportal/', views.data_submission_portal, name='data-submission-portal'),
+    path('submitportal/view-mode/', views.data_submission_portal_set_view_mode, name='data-submission-portal-view-mode'),
     path('submitportal/dataset/<int:pk>/', views.data_submission_portal_view, name='data-submission-portal-view'),
     path('submitportal/dataset/<int:pk>/files/', views.data_submission_portal_files, name='data-submission-portal-files'),
     path('submitportal/dataset/<int:pk>/metadata/', views.data_submission_portal_metadata, name='data-submission-portal-metadata'),
