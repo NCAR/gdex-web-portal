@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "datasubmit/submission_portal/portal_base.html" %}
 {% load static %}
 
 {% block body_class %} data-submission-page{% endblock %}
@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{% static 'datasubmit/css/datasubmit.css' %}">
 {% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <h1 class="h2 mb-3">Consider Zenodo for This Dataset</h1>
 <p class="fs-5 mb-2">
     Based on what you told us — a dataset under 50 GB that doesn't need NCAR HPC access —

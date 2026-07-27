@@ -47,7 +47,7 @@ def data_submission_welcome(request):
             return redirect(_step_url(1))
         return redirect('data-submission-advisor')
 
-    return render(request, 'datasubmit/data_submission_form/data_submission_welcome.html')
+    return render(request, 'datasubmit/submission_portal/submit/data_submission_welcome.html')
 
 
 PORTAL_VIEW_MODE_SESSION_KEY = 'datasubmit_portal_view_mode'
@@ -193,10 +193,6 @@ def data_submission_portal_proposal_templates(request):
     return render(request, 'datasubmit/submission_portal/proposal_templates/home.html')
 
 @portal_view
-def data_submission_portal_submit(request):
-    return render(request,'datasubmit/submission_portal/submit/home.html')
-
-@portal_view
 def data_submission_portal_messages(request):
     return render(request, 'datasubmit/submission_portal/messages/home.html')
 
@@ -304,10 +300,9 @@ def _format_dataset_size(size_mb):
         return f"{size_mb / 1024:.2f} GB"
     return f"{size_mb:.2f} MB"
 
-@login_required
+@portal_view
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
-@user_passes_test(lambda u: u.is_superuser)
-@never_cache
+@user_passes_test(lambda u: _portal_dev_mode() or u.is_superuser)
 def submission_confirmation(request):
     submission_id = request.session.pop('last_submission_id', None)
     submission = None
@@ -330,7 +325,7 @@ def submission_confirmation(request):
     steps = _progress_steps(is_recommendation)
     step_display, step_count = _step_progress(steps, CONFIRMATION_STEP)
 
-    return render(request, 'datasubmit/data_submission_form/submission_confirmation.html', {
+    return render(request, 'datasubmit/submission_portal/submit/submission_confirmation.html', {
         'steps': steps,
         'step': CONFIRMATION_STEP,
         'step_display': step_display,
@@ -340,10 +335,9 @@ def submission_confirmation(request):
         'locations': locations,
     })
 
-@login_required
+@portal_view
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
-@user_passes_test(lambda u: u.is_superuser)
-@never_cache
+@user_passes_test(lambda u: _portal_dev_mode() or u.is_superuser)
 def submission_advisor(request):
     wizard_data = request.session.get(SESSION_KEY, {})
 
@@ -365,15 +359,14 @@ def submission_advisor(request):
     else:
         form = IntroForm(initial=wizard_data.get('0', {}))
 
-    return render(request, 'datasubmit/data_submission_form/submission_advisor.html', {
+    return render(request, 'datasubmit/submission_portal/submit/submission_advisor.html', {
         'form': form,
         'has_help_text': any(field.help_text for field in form),
     })
 
-@login_required
+@portal_view
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
-@user_passes_test(lambda u: u.is_superuser)
-@never_cache
+@user_passes_test(lambda u: _portal_dev_mode() or u.is_superuser)
 def data_submission_zenodo_recommendation(request):
     wizard_data = request.session.get(SESSION_KEY, {})
 
@@ -399,30 +392,28 @@ def data_submission_zenodo_recommendation(request):
     else:
         form = ZenodoChoiceForm(initial=wizard_data.get('zenodo', {}))
 
-    return render(request, 'datasubmit/data_submission_form/data_submission_zenodo_recommendation.html', {'form': form})
+    return render(request, 'datasubmit/submission_portal/submit/data_submission_zenodo_recommendation.html', {'form': form})
 
-@login_required
+@portal_view
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
-@user_passes_test(lambda u: u.is_superuser)
-@never_cache
+@user_passes_test(lambda u: _portal_dev_mode() or u.is_superuser)
 def data_submission_zenodo_next_steps(request):
     wizard_data = request.session.get(SESSION_KEY, {})
     reason = _zenodo_reason(wizard_data)
     if reason is None:
         return redirect('data-submission-advisor')
 
-    return render(request, 'datasubmit/data_submission_form/data_submission_zenodo_next_steps.html', {'reason': reason})
+    return render(request, 'datasubmit/submission_portal/submit/data_submission_zenodo_next_steps.html', {'reason': reason})
 
-@login_required
+@portal_view
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
-@user_passes_test(lambda u: u.is_superuser)
-@never_cache
+@user_passes_test(lambda u: _portal_dev_mode() or u.is_superuser)
 def data_submission_gdex_next_steps(request):
     wizard_data = request.session.get(SESSION_KEY, {})
     if '0' not in wizard_data:
         return redirect('data-submission-advisor')
 
-    return render(request, 'datasubmit/data_submission_form/data_submission_gdex_next_steps.html', {'start_url': _step_url(1)})
+    return render(request, 'datasubmit/submission_portal/submit/data_submission_gdex_next_steps.html', {'start_url': _step_url(1)})
 
 
 def _wizard_gate_redirect(wizard_data, step):
@@ -458,10 +449,9 @@ def _wizard_gate_redirect(wizard_data, step):
 
     return None
 
-@login_required
+@portal_view
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
-@user_passes_test(lambda u: u.is_superuser)
-@never_cache
+@user_passes_test(lambda u: _portal_dev_mode() or u.is_superuser)
 def data_submission_contributors(request):
     step = 2
     wizard_data = request.session.get(SESSION_KEY, {})
@@ -508,7 +498,7 @@ def data_submission_contributors(request):
     steps = _progress_steps(False)
     step_display, step_count = _step_progress(steps, step)
 
-    return render(request, 'datasubmit/data_submission_form/data_submission_contributors.html', {
+    return render(request, 'datasubmit/submission_portal/submit/data_submission_contributors.html', {
         'meta_form': meta_form,
         'formset': formset,
         'step': step,
@@ -521,10 +511,9 @@ def data_submission_contributors(request):
         'prev_url': _step_url(step - 1),
     })
 
-@login_required
+@portal_view
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
-@user_passes_test(lambda u: u.is_superuser)
-@never_cache
+@user_passes_test(lambda u: _portal_dev_mode() or u.is_superuser)
 def gdex_submission_form_step(request, step_slug):
     if step_slug not in SLUG_TO_STEP:
         raise Http404
@@ -627,7 +616,7 @@ def gdex_submission_form_step(request, step_slug):
     steps = _progress_steps(is_recommendation)
     step_display, step_count = _step_progress(steps, step)
 
-    return render(request, 'datasubmit/data_submission_form/gdex_submission_form_step.html', {
+    return render(request, 'datasubmit/submission_portal/submit/gdex_submission_form_step.html', {
         'form': form,
         'step': step,
         'step_title': STEP_TITLES[step],

@@ -15,9 +15,11 @@
                 <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal' %}">
                     <i class="fa-solid fa-home me-1" aria-hidden="true"></i> My Datasets
                 </a>
-                <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal-submit' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-submit' %}">
+                {% with url_name=request.resolver_match.url_name %}
+                <a class="btn rounded-4 border-0 text-start {% if url_name == 'data-submission-welcome' or url_name == 'data-submission-advisor' or url_name == 'data-submission-zenodo-recommendation' or url_name == 'data-submission-zenodo-next-steps' or url_name == 'data-submission-gdex-next-steps' or url_name == 'data-submission-confirmation' or url_name == 'data-submission-contributors' or url_name == 'data-submission-step' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-welcome' %}">
                     <i class="fa-solid fa-upload me-1" aria-hidden="true"></i> Submit Data
                 </a>
+                {% endwith %}
                 <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal-messages' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-messages' %}">
                     <i class="fa-solid fa-envelope me-1" aria-hidden="true"></i> Messages
                 </a>
