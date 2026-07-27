@@ -1,0 +1,48 @@
+{% extends "base_fluid.html" %}
+
+{% block content %}
+
+<div class="container-fluid ">
+    <div class="row">
+        <div class="col-12 col-md-2 bg-light">
+            <div class="d-flex flex-column flex-lg-row justify-content-start align-items-center text-center text-lg-start mt-3 mb-0 gap-1">
+                <img src="/media/original_images/logo-gdex-circle-2026.png" width="110" height="110" class="img" alt="GDEX Logo">
+                <p class="fs-5 fw-light mb-0 text-uppercase">Data Submission<br> Portal</p>
+            </div>
+
+            <nav class="d-flex flex-column gap-2 px-1 mt-3">
+
+                <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal' %}">
+                    <i class="fa-solid fa-home me-1" aria-hidden="true"></i> My Datasets
+                </a>
+                <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal-submit' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-submit' %}">
+                    <i class="fa-solid fa-upload me-1" aria-hidden="true"></i> Submit Data
+                </a>
+                <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal-messages' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-messages' %}">
+                    <i class="fa-solid fa-envelope me-1" aria-hidden="true"></i> Messages
+                </a>
+                <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal-budget' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-budget' %}">
+                    <i class="fa-solid fa-dollar-sign me-1" aria-hidden="true"></i> Budget Tool
+                </a>
+
+                <!-- <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal-proposal-templates' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-proposal-templates' %}">
+                    <i class="fa-solid fa-file-alt me-1" aria-hidden="true"></i> Proposal Templates
+                </a> --->
+
+
+    
+
+
+
+            </nav>
+
+
+
+        </div>
+        <div class="col-12 col-md-10 bg-white px-3">
+            {% block portal_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

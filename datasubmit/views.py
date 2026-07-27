@@ -1,5 +1,8 @@
+from functools import wraps
+
+from django.conf import settings
 from django.http import Http404
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -46,6 +49,130 @@ def data_submission_welcome(request):
     return render(request, 'datasubmit/data_submission_form/data_submission_welcome.html')
 
 
+def _portal_dev_mode():
+    """True only under gdexwebserver/settings/local_dev.py, which installs no
+    login system at all (no allauth/accounts app -- see that file's own
+    docstring). Every /submitportal/ view and dataset lookup branches on this
+    so local testing works without a real login, while dev.py/production.py
+    (where the setting is simply undefined) always get the real, secure
+    per-user behavior."""
+    return getattr(settings, 'DATASUBMIT_SHOW_ALL_SUBMISSIONS', False)
+
+
+def portal_view(view_func):
+    """Every /submitportal/ view renders account-specific data, so bundle the
+    two things that implies: never cache it, and require login -- except in
+    local dev, where there's no login system to require (see
+    _portal_dev_mode). Apply this to every new data_submission_portal_* view
+    instead of stacking @login_required/@never_cache by hand, so the gate
+    can't be forgotten the way it was for the first round of these views."""
+    @never_cache
+    @wraps(view_func)
+    def wrapped(request, *args, **kwargs):
+        if _portal_dev_mode():
+            return view_func(request, *args, **kwargs)
+        return login_required(view_func)(request, *args, **kwargs)
+    return wrapped
+
+
+def _get_owned_submission(request, pk, prefetch=()):
+    """Fetch a Submission by pk, scoped to the requesting user -- except in
+    local dev (_portal_dev_mode), where fixture rows aren't tied to any real
+    user. Centralizes the ownership check so every per-dataset portal view
+    (overview/files/metadata/...) enforces it the same way by construction,
+    rather than each view remembering its own filter."""
+    qs = Submission.objects.all()
+    if prefetch:
+        qs = qs.prefetch_related(*prefetch)
+    if _portal_dev_mode():
+        return get_object_or_404(qs, pk=pk)
+    return get_object_or_404(qs, pk=pk, submitted_by=request.user)
+
+
+@portal_view
+def data_submission_portal(request):
+    datasets = Submission.objects.all() if _portal_dev_mode() else Submission.objects.filter(submitted_by=request.user)
+    datasets = datasets.order_by('-created')
+
+    query = request.GET.get('q', '').strip()
+    if query:
+        datasets = datasets.filter(dataset_title__icontains=query)
+
+    submission_type = request.GET.get('type', '')
+    if submission_type in dict(SUBMISSION_TYPE_CHOICES):
+        datasets = datasets.filter(submission_type=submission_type)
+
+    return render(request, 'datasubmit/submission_portal/my_datasets/home.html', {
+        'datasets': datasets,
+        'query': query,
+        'submission_type': submission_type,
+        'submission_type_choices': SUBMISSION_TYPE_CHOICES,
+    })
+
+@portal_view
+def data_submission_portal_view(request, pk):
+    dataset = _get_owned_submission(request, pk, prefetch=('locations',))
+
+    access_method_labels = dict(ACCESS_METHOD_CHOICES)
+    locations = [
+        {
+            'location': loc.location,
+            'access_method_label': access_method_labels.get(loc.access_method, loc.access_method),
+            'access_verification': loc.access_verification,
+        }
+        for loc in dataset.locations.all()
+    ]
+
+    return render(request, 'datasubmit/submission_portal/my_datasets/dataset-overview.html', {
+        'dataset': dataset,
+        'dataset_size_display': _format_dataset_size(dataset.dataset_size_mb),
+        'locations': locations,
+        'active_tab': 'Home',
+    })
+
+@portal_view
+def data_submission_portal_files(request, pk):
+    dataset = _get_owned_submission(request, pk, prefetch=('locations',))
+
+    access_method_labels = dict(ACCESS_METHOD_CHOICES)
+    locations = [
+        {
+            'location': loc.location,
+            'access_method_label': access_method_labels.get(loc.access_method, loc.access_method),
+            'access_verification': loc.access_verification,
+        }
+        for loc in dataset.locations.all()
+    ]
+
+    return render(request, 'datasubmit/submission_portal/my_datasets/dataset-files.html', {
+        'dataset': dataset,
+        'locations': locations,
+        'active_tab': 'Files',
+    })
+
+@portal_view
+def data_submission_portal_metadata(request, pk):
+    dataset = _get_owned_submission(request, pk)
+    return render(request, 'datasubmit/submission_portal/my_datasets/dataset-metadata.html', {
+        'dataset': dataset,
+        'active_tab': 'Metadata',
+    })
+
+@portal_view
+def data_submission_portal_proposal_templates(request):
+    return render(request, 'datasubmit/submission_portal/proposal_templates/home.html')
+
+@portal_view
+def data_submission_portal_submit(request):
+    return render(request,'datasubmit/submission_portal/submit/home.html')
+
+@portal_view
+def data_submission_portal_messages(request):
+    return render(request, 'datasubmit/submission_portal/messages/home.html')
+
+@portal_view
+def data_submission_portal_budget(request):
+    return render(request, 'datasubmit/submission_portal/budget_billing/home.html')
 # Small, HPC-independent datasets can be archived faster via Zenodo than through
 # the full GDEX intake process, so those submitters get offered that option first.
 ZENODO_SIZE_THRESHOLD_MB = 50 * 1024

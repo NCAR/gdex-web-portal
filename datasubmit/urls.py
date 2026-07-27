@@ -4,7 +4,14 @@ from . import views
 urlpatterns = [
     # Entry point: explains the two-stage process, links into the Advisor below.
     path('datasubmit/', views.data_submission_welcome, name='data-submission-welcome'),
-
+    path('submitportal/', views.data_submission_portal, name='data-submission-portal'),
+    path('submitportal/dataset/<int:pk>/', views.data_submission_portal_view, name='data-submission-portal-view'),
+    path('submitportal/dataset/<int:pk>/files/', views.data_submission_portal_files, name='data-submission-portal-files'),
+    path('submitportal/dataset/<int:pk>/metadata/', views.data_submission_portal_metadata, name='data-submission-portal-metadata'),
+    path('submitportal/submit/', views.data_submission_portal_submit, name='data-submission-portal-submit'),
+    path('submitportal/messages/', views.data_submission_portal_messages, name='data-submission-portal-messages'),
+    path('submitportal/budget/', views.data_submission_portal_budget, name='data-submission-portal-budget'),
+        path('submitportal/proposal-templates/', views.data_submission_portal_proposal_templates, name='data-submission-portal-proposal-templates'),
     # Stage 1: the Submission Advisor -- five quick questions that route the
     # user to either GDEX's own form (below) or an external repository like Zenodo.
     path('datasubmit/advisor/', views.submission_advisor, name='data-submission-advisor'),

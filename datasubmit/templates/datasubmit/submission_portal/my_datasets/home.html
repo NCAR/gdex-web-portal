@@ -1,0 +1,47 @@
+{% extends "datasubmit/submission_portal/portal_base.html" %}
+
+{% block portal_content %}
+
+<div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center gap-2 mt-3">
+    <h3 class="mb-0 text-left">My Datasets</h3>
+    <a href="{% url 'data-submission-portal-submit' %}" class="btn btn-primary btn-right">
+        <i class="fa-solid fa-plus me-2" aria-hidden="true"></i> New Submission
+    </a>
+</div>
+<p class="text-left text-muted fst-italic">View and manage all of your dataset submissions</p>
+<hr>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover mt-3">
+        <thead>
+            <tr>
+                <th scope="col">Dataset ID</th>
+                <th scope="col">Dataset Name</th>
+                <th scope="col">Submission Type</th>
+                <th scope="col">Created</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dataset in datasets %}
+            <tr>
+                <td>{{ dataset.id }}</td>
+                <td>{{ dataset.dataset_title }}</td>
+                <td>{{ dataset.get_submission_type_display }}</td>
+                <td>{{ dataset.created|date:"M d, Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'data-submission-portal-view' dataset.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i> Open
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No datasets found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
