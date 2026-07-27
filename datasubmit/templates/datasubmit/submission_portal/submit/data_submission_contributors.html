@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "datasubmit/submission_portal/portal_base.html" %}
 {% load static %}
 
 {% block body_class %} data-submission-page{% endblock %}
@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{% static 'datasubmit/css/datasubmit.css' %}">
 {% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <style>
     .data-submission-page .author-row {
         border: 1px solid #dee2e6;

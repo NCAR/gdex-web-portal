@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "datasubmit/submission_portal/portal_base.html" %}
 {% load static %}
 
 {% block body_class %} data-submission-page{% endblock %}
@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{% static 'datasubmit/css/datasubmit.css' %}">
 {% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <style>
     .data-submission-page .summary-row {
         border-bottom: 1px solid #f1f3f5;
@@ -49,8 +49,7 @@
             details you provided and reach out with next steps, including any additional
             information we may need before the dataset is archived.
         </p>
-        <!-- Placeholder destination until a real target is provided -->
-        <a href="#" class="btn btn-primary btn-lg mt-3">View your Current Submissions</a>
+        <a href="{% url 'data-submission-portal' %}" class="btn btn-primary btn-lg mt-3">View your Current Submissions</a>
     </div>
 
     {% if submission %}
