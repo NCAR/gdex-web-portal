@@ -1,0 +1,380 @@
+{% extends "datasets/transform/transform_base.html" %}
+{% block transform_content %}
+{% if add_map %}
+<script id="gmap_script" language="javascript">
+var ival_gmap_callback = null;
+var ival_count = 0;
+
+{% for obs_type, odict in obs_types.items %}
+{% for platform_type, pdict in odict.platforms.items %}
+var {{ obs_type }}_{{ platform_type }}_map = null;
+{% endfor %}
+{% endfor %}
+
+var fixed_station_icon = null;
+var moved_station_icon = null;
+var box_data = {
+  strokeColor: '#ff695a',
+  strokeOpacity: 0.0,
+  fillColor: '#ff695a',
+  fillOpacity: 0.2
+};
+var line_data = {
+  strokeColor: '#ff695a',
+  strokeOpacity: 0.7,
+  strokeWeight: 1
+};
+
+function do_gmap3_callback() {
+  ++ival_count;
+  if (typeof google == "undefined") {
+    if (ival_count > 20) {
+       clearInterval(ival_gmap_callback);
+       alert("Google Maps failed to load - the Google server is not " +
+             "responding. Please try again later");
+    }
+    return;
+  }
+  if (typeof google.maps.MapTypeId != "undefined") {
+    {% for obs_type, odict in obs_types.items %}
+    {% for platform_type, pdict in odict.platforms.items %}
+    {{ obs_type }}_{{ platform_type }}_map = {
+      loaded: false,
+      options: {
+        streetViewControl: false,
+        scrollwheel: false,
+        disableDoubleClickZoom: true,
+        scaleControl: true,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+      },
+      handles: {
+        drawbox: null,
+        marker: null
+      },
+      load: function(o) {
+        var map_div = document.getElementById(o.map_div_id);
+        var handle = new google.maps.Map(map_div,
+            {{ obs_type }}_{{ platform_type }}_map.options);
+        handle.setCenter(new google.maps.LatLng(o.center_lat, o.center_lon));
+        handle.setZoom(o.zoom_level);
+        if (o.control_size == null || o.control_size.length == 0) {
+          handle.set('panControl', false);
+          handle.set('zoomControl', false);
+        } else {
+          handle.set('panControl', true);
+          handle.set('zoomControl', true);
+          if (o.control_size == "small") {
+            handle.set('zoomControlOptions',
+                {style: google.maps.ZoomControlStyle.SMALL});
+          } else if (o.control_size == "large") {
+            handle.set('zoomControlOptions',
+                {style: google.maps.ZoomControlStyle.LARGE});
+          }
+        }
+        {{ obs_type }}_{{ platform_type }}_map.loaded = true;
+        return handle;
+      },
+      obs_type_code: {{ odict.code }},
+      platform_type_code: {{ pdict.code }},
+      markers: [],
+      bubbles: [],
+      current_bubble: null,
+      boxes: []
+    };
+    {% endfor %}
+    {% endfor %}
+    fixed_station_icon = {
+      anchor: new google.maps.Point(16, 32),
+      origin: new google.maps.Point(0, 0),
+      size: new google.maps.Size(32, 32),
+      url: 'https://gdex.ucar.edu/images/gmaps/blue-dot.png'
+    },
+    moved_station_icon = {
+      anchor: new google.maps.Point(16, 32),
+      origin: new google.maps.Point(0, 0),
+      size: new google.maps.Size(32, 32),
+      url: 'https://gdex.ucar.edu/images/gmaps/red.png'
+    }
+    clearInterval(ival_gmap_callback);
+  }
+}
+
+var callback_called = false;
+function gmap3_callback() {
+  if (callback_called) {
+    return;
+  }
+  clearInterval(ival_gmap_callback);
+  ival_gmap_callback = setInterval(do_gmap3_callback, 100);
+  callback_called = true;
+}
+
+var scr = document.createElement('script');
+scr.setAttribute('type', 'text/javascript');
+scr.setAttribute('src', 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCq1CBM4CV4arGAxnveRiEnez_W18wt2IU&loading=async&callback=gmap3_callback');
+document.body.appendChild(scr);
+
+var ivals = [];
+var station_data = null;
+
+function clear_map(mmap) {
+  for (n = 0; n < mmap.markers.length; mmap.markers[n++].setMap(null));
+  for (n = 0; n < mmap.bubbles.length; mmap.bubbles[n++].setMap(null));
+  for (n = 0; n < mmap.boxes.length; mmap.boxes[n++].setMap(null));
+}
+
+function add_markers(mmap) {
+  station_data.stations.forEach((station) => {
+    if (station.fixed) {
+      mmap.markers.push(new google.maps.Marker(
+          { position: new google.maps.LatLng(station.lat, station.lon),
+            icon: fixed_station_icon
+          }
+      ));
+    } else {
+      mmap.markers.push(new google.maps.Marker(
+          { position: new google.maps.LatLng((station.sw_lat + station.ne_lat) / 2., (station.sw_lon + station.ne_lon) / 2.),
+            icon: moved_station_icon
+          }
+      ));
+      if (station.sw_lat != station.ne_lat && station.sw_lon != station.ne_lon) {
+        mmap.boxes.push(new google.maps.Polygon(box_data));
+        mmap.boxes[mmap.boxes.length-1].setPath([
+            new google.maps.LatLng(station.sw_lat, station.sw_lon),
+            new google.maps.LatLng(station.ne_lat, station.sw_lon),
+            new google.maps.LatLng(station.ne_lat, station.ne_lon),
+            new google.maps.LatLng(station.sw_lat, station.ne_lon)
+        ]);
+      } else {
+        mmap.boxes.push(new google.maps.Polyline(line_data));
+        mmap.boxes[mmap.boxes.length-1].setPath([
+            new google.maps.LatLng(station.sw_lat, station.sw_lon),
+            new google.maps.LatLng(station.ne_lat, station.ne_lon)
+        ]);
+      }
+      mmap.boxes[mmap.boxes.length-1].setMap(mmap.handles.marker);
+    }
+    mmap.markers[mmap.markers.length-1].setMap(mmap.handles.marker);
+    if (station.bubble.IDs.length == 1) {
+      bubble_info = `
+        <strong>ID:</strong> ${station.bubble.IDs[0]} (${station.bubble.ID_types[0]})<br>
+        <strong>Temporal (start / end):</strong><br>
+        ${station.bubble.starts[0]} / ${station.bubble.ends[0]}<br>
+        <strong># of Observations:</strong> ${station.bubble.nobs[0]}
+      `;
+    } else {
+    }
+    mmap.bubbles.push(new google.maps.InfoWindow(
+        { content: bubble_info }
+    ));
+    google.maps.event.addListener(mmap.markers[mmap.markers.length-1], "click", function(m, b) {
+      return function() {
+        if (mmap.current_bubble != null) {
+          mmap.current_bubble.close();
+          mmap.current_bubble = null;
+        }
+        b.open(mmap.handles.marker, m);
+        mmap.current_bubble = b;
+      }
+    }(mmap.markers[mmap.markers.length-1], mmap.bubbles[mmap.bubbles.length-1]));
+  });
+}
+
+function do_map_update(ident, ocode, pcode) {
+  station_data = null;
+  eval('var mmap = ' + ident + '_map');
+  clear_map(mmap);
+  document.getElementById(ident + "_table").innerHTML = "";
+  ivals.push(null);
+  // wait for the map geometry to become available
+  ivals[ivals.length-1] = setInterval(
+      (mmap, ival_idx) => {
+        bounds = mmap.handles.marker.getBounds();
+        if (bounds) {
+          clearInterval(ivals[ival_idx]);
+          let response = getContentFromSynchronousRequest(null, window.location.pathname + "?stations=bounded&obs_code=" + ocode + "&plat_code=" + pcode + "&sw_lat=" + bounds.getSouthWest().lat() + "&sw_lon=" + bounds.getSouthWest().lng() + "&ne_lat=" + bounds.getNorthEast().lat() + "&ne_lon=" + bounds.getNorthEast().lng(), null, null);
+          station_data = eval("(" + response + ")");
+          add_markers(mmap);
+        }
+      }, 100, mmap, ivals.length-1);
+}
+
+function load_marker_map(ident, ocode, pcode, clat, clon, zoom, ctrl_size) {
+  eval('var mmap = ' + ident + '_map');
+  let mmap_init = {
+    map_div_id: ident + "_map",
+    center_lat: clat,
+    center_lon: clon,
+    zoom_level: zoom,
+    control_size: ctrl_size
+  };
+  ivals.push(null);
+  ivals[ivals.length-1] = setInterval(
+      (mmap, mmap_init, ival_idx) => {
+        if (mmap != null && mmap.handles.marker == null) {
+          clearInterval(ivals[ival_idx]);
+          mmap.handles.marker = mmap.load(mmap_init);
+        }
+      }, 1000, mmap, mmap_init, ivals.length-1);
+  ivals.push(null);
+  ivals[ivals.length-1] = setInterval(
+      (mmap, ival_idx) => {
+        if (typeof mmap.loaded != "undefined" && mmap.loaded) {
+          clearInterval(ivals[ival_idx]);
+          do_map_update(ident, ocode, pcode);
+        }
+      }, 1000, mmap, ivals.length-1);
+}
+</script>
+{% endif %}
+<script id="transformObML_utils_script" language="javascript">
+function open_bubble(ident, n) {
+  eval('var mmap = ' + ident + '_map');
+  google.maps.event.trigger(mmap.markers[n], "click");
+  mmap.handles.marker.setCenter({lat: mmap.markers[n].getPosition().lat(), lng: mmap.markers[n].getPosition().lng()});
+  mmap.handles.marker.setZoom(7);
+}
+
+function fill_id_table(ident) {
+  ivals.push(null);
+  ivals[ivals.length-1] = setInterval(
+      (ival_idx) => {
+        if (station_data) {
+          clearInterval(ivals[ival_idx]);
+          tbody = document.getElementById(ident + "_table");
+          station_data.stations.forEach((station, index) => {
+            row = tbody.insertRow(-1);
+            row.onclick = () => { open_bubble(ident, index); }
+            cell0 = row.insertCell(0);
+            cell0.style.textAlign = "center";
+            cell1 = row.insertCell(1);
+            cell1.style.textAlign = "center";
+            cell2 = row.insertCell(2);
+            cell2.style.textAlign = "center";
+            cell3 = row.insertCell(3);
+            cell3.style.textAlign = "center";
+            cell4 = row.insertCell(4);
+            cell4.style.textAlign = "center";
+            cell5 = row.insertCell(5);
+            cell5.style.textAlign = "center";
+            if (station.bubble.IDs.length == 1) {
+              cell0.textContent = station.bubble.IDs[0];
+              cell1.textContent = station.bubble.ID_types[0];
+              if (station.fixed) {
+                cell2.textContent = station.lat + ", " + station.lon;
+              } else {
+                cell2.textContent = station.sw_lat + ", " + station.sw_lon + " to " + station.ne_lat + ", " + station.ne_lon;
+              }
+              cell3.textContent = station.bubble.starts[0];
+              cell4.textContent = station.bubble.ends[0];
+              cell5.textContent = station.bubble.nobs[0];
+            } else {
+            }
+          });
+        }
+      }, 100, ivals.length-1);
+}
+
+var station_set = new Set();
+
+function toggleStationData(i, ocode, pcode, cla = null, clo = null, zoom = null) {
+  let e = document.getElementById(i);
+  let v = document.getElementById(i + "_verb");
+  if (e.classList.contains("d-none")) {
+    if (!station_set.has(i)) {
+      let e = document.getElementById(i + "_map");
+      if (e != null) {
+        station_data = null;
+        load_marker_map(i, ocode, pcode, cla, clo, zoom, 'small');
+      } else {
+        let response = getContentFromSynchronousRequest(null, window.location.pathname + "?stations=all&obs_code=" + ocode + "&plat_code=" + pcode, null, null);
+        station_data = eval("(" + response + ")");
+      }
+      fill_id_table(i);
+      station_set.add(i);
+    }
+    e.classList.replace("d-none", "d-block");
+    v.innerHTML = "hide";
+  } else {
+    e.classList.replace("d-block", "d-none");
+    v.innerHTML = "show";
+  }
+}
+</script>
+<center>
+    {% for obs_type, odict in obs_types.items %}
+    <table style="width: 93%" class="mt-2">
+        <thead>
+            <th class="text-center"><b>Observation Type:</b> {{ odict.long_name }}</th>
+        </thead>
+        <tbody>
+            {% for platform_type, pdict in odict.platforms.items %}
+            <tr>
+                <td>
+                    <center>
+                        <table style="width: 95%" class="panel">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <b>Observing Platform:</b> {{ pdict.long_name }}
+                                        <br>
+                                        <b>Temporal Range:</b> {{ pdict.start_date }} to {{ pdict.end_date }}
+                                        <br>
+                                        <b>Total Number of Observations:</b> {{ pdict.num_obs }}
+                                        <br>
+                                        <b>Number of Available Data Types:</b> {{ pdict.data_types|length }}
+                                        <br>
+                                        <b>Total Number of Platform IDs:</b> {{ pdict.num_ids }}
+                                        <br>
+                                        [ <a href="javascript:void(0)" onclick="toggleStationData('{{ obs_type }}_{{ platform_type }}', '{{ odict.code }}', '{{ pdict.code }}'{% if pdict.can_map %}, {{ pdict.map.center_lat }}, {{ pdict.map.center_lon }}, {{ pdict.map.zoom_level }}{% endif %})"><span id="{{ obs_type }}_{{ platform_type }}_verb">show</span> {% if pdict.can_map %}station map + {% endif %}ID list </a>]
+                                        <div id="{{ obs_type }}_{{ platform_type }}" class="d-none mt-1">
+                                            {% if pdict.can_map %}
+                                            <div class="d-flex mb-2">
+                                                <div id="{{ obs_type }}_{{ platform_type }}_map" style="width: 700px; height: 600px" class="flex-shrink-0 border border-black border-1">
+                                                </div>
+                                                <div class="flex-fill ps-2">
+                                                    After you pan and zoom to an area of interest, you should <button class="btn btn-primary px-1 py-0" onclick="do_map_update('{{ obs_type}}_{{ platform_type }}', '{{ odict.code }}', '{{ pdict.code }}');fill_id_table('{{ obs_type}}_{{ platform_type }}')">Update</button> the station markers and station list
+                                                    <br><br>
+                                                    - OR -
+                                                    <br><br>
+                                                    To show the marker(s) for a specific station(s), enter an ID or partial ID: <input id="partid" type="text" size="15">&nbsp;<button class="btn btn-primary px-1 py-0" onclick="">Go</button>
+                                                </div>
+                                            </div>
+                                            <div class="mb-1">
+                                                marker <img src="/images/gmaps/blue.png" width="16" height="16" hspace="3">indicates a station that has not moved during the period of record
+                                                <br>
+                                                marker <img src="/images/gmaps/red.png" width="16" height="16" hspace="3">indicates a station that has moved during the period of record; the marker is set at the center of a box bounding the station moves during the period
+                                                <ul>
+                                                  <li>Click a marker to get more information</li>
+                                                  <li>Click a row in the table below to zoom to that marker</li>
+                                                </ul>
+                                            </div>
+                                            {% endif %}
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Network</th>
+                                                        <th>Lat, Lon or<br>Bounding Box</th>
+                                                        <th>Start Date/Time</th>
+                                                        <th>End Date/Time</th>
+                                                        <th># of<br>Observations</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="{{ obs_type }}_{{ platform_type }}_table">
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </center>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+</center>
+{% endblock %}

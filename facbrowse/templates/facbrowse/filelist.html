@@ -54,7 +54,7 @@ function createTableBody(page_start) {
         '<td class="text-center">' + e[7] + '</td>' +
         '<td class="text-center"><a href="' +
         {% with db2=db|slice:"1:" %}
-        {% if db == "GrML" or db2 == "GrML" %}
+        {% if db == "GrML" or db2 == "GrML" or db == "ObML" or db2 == "ObML" %}
         '/datasets/{{ dsid }}/metadata_view/{{ db }}/' + e[0] +
         {% else %}
         '/ajax/#cgi-bin/transform?xml=/datasets/{{ dsid }}/metadata/wfmd/' + e[0] + '.{% if db|slice:"0:1" == "W" %}{{ db|slice:"1:" }}{% else %}{{ db }}{% endif %}' +

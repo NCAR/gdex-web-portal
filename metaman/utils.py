@@ -1372,10 +1372,16 @@ def set_wfile_version(dsid, doi, conn):
             "'A'"), (dsid, ))
     res = cursor.fetchone()
     if res is not None:
-        cursor.execute((
-                "update dssdb.wfile_" + dsid + " set vindex = %s where type = "
-                "'D'"), (res[0], ))
-        conn.commit()
+        wfile_tbl = "wfile_" + dsid
+        cursor.execute(
+                "select table_name from information_schema.tables where "
+                "table_schema = 'dssdb' and table_name = %s", (wfile_tbl, ))
+        tbl_exists, = cursor.fetchone() or (None, )
+        if tbl_exists:
+            cursor.execute((
+                    f"update {wfile_tbl} set vindex = %s where type = 'D'"),
+                    (res[0], ))
+            conn.commit()
 
 
 def validate_orcid_id(orcid_id):

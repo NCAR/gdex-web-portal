@@ -7,38 +7,6 @@
                         <div id="drawboxmap" class="ms-4" style="width: 500px; height: 400px; border: thick solid #30658b">
                             Waiting for the map to load ...
                         </div>
-                        <div class="ms-4" style="width: 500px">
-                            <div class="pe-1" style="float: left; margin-top: 3px">
-                                <span class="text-uppercase fw-bold">Zoom:</span>
-                            </div>
-                            <div style="float: left; margin-top: 3px; margin-right: 3px">
-                                <a href="javascript:void(0)" onclick="zoomOut(map.handles.drawbox, 1, 'mark')">
-                                    <i class="fas fa-minus-square"></i>
-                                </a>
-                            </div>
-                            <div style="position: relative; float: left; height: 18px; width: 60px; margin-top: 6px">
-                                <div class="tick scale" style="left: 0px"></div>
-                                <div class="tick scale" style="left: 6px"></div>
-                                <div class="tick scale" style="left: 12px"></div>
-                                <div class="tick scale" style="left: 18px"></div>
-                                <div class="tick scale" style="left: 24px"></div>
-                                <div class="tick scale" style="left: 30px"></div>
-                                <div class="tick scale" style="left: 36px"></div>
-                                <div class="tick scale" style="left: 42px"></div>
-                                <div class="tick scale" style="left: 48px"></div>
-                                <div class="tick scale" style="left: 54px"></div>
-                                <div id="mark" class="tick marker" style="left: 0px"></div>
-                            </div>
-                            <div style="float: left; margin-top: 3px">
-                                <a href="javascript:void(0)" onclick="zoomIn(map.handles.drawbox, 10, 'mark')"><i class="fas fa-plus-square"></i></a>
-                            </div>
-                            <div style="float: right">
-                                <input name="gdrawboxmap_mode" id="pan" class="me-1" type="radio" onClick="defineDrag()" checked>
-                                <span class="text-uppercase">Pan Map</span>
-                                <input name="gdrawboxmap_mode" id="draw" class="ms-2 me-1" type="radio" onClick="defineDrag()">
-                                <span class="text-uppercase">Draw Box</span>
-                            </div>
-                        </div>
                     </div>
                     <div class="col-12 col-md-6">
                         <div class="row gx-0">
@@ -47,10 +15,10 @@
                                 <br>
                                 <ul class="mt-0">
                                     <li>
-                                        Use the '<span class="text-uppercase">Pan Map</span>' option to drag and center the map on your area of interest
+                                        By default, drag the map to pan and center it on your area of interest.  Use the '+/-' zoom control in the upper left corner of the map to zoom in/out.  You can also use your mouse scroll wheel to zoom in/out.
                                     </li>
                                     <li>
-                                        Use the '<span class="text-uppercase">Draw Box</span>' option to drag a box around your area of interest. You can also manually enter bounding latitudes and longitudes in the text boxes below:
+                                        To select a latitude/longitude region, click the pencil icon on the map, then drag to draw a box around your area of interest. You can also manually enter bounding latitudes and longitudes in the text boxes below:
                                     </li>
                                 </ul>
                             </div>
