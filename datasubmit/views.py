@@ -43,7 +43,7 @@ def data_submission_welcome(request):
             return redirect(_step_url(1))
         return redirect('data-submission-advisor')
 
-    return render(request, 'datasubmit/data_submission_welcome.html')
+    return render(request, 'datasubmit/data_submission_form/data_submission_welcome.html')
 
 
 # Small, HPC-independent datasets can be archived faster via Zenodo than through
@@ -173,7 +173,7 @@ def submission_confirmation(request):
     steps = _progress_steps(is_recommendation)
     step_display, step_count = _step_progress(steps, CONFIRMATION_STEP)
 
-    return render(request, 'datasubmit/submission_confirmation.html', {
+    return render(request, 'datasubmit/data_submission_form/submission_confirmation.html', {
         'steps': steps,
         'step': CONFIRMATION_STEP,
         'step_display': step_display,
@@ -208,7 +208,7 @@ def submission_advisor(request):
     else:
         form = IntroForm(initial=wizard_data.get('0', {}))
 
-    return render(request, 'datasubmit/submission_advisor.html', {
+    return render(request, 'datasubmit/data_submission_form/submission_advisor.html', {
         'form': form,
         'has_help_text': any(field.help_text for field in form),
     })
@@ -242,7 +242,7 @@ def data_submission_zenodo_recommendation(request):
     else:
         form = ZenodoChoiceForm(initial=wizard_data.get('zenodo', {}))
 
-    return render(request, 'datasubmit/data_submission_zenodo_recommendation.html', {'form': form})
+    return render(request, 'datasubmit/data_submission_form/data_submission_zenodo_recommendation.html', {'form': form})
 
 @login_required
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
@@ -254,7 +254,7 @@ def data_submission_zenodo_next_steps(request):
     if reason is None:
         return redirect('data-submission-advisor')
 
-    return render(request, 'datasubmit/data_submission_zenodo_next_steps.html', {'reason': reason})
+    return render(request, 'datasubmit/data_submission_form/data_submission_zenodo_next_steps.html', {'reason': reason})
 
 @login_required
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
@@ -265,7 +265,7 @@ def data_submission_gdex_next_steps(request):
     if '0' not in wizard_data:
         return redirect('data-submission-advisor')
 
-    return render(request, 'datasubmit/data_submission_gdex_next_steps.html', {'start_url': _step_url(1)})
+    return render(request, 'datasubmit/data_submission_form/data_submission_gdex_next_steps.html', {'start_url': _step_url(1)})
 
 
 def _wizard_gate_redirect(wizard_data, step):
@@ -351,7 +351,7 @@ def data_submission_contributors(request):
     steps = _progress_steps(False)
     step_display, step_count = _step_progress(steps, step)
 
-    return render(request, 'datasubmit/data_submission_contributors.html', {
+    return render(request, 'datasubmit/data_submission_form/data_submission_contributors.html', {
         'meta_form': meta_form,
         'formset': formset,
         'step': step,
@@ -470,7 +470,7 @@ def gdex_submission_form_step(request, step_slug):
     steps = _progress_steps(is_recommendation)
     step_display, step_count = _step_progress(steps, step)
 
-    return render(request, 'datasubmit/gdex_submission_form_step.html', {
+    return render(request, 'datasubmit/data_submission_form/gdex_submission_form_step.html', {
         'form': form,
         'step': step,
         'step_title': STEP_TITLES[step],
