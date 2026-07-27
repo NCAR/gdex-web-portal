@@ -13,14 +13,14 @@ function gdexInitClientPagination(options) {
     var totalPages = Math.ceil(items.length / perPage);
     var currentPage = 1;
 
-    function showPage(page) {
+    function showPage(page, scrollToNav) {
         currentPage = Math.min(Math.max(1, page), totalPages);
         items.forEach(function (item, index) {
             var itemPage = Math.floor(index / perPage) + 1;
             item.style.display = (itemPage === currentPage) ? '' : 'none';
         });
         renderControls();
-        nav.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (scrollToNav) nav.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function arrowButton(iconClass, label, targetPage, disabled) {
@@ -30,7 +30,7 @@ function gdexInitClientPagination(options) {
         btn.setAttribute('aria-label', label);
         if (disabled) btn.disabled = true;
         btn.innerHTML = '<i class="' + iconClass + '"></i>';
-        if (!disabled) btn.addEventListener('click', function () { showPage(targetPage); });
+        if (!disabled) btn.addEventListener('click', function () { showPage(targetPage, true); });
         li.appendChild(btn);
         return li;
     }
@@ -42,7 +42,7 @@ function gdexInitClientPagination(options) {
         btn.className = 'gdex-pagination__page' + (isActive ? ' gdex-pagination__page--active' : '');
         btn.textContent = pageNum;
         if (isActive) btn.setAttribute('aria-current', 'page');
-        else btn.addEventListener('click', function () { showPage(pageNum); });
+        else btn.addEventListener('click', function () { showPage(pageNum, true); });
         li.appendChild(btn);
         return li;
     }
