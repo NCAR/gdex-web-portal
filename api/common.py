@@ -1214,6 +1214,9 @@ def assemble_root_group_filelist(dsid, page=0, fl_source=None):
             file_count = {'name':long_name('webcnt'), 'value': parent_group['webcnt']}
             group.add_row([group_name, group_description, file_count])
 
+    if not group.has_data():
+        return assemble_no_group_filelist(dsid, page)
+
     filelist.add_group(group)
     return filelist.get_data(dsid)
 
