@@ -261,10 +261,12 @@ class HomePageSearchSuggestion(Orderable):
     page = ParentalKey('HomePage', related_name='search_suggestions', on_delete=models.CASCADE)
     search_term = models.CharField(max_length=25, verbose_name='Search Term', help_text='Search term displayed under the home page search bar as a search suggestion badge.  For example, "AI Ready Datasets" or "Zarr Format Datasets".')
     search_term_url = models.CharField(max_length=255, verbose_name='Search Term URL', help_text='Search term URL specified as the GDEX Search URL to link to when the search term is clicked.  This can be a relative URL or absolute URL. For example, a relative URL could be /gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready and an absolute URL could be https://gdex.ucar.edu/gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready to link to a search for AI-Ready datasets.')
+    description = models.CharField(max_length=100, blank=True, default="", verbose_name='Search Term Description', help_text='Optional short description of the search term to be displayed under the search term badge.  For example, "Datasets prepared for AI/ML applications" or "Cloud-optimized array data".')
 
     panels = [
         FieldPanel('search_term'),
         FieldPanel('search_term_url'),
+        FieldPanel('description'),
     ]
 
 class FeaturedCard(Orderable):
@@ -307,6 +309,11 @@ class FeaturedCard(Orderable):
         verbose_name="Card Page",
         help_text="Internal page to link to from the card. If both Card Page and Card URL are provided, Card Page will take precedence.",
     )
+    card_link_text = models.CharField(
+        max_length=100,
+        default='Learn more',
+        help_text="Text displayed for the link to the related URL.  Default='Learn more'",
+    )
 
     panels = [
         FieldPanel('title'),
@@ -315,6 +322,7 @@ class FeaturedCard(Orderable):
         FieldPanel('text'),
         FieldPanel('card_url'),
         PageChooserPanel('card_page'),
+        FieldPanel('card_link_text'),
     ]
 
     def clean(self):
@@ -332,8 +340,43 @@ class HomePage(Page):
         verbose_name="Search Box Title")
     search_box_placeholder = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Search Box Placeholder")
+    banner_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text='Hero banner image displayed at the top of the home page.',
+    )
+    hero_heading_highlight = models.CharField(
+        max_length=50,
+        default='GDEX.',
+        blank=True,
+        help_text='First word shown in blue e.g. "GDEX."'
+    )
+    hero_heading = models.CharField(
+        max_length=200,
+        default='The system of record for Earth system science.',
+        blank=True,
+        help_text='Main heading text after the highlighted word'
+    )
+    hero_description = RichTextField(blank=True)
+    metrics_banner_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text='Metrics banner image displayed at the bottom of the home page.',
+    )
     
     content_panels = Page.content_panels + [
+        MultiFieldPanel([
+            FieldPanel('hero_heading_highlight'),
+            FieldPanel('hero_heading'),
+            FieldPanel('hero_description'),
+        ], heading='Hero Section'),
+        FieldPanel('banner_image'),
         FieldPanel('tagline', classname="collapsible collapsed"),
         FieldPanel('welcome', classname="collapsible collapsed"),
         MultiFieldPanel([
@@ -346,6 +389,7 @@ class HomePage(Page):
         MultiFieldPanel([
             InlinePanel('featured_cards', label='Featured card'),
         ], heading="Featured cards", classname="collapsible collapsed"),
+        FieldPanel('metrics_banner_image'),
     ]
     is_creatable = False
 
