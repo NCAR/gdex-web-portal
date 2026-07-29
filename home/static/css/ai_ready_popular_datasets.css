@@ -11,7 +11,7 @@
     height: 60px;
     min-width: 60px;
     background-color: var(--gdex-blue);
-    border-radius: 14px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
