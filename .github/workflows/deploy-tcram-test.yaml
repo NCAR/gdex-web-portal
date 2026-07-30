@@ -1,4 +1,4 @@
-name: Deploy tcram Test Container
+name: Build test container 'tcram' and update Helm chart
 on:
   workflow_dispatch:
     inputs:
