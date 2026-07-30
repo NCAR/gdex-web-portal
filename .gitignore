@@ -155,3 +155,4 @@ dmypy.json
 .pyre/
 
 .claude/*
+kubectl*
