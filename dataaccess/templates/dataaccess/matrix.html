@@ -141,14 +141,14 @@
     <div class="prod tx-c" style="grid-row: 4 / span {{ matrix.group_data|length }}">P<br>R<br>O<br>D<br>U<br>C<br>T<br>S</div>
         {% for group in matrix.group_data %}
             {% with row=forloop.counter|add:3 %}
-	    {% if group.index > 0 %}
+            {% if group.index > 0 %}
             <div class="d-des o-blk tx-l" style="grid-row: {{ row }}">
                 {{ group.title|richtext }}
             </div>
             {% if matrix.columns.web_files %}
             <div class="d-fil o-blk tx-c" style="grid-row: {{ row }}">
                 {% if group.dwebcnt > 0 %}
-                <a href="javascript:void(0)" onclick="$.get('{{ group.urls.web }}/', replace_ds_content)">Web<br>Download</a>
+                <a href="javascript:void(0)" onclick="$.get('{{ group.urls.web }}/?title={{ group.title }}', replace_ds_content)">Web<br>Download</a>
                 {% endif %}
             </div>
             {% endif %}
@@ -194,7 +194,7 @@
                 <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}{% if group.index %}{{ group.index }}/{% endif %}?fl=glade', replace_ds_content)">NCAR HPC<br>Data Access</a>
             </div>
             {% endif %}
-	    {% else %}
+            {% else %}
             {% comment %} If ARCO groups {% endcomment %}
             <div class="d-des o-blk tx-l mt-1" style="grid-row: {{ row }}">
                 {{ group.title|richtext }}
@@ -209,7 +209,7 @@
                 </div>
             {% endif %}
 
-	    {% endif %}
+            {% endif %}
         {% endwith %}
         {% endfor %}
     {% endif %}
