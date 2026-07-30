@@ -1,6 +1,6 @@
 {% static "img/hero_earth.png" as hero_fallback_img %}
-{% if page.banner_image %}
-    {% image page.banner_image original as hero_img %}
+{% if page.hero_banner_image %}
+    {% image page.hero_banner_image original as hero_img %}
     <section class="gdex-hero" style="background-image: url('{{ hero_img.url }}');">
 {% else %}
     <section class="gdex-hero" style="background-image: url('{{ hero_fallback_img }}');">
