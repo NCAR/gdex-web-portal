@@ -340,7 +340,7 @@ class HomePage(Page):
         verbose_name="Search Box Title")
     search_box_placeholder = models.CharField(max_length=255, blank=False, default="",
         verbose_name="Search Box Placeholder")
-    banner_image = models.ForeignKey(
+    hero_banner_image = models.ForeignKey(
         'wagtailimages.Image',
         null=True,
         blank=True,
@@ -352,13 +352,13 @@ class HomePage(Page):
         max_length=50,
         default='GDEX.',
         blank=True,
-        help_text='First word shown in blue e.g. "GDEX."'
+        help_text='Highlighted text in the hero banner, e.g. "GDEX."'
     )
     hero_heading = models.CharField(
         max_length=200,
         default='The system of record for Earth system science.',
         blank=True,
-        help_text='Main heading text after the highlighted word'
+        help_text='Main heading text after the highlighted text in the hero banner'
     )
     hero_description = RichTextField(blank=True)
     metrics_banner_image = models.ForeignKey(
@@ -375,8 +375,8 @@ class HomePage(Page):
             FieldPanel('hero_heading_highlight'),
             FieldPanel('hero_heading'),
             FieldPanel('hero_description'),
+            FieldPanel('hero_banner_image'),
         ], heading='Hero Section'),
-        FieldPanel('banner_image'),
         FieldPanel('tagline', classname="collapsible collapsed"),
         FieldPanel('welcome', classname="collapsible collapsed"),
         MultiFieldPanel([
