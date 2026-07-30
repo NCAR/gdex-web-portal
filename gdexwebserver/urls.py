@@ -41,6 +41,7 @@ urlpatterns = [
     path('gsearch/', include('gsearch.urls'), name='gsearch'),
     path('oai/', include("oai.urls")),
     path('metaman/', include('metaman.urls')),
+    path('metaman-lite/', include('metaman_lite.urls')),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
     path('login/', RedirectView.as_view(url='/accounts/login/')),
