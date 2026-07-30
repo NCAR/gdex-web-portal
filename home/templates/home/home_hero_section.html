@@ -1,0 +1,27 @@
+{% static "img/hero_earth.png" as hero_fallback_img %}
+{% if page.banner_image %}
+    {% image page.banner_image original as hero_img %}
+    <section class="gdex-hero" style="background-image: url('{{ hero_img.url }}');">
+{% else %}
+    <section class="gdex-hero" style="background-image: url('{{ hero_fallback_img }}');">
+{% endif %}
+    <div class="gdex-hero__content position-relative">
+        <div class="container-lg">
+        <div class="row">
+            <!--gdex-hero__overlay-panel in bootstrap is: class="col-lg-5 col-xl-4 bg-dark bg-opacity-25 text-white p-4 rounded-3 maxWidth-sm" style="backdrop-filter: blur(8px); max-width: 500px;" -->
+            <div class="col-lg-5 col-xl-4 gdex-hero__overlay-panel">
+                <h1 class="gdex-hero__heading">
+                    {% if page.hero_heading_highlight %}<span class="gdex-hero__heading-highlight">{{ page.hero_heading_highlight }}</span> {% endif %}{{ page.hero_heading|default:"The system of record for Earth system science." }}
+                </h1>
+                <div class="gdex-hero__description">
+                    {% if page.hero_description %}
+                        {{ page.hero_description|richtext }}
+                    {% else %}
+                        <p><strong>GDEX</strong> is NSF NCAR's trusted platform for discovering, sharing, preserving, and analyzing Earth System Science data.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    </section>

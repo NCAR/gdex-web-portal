@@ -1,0 +1,149 @@
+{% load static wagtailimages_tags %}
+{% static 'img/bannerimage7.jpg' as metrics_fallback_img %}
+
+<!-- METRICS -->
+{% if page.metrics_banner_image %}
+    {% image page.metrics_banner_image original as metrics_img %}
+    <section class="gdex-metrics-section" style="background-image: url('{{ metrics_img.url }}');">
+{% else %}
+    <section class="gdex-metrics-section" style="background-image: url('{{ metrics_fallback_img }}');">
+{% endif %}
+    <div class="container-lg">
+
+        <h2 class="gdex-metrics-section__title">GDEX By the Metrics</h2>
+
+        {# gdex-metrics-carousel only changes behavior on mobile (see mobile media query in home_page.css) #}
+        <div class="gdex-metrics-carousel">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-4" id="gdex-metrics-row">
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-data-software-services"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-datasets">&hellip;</div>
+                    <div class="gdex-metric__label">Total Datasets</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-documents"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-citations">&hellip;</div>
+                    <div class="gdex-metric__label">Total Citations</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-our-staff"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-users">&hellip;</div>
+                    <div class="gdex-metric__label">Unique IPs</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-observations"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-downloaded">&hellip;</div>
+                    <div class="gdex-metric__label">Data Downloaded</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-computational-resources"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-volume">&hellip;</div>
+                    <div class="gdex-metric__label">Size of GDEX</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="gdex-metric">
+                    <div class="gdex-metric__icon"><i class="icon-what-we-offer"></i></div>
+                    <div class="gdex-metric__value" id="gdex-metric-requests">&hellip;</div>
+                    <div class="gdex-metric__label">Customized Requests</div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="gdex-metrics-carousel__arrow gdex-metrics-carousel__arrow--prev" aria-label="Show previous metrics">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button type="button" class="gdex-metrics-carousel__arrow gdex-metrics-carousel__arrow--next" aria-label="Show next metrics">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        </div>
+
+    </div>
+</section>
+
+<script>
+(function () {
+    function fmt(n) { return Number(n).toLocaleString(); }
+
+    function countUp(el, target, suffix, isFloat) {
+        var duration = 1800;
+        var startTime = null;
+        suffix = suffix || '';
+        function step(ts) {
+            if (!startTime) startTime = ts;
+            var progress = Math.min((ts - startTime) / duration, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+            var current = target * eased;
+            el.textContent = isFloat
+                ? current.toFixed(2) + suffix
+                : fmt(Math.floor(current)) + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    var metrics = [
+        { url: '{% url "total_datasets" %}',    id: 'gdex-metric-datasets',   get: function (d) { return d.value; } },
+        { url: '{% url "total_citations" %}',   id: 'gdex-metric-citations',   get: function (d) { return d.value; } },
+        { url: '{% url "unique_users" %}',      id: 'gdex-metric-users',       get: function (d) { return d.ips; } },
+        { url: '{% url "volume_downloaded" %}', id: 'gdex-metric-downloaded',  get: function (d) { return d.volume; }, suffix: ' PB', float: true },
+        { url: '{% url "gdex_volume" %}',       id: 'gdex-metric-volume',      get: function (d) { return d.value; }, suffix: ' PB', float: true },
+        { url: '{% url "total_requests" %}',    id: 'gdex-metric-requests',    get: function (d) { return d.value; } },
+    ];
+
+    function runAll() {
+        metrics.forEach(function (m) {
+            fetch(m.url)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var el = document.getElementById(m.id);
+                    if (!el) return;
+                    var target = parseFloat(m.get(data));
+                    if (isNaN(target)) { el.textContent = '—'; return; }
+                    countUp(el, target, m.suffix, m.float);
+                })
+                .catch(function () {
+                    var el = document.getElementById(m.id);
+                    if (el) el.textContent = '—';
+                });
+        });
+    }
+
+    var section = document.querySelector('.gdex-metrics-section');
+    if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+            if (entries[0].isIntersecting) {
+                observer.unobserve(section);
+                runAll();
+            }
+        }, { threshold: 0.15 });
+        observer.observe(section);
+    } else {
+        runAll();
+    }
+
+    // Mobile-only: arrow buttons scroll the metrics row by one card's width.
+    // On desktop this row isn't scrollable (see mobile media query in home_page.css),
+    // so the buttons simply have nothing to do there.
+    var row = document.getElementById('gdex-metrics-row');
+    var prevBtn = document.querySelector('.gdex-metrics-carousel__arrow--prev');
+    var nextBtn = document.querySelector('.gdex-metrics-carousel__arrow--next');
+
+    function scrollByOneCard(direction) {
+        var card = row.querySelector('.col');
+        if (!card) return;
+        row.scrollBy({ left: direction * card.offsetWidth, behavior: 'smooth' });
+    }
+
+    prevBtn.addEventListener('click', function () { scrollByOneCard(-1); });
+    nextBtn.addEventListener('click', function () { scrollByOneCard(1); });
+}());
+</script>

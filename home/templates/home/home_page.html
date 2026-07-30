@@ -1,27 +1,37 @@
 {% extends "base.html" %}
 {% load static wagtailcore_tags wagtailimages_tags %}
 
+{% block headextras %}
+    <link rel="stylesheet" href="{% static 'home/css/gdex-theme-vars.css' %}">
+    <link rel="stylesheet" href="{% static 'home/css/home_page.css' %}">
+    <link rel="preload" href="{% static 'vendor/swiper/css/swiper-bundle.min.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="{% static 'vendor/swiper/css/swiper-bundle.min.css' %}">
+    <noscript><link rel="stylesheet" href="{% static 'vendor/swiper/css/swiper-bundle.min.css' %}"></noscript>
+    <script src="{% static 'vendor/swiper/js/swiper-bundle.min.js' %}"></script>
+{% endblock %}
+
 {% block content %}
-<div class="d-grid d-print-flex">
-    <article class="main-content-wrapper">
-        {% block welcome_message %}
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="text-center">
-                    <h3 class="display-6 text-black mb-2">{{ page.tagline|richtext }}</h3>
-                    <p class="text-black-50">{{ page.welcome|richtext }}</p>
-                </div>
-            </div>
-        </div>
-        {% endblock %}
 
-        {% block home_search_bar %}
-        {% include 'home/home_search_bar.html' %}
-        {% endblock %}
+{% include 'home/home_hero_section.html' %}
 
-        {% block grid_cards %}
-        {% include 'home/home_grid_cards.html' %}
-        {% endblock %}
-    </article>
-</div>
+{% block home_search_bar %}
+{% include 'home/test_home_search_bar.html' %}
+{% endblock %}
+
+<div class="gdex-waves-wrapper">
+<img src="{% static 'unity/img/UCAR-Waves-Lines-Only.png' %}" alt="" aria-hidden="true" class="gdex-waves-img">
+
+{% block grid_cards %}
+{% include 'home/test_home_grid_cards.html' %}
+{% endblock %}
+
+{% block popular_datasets %}
+{% include 'home/test_home_popular_datasets.html' %}
+{% endblock %}
+
+{% block metrics %}
+{% include 'home/test_home_metrics.html' %}
+{% endblock %}
+
+</div><!-- end gdex-waves-wrapper -->
 {% endblock %}
