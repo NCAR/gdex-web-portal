@@ -139,7 +139,9 @@ def listopt_gindex(request, dsid, listtyp, gindex):
     if listtyp in ["web", "glade"] or 'duser' in request.COOKIES:
         ctx = {'dsid': dsid}
         if gindex is not None:
-            ctx.update({'group': gindex})
+            ctx.update({'group': {'gindex': gindex}})
+            if 'title' in request.GET:
+                ctx['group']['title'] = request.GET['title']
 
         if listtyp == 'web':
             ctx.update({'listtyp': 'Internet', 'listapp': 'weblist'})
@@ -255,7 +257,7 @@ def get_software_table(request, dsnum):
     software_json = json.loads(software)
 
     template = "datasets/software_table.html"
-    
+
     if "HTTP_X_REQUESTED_WITH" in request.META:
         return render(request,
                       template,
@@ -705,7 +707,7 @@ def custom_subset(request, dsid):
     if d:
         ctx.update({'page': d})
         logger.info("Added dataset description context to custom subset page for dataset {}".format(dsid))
-    
+
     if dsid in ['d351000', 'd461000']:
         ctx['form'] = BUFRSubsetForm(
             auto_id='%s',
