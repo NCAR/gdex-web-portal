@@ -1,0 +1,20 @@
+:root {
+    --gdex-blue: #0057C2;
+    --gdex-blue-dark: #00357A;
+    --gdex-navy: #011837;
+    --gdex-orange: #FAA119;
+    --gdex-white: #FFFFFF;
+
+    --gdex-text-dark: #1A1A2E;
+    --gdex-text-muted: #6B7A99;
+    --gdex-text-muted-alt: #5A6A80;
+    --gdex-text-body: #333333;
+    --gdex-icon-muted: #9AABBF;
+
+    --gdex-border: #DCE8F8;
+    --gdex-border-input: #C5D0E0;
+
+    --gdex-bg-card: #F8F8F8;
+    --gdex-bg-tint: #E8F0FB;
+    --gdex-bg-meta: #F1F0EE;
+}
