@@ -1,3 +1,4 @@
+{% load wagtailimages_tags static %}
 {% static "img/hero_earth.png" as hero_fallback_img %}
 {% if page.hero_banner_image %}
     {% image page.hero_banner_image original as hero_img %}
