@@ -1,7 +1,7 @@
 {% load static wagtailimages_tags %}
-{% static '/media/original_images/bannerimage7.jpg' as metrics_fallback_img %}
 
 <!-- METRICS -->
+{% with metrics_fallback_img='/media/original_images/bannerimage7.jpg' %}
 {% if page.metrics_banner_image %}
     {% image page.metrics_banner_image original as metrics_img %}
     <section class="gdex-metrics-section" style="background-image: url('{{ metrics_img.url }}');">
@@ -68,6 +68,7 @@
 
     </div>
 </section>
+{% endwith %}
 
 <script>
 (function () {

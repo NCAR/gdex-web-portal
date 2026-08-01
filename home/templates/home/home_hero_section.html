@@ -1,5 +1,5 @@
 {% load wagtailcore_tags wagtailimages_tags static %}
-{% static "/media/original_images/hero_earth.png" as hero_fallback_img %}
+{% with hero_fallback_img="/media/original_images/hero_earth.png" %}
 {% if page.hero_banner_image %}
     {% image page.hero_banner_image original as hero_img %}
     <section class="gdex-hero" style="background-image: url('{{ hero_img.url }}');">
@@ -26,3 +26,4 @@
         </div>
     </div>
     </section>
+{% endwith %}
