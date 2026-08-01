@@ -36,7 +36,7 @@
 
     {% block index %}
     <h2 class="text-center card card-body">
-      <a href="{% url 'search' index %}?q=*">{{index_data.name|default:index}}</a>
+      <a href="{% url 'dataset_search' index %}?q=*">{{index_data.name|default:index}}</a>
     </h2>
     {% endblock %}
   </div>
