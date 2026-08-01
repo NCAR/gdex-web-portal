@@ -5,7 +5,7 @@
             <div class="col-12">
                 <div class="gdex-search-block">
                     <h2 class="gdex-search-block__title">{{ page.search_box_title|default:"Search For Datasets" }}</h2>
-                    <form action="{% url 'search' %}" method="get" id="gdex-home-search-form">
+                    <form action="{% url 'dataset_search' %}" method="get" id="gdex-home-search-form">
                         <div class="gdex-search-bar">
                             <input
                                 type="text"
