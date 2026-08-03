@@ -16,6 +16,7 @@ except Exception:
     from urllib import urlencode
 from datasets.models import CustomSubsetPage
 from wagtail.models import Page
+from accounts.cookies import verified_cookie_email
 
 from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
                                 iso_19139, json_ld)
@@ -111,11 +112,7 @@ def build_matrix(request, dsid):
     if dsid[0] != 'd' or len(dsid) != 7:
         return render(request, "404.html")
 
-    if 'duser' in request.COOKIES:
-        duser = request.COOKIES['duser']
-        duser = duser if ":" not in duser else duser[:duser.find(":")]
-    else:
-        duser = None
+    duser = verified_cookie_email(request, 'duser')
 
     ctx = Matrix(dsid, duser).to_json()
     ctx.update({'dsid': dsid})

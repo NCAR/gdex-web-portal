@@ -64,10 +64,10 @@ class MyAccountAdapter(DefaultAccountAdapter):
     def logout(self, request):
         super(MyAccountAdapter, self).logout(request)
 
-    def remove_cookies(self, reponse):
-         response.delete_cookie('duser')
-         response.delete_cookie('ruser')
-         response.delete_cookie('dpass')
+    def remove_cookies(self, response):
+        response.delete_cookie('duser')
+        response.delete_cookie('ruser')
+        response.delete_cookie('dpass')
     
     def generate_cookies(self, email, response):
         #email = urllib.parse.quote(email)
