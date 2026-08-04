@@ -6,9 +6,20 @@ SUBMISSION_TYPE_CHOICES = [
     ('own', 'I am submitting my own dataset'),
     ('recommend', 'I am recommending a dataset for the GDEX repository'),
 ]
-
-
 class Submission(models.Model):
+    class Status(models.TextChoices):
+        PENDING_DECISION = 'pending_decision', 'Pending Decision'
+        IN_PROGRESS = 'in_progress', 'In Progress'
+        IN_REVIEW = 'in_review', 'In Review'
+        PUBLISHED = 'published', 'Published'
+        CANCELED = 'canceled', 'Canceled'
+        DELETED = 'deleted', 'Deleted'
+
+    class Decision(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        APPROVED = 'approved', 'Approved'
+        REJECTED = 'rejected', 'Rejected'
+
     submitted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     created = models.DateTimeField(default=timezone.now)
     submission_type = models.CharField(max_length=20, choices=SUBMISSION_TYPE_CHOICES, default='own')
@@ -24,6 +35,8 @@ class Submission(models.Model):
     hpc_access = models.BooleanField(default=False)
     cif_fare_contributors = models.BooleanField(default=False)
     is_ncar_employee = models.BooleanField(default=False)
+    submission_status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING_DECISION)
+    submission_decision = models.CharField(max_length=20, choices=Decision.choices, default=Decision.PENDING)
 
     data_policy_agreement = models.BooleanField(default=False)
     data_deposit_agreement = models.BooleanField(default=False)

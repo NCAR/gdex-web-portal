@@ -48,14 +48,15 @@ def portal_view(view_func):
 
 def _get_owned_submission(request, pk, prefetch=()):
     """Fetch a Submission by pk, scoped to the requesting user -- except in
-    local dev (_portal_dev_mode), where fixture rows aren't tied to any real
-    user. Centralizes the ownership check so every per-dataset portal view
+    local dev (_portal_dev_mode) or when a superuser has the agent-view
+    toggle on (_agent_view_active), where any submission is fair game.
+    Centralizes the ownership check so every per-dataset portal view
     (overview/files/metadata/...) enforces it the same way by construction,
     rather than each view remembering its own filter."""
     qs = Submission.objects.all()
     if prefetch:
         qs = qs.prefetch_related(*prefetch)
-    if _portal_dev_mode():
+    if _portal_dev_mode() or _agent_view_active(request):
         return get_object_or_404(qs, pk=pk)
     return get_object_or_404(qs, pk=pk, submitted_by=request.user)
 

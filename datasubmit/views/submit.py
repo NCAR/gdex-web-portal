@@ -404,6 +404,8 @@ def gdex_submission_form_step(request, step_slug):
                 submission = Submission.objects.create(
                     submitted_by=request.user,
                     submission_type=wizard_data.get('welcome', {}).get('submission_type', 'own'),
+                    submission_status = Submission.Status.PENDING_DECISION,
+                    submission_decision = Submission.Decision.PENDING,
                     dataset_title=basic_info['dataset_title'],
                     dataset_abstract=basic_info['dataset_abstract'],
                     dataset_details=basic_info['dataset_details'],
