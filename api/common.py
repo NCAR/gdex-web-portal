@@ -1125,8 +1125,8 @@ def assemble_filelist(dsid, group=None, page=0, fl_source=None, filter_wfile=Non
     try:
         title,note,group_id,parent_id,webpath = get_group_info(dsid, group)
     except ValueError:
-        logger.warning("Group %s not found for dataset %s", group, dsid)
-        return Filelist(dsid + ' files').get_data(dsid)
+        logger.warning("Group %s not found in dsgroup for dataset %s; falling back to ungrouped file list", group, dsid)
+        title,note,group_id,parent_id,webpath = dsid + ' files', None, None, 0, ""
     locflag = get_dataset_location(dsid)
     filelist = Filelist(title, note)
 
@@ -1213,6 +1213,9 @@ def assemble_root_group_filelist(dsid, page=0, fl_source=None):
             group_description = {'name':long_name('title'), 'value': parent_group['title']}
             file_count = {'name':long_name('webcnt'), 'value': parent_group['webcnt']}
             group.add_row([group_name, group_description, file_count])
+
+    if not group.has_data():
+        return assemble_no_group_filelist(dsid, page)
 
     filelist.add_group(group)
     return filelist.get_data(dsid)

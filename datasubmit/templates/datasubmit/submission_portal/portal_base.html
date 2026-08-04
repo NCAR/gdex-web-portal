@@ -39,7 +39,7 @@
                 <form method="post" action="{% url 'data-submission-portal-view-mode' %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
-                    <div class="form-check form-switch mb-0">
+                    <div class="form-check form-switch mb-0 fs-3">
                         <input
                             class="form-check-input"
                             type="checkbox"
@@ -50,7 +50,7 @@
                             {% if request.session.datasubmit_portal_view_mode == 'customer' %}checked{% endif %}
                             onchange="this.form.submit()"
                         >
-                        <label class="form-check-label small" for="portal-view-mode-toggle">
+                        <label class="form-check-label fs-6" for="portal-view-mode-toggle">
                             {% if request.session.datasubmit_portal_view_mode == 'customer' %}Customer view{% else %}Agent view{% endif %}
                         </label>
                     </div>

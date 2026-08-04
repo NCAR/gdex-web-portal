@@ -22,7 +22,7 @@
 
     {% block search_form %}
     <form id="search-form" class="my-4 d-flex" name="search_form"
-          action="{% block search_form_url %}{% url 'search' globus_portal_framework.index %}{% endblock %}">
+          action="{% block search_form_url %}{% url 'dataset_search' globus_portal_framework.index %}{% endblock %}">
       <input class="form-control" 
              type="text" 
              id="search-input" 

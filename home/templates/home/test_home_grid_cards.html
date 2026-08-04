@@ -1,30 +1,36 @@
-{% load wagtailcore_tags %}
+{% load static wagtailcore_tags %}
 
-<div class="component featured-work container-lg pt-md-4">
-    <div class="row gx-0 justify-content-center">
-        <div class="col-10 primary">
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-2 g-md-4">
-                {% for card in page.featured_cards.all %}
-                <div class="col">
-                    <div class="card h-100 grid-card-group">
-                        <a href="{% if card.card_page %}{{ card.card_page.url }}{% else %}{{ card.card_url }}{% endif %}" class="stretched-link" {% if not card.card_page and card.card_url %}target="_blank" rel="noopener noreferrer"{% endif %}></a>
-                        <div class="card-body">
-                            <div class="icon py-2 text-center">
-                                {% if card.icon_name %}
-                                <i class="fa-solid fa-{{ card.icon_name }} fa-2x"></i>
-                                {% elif card.icomoon_icon_name %}
-                                <i class="{{ card.icomoon_icon_name }}" style="font-size: 3em;"></i>
-                                {% endif %}
-                            </div>
-                            <h4 class="card-title text-center text-white">{{ card.title }}{% if not card.card_page and card.card_url %} <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i>{% endif %}</h4>
-                            <div class="card-text text-center pt-2">
-                                {{ card.text|richtext }}
-                            </div>
-                        </div>
+<!-- FEATURE CARDS -->
+<section class="gdex-features-section">
+    <div class="container-lg">
+        <h2 class="gdex-section-title">What You Can Do With GDEX</h2>
+        <div class="row row-cols-2 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for card in page.featured_cards.all %}
+            <div class="col">
+                <div class="gdex-feature-card">
+                    <div class="gdex-feature-card__icon">
+                        {% if card.icon_name %}
+                            <i class="fa-solid fa-{{ card.icon_name }}"></i>
+                        {% elif card.icomoon_icon_name %}
+                            <i class="{{ card.icomoon_icon_name }}"></i>
+                        {% endif %}
                     </div>
+                    <h4 class="gdex-feature-card__title">{{ card.title }}</h4>
+                    <div class="gdex-feature-card__desc">{{ card.text|richtext }}</div>
+                   
+                    {% if card.card_page %}
+                    <a href="{{ card.card_page.url }}" class="gdex-feature-card__link stretched-link">
+                    {% elif card.card_url|slice:":1" == "/" %}
+                    <a href="{{ card.card_url }}" class="gdex-feature-card__link stretched-link">
+                    {% else %}
+                    <a href="{{ card.card_url }}" class="gdex-feature-card__link stretched-link" target="_blank" rel="noopener noreferrer">
+                    {% endif %}
+                        {{ card.card_link_text }} &rarr;
+                    </a>
+                
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
         </div>
     </div>
-</div>
+</section>
