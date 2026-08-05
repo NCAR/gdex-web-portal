@@ -4,6 +4,5 @@ from wagtail.models import Page
 
 
 def start(request):
-    qs = Page.objects.type(MetamanPage)
-    return render(request, "metaman_lite/start.html",
-                  {'title': qs[0].get_context(request)['page']['title']})
+    qs = Page.objects.type(MetamanPage).live().specific()
+    return render(request, "metaman_lite/start.html", {'title': qs[0].title})
