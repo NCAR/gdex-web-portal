@@ -1,1 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h1>{{ title }} for Data Depositors</h1>
+<div class="text-center mt-2">
+    Enter the 10-character token that was provided to you:
+    <br>
+    <input type="text" class="font-monospace" size="10" maxlength="10"><button class="btn btn-primary px-1 py-0 ms-1">Go</button>
+</div>
+{% endblock %}
