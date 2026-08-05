@@ -36,3 +36,30 @@ def test_splash(request):
             'ai_datasets' : common.get_AI_datasets(),
     }
     return render(request, 'home/splash-test.html', ctx)
+
+def ai_ready_datasets(request):
+    try:
+        raw = common.get_AI_datasets(limit=200)
+        datasets = [{'dsid': row[0], 'title': row[1]} for row in raw]
+    except Exception:
+        datasets = []
+    return render(request, 'home/ai-ready-datasets.html', {'datasets': datasets})
+
+def popular_datasets(request):
+    try:
+        raw = common.get_top_datasets(top=50)
+        if isinstance(raw, str):
+            raw = []
+        datasets = [
+            {
+                'dsid': ds.get('dataset', ''),
+                'title': ds.get('OName', ''),
+                'rank': ds.get('index', ''),
+                'users': ds.get('Total Number of Unique Users', 'N/A'),
+                'volume_tb': ds.get('Total Volume Downloaded (TB)', 'N/A'),
+            }
+            for ds in raw
+        ]
+    except Exception:
+        datasets = []
+    return render(request, 'home/popular-datasets.html', {'datasets': datasets})

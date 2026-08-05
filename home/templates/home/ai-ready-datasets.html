@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block headextras %}
+<link rel="stylesheet" href="{% static 'home/css/gdex-theme-vars.css' %}">
+<link rel="stylesheet" href="{% static 'gsearch/css/search_data.css' %}">
+<link rel="stylesheet" href="{% static 'home/css/ai_ready_popular_datasets.css' %}">
+<script src="{% static 'home/js/specialized_pagination.js' %}"></script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'gsearch/js/search_data.js' %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+{% block main_class %}container-lg pb-4{% endblock %}
+
+{% block content %}
+<div class="pt-3">
+
+  <div class="gdex-specialized-header">
+    <div class="gdex-specialized-header__icon">
+      <i class="fas fa-robot"></i>
+    </div>
+    <div>
+      <h1 class="gdex-specialized-header__title">AI-Ready Datasets</h1>
+      <p class="gdex-specialized-header__desc">
+        Datasets from GDEX that have been prepared and curated for AI/ML workflows.
+        This list updates automatically as new datasets are designated AI-ready.
+      </p>
+    </div>
+  </div>
+
+  <p class="gdex-specialized-count">{{ datasets|length }} dataset{{ datasets|length|pluralize }} available</p>
+
+  {% if datasets %}
+  <div class="gdex-specialized-list">
+    {% for ds in datasets %}
+    <article class="gdex-dataset-result">
+      <div class="gdex-dataset-result__thumb">
+        <img src="/media/original_images/hero_earth.png" alt="{{ ds.title }}">
+      </div>
+      <div class="gdex-dataset-result__body">
+        <div class="gdex-dataset-result__top">
+          <div class="gdex-dataset-result__title-block">
+            <h3 class="gdex-dataset-result__title">
+              <a href="/datasets/{{ ds.dsid }}/" data-summary="{{ ds.summary }}">
+                {{ ds.title }}
+                <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon"></i>
+              </a>
+            </h3>
+          </div>
+        </div>
+        <p class="gdex-dataset-result__doi">ID: {{ ds.dsid }}</p>
+        <div class="gdex-dataset-result__actions">
+          <div class="gdex-dataset-result__actions-buttons">
+            <a href="/datasets/{{ ds.dsid }}/dataaccess/" class="gdex-btn-access">
+              <i class="fas fa-download"></i> Access Data
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  <nav class="gdex-pagination" aria-label="AI-ready datasets pages"></nav>
+  <script>
+    gdexInitClientPagination({
+        itemSelector: '.gdex-specialized-list > .gdex-dataset-result',
+        paginationSelector: '.gdex-pagination',
+        perPage: 7
+    });
+  </script>
+  {% else %}
+  <p class="text-muted">No AI-ready datasets found.</p>
+  {% endif %}
+
+</div>
+{% endblock %}

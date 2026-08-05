@@ -1,0 +1,93 @@
+{% load static wagtailcore_tags %}
+
+<!-- POPULAR DATASETS -->
+<section class="gdex-popular-section">
+    <div class="container-lg">
+
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="gdex-section-title mb-0">Explore Popular Datasets</h2>
+            <a href="/gsearch/popular/" class="gdex-popular-section__view-all">
+                View all datasets &rarr;
+            </a>
+        </div>
+
+        <div class="gdex-datasets-swiper-wrapper">
+            <div class="swiper gdex-datasets-swiper">
+                <div class="swiper-wrapper" id="gdex-popular-datasets-wrapper">
+                    <!-- slides injected by JS after API call -->
+                </div>
+            </div>
+            <div class="gdex-swiper-prev"><i class="fas fa-chevron-left"></i></div>
+            <div class="gdex-swiper-next"><i class="fas fa-chevron-right"></i></div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+(function () {
+    var placeholderImgs = [
+        '/media/original_images/hero_earth.png',
+        '/media/original_images/image_X2hGX6H.png'
+    ];
+    var apiUrl = '{% url "top_datasets" %}';
+
+    function fmt(n) { return Number(n).toLocaleString(); }
+    function fmtVol(tb) {
+        var n = parseFloat(tb);
+        if (n >= 1000) return (n / 1000).toFixed(1) + ' PB';
+        if (n < 1) return Math.round(n * 1024) + ' GB';
+        return Math.round(n) + ' TB';
+    }
+
+    fetch(apiUrl)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            var wrapper = document.getElementById('gdex-popular-datasets-wrapper');
+            data.top_datasets.forEach(function (ds, i) {
+                var img = placeholderImgs[i % placeholderImgs.length];
+                var slide = document.createElement('div');
+                slide.className = 'swiper-slide';
+                slide.innerHTML =
+                    '<a href="/datasets/' + ds.dataset + '" class="gdex-dataset-card">' +
+                        '<div class="gdex-dataset-card__circle">' +
+                            '<img src="' + img + '" alt="' + ds.OName + '">' +
+                        '</div>' +
+                        '<div class="gdex-dataset-card__body">' +
+                            '<div class="gdex-dataset-card__size">#' + ds.index + '</div>' +
+                            '<h4 class="gdex-dataset-card__name">' + ds.OName + '</h4>' +
+                            '<div class="gdex-dataset-card__meta">' +
+                                '<span class="gdex-dataset-card__badge">' + fmt(ds['Total Number of Unique Users']) + ' users</span>' +
+                                '<span class="gdex-dataset-card__badge">' + fmtVol(ds['Total Volume Downloaded (TB)']) + ' downloaded</span>' +
+                            '</div>' +
+                        '</div>' +
+                    '</a>';
+                wrapper.appendChild(slide);
+            });
+
+            new Swiper('.gdex-datasets-swiper', {
+                slidesPerView: 1,
+                spaceBetween: 24,
+                loop: true,
+                autoplay: {
+                    delay: 5000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                },
+                navigation: {
+                    prevEl: '.gdex-swiper-prev',
+                    nextEl: '.gdex-swiper-next',
+                },
+                breakpoints: {
+                    640:  { slidesPerView: 1 },
+                    768:  { slidesPerView: 1 },
+                    1024: { slidesPerView: 2 },
+                    1400: { slidesPerView: 3 },
+                }
+            });
+        })
+        .catch(function () {
+            document.getElementById('gdex-popular-datasets-wrapper').closest('.gdex-datasets-swiper-wrapper').style.display = 'none';
+        });
+}());
+</script>
