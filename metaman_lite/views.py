@@ -1,8 +1,40 @@
+import psycopg2
+
+from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import render
+from metaman.datasets import add as add_dataset
 from metaman.models import MetamanPage
 from wagtail.models import Page
 
 
 def start(request, token):
     qs = Page.objects.type(MetamanPage).live().specific()
-    return render(request, "metaman_lite/start.html", {'title': qs[0].title})
+    if token is None:
+        return render(request, "metaman_lite/start.html",
+                      {'title': qs[0].title})
+
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        cursor.execute(
+                "select dsid from metautil.metaman_lite where token = %s",
+                (token, ))
+        dsid, = cursor.fetchone() or (None, )
+        if dsid is None:
+            dsid = add_dataset(request)
+            if isinstance(dsid, HttpResponse):
+                return dsid
+
+            cursor.execute(
+                    "insert into metautil.metaman_lite values (%s, %s)",
+                    (token, dsid))
+            conn.commit()
+
+        return HttpResponse(dsid)
+
+    except Exception as err:
+        return HttpResponse(f"Error: {err}")
+    finally:
+        if 'conn' in locals():
+            conn.close()
