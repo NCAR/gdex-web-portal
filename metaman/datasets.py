@@ -1258,15 +1258,15 @@ def create(request, dsid):
             f.write(("            ID=\"" + dsid + "\" type=\""
                      "work-in-progress\">\n"))
             f.write("  <continuingUpdate value=\"no\" />\n")
-            cursor.execute(("select fstname, lstname from dssdb.dssgrp "
-                            "where logname = %s"), (iuser, ))
-            res = cursor.fetchone()
-            if res is None:
-                return render(request, "metaman/datasets/create.html",
-                              {'missing_specialist': iuser})
-            else:
-                f.write(("  <contact>" + res[0] + " " + res[1] +
-                         "</contact>\n"))
+            if metaman_lite_token is None:
+                cursor.execute("select fstname, lstname from dssdb.dssgrp "
+                               "where logname = %s", (iuser, ))
+                res = cursor.fetchone()
+                if res is None:
+                    return render(request, "metaman/datasets/create.html",
+                                  {'missing_specialist': iuser})
+                else:
+                    f.write((f"  <contact>{res[0]} {res[1]}</contact>\n"))
 
             f.write("</dsOverview>\n")
 
@@ -1488,7 +1488,7 @@ def delete(request, dsid):
         cursor.execute("delete from metautil.metaman_lite where dsid = %s",
                        (dsid, ))
         conn.commit()
-    except psycopg2.Error as err:
+    except psycopg2.Error:
         pass
 
     cursor.close()
