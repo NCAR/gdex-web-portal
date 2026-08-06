@@ -30,7 +30,7 @@ from gdexwebserver.utils import make_tempdir, remove_tempdir
 
 def add(request):
     metaman_lite_token = None
-    parts = request.META.REQUEST_URI.split("/")
+    parts = request.META['REQUEST_URI'].split("/")
     if len(parts) > 3 and parts[1] == "metaman-lite" and parts[2] == "token":
         metaman_lite_token = parts[3]
         iuser = metaman_lite_token
@@ -102,9 +102,6 @@ def add(request):
                 next_id = ("0" * (6-len(next_id))) + next_id
 
             next_id = "d" + next_id
-            if metaman_lite_token:
-                return next_id
-
             expires = ((datetime.now(pytz.utc) + timedelta(hours=48))
                        .replace(tzinfo=tz.tzutc()))
             cursor.execute((
@@ -115,6 +112,9 @@ def add(request):
                     iuser + "', '', 'N', 'N', '9999-01-01', 'N')"))
             conn.commit()
             conn.close()
+            if metaman_lite_token:
+                return next_id
+
             return render(request, "metaman/datasets/add.html",
                           {'next_id': next_id,
                            'expires': (str(expires.astimezone(tz
