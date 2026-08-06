@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from metaman.datasets import add as add_dataset
 from metaman.datasets import create as create_dataset
+from metaman.datasets import edit as edit_dataset
 from metaman.models import MetamanPage
 from wagtail.models import Page
 
@@ -39,7 +40,7 @@ def start(request, token):
             if isinstance(dsid, HttpResponse):
                 return dsid
 
-        return HttpResponse(dsid)
+        return edit_dataset(request, dsid)
 
     except Exception as err:
         return HttpResponse(f"Error: {err}")
