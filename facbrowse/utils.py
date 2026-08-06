@@ -8,6 +8,7 @@ from django.conf import settings
 from django.shortcuts import render
 from home.utils import slug_list
 from libpkg.dbutils import uncompress_bitmap_values
+from accounts.cookies import verified_cookie_email
 
 rdadb_config = settings.RDADB['dssdb_config_pg']
 metadata_db_config = settings.RDADB['metadata_config_pg']
@@ -16,8 +17,7 @@ metadata_db_config = settings.RDADB['metadata_config_pg']
 def toomany_requests(request, dsid):
     conn = psycopg2.connect(**rdadb_config)
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    duser = request.COOKIES['duser']
-    duser = duser if ':' not in duser else duser[:duser.find(':')]
+    duser = verified_cookie_email(request, 'duser')
     cursor.execute((
             "select rindex, status, logname from dsrqst as r left join dssgrp "
             "as g on concat(g.logname, '@ucar.edu') = r.email where email = "

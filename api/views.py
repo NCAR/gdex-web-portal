@@ -16,6 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from . import rdams
 from . import common
 from . import RDA_Response as rda_r
+from accounts.cookies import verified_cookie_email
 
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.response import Response
@@ -527,7 +528,7 @@ def get_control_file_template_old(request, dsid):
 def get_status(request, rindex=None):
     email = get_email_from_token(request)
     if email is None:
-        email = request.COOKIES.get('ruser')
+        email = verified_cookie_email(request, 'ruser')
     json = rdams.main("-get_status", rindex, email)
     return JsonResponse(json)
 

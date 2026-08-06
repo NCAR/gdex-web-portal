@@ -13,6 +13,11 @@ from api import common
 
 
 class MySocialAccountAdapter(DefaultSocialAccountAdapter):
+    def is_open_for_signup(self, request, sociallogin):
+        # Social signup (ORCID/Globus) stays open even though plain
+        # email/password signup is closed via MyAccountAdapter below.
+        return True
+
     def pre_social_login(self, request, sociallogin):
         # Temp fix to address not having token on signup
         #try:
@@ -35,6 +40,15 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
         
     
 class MyAccountAdapter(DefaultAccountAdapter):
+    def is_open_for_signup(self, request):
+        # Plain email/password registration is closed: with
+        # ACCOUNT_EMAIL_VERIFICATION = 'none', anyone could previously
+        # register with an arbitrary (unverified) email address,
+        # including a staff member's, and inherit superuser cookies on
+        # login (see generate_cookies below). ORCID/Globus signup is
+        # unaffected (see MySocialAccountAdapter.is_open_for_signup).
+        return False
+
     def post_login(self, request, user, *, email_verification,
                    signal_kwargs, email, signup, redirect_url):
         """Adds cookies after login.
@@ -50,10 +64,10 @@ class MyAccountAdapter(DefaultAccountAdapter):
     def logout(self, request):
         super(MyAccountAdapter, self).logout(request)
 
-    def remove_cookies(self, reponse):
-         response.delete_cookie('duser')
-         response.delete_cookie('ruser')
-         response.delete_cookie('dpass')
+    def remove_cookies(self, response):
+        response.delete_cookie('duser')
+        response.delete_cookie('ruser')
+        response.delete_cookie('dpass')
     
     def generate_cookies(self, email, response):
         #email = urllib.parse.quote(email)

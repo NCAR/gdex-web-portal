@@ -4,6 +4,7 @@ import psycopg2
 from datetime import datetime
 from wagtail.models import Page
 from datasets.models import CustomSubsetPage
+from accounts.cookies import verified_cookie_email
 
 from logging import getLogger
 logger = getLogger(__name__)
@@ -19,15 +20,12 @@ def ng_gdex_id(dsid):
 
 def bookmark(request, dsid):
     img_src = "hollow-black-star.png"
-    if not 'duser' in request.COOKIES:
+    email = verified_cookie_email(request, 'duser')
+    if not email:
         return HttpResponse(img_src)
 
     conn = psycopg2.connect(**settings.RDADB['dssdb_config_pg'])
     cursor = conn.cursor()
-    email = request.COOKIES['duser']
-    if ':' in email:
-        idx = email.index(':')
-        email = email[0:idx]
 
     cursor.execute("select * from dsbookmarks where email = %s and dsid = %s", (email, ng_gdex_id(dsid)))
     result = cursor.fetchone()
