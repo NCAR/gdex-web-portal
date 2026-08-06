@@ -4,6 +4,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
 from metaman.datasets import add as add_dataset
+from metaman.datasets import create as create_dataset
 from metaman.models import MetamanPage
 from wagtail.models import Page
 
@@ -30,6 +31,9 @@ def start(request, token):
                     "insert into metautil.metaman_lite values (%s, %s)",
                     (token, dsid))
             conn.commit()
+            dsid = create_dataset(request, dsid)
+            if isinstance(dsid, HttpResponse):
+                return dsid
 
         return HttpResponse(dsid)
 
