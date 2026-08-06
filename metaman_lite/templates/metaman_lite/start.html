@@ -3,6 +3,10 @@
 {% block content %}
 <h1>{{ title }} for Data Depositors</h1>
 <div class="text-center mt-2">
+    {% if error and error == "invalid_token" %}
+    <font color="red">An invalid token was entered. Please try again.</font>
+    <br>
+    {% endif %}
     Enter the 10-character token that was provided to you:
     <br>
     <form name="token_form" onsubmit="return false">
