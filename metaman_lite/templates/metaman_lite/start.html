@@ -4,8 +4,9 @@
 <h1>{{ title }} for Data Depositors</h1>
 <div class="text-center mt-2">
     {% if error and error == "invalid_token" %}
-    <font color="red">An invalid token was entered. Please try again.</font>
-    <br>
+    <div class="text-danger mb-1">
+        An invalid token was entered. Please try again.
+    </div>
     {% endif %}
     Enter the 10-character token that was provided to you:
     <br>
