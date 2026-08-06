@@ -29,12 +29,19 @@ from gdexwebserver.utils import make_tempdir, remove_tempdir
 
 
 def add(request):
-    if 'HTTP_X_REQUESTED_WITH' not in request.META:
-        return render(request, "404.html")
+    metaman_lite_token = None
+    parts = request.META.REQUEST_URI.split("/")
+    if len(parts) > 3 and parts[1] == "metaman-lite" and parts[2] == "token":
+        metaman_lite_token = parts[3]
+        iuser = metaman_lite_token
 
-    iuser = utils.get_iuser(request)
-    if len(iuser) == 0:
-        return render(request, "500.html")
+    if not metaman_lite_token:
+        if 'HTTP_X_REQUESTED_WITH' not in request.META:
+            return render(request, "404.html")
+
+        iuser = utils.get_iuser(request)
+        if len(iuser) == 0:
+            return render(request, "500.html")
 
     # return any expired IDs to the pool
     try:
@@ -49,30 +56,34 @@ def add(request):
         return render(request, "metaman/datasets/add.html",
                       {'database_error': "{}".format(err)})
 
-    # check to see if an ID has already been reserved
-    try:
-        cursor.execute((
-                "select dsid, timestamp_utc from search.datasets where type = "
-                "'R' and title = '" + iuser + "'"))
-        res = cursor.fetchone()
-        if res is not None:
-            next_id = res[0]
-            expires = (res[1].replace(tzinfo=tz.tzutc())
-                       .astimezone(tz.gettz("US/Mountain")))
+    if metaman_lite_token:
+        id = "pool"
+    else:
+        # check to see if an ID has already been reserved
+        try:
+            cursor.execute(
+                    "select dsid, timestamp_utc from search.datasets where "
+                    "type = 'R' and title = %s", (iuser, ))
+            res = cursor.fetchone()
+            if res is not None:
+                next_id = res[0]
+                expires = (res[1].replace(tzinfo=tz.tzutc())
+                           .astimezone(tz.gettz("US/Mountain")))
+                return render(request, "metaman/datasets/add.html",
+                              {'next_id': next_id,
+                               'expires': str(expires)[0:19],
+                               'already_reserved': True})
+
+        except psycopg2.Error as err:
+            log_error(err, source="add")
             return render(request, "metaman/datasets/add.html",
-                          {'next_id': next_id,
-                           'expires': str(expires)[0:19],
-                           'already_reserved': True})
+                          {'database_error': "{}".format(err)})
 
-    except psycopg2.Error as err:
-        log_error(err, source="add")
-        return render(request, "metaman/datasets/add.html",
-                      {'database_error': "{}".format(err)})
+        if 'id' not in request.POST:
+            return render(request, "metaman/datasets/add.html")
 
-    if 'id' not in request.POST:
-        return render(request, "metaman/datasets/add.html")
+        id = request.POST['id']
 
-    id = request.POST['id']
     if id == "pool":
         # pull the next available ID from the 'pool'
         try:
@@ -91,6 +102,9 @@ def add(request):
                 next_id = ("0" * (6-len(next_id))) + next_id
 
             next_id = "d" + next_id
+            if metaman_lite_token:
+                return next_id
+
             expires = ((datetime.now(pytz.utc) + timedelta(hours=48))
                        .replace(tzinfo=tz.tzutc()))
             cursor.execute((
@@ -107,8 +121,9 @@ def add(request):
                                        .gettz("US/Mountain")))[0:19])})
         except psycopg2.Error as err:
             log_error(err, source="add")
+            ctx = {'database_error': f"{err}"}
             return render(request, "metaman/datasets/add.html",
-                          {'database_error': "{}".format(err)})
+                          {'database_error': f"{err}"})
 
     else:
         # a specific ID was submitted, so check if it is good and available
@@ -905,7 +920,6 @@ def update_metadata_database(ctx, conn, **kwargs):
             except Exception as e:
                 err = str(e)
                 break
-
 
         try:
             cursor.execute((
@@ -2008,7 +2022,6 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
     if len(sparts) < 50:
         errs.insert(0, ("The Summary/Abstract MUST contain at least fifty "
                         "words. (This is a JSON-LD requirement)"))
-
 
     if len(errs) > 0:
         errors.update({'summary': "<br>".join(errs)})
