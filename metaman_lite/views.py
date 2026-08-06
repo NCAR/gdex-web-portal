@@ -19,17 +19,21 @@ def start(request, token):
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
         cursor.execute(
-                "select dsid from metautil.metaman_lite where token = %s",
-                (token, ))
-        dsid, = cursor.fetchone() or (None, )
-        if dsid is None:
+                "select token, dsid from metautil.metaman_lite where token = "
+                "%s", (token, ))
+        token, dsid = cursor.fetchone() or (None, None)
+        if token is None:
+            return render(request, "metaman_lite/start.html",
+                          {'title': qs[0].title, 'error': "invalid_token"})
+
+        if dsid == "d000000":
             dsid = add_dataset(request)
             if isinstance(dsid, HttpResponse):
                 return dsid
 
             cursor.execute(
-                    "insert into metautil.metaman_lite values (%s, %s)",
-                    (token, dsid))
+                    "update metautil.metaman_lite set dsid = %s where token = "
+                    "%s", (dsid, token))
             conn.commit()
             dsid = create_dataset(request, dsid)
             if isinstance(dsid, HttpResponse):
