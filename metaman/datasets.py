@@ -1521,9 +1521,15 @@ def edit(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
 
-    iuser = utils.get_iuser(request)
-    if len(iuser) == 0:
-        return render(request, "500.html")
+    metaman_lite_token = None
+    parts = request.META['REQUEST_URI'].split("/")
+    if len(parts) > 3 and parts[1] == "metaman-lite" and parts[2] == "token":
+        metaman_lite_token = parts[3]
+        iuser = metaman_lite_token
+    else:
+        iuser = utils.get_iuser(request)
+        if len(iuser) == 0:
+            return render(request, "500.html")
 
     spellchecker = SpellChecker()
     if not spellchecker.ready:
