@@ -11,11 +11,11 @@
 <script id="uncommitted_script" language="javascript">
 function doChangeFormSubmit() {
   if (document.change_form.clear_changes[0].checked) {
-    document.getElementById("metaman_content").innerHTML = '<center><img src="/images/loader.gif" /><br /><span style="color: #a0a0a0">Loading...</span></center>';
-    getContentFromPost('metaman_content', 'edit/{{ dsid }}/', 'clear_changes=yes&csrfmiddlewaretoken={{ csrf_token }}');
+    document.getElementById("metaman{% if is_metaman_lite %}_lite{% endif %}_content").innerHTML = '<center><img src="/images/loader.gif" /><br /><span style="color: #a0a0a0">Loading...</span></center>';
+    getContentFromPost('metaman{% if is_metaman_lite %}_lite{% endif %}_content', 'edit/{{ dsid }}/', 'clear_changes=yes&csrfmiddlewaretoken={{ csrf_token }}');
   } else if (document.change_form.clear_changes[1].checked) {
-    document.getElementById("metaman_content").innerHTML = '<center><img src="/images/loader.gif" /><br /><span style="color: #a0a0a0">Loading...</span></center>';
-    getContentFromPost('metaman_content', 'edit/{{ dsid }}/', 'clear_changes=no&csrfmiddlewaretoken={{ csrf_token }}');
+    document.getElementById("metaman{% if is_metaman_lite %}_lite{% endif %}_content").innerHTML = '<center><img src="/images/loader.gif" /><br /><span style="color: #a0a0a0">Loading...</span></center>';
+    getContentFromPost('metaman{% if is_metaman_lite %}_lite{% endif %}_content', 'edit/{{ dsid }}/', 'clear_changes=no&csrfmiddlewaretoken={{ csrf_token }}');
   } else {
     alert("Please choose one of the options");
   }
