@@ -1540,7 +1540,7 @@ def edit(request, dsid):
                 {'error': "the spell checker is not ready: "
                           f"'{spellchecker.error}'"})
 
-    ctx = {'dsid': dsid, 'is_metaman_lite': (metaman_lite_token is not None)}
+    ctx = {'dsid': dsid, 'metaman_lite_token': metaman_lite_token}
     ctx.update({'is_manager': (iuser in config.metadata_managers)})
     if 'clear_changes' in request.POST:
         clear_changes = request.POST['clear_changes']
