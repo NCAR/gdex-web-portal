@@ -13,7 +13,7 @@ from wagtail.models import Page
 def start(request, token):
     qs = Page.objects.type(MetamanPage).live().specific()
     if token is None:
-        return render(request, "metaman_lite/start_page.html",
+        return render(request, "metaman_lite/metaman_lite_page.html",
                       {'title': qs[0].title})
 
     try:
