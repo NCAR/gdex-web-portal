@@ -1529,14 +1529,16 @@ def edit(request, dsid):
     else:
         iuser = utils.get_iuser(request)
         if len(iuser) == 0:
-            return render(request, "500.html")
+            return render(request, "metaman/datasets/edit.html",
+                          {'error': "you don't have permission to access this "
+                                    "content"})
 
     spellchecker = SpellChecker()
     if not spellchecker.ready:
         return render(
                 request, "metaman/datasets/edit.html",
-                {'error': ("the spell checker is not ready: '" +
-                           spellchecker.error + "'")})
+                {'error': "the spell checker is not ready: "
+                          f"'{spellchecker.error}'"})
 
     ctx = {'dsid': dsid, 'is_metaman_lite': (metaman_lite_token is not None)}
     ctx.update({'is_manager': (iuser in config.metadata_managers)})
@@ -1549,8 +1551,8 @@ def edit(request, dsid):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
-        cursor.execute(("select lockname, updated_any_field from metautil."
-                        "metaman where dsid = %s"), (dsid, ))
+        cursor.execute("select lockname, updated_any_field from metautil."
+                       "metaman where dsid = %s", (dsid, ))
         res = cursor.fetchall()
         if len(res) > 0:
             if res[0][0] != iuser:
@@ -1562,7 +1564,7 @@ def edit(request, dsid):
                 cursor.execute((
                         "delete from metautil.metaman where dsid = %s"),
                         (dsid, ))
-                cursor.execute(("delete from metautil.cmd where dsid = %s"),
+                cursor.execute("delete from metautil.cmd where dsid = %s",
                                (dsid, ))
                 conn.commit()
                 clear_changes = ""
