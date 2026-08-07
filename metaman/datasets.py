@@ -1483,6 +1483,16 @@ def delete(request, dsid):
         return render(request, "metaman/datasets/delete.html",
                       {'message_list': messages})
 
+    # delete any uncommitted changes
+    try:
+        cursor.execute("delete from metautil.metaman where dsid = %s",
+                       (dsid, ))
+        cursor.execute("delete from metautil.cmd where dsid = %s",
+                       (dsid, ))
+        conn.commit()
+    except psycopg2.Error:
+        pass
+
     # delete the metaman_lite entry
     try:
         cursor.execute("delete from metautil.metaman_lite where dsid = %s",
