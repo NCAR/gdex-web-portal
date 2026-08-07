@@ -1268,6 +1268,9 @@ def create(request, dsid):
                 else:
                     f.write((f"  <contact>{res[0]} {res[1]}</contact>\n"))
 
+            else:
+                f.write((f"  <contact>{metaman_lite_token}</contact>\n"))
+
             f.write("</dsOverview>\n")
 
         f.close()
