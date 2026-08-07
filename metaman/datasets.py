@@ -1551,10 +1551,9 @@ def edit(request, dsid):
 
     spellchecker = SpellChecker()
     if not spellchecker.ready:
-        return render(
-                request, "metaman/datasets/edit.html",
-                {'error': "the spell checker is not ready: "
-                          f"'{spellchecker.error}'"})
+        return render(request, "metaman/datasets/edit.html",
+                      {'error': "the spell checker is not ready: "
+                                f"'{spellchecker.error}'"})
 
     ctx = {'dsid': dsid, 'metaman_lite_token': metaman_lite_token}
     ctx.update({'is_manager': (iuser in config.metadata_managers)})
@@ -1567,6 +1566,17 @@ def edit(request, dsid):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
+
+        # verify lite token, if it exists
+        if metaman_lite_token is not None:
+            cursor.execute(
+                    "select token, dsid from metautil.metaman_lite where "
+                    "token = %s and dsid = %s", (metaman_lite_token, dsid))
+            t, d = cursor.fetchone() or (None, None)
+            if t is None or d is None:
+                return render(request, "metaman/datasets/edit.html",
+                              {'error': "invalid token or token does not "
+                                        "match the dataset ID"})
 
         # check for uncommitted changes
         try:
