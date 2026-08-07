@@ -27,7 +27,7 @@ def start(request, token):
             return render(request, "metaman_lite/start.html",
                           {'title': qs[0].title, 'error': "invalid_token"})
 
-        if dsid == "d000000":
+        if dsid is None:
             dsid = add_dataset(request)
             if isinstance(dsid, HttpResponse):
                 return dsid
