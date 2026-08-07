@@ -389,16 +389,16 @@ function commitChanges() {
     alert("Please enter a comment about the changes that you made");
     return false;
   }
-  document.getElementById("metaman{% if is_metaman_lite %}_lite{% endif %}_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
-  getContentFromPost('metaman{% if is_metaman_lite %}_lite{% endif %}_content', 'commit-changes/{{ dsid }}/', 'cvscomment=' + document.cvs_form.comment.value + '&csrfmiddlewaretoken={{ csrf_token }}');
+  document.getElementById("metaman{% if metaman_lite_token %}_lite{% endif %}_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
+  getContentFromPost('metaman{% if metaman_lite_token %}_lite{% endif %}_content', 'commit-changes/{{ dsid }}/', 'cvscomment=' + document.cvs_form.comment.value + '&csrfmiddlewaretoken={{ csrf_token }}');
   hideModalWindow();
   window.scrollTo(0, 0);
 }
 
 function discardChanges() {
   if (confirm("Are you sure you want to discard your changes?")) {
-    document.getElementById("metaman{% if is_metaman_lite %}_lite{% endif %}_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
-    getContent('metaman{% if is_metaman_lite %}_lite{% endif %}_content', 'discard-changes/{{ dsid }}/');
+    document.getElementById("metaman{% if metaman_lite_token %}_lite{% endif %}_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
+    getContent('metaman{% if metaman_lite_token %}_lite{% endif %}_content', 'discard-changes/{{ dsid }}/');
   }
 }
 
