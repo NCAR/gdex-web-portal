@@ -398,7 +398,7 @@ function commitChanges() {
 function discardChanges() {
   if (confirm("Are you sure you want to discard your changes?")) {
     document.getElementById("metaman{% if metaman_lite_token %}_lite{% endif %}_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
-    getContent('metaman{% if metaman_lite_token %}_lite{% endif %}_content', 'discard-changes/{{ dsid }}/');
+    getContent('metaman{% if metaman_lite_token %}_lite{% endif %}_content', '/metaman/manage-datasets/discard-changes/{{ dsid }}/');
   }
 }
 
