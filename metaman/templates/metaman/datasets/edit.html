@@ -663,7 +663,7 @@ img.icon-size {
     <p>
         <font color="red">*</font> denotes a required field
     </p>
-    {% if dataset_type == "work-in-progress" %}
+    {% if dataset_type == "work-in-progress" and not metaman_lite_token %}
     <div id="import" class="ps-2 py-2 text-bg-info">
         This dataset is still marked as a work-in-progress dataset. You can try to <a href="javascript:void(0)" onclick="popModalWindowWithGetUrl(300, 200, 'import/null/')">import</a> some of the metadata.
     </div>
