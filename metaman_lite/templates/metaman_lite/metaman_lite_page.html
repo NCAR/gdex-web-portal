@@ -5,17 +5,25 @@
 <link rel="stylesheet" href="/css/bubble.css">
 <script language="javascript" type="text/javascript" src="/js/popInfo.js"></script>
 <script id="metaman_lite_script" type="text/javascript">
-function toggleTabs(active) {
+function toggleTabs(tab_id, content_id) {
   let elist = Array.from(document.getElementsByClassName("lite-tab"));
-console.log(elist);
-console.log(elist.length);
   elist.forEach((e) => {
-    if (e.id == active) {
+    if (e.id == tab_id) {
       e.classList.add("active");
     } else {
       e.classList.remove("active");
     }
   });
+  elist = Array.from(document.getElementsByClassName("lite-content"));
+  elist.forEach((e) => {
+    if (e.id != content_id) {
+      e.classList.remove("d-block");
+      e.classList.add("d-none");
+    }
+  });
+  let e = document.getElementById(content_id);
+  e.classList.remove("d-none");
+  e.classList.add("d-block");
 }
 </script>
 <style>
@@ -28,16 +36,16 @@ console.log(elist.length);
 <div class="mt-4 ms-4">
     <ul class="nav nav-tabs" id="manager_tabs" role="tablist">
         <li class="nav-item" role="manage">
-            <a class="lite-tab nav-link px-3 py-2 active" id="edit-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="edit-tab" aria-selected="true" onclick="toggleTabs(this.id)">Edit</a>
+            <a class="lite-tab nav-link px-3 py-2 active" id="edit-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="edit-tab" aria-selected="true" onclick="toggleTabs(this.id, 'metaman_lite_content')">Edit</a>
         </li>
         <li class="nav-item" role="manage">
-            <a class="lite-tab nav-link px-3 py-2" id="usage-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="usage-tab" aria-selected="false" onclick="toggleTabs(this.id)">Usage Guide</a>
+            <a class="lite-tab nav-link px-3 py-2" id="usage-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="usage-tab" aria-selected="false" onclick="toggleTabs(this.id, 'metaman_lite_usage')">Usage Guide</a>
         </li>
     </ul>
-    <div id="metaman_lite_content" class="bg-white p-2 d-block">
+    <div id="metaman_lite_content" class="lite-content bg-white p-2 d-block">
     {% include "metaman_lite/start.html" %}
     </div>
-    <div id="metaman_lite_usage" class="bg-white p-2 d-none">
+    <div id="metaman_lite_usage" class="lite-content bg-white p-2 d-none">
         <img src="/images/transpace.gif" onload="getAjaxContent('GET', null, 'usage-guide/', 'metaman_lite_usage')">
     </div>
 </div>
