@@ -4,18 +4,40 @@
 <script language="javascript" type="text/javascript" src="/js/xhr_content2.js"></script>
 <link rel="stylesheet" href="/css/bubble.css">
 <script language="javascript" type="text/javascript" src="/js/popInfo.js"></script>
+<script id="metaman_lite_script" type="text/javascript">
+function toggleTabs(active) {
+  let elist = Array.from(document.getElementsByClassName("lite-tab"));
+console.log(elist);
+console.log(elist.length);
+  elist.forEach((e) => {
+    if (e.id == active) {
+      e.classList.add("active");
+    } else {
+      e.classList.remove("active");
+    }
+  });
+}
+</script>
+<style>
+.lite-tab:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+</style>
 <h1>{{ title }} for Data Depositors</h1>
 <div class="mt-4 ms-4">
     <ul class="nav nav-tabs" id="manager_tabs" role="tablist">
         <li class="nav-item" role="manage">
-            <a class="nav-link px-3 py-2" id="description-tab" data-toggle="tab" href="#" role="tab" aria-controls="description" aria-selected="false" onclick="">Edit</a>
+            <a class="lite-tab nav-link px-3 py-2 active" id="edit-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="edit-tab" aria-selected="true" onclick="toggleTabs(this.id)">Edit</a>
         </li>
         <li class="nav-item" role="manage">
-            <a class="nav-link px-3 py-2" id="description-tab" data-toggle="tab" href="#" role="tab" aria-controls="description" aria-selected="false" onclick="">Usage Guide</a>
+            <a class="lite-tab nav-link px-3 py-2" id="usage-tab" data-toggle="tab" href="javascript:void(0)" role="tab" aria-controls="usage-tab" aria-selected="false" onclick="toggleTabs(this.id)">Usage Guide</a>
         </li>
     </ul>
-    <div id="metaman_lite_content" class="bg-white p-2">
+    <div id="metaman_lite_content" class="bg-white p-2 d-block">
     {% include "metaman_lite/start.html" %}
+    </div>
+    <div id="metaman_lite_usage" class="bg-white p-2 d-none">
     </div>
 </div>
 {% endblock %}
