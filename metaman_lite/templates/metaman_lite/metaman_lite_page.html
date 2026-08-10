@@ -5,7 +5,17 @@
 <link rel="stylesheet" href="/css/bubble.css">
 <script language="javascript" type="text/javascript" src="/js/popInfo.js"></script>
 <h1>{{ title }} for Data Depositors</h1>
-<div id="metaman_lite_content" class="mt-4 ms-4">
-{% include "metaman_lite/start.html" %}
+<div class="mt-4 ms-4">
+    <ul class="nav nav-tabs" id="manager_tabs" role="tablist">
+        <li class="nav-item" role="manage">
+            <a class="nav-link px-3 py-2" id="description-tab" data-toggle="tab" href="#" role="tab" aria-controls="description" aria-selected="false" onclick="">Edit</a>
+        </li>
+        <li class="nav-item" role="manage">
+            <a class="nav-link px-3 py-2" id="description-tab" data-toggle="tab" href="#" role="tab" aria-controls="description" aria-selected="false" onclick="">Usage Guide</a>
+        </li>
+    </ul>
+    <div id="metaman_lite_content" class="bg-white p-2">
+    {% include "metaman_lite/start.html" %}
+    </div>
 </div>
 {% endblock %}
