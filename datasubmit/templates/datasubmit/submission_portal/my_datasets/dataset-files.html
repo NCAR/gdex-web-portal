@@ -1,50 +1,30 @@
-{% extends "datasubmit/submission_portal/portal_base.html" %}
+{% extends "datasubmit/submission_portal/my_datasets/my_dataset_base.html" %}
 
-{% block portal_content %}
-
-<div class="mt-3">
-    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center gap-2">
-        <h3 class="mb-0 text-left">{{ dataset.dataset_title }}</h3>
-        <a href="{% url 'data-submission-portal' %}" class="btn btn-outline-secondary">
-            <i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i> Back to My Datasets
-        </a>
+{% block dataset_content %}
+{% for loc in locations %}
+<div class="card rounded-4 mb-3">
+    <div class="card-header">
+        <h3 class="h5 mb-0">Dataset Access Info{% if locations|length > 1 %} ({{ forloop.counter }} of {{ locations|length }}){% endif %}</h3>
     </div>
-    <p class="text-left text-muted fst-italic">
-        Submission ID: #{{ dataset.id|default:"" }} | Created {{ dataset.created|date:"M d, Y" }}
-    </p>
-    <hr>
-
-    <nav class="nav gap-2 mb-3" role="tablist">
-        <a class="btn rounded-4 border-0 {% if active_tab == 'Home' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-view' dataset.id %}">Overview</a>
-        <a class="btn rounded-4 border-0 {% if active_tab == 'Files' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-files' dataset.id %}">Files</a>
-        <a class="btn rounded-4 border-0 {% if active_tab == 'Metadata' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-metadata' dataset.id %}">Metadata</a>
-    </nav>
-    <hr>
-    {% for loc in locations %}
-    <div class="card rounded-4 mb-3">
-        <div class="card-header">
-            <h3 class="h5 mb-0">Dataset Access Info{% if locations|length > 1 %} ({{ forloop.counter }} of {{ locations|length }}){% endif %}</h3>
+    <div class="card-body">
+        <div class="row summary-row">
+            <div class="col-sm-4 summary-label">Access Method</div>
+            <div class="col-sm-8 summary-value">{{ loc.access_method_label }}</div>
         </div>
-        <div class="card-body">
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Access Method</div>
-                <div class="col-sm-8 summary-value">{{ loc.access_method_label }}</div>
-            </div>
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Dataset Location</div>
-                <div class="col-sm-8 summary-value">{{ loc.location }}</div>
-            </div>
-            {% if loc.access_verification == 'readable' or loc.access_verification == 'reachable' %}
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Read Access</div>
-                <div class="col-sm-8 summary-value text-success">
-                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                    Verified {{ loc.access_verification }}.
-                </div>
-            </div>
-            {% endif %}
+        <div class="row summary-row">
+            <div class="col-sm-4 summary-label">Dataset Location</div>
+            <div class="col-sm-8 summary-value">{{ loc.location }}</div>
         </div>
+        {% if loc.readable or loc.reachable %}
+        <div class="row summary-row">
+            <div class="col-sm-4 summary-label">Read Access</div>
+            <div class="col-sm-8 summary-value text-success">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                Verified {% if loc.readable %}readable{% else %}reachable{% endif %}.
+            </div>
+        </div>
+        {% endif %}
     </div>
-    {% endfor %}
 </div>
+{% endfor %}
 {% endblock %}

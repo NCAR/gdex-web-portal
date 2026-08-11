@@ -1,0 +1,49 @@
+{% extends "datasubmit/submission_portal/portal_base.html" %}
+
+{% block portal_content %}
+<style>
+    .portal-detail-page .summary-row {
+        border-bottom: 1px solid #f1f3f5;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    .portal-detail-page .summary-row:last-child {
+        border-bottom: none;
+    }
+    .portal-detail-page .summary-label {
+        font-weight: bold;
+        color: #495057;
+    }
+    .portal-detail-page .summary-value {
+        white-space: pre-wrap;
+    }
+</style>
+
+<div class="portal-detail-page mt-3">
+    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center gap-2">
+        <button type="button" class="btn btn-light border border-dark border-3 rounded-circle position-relative p-0 flex-shrink-0 overflow-hidden" style="width: 4.5rem; height: 4.5rem;" title="Upload a thumbnail (coming soon)">
+            <img src="/media/images/bannerimage2.original.jpg" alt="" class="w-100 h-100 opacity-50" style="object-fit: cover;">
+            <i class="fa-solid fa-pencil text-dark position-absolute top-50 start-50 translate-middle" aria-hidden="true"></i>
+        </button>
+        <div class="flex-grow-1">
+            <h3 class="mb-0 text-left justify-content-start">{{ pre_submission.dataset_title|default:"Untitled Submission" }}</h3>
+            <p class="text-left text-muted fst-italic mb-0">
+               Created {{ dataset.created|date:"M d, Y" }}{% if dataset.dsid %} | {{ dataset.dsid }}{% endif %}
+            </p>
+        </div>
+        <a href="{% url 'data-submission-portal' %}" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i> Back to My Datasets
+        </a>
+    </div>
+    <hr>
+
+    <nav class="nav gap-2 mb-3" role="tablist">
+        <a class="btn rounded-4 border-0 {% if active_tab == 'Home' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-view' dataset.id %}">Overview</a>
+        <a class="btn rounded-4 border-0 {% if active_tab == 'Files' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-files' dataset.id %}">Files</a>
+        <a class="btn rounded-4 border-0 {% if active_tab == 'Metadata' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-metadata' dataset.id %}">Metadata</a>
+    </nav>
+    <hr>
+
+    {% block dataset_content %}{% endblock %}
+</div>
+{% endblock %}

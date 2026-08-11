@@ -1,5 +1,13 @@
 from django import forms
 
+# Not tied to a model field (Submission tracks this as the is_wishlist
+# boolean) -- kept here purely for the wizard's own/recommend URL param and
+# session values, and their display labels.
+SUBMISSION_TYPE_CHOICES = [
+    ('own', 'I am submitting my own dataset'),
+    ('recommend', 'I am recommending a dataset for the GDEX repository'),
+]
+
 YES_NO_CHOICES = [
         ('', 'Select an option'),
         (True, 'Yes'),

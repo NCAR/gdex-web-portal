@@ -1,100 +1,41 @@
-{% extends "datasubmit/submission_portal/portal_base.html" %}
+{% extends "datasubmit/submission_portal/my_datasets/my_dataset_base.html" %}
 
-{% block portal_content %}
-<style>
-    .portal-detail-page .summary-row {
-        border-bottom: 1px solid #f1f3f5;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-    }
-    .portal-detail-page .summary-row:last-child {
-        border-bottom: none;
-    }
-    .portal-detail-page .summary-label {
-        font-weight: bold;
-        color: #495057;
-    }
-    .portal-detail-page .summary-value {
-        white-space: pre-wrap;
-    }
-</style>
-
-<div class="portal-detail-page mt-3">
-    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center gap-2">
-        <h3 class="mb-0 text-left">{{ dataset.dataset_title }}</h3>
-        <a href="{% url 'data-submission-portal' %}" class="btn btn-outline-secondary">
-            <i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i> Back to My Datasets
-        </a>
-    </div>
-    <p class="text-left text-muted fst-italic">
-        Submission ID: #{{ dataset.id|default:"" }} | Created {{ dataset.created|date:"M d, Y" }}
-    </p>
-    <hr>
-
-    <nav class="nav gap-2 mb-3" role="tablist">
-        <a class="btn rounded-4 border-0 {% if active_tab == 'Home' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-view' dataset.id %}">Overview</a>
-        <a class="btn rounded-4 border-0 {% if active_tab == 'Files' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-files' dataset.id %}">Files</a>
-        <a class="btn rounded-4 border-0 {% if active_tab == 'Metadata' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-metadata' dataset.id %}">Metadata</a>
-    </nav>
-    <hr>
-    <div class="card rounded-4 mb-3">
-        <div class="card-header"><h3 class="h5 mb-0">Dataset Overview</h3></div>
-        <div class="card-body">
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">GDEX Dataset ID</div>
-                <div class="col-sm-8 summary-value">{{ dataset.dsid|default:"Not yet assigned" }}</div>
-            </div>
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Submission Type</div>
-                <div class="col-sm-8 summary-value">{{ dataset.get_submission_type_display }}</div>
-            </div>
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Dataset Title</div>
-                <div class="col-sm-8 summary-value">{{ dataset.dataset_title }}</div>
-            </div>
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Abstract</div>
-                <div class="col-sm-8 summary-value">{{ dataset.dataset_abstract|default:"—" }}</div>
-            </div>
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Additional Details</div>
-                <div class="col-sm-8 summary-value">{{ dataset.dataset_details|default:"—" }}</div>
-            </div>
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Approximate Size</div>
-                <div class="col-sm-8 summary-value">{{ dataset_size_display }}</div>
-            </div>
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Needs NCAR HPC Access</div>
-                <div class="col-sm-8 summary-value">{% if dataset.hpc_access %}Yes{% else %}No{% endif %}</div>
-            </div>
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Part of CIF/FARE Program</div>
-                <div class="col-sm-8 summary-value">{% if dataset.cif_fare_contributors %}Yes{% else %}No{% endif %}</div>
-            </div>
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Submitter is an NCAR/UCAR Employee</div>
-                <div class="col-sm-8 summary-value">{% if dataset.is_ncar_employee %}Yes{% else %}No{% endif %}</div>
+{% block dataset_content %}
+    <div class="col-lg-12 mb-4">
+        <div class="card rounded-4 h-100">
+            <div class="card-header"><h3 class="h5 mb-0">Review Needed</h3></div>
+            
+            <div class="card-body">
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Total Dataset Size</div>
+                    <div class="col-sm-8 summary-value">{{ dataset_size_display }}</div>
+                </div>
+                <div class="row summary-row">
+                    <div class="col-sm-4 summary-label">Dataset Location{{ locations|length|pluralize }}</div>
+                    <div class="col-sm-8 summary-value">
+                        {% for loc in locations %}
+                        <div>{{ loc.location }}</div>
+                        {% empty %}
+                        —
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-
-
-    <div class="card rounded-4 mb-3">
-        <div class="card-header"><h3 class="h5 mb-0">Terms &amp; Conditions</h3></div>
-        <div class="card-body">
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Data Policy Agreement</div>
-                <div class="col-sm-8 summary-value">{% if dataset.data_policy_agreement %}Agreed{% else %}Not agreed{% endif %}</div>
+{% if not pre_submission.is_ncar_employee %}
+<div class="card rounded-4 mb-3">
+    <div class="card-header"><h3 class="h5 mb-0">Terms &amp; Conditions</h3></div>
+    <div class="card-body">
+        <div class="row summary-row">
+            <div class="col-sm-4 summary-label">
+                <a href="https://gdex.ucar.edu/documents/57/gdex_dda.pdf" target="_blank">Acknowledgement of Data Deposit Agreement</a>
             </div>
-            {% if not dataset.is_ncar_employee %}
-            <div class="row summary-row">
-                <div class="col-sm-4 summary-label">Data Deposit Agreement</div>
-                <div class="col-sm-8 summary-value">{% if dataset.data_deposit_agreement %}Agreed{% else %}Not agreed{% endif %}</div>
-            </div>
-            {% endif %}
+            <div class="col-sm-8 summary-value">{% if pre_submission.data_deposit_agreement %}Agreed{% else %}Not agreed{% endif %}</div>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

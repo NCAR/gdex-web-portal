@@ -64,15 +64,15 @@
             <div class="card-body">
                 <div class="row summary-row">
                     <div class="col-sm-4 summary-label">Dataset Title</div>
-                    <div class="col-sm-8 summary-value">{{ submission.dataset_title }}</div>
+                    <div class="col-sm-8 summary-value">{{ pre_submission.dataset_title }}</div>
                 </div>
                 <div class="row summary-row">
                     <div class="col-sm-4 summary-label">Abstract</div>
-                    <div class="col-sm-8 summary-value">{{ submission.dataset_abstract }}</div>
+                    <div class="col-sm-8 summary-value">{{ pre_submission.dataset_abstract }}</div>
                 </div>
                 <div class="row summary-row">
                     <div class="col-sm-4 summary-label">Additional Details</div>
-                    <div class="col-sm-8 summary-value">{{ submission.dataset_details|default:"—" }}</div>
+                    <div class="col-sm-8 summary-value">{{ pre_submission.dataset_details|default:"—" }}</div>
                 </div>
                 <div class="row summary-row">
                     <div class="col-sm-4 summary-label">Approximate Size</div>
@@ -80,15 +80,15 @@
                 </div>
                 <div class="row summary-row">
                     <div class="col-sm-4 summary-label">Needs NCAR HPC Access</div>
-                    <div class="col-sm-8 summary-value">{% if submission.hpc_access %}Yes{% else %}No{% endif %}</div>
+                    <div class="col-sm-8 summary-value">{% if pre_submission.hpc_access %}Yes{% else %}No{% endif %}</div>
                 </div>
                 <div class="row summary-row">
                     <div class="col-sm-4 summary-label">Part of CIF/FARE Program</div>
-                    <div class="col-sm-8 summary-value">{% if submission.cif_fare_contributors %}Yes{% else %}No{% endif %}</div>
+                    <div class="col-sm-8 summary-value">{% if pre_submission.cif_fare_contributors %}Yes{% else %}No{% endif %}</div>
                 </div>
                 <div class="row summary-row">
                     <div class="col-sm-4 summary-label">Submitter is an NCAR/UCAR Employee</div>
-                    <div class="col-sm-8 summary-value">{% if submission.is_ncar_employee %}Yes{% else %}No{% endif %}</div>
+                    <div class="col-sm-8 summary-value">{% if pre_submission.is_ncar_employee %}Yes{% else %}No{% endif %}</div>
                 </div>
             </div>
         </div>
@@ -107,12 +107,12 @@
                     <div class="col-sm-4 summary-label">Dataset Location</div>
                     <div class="col-sm-8 summary-value">{{ loc.location }}</div>
                 </div>
-                {% if loc.access_verification == 'readable' or loc.access_verification == 'reachable' %}
+                {% if loc.readable or loc.reachable %}
                 <div class="row summary-row">
                     <div class="col-sm-4 summary-label">Read Access</div>
                     <div class="col-sm-8 summary-value text-success">
                         <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                        Verified {{ loc.access_verification }}.
+                        Verified {% if loc.readable %}readable{% else %}reachable{% endif %}.
                     </div>
                 </div>
                 {% endif %}
@@ -125,12 +125,12 @@
             <div class="card-body">
                 <div class="row summary-row">
                     <div class="col-sm-4 summary-label">Data Policy Agreement</div>
-                    <div class="col-sm-8 summary-value">{% if submission.data_policy_agreement %}Agreed{% else %}Not agreed{% endif %}</div>
+                    <div class="col-sm-8 summary-value">{% if pre_submission.data_policy_agreement %}Agreed{% else %}Not agreed{% endif %}</div>
                 </div>
-                {% if not submission.is_ncar_employee %}
+                {% if not pre_submission.is_ncar_employee %}
                 <div class="row summary-row">
                     <div class="col-sm-4 summary-label">Data Deposit Agreement</div>
-                    <div class="col-sm-8 summary-value">{% if submission.data_deposit_agreement %}Agreed{% else %}Not agreed{% endif %}</div>
+                    <div class="col-sm-8 summary-value">{% if pre_submission.data_deposit_agreement %}Agreed{% else %}Not agreed{% endif %}</div>
                 </div>
                 {% endif %}
             </div>

@@ -5,7 +5,7 @@
 <div class="container-fluid ">
     <div class="row">
         <div class="col-12 col-md-2 bg-light">
-            <div class="d-flex flex-column flex-lg-row justify-content-start align-items-center text-center text-lg-start mt-3 mb-4 gap-1">
+            <div class="d-flex flex-column flex-lg-row justify-content-start align-items-center text-center text-lg-start mt-3 mb- gap-1">
                 <img src="/media/images/GDEX_Icon_2026.original.png" width="110" height="110" class="img" alt="GDEX Logo">
                 <p class="fs-5 fw-light mb-0 text-uppercase">Data Submission<br> Portal</p>
             </div>
@@ -35,7 +35,6 @@
 
             {% if request.user.is_superuser %}
             <div class="px-1 mt-3">
-                <hr>
                 <form method="post" action="{% url 'data-submission-portal-view-mode' %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">

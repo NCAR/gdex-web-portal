@@ -18,6 +18,7 @@ from .basic_info import BasicInfoForm
 from .common import (
     DATASET_SIZE_UNIT_CHOICES,
     DATASET_SIZE_UNIT_TO_MB,
+    SUBMISSION_TYPE_CHOICES,
     YES_NO_CHOICES,
     PlaceholderSelect,
     convert_dataset_size_to_mb,
@@ -39,6 +40,7 @@ __all__ = [
     'BasicInfoForm',
     'DATASET_SIZE_UNIT_CHOICES',
     'DATASET_SIZE_UNIT_TO_MB',
+    'SUBMISSION_TYPE_CHOICES',
     'YES_NO_CHOICES',
     'PlaceholderSelect',
     'convert_dataset_size_to_mb',

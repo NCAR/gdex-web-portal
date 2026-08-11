@@ -7,6 +7,7 @@ from ..forms import (
     ACCESS_METHOD_CHOICES,
     ACCESS_METHOD_DETECTION_ORDER,
     ACCESS_METHOD_INFO,
+    SUBMISSION_TYPE_CHOICES,
     AccessInfoForm,
     AuthorFormSet,
     BasicInfoForm,
@@ -17,8 +18,8 @@ from ..forms import (
     convert_dataset_size_to_mb,
     mark_invalid_fields,
 )
-from ..models import SUBMISSION_TYPE_CHOICES, DatasetLocation, Submission
-from .common import _format_dataset_size, _portal_dev_mode, portal_view
+from ..models import DatasetLocation, PreSubmission, Submission, SubmissionStatus
+from .common import _format_dataset_size, _get_pre_submission, _portal_dev_mode, portal_view
 
 # Small, HPC-independent datasets can be archived faster via Zenodo than through
 # the full GDEX intake process, so those submitters get offered that option first.
@@ -179,21 +180,24 @@ def submission_confirmation(request):
     submission_id = request.session.pop('last_submission_id', None)
     submission = None
     if submission_id:
-        submission = Submission.objects.prefetch_related('locations').filter(pk=submission_id).first()
+        submission = Submission.objects.prefetch_related('locations', 'pre_submissions').filter(pk=submission_id).first()
 
     access_method_labels = dict(ACCESS_METHOD_CHOICES)
     locations = []
+    pre_submission = None
     if submission:
+        pre_submission = _get_pre_submission(submission)
         for loc in submission.locations.all():
             locations.append({
                 'location': loc.location,
                 'access_method_label': access_method_labels.get(loc.access_method, loc.access_method),
-                'access_verification': loc.access_verification,
+                'readable': loc.readable,
+                'reachable': loc.reachable,
             })
 
     # The wizard session (including 'welcome') is already cleared by the time
     # we get here, so read the recommendation flag off the saved row instead.
-    is_recommendation = bool(submission and submission.submission_type == 'recommend')
+    is_recommendation = bool(submission and submission.is_wishlist)
     steps = _progress_steps(is_recommendation)
     step_display, step_count = _step_progress(steps, CONFIRMATION_STEP)
 
@@ -203,6 +207,7 @@ def submission_confirmation(request):
         'step_display': step_display,
         'step_count': step_count,
         'submission': submission,
+        'pre_submission': pre_submission,
         'dataset_size_display': _format_dataset_size(submission.dataset_size_mb) if submission else None,
         'locations': locations,
     })
@@ -403,32 +408,41 @@ def gdex_submission_form_step(request, step_slug):
 
                 submission = Submission.objects.create(
                     submitted_by=request.user,
-                    submission_type=wizard_data.get('welcome', {}).get('submission_type', 'own'),
-                    submission_status = Submission.Status.PENDING_DECISION,
-                    submission_decision = Submission.Decision.PENDING,
+                    is_wishlist=wizard_data.get('welcome', {}).get('submission_type') == 'recommend',
+                    dataset_size_mb=dataset_size_mb,
+                )
+                SubmissionStatus.objects.create(
+                    submission=submission,
+                    status=SubmissionStatus.Status.PENDING_DECISION,
+                )
+                PreSubmission.objects.create(
+                    submission=submission,
                     dataset_title=basic_info['dataset_title'],
                     dataset_abstract=basic_info['dataset_abstract'],
                     dataset_details=basic_info['dataset_details'],
-                    dataset_size_mb=dataset_size_mb,
                     hpc_access=hpc_access,
                     cif_fare_contributors=cif_fare_contributors,
                     is_ncar_employee=is_ncar_employee,
                     data_policy_agreement=policies_info['data_policy_agreement'],
                     data_deposit_agreement=policies_info['data_deposit_agreement'],
                 )
+                verification = access_info.get('access_verification', '')
                 DatasetLocation.objects.create(
                     submission=submission,
                     location=access_info['dataset_location'],
                     access_method=access_info['access_method'],
-                    access_verification=access_info.get('access_verification', ''),
+                    readable=verification == 'readable',
+                    reachable=verification == 'reachable',
                     order=0,
                 )
                 if access_info.get('dataset_location_2'):
+                    verification_2 = access_info.get('access_verification_2', '')
                     DatasetLocation.objects.create(
                         submission=submission,
                         location=access_info['dataset_location_2'],
                         access_method=access_info.get('access_method_2', ''),
-                        access_verification=access_info.get('access_verification_2', ''),
+                        readable=verification_2 == 'readable',
+                        reachable=verification_2 == 'reachable',
                         order=1,
                     )
                 del request.session[SESSION_KEY]
