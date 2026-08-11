@@ -193,8 +193,16 @@ def do_gdex_import(request):
         conn.close()
 
 
+def do_metadata_responses_import(request, spec):
+    ctx = {'spec': spec}
+    if 'row_number' not in request.POST:
+        return render(request, "metaman/datasets/import.html", ctx)
+
+
 def do_import(request, spec):
     if spec == "gdex":
         return do_gdex_import(request)
+    elif spec == "metadata_responses":
+        return do_metadata_responses_import(request, spec)
 
     return render(request, "metaman/datasets/import.html")
