@@ -205,5 +205,3 @@ def usage_guide(request, slug):
 
 def do_import(request, spec):
     return metadata_import.do_import(request, spec)
-    ctx = {'spec': spec}
-    return render(request, "metaman/datasets/import.html", ctx)
