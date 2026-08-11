@@ -13,7 +13,11 @@ function submit_import() {
 
 function do_import() {
   let params = "csrfmiddlewaretoken={{ csrf_token }}";
-  params += "&gdex_path_base=" + document.import_form.gdex_path_base.value;
+  if (document.import_form.gdex_path_base) {
+    params += "&gdex_path_base=" + document.import_form.gdex_path_base.value;
+  } else if (document.import_form.row_number) {
+    params += "&row_number=" + document.import_form.row_number.value;
+  }
   getContentFromPost("import_content", "import/" + document.import_form.spec.value + "/", params)
 }
 </script>
@@ -34,12 +38,12 @@ function do_import() {
 </form>
 {% elif spec == "gdex" %}
 {% if 'gdex_path_base' not in request.POST %}
-        <center>
-            GDEX path base: <input type="text" class="fixedWidth14" name="gdex_path_base" size="50">
-            <br>
-            <button class="btn btn-primary px-2 py-1 border-1 mt-3" onclick="do_import()">Import Metadata</button>
-            <input type="hidden" name="spec" value="{{ spec }}">
-        </center>
+<center>
+    GDEX path base: <input type="text" class="fixedWidth14" name="gdex_path_base" size="50">
+    <br>
+    <button class="btn btn-primary px-2 py-1 border-1 mt-3" onclick="do_import()">Import Metadata</button>
+    <input type="hidden" name="spec" value="{{ spec }}">
+</center>
 {% else %}
 <script id="fill_script" type="text/javascript">
 function reset_status(s) {
@@ -289,6 +293,16 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
 <center class="mt-3">
     <button class="btn btn-primary px-2 py-1 border-1" onclick="accept_imports()">Accept Imports</button><button class="btn btn-primary px-2 py-1 border-1 ms-2" onclick="hideModalWindow()">Cancel</button>
 </center>
+{% endif %}
+{% elif spec == "metadata_responses" %}
+{% if 'row_number' not in request.POST %}
+<center>
+    Row number from spreadsheet to import: <input type="text" class="fixedWidth14" name="row_number" size="5">
+    <br>
+    <button class="btn btn-primary px-2 py-1 border-1 mt-3" onclick="do_import()">Import Metadata</button>
+    <input type="hidden" name="spec" value="{{ spec }}">
+</center>
+{% else %}
 {% endif %}
 {% else %}
 {{ spec }}
