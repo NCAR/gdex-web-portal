@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'oai',
     'login',
     'metaman',
+    'metaman_lite',
     'search',
     #'accounts',
 

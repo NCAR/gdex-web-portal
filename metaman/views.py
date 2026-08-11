@@ -188,7 +188,8 @@ def usage_guide(request, slug):
     if len(qs) == 0:
         return render(request, "404.html")
 
-    content = str(
+    ctx = {'title': qs.first().specific.title}
+    ctx['content'] = str(
         qs.first().specific.body
     ).replace(
         "&gt;", ">"
@@ -199,8 +200,7 @@ def usage_guide(request, slug):
     ).replace(
         "{{ csrf_token }}", get_token(request)
     )
-    return render(request, "metaman/usage_guide.html",
-                  {'content': content})
+    return render(request, "metaman/usage_guide.html", ctx)
 
 
 def do_import(request, spec):
