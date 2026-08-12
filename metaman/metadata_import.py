@@ -1,9 +1,13 @@
+import gspread
 import psycopg2
 import requests
 
 from django.conf import settings
 from django.shortcuts import render
+from google.oauth2.service_account import Credentials
 from lxml import etree
+
+from .local_settings import gdex_metadata_form_id
 
 
 def do_gdex_import(request):
@@ -197,6 +201,17 @@ def do_metadata_responses_import(request, spec):
     ctx = {'spec': spec}
     if 'row_number' not in request.POST:
         return render(request, "metaman/datasets/import.html", ctx)
+
+    creds = Credentials.from_service_account_file(
+            "/data/local/gdexweb/metaman/gspread_creds.json",
+            scopes=[
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/drive"
+            ])
+    client = gspread.authorize(creds)
+    parent = client.open_by_key(gdex_metadata_form_id)
+    sheet = parent.worksheets()[0]
+    values = sheet.row_values(request.POST['row_number'])
 
 
 def do_import(request, spec):
