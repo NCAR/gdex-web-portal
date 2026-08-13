@@ -221,7 +221,7 @@ def do_metadata_responses_import(request, spec):
         authors = values[5].split("\n")
         auth_list = []
         for author in authors:
-            parts = author.split(",")
+            parts = author.replace(";", "").split(",")
             for part in parts:
                 part = part.strip()
                 if re.search(r"^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$", part):
