@@ -2,8 +2,7 @@
     <p>
         An error occurred: {{ error }}
     </p>
-{% else %}
-{% if not spec %}
+{% elif not spec %}
 <script id="import_script" type="text/javascript">
 function submit_import() {
   if (document.import_form.import_spec.selectedIndex > 0) {
@@ -36,10 +35,16 @@ function do_import() {
         </center>
     </div>
 </form>
-{% elif spec == "gdex" %}
-{% if 'gdex_path_base' not in request.POST %}
+{% elif spec == "gdex" and 'gdex_path_base' not in request.POST %}
 <center>
     GDEX path base: <input type="text" class="fixedWidth14" name="gdex_path_base" size="50">
+    <br>
+    <button class="btn btn-primary px-2 py-1 border-1 mt-3" onclick="do_import()">Import Metadata</button>
+    <input type="hidden" name="spec" value="{{ spec }}">
+</center>
+{% elif spec == "metadata_responses" and 'row_number' not in request.POST %}
+<center>
+    Row number from spreadsheet to import: <input type="text" class="fixedWidth14" name="row_number" size="5">
     <br>
     <button class="btn btn-primary px-2 py-1 border-1 mt-3" onclick="do_import()">Import Metadata</button>
     <input type="hidden" name="spec" value="{{ spec }}">
@@ -293,18 +298,4 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
 <center class="mt-3">
     <button class="btn btn-primary px-2 py-1 border-1" onclick="accept_imports()">Accept Imports</button><button class="btn btn-primary px-2 py-1 border-1 ms-2" onclick="hideModalWindow()">Cancel</button>
 </center>
-{% endif %}
-{% elif spec == "metadata_responses" %}
-{% if 'row_number' not in request.POST %}
-<center>
-    Row number from spreadsheet to import: <input type="text" class="fixedWidth14" name="row_number" size="5">
-    <br>
-    <button class="btn btn-primary px-2 py-1 border-1 mt-3" onclick="do_import()">Import Metadata</button>
-    <input type="hidden" name="spec" value="{{ spec }}">
-</center>
-{% else %}
-{% endif %}
-{% else %}
-{{ spec }}
-{% endif %}
 {% endif %}
