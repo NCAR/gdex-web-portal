@@ -203,30 +203,39 @@ def do_metadata_responses_import(request, spec):
     if 'row_number' not in request.POST:
         return render(request, "metaman/datasets/import.html", ctx)
 
-    creds = Credentials.from_service_account_file(
-            "/data/local/gdexweb/metaman/gspread_creds.json",
-            scopes=[
-                "https://www.googleapis.com/auth/spreadsheets",
-                "https://www.googleapis.com/auth/drive"
-            ])
-    client = gspread.authorize(creds)
-    parent = client.open_by_key(gdex_metadata_form_id)
-    sheet = parent.worksheets()[0]
-    values = sheet.row_values(request.POST['row_number'])
-    ctx['title'] = values[2]
-    ctx['summary'] = values[3]
-    authors = values[5].split("\n")
-    auth_list = []
-    for author in authors:
-        parts = author.split(",")
-        for part in parts:
-            part = part.strip()
-            if re.search(r"^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$", part):
-                auth_list.append(part)
-                break
+    try:
+        conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
+        cursor = conn.cursor()
+        creds = Credentials.from_service_account_file(
+                "/data/local/gdexweb/metaman/gspread_creds.json",
+                scopes=[
+                    "https://www.googleapis.com/auth/spreadsheets",
+                    "https://www.googleapis.com/auth/drive"
+                ])
+        client = gspread.authorize(creds)
+        parent = client.open_by_key(gdex_metadata_form_id)
+        sheet = parent.worksheets()[0]
+        values = sheet.row_values(request.POST['row_number'])
+        ctx['title'] = values[2]
+        ctx['summary'] = values[3]
+        authors = values[5].split("\n")
+        auth_list = []
+        for author in authors:
+            parts = author.split(",")
+            for part in parts:
+                part = part.strip()
+                if re.search(r"^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$", part):
+                    auth_list.append(part)
+                    break
 
-    ctx['authors'] = "\n".join(auth_list)
-    return render(request, "metaman/datasets/import.html", ctx)
+        ctx['authors'] = "\n".join(auth_list)
+        return render(request, "metaman/datasets/import.html", ctx)
+    except Exception as err:
+        return render(request, "metaman/datasets/import.html",
+                      {'error': str(err)})
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 
 def do_import(request, spec):
