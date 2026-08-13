@@ -665,7 +665,7 @@ def update_metadata_database(ctx, conn, **kwargs):
                             "insert into search.authors (type, given_name, "
                             "middle_name, family_name, pid) values (%s, %s, "
                             "%s, %s, %s) on conflict on constraint pid_key do "
-                            "update set type = 'Person'returning uuid",
+                            "update set type = 'Person' returning uuid",
                             ("Person", author['fname'], author['mname'],
                              author['lname'], orcid_id))
                     author['uuid'], = cursor.fetchone()
