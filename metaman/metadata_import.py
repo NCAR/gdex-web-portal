@@ -212,6 +212,8 @@ def do_metadata_responses_import(request, spec):
     parent = client.open_by_key(gdex_metadata_form_id)
     sheet = parent.worksheets()[0]
     values = sheet.row_values(request.POST['row_number'])
+    ctx['title'] = values[2]
+    return render(request, "metaman/datasets/import.html", ctx)
 
 
 def do_import(request, spec):
