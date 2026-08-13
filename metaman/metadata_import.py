@@ -1,5 +1,6 @@
 import gspread
 import psycopg2
+import re
 import requests
 
 from django.conf import settings
@@ -213,6 +214,18 @@ def do_metadata_responses_import(request, spec):
     sheet = parent.worksheets()[0]
     values = sheet.row_values(request.POST['row_number'])
     ctx['title'] = values[2]
+    ctx['summary'] = values[3]
+    authors = values[5].split("\n")
+    auth_list = []
+    for author in authors:
+        parts = author.split(",")
+        for part in parts:
+            part = part.strip()
+            if re.search(r"^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$", part):
+                auth_list.append(part)
+                break
+
+    ctx['authors'] = "\n".join(auth_list)
     return render(request, "metaman/datasets/import.html", ctx)
 
 
