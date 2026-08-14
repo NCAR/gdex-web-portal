@@ -13,11 +13,13 @@
 <section class="gdex-find-data-hero position-relative overflow-hidden">
   <div class="gdex-find-data-hero__bg" style="background-image: url('{{ hero_bg }}');"></div>
   <div class="container-lg gdex-find-data-hero__content position-relative">
+    <div class="col-lg-5 col-xl-4 gdex-hero__overlay-panel">
     <h1 class="gdex-find-data-hero__heading">Search GDEX</h1>
     <p class="gdex-find-data-hero__subtitle">
       Search GDEX by keyword, variable, project, instrument, or dataset ID.
       Use the filters on the left to narrow results and quickly find the data you need.
     </p>
+    </div>
     <form id="search-form" class="gdex-find-data-hero__form"
           action="{% url 'search' globus_portal_framework.index %}">
       <div class="gdex-find-data-hero__search-bar">
