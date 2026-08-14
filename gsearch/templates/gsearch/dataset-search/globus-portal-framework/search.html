@@ -22,7 +22,7 @@
           action="{% url 'search' globus_portal_framework.index %}">
       <div class="gdex-find-data-hero__search-bar">
         <input type="text" name="q" id="search-input" autocomplete="off"
-               placeholder="search your datasets here"
+               placeholder="Start your search here..."
                class="gdex-find-data-hero__input"
                aria-label="Search GDEX datasets"
                {% if request.session.search.query and request.session.search.query != '*' %}value="{{ request.session.search.query }}"{% endif %}>
