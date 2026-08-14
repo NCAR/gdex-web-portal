@@ -26,6 +26,15 @@
     width: 100%;
     text-align: center;
 }
+.gdex-find-data-hero__overlay-panel {
+    background-color: rgba(33, 37, 41, 0.25);
+    color: var(--gdex-white);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    max-width: 500px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
 .gdex-find-data-hero__heading {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
