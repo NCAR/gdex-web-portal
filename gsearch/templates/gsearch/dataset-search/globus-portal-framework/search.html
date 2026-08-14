@@ -9,7 +9,7 @@
 
 {% block body %}
 
-{% static 'img/banneriamge3.jpg' as hero_bg %}
+{% with hero_bg="/media/original_images/bannerimage3.jpg" %}
 <section class="gdex-find-data-hero position-relative overflow-hidden">
   <div class="gdex-find-data-hero__bg" style="background-image: url('{{ hero_bg }}');"></div>
   <div class="container-lg gdex-find-data-hero__content position-relative">
@@ -33,6 +33,7 @@
     </form>
   </div>
 </section>
+{% endwith %}
 
 {% static 'unity/img/UCAR-Waves-Lines-Only.png' as waves_url %}
 <div class="gdex-find-data-body" style="--waves-url: url('{{ waves_url }}');">
