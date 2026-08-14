@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.conf import settings
 from urllib.parse import urlparse
 from django.contrib import messages
+from datetime import date as _date
 import json
-
 from globus_portal_framework import load_search_client
 from globus_portal_framework.gsearch import (
     post_search, get_search_query, 
@@ -11,14 +11,26 @@ from globus_portal_framework.gsearch import (
     get_template_path
 )
 from api.common import (
-    get_wagtail_config, get_search_config, 
-    init_connection_new, close_connection
+    get_wagtail_config,
+    get_search_config,
+    init_connection_new,
+    close_connection
 )
 
 import logging
 logger = logging.getLogger(__name__)
 
 def dataset_search(request, index):
+    """
+    Search for datasets in the specified index.
+
+    Args:
+        request: The Django request object.
+        index: The search index to query.
+
+    Returns:
+        A rendered search results page.
+    """
     context = {}
     query = get_search_query(request)
     if query:
@@ -44,6 +56,60 @@ def dataset_search(request, index):
             'filters': filters,
             'index': index,
         }
+
+        # Parse temporal range filters from GET params and save to session so
+        # the "Selected Filters" chip can render them server-side.
+        # customSearch() submits "filter-range.temporal_range_end=YYYY-MM-DD--*"
+        # for the start bound and "filter-range.temporal_range_start=*--YYYY-MM-DD"
+        # for the end bound.
+        temporal_start = ''
+        temporal_end = ''
+        for val in request.GET.getlist('filter-range.temporal_range_end'):
+            if '--' in val:
+                temporal_start = val.split('--')[0].strip()
+                break
+        for val in request.GET.getlist('filter-range.temporal_range_start'):
+            if '--' in val:
+                candidate = val.split('--')[-1].strip()
+                if candidate and candidate != '*':
+                    temporal_end = candidate
+                break
+
+        if temporal_start:
+            request.session['temporal_start_input'] = temporal_start
+        elif 'temporal_start_input' in request.session:
+            del request.session['temporal_start_input']
+
+        if temporal_end:
+            request.session['temporal_end_input'] = temporal_end
+        elif 'temporal_end_input' in request.session:
+            del request.session['temporal_end_input']
+
+        # Detect if the active temporal start date matches one of the quick
+        # preset durations (1 / 5 / 10 / 25 years).  When it does, store the
+        # number of years so the chip can say "Last X years" and the From field
+        # is not pre-populated (preset ≠ custom range).
+        preset_years = None
+        if temporal_start:
+            try:
+                start_dt = _date.fromisoformat(temporal_start)
+                today = _date.today()
+                for yrs in [1, 5, 10, 25]:
+                    try:
+                        expected = _date(today.year - yrs, today.month, today.day)
+                    except ValueError:
+                        expected = _date(today.year - yrs, today.month, 28)
+                    if abs((start_dt - expected).days) <= 1:
+                        preset_years = yrs
+                        break
+            except (ValueError, TypeError):
+                pass
+
+        if preset_years:
+            request.session['temporal_preset_years'] = preset_years
+        elif 'temporal_preset_years' in request.session:
+            del request.session['temporal_preset_years']
+
         error = context['search'].get('error')
         if error:
             messages.error(request, error)
