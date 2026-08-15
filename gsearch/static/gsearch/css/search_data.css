@@ -31,7 +31,6 @@
     color: var(--gdex-white);
     padding: 1.5rem;
     border-radius: 0.5rem;
-    max-width: 500px;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
 }
