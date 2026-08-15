@@ -457,7 +457,7 @@
 }
 
 .gdex-results-count {
-    font-size: 0.875rem;
+    font-size: 1.0rem;
     color: var(--gdex-text-muted-alt);
     margin-bottom: 0.6rem;
     font-weight: 500;
