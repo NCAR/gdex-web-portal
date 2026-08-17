@@ -234,7 +234,7 @@ def do_metadata_responses_import(request, spec):
 
         ctx['authors'] = "\n".join(auth_list)
         keywords = values[6].replace(";", "\n").split("\n")
-        var_list = []
+        ctx['variables'] = {'imported': [], 'not-imported': []}
         for keyword in keywords:
             parts = keyword.split(">")
             parts[-1] = parts[-1].strip()
@@ -242,11 +242,16 @@ def do_metadata_responses_import(request, spec):
                     "select path, uuid from search.gcmd_sciencekeywords where "
                     "last_in_path ilike %s", (parts[-1], ))
             res = cursor.fetchall()
-            for e in res:
-                var_list.append("[!]".join(e))
+            if len(res) > 0:
+                for e in res:
+                    ctx['variables']['imported'].append("[!]".join(e))
 
-        if len(var_list) > 0:
-            ctx['variables'] = "\n".join(var_list)
+            else:
+                ctx['variables']['not-imported'].append(parts[-1])
+
+        ctx['variables']['imported'] = "\n".join(ctx['variables']['imported'])
+        ctx['variables']['not-imported'] = (
+                "\n".join(ctx['variables']['not-imported']))
 
         platforms = values[7].replace(";", "\n").split("\n")
         plat_list = []
