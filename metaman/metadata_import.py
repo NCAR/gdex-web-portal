@@ -234,7 +234,7 @@ def do_metadata_responses_import(request, spec):
 
         ctx['authors'] = "\n".join(auth_list)
         keywords = values[6].replace(";", "\n").split("\n")
-        ctx['variables'] = {'imported': [], 'not-imported': []}
+        ctx['variables'] = {'imported': [], 'not_imported': []}
         for keyword in keywords:
             parts = keyword.split(">")
             parts[-1] = parts[-1].strip()
@@ -247,11 +247,11 @@ def do_metadata_responses_import(request, spec):
                     ctx['variables']['imported'].append("[!]".join(e))
 
             else:
-                ctx['variables']['not-imported'].append(parts[-1])
+                ctx['variables']['not_imported'].append(parts[-1])
 
         ctx['variables']['imported'] = "\n".join(ctx['variables']['imported'])
-        ctx['variables']['not-imported'] = (
-                "<br>".join(ctx['variables']['not-imported']))
+        ctx['variables']['not_imported'] = (
+                "<br>".join(ctx['variables']['not_imported']))
 
         platforms = values[7].replace(";", "\n").split("\n")
         plat_list = []
