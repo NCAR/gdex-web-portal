@@ -251,7 +251,7 @@ def do_metadata_responses_import(request, spec):
 
         ctx['variables']['imported'] = "\n".join(ctx['variables']['imported'])
         ctx['variables']['not-imported'] = (
-                "\n".join(ctx['variables']['not-imported']))
+                "<br>".join(ctx['variables']['not-imported']))
 
         platforms = values[7].replace(";", "\n").split("\n")
         plat_list = []
