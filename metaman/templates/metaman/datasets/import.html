@@ -260,7 +260,7 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     <div class="text-red">
         Platform keywords that could not be matched and imported:
         <ul>
-            {{ platforms.not_imported }}
+            {{ platforms.not_imported|safe }}
         </ul>
     </div>
     {% endif %}
@@ -281,9 +281,9 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     {% endif %}
     {% if keywords_not_imported %}
     <div class="text-red">
-        Column G "List all keywords" entries that could not be matched and imported into any keyword field:
+        Entries from Column G (List all keywords) that could not be matched and imported into any keyword field:
         <ul>
-            {{ keywords_not_imported }}
+            {{ keywords_not_imported|safe }}
         </ul>
     </div>
     {% endif %}
