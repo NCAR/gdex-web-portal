@@ -233,6 +233,21 @@ def do_metadata_responses_import(request, spec):
                     break
 
         ctx['authors'] = "\n".join(auth_list)
+        keywords = values[6].replace(";", "\n").split("\n")
+        var_list = []
+        for keyword in keywords:
+            parts = keyword.split(">")
+            parts[-1] = parts[-1].strip()
+            cursor.execute(
+                    "select path, uuid from search.gcmd_sciencekeywords where "
+                    "last_in_path ilike %s", (parts[-1], ))
+            res = cursor.fetchall()
+            for e in res:
+                var_list.append("[!]".join(e))
+
+        if len(var_list) > 0:
+            ctx['variables'] = "\n".join(var_list)
+
         return render(request, "metaman/datasets/import.html", ctx)
     except Exception as err:
         return render(request, "metaman/datasets/import.html",
