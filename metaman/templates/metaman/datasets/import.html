@@ -18,6 +18,9 @@ function do_import(b) {
     params += "&gdex_path_base=" + document.import_form.gdex_path_base.value;
   } else if (document.import_form.row_number) {
     params += "&row_number=" + document.import_form.row_number.value;
+  } else {
+    alert("Empty input is not allowed");
+    return;
   }
   getContentFromPost("import_content", "import/" + document.import_form.spec.value + "/", params)
 }
