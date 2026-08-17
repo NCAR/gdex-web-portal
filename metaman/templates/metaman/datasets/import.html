@@ -12,9 +12,9 @@ function submit_import() {
 
 function do_import(b) {
   let params = "csrfmiddlewaretoken={{ csrf_token }}";
-  if (document.import_form.gdex_path_base && document.import_form.gdex_path_base.length > 0) {
+  if (document.import_form.gdex_path_base && document.import_form.gdex_path_base.value.length > 0) {
     params += "&gdex_path_base=" + document.import_form.gdex_path_base.value;
-  } else if (document.import_form.row_number && document.import_form.row_number.length > 0) {
+  } else if (document.import_form.row_number && document.import_form.row_number.value.length > 0) {
     params += "&row_number=" + document.import_form.row_number.value;
   } else {
     alert("Empty input is not allowed");
