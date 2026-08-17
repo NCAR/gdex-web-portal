@@ -9,6 +9,7 @@ from google.oauth2.service_account import Credentials
 from lxml import etree
 
 from .local_settings import gdex_metadata_form_id
+from .utils import get_author_from_orcid_id
 
 
 def do_gdex_import(request):
@@ -225,7 +226,10 @@ def do_metadata_responses_import(request, spec):
             for part in parts:
                 part = part.strip()
                 if re.search(r"^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$", part):
-                    auth_list.append(part)
+                    t = get_author_from_orcid_id(part)
+                    if type(t[0]) is not dict:
+                        auth_list.append("[!]".join([t[1:3], t[0]]))
+
                     break
 
         ctx['authors'] = "\n".join(auth_list)
