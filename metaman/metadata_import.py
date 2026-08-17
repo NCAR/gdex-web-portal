@@ -248,6 +248,21 @@ def do_metadata_responses_import(request, spec):
         if len(var_list) > 0:
             ctx['variables'] = "\n".join(var_list)
 
+        platforms = values[7].replace(";", "\n").split("\n")
+        plat_list = []
+        for platform in platforms:
+            parts = platform.split(">")
+            parts[-1] = parts[-1].strip()
+            cursor.execute(
+                    "select path, uuid from search.gcmd_platforms where "
+                    "last_in_path ilike %s", (parts[-1], ))
+            res = cursor.fetchall()
+            for e in res:
+                plat_list.append("[!]".join(e))
+
+        if len(plat_list) > 0:
+            ctx['platforms'] = "\n".join(plat_list)
+
         return render(request, "metaman/datasets/import.html", ctx)
     except Exception as err:
         return render(request, "metaman/datasets/import.html",
