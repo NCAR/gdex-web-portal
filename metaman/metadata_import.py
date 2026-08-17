@@ -228,7 +228,7 @@ def do_metadata_responses_import(request, spec):
                 if re.search(r"^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$", part):
                     t = get_author_from_orcid_id(part)
                     if type(t[0]) is not dict:
-                        auth_list.append("[!]".join([t[1:3], t[0]]))
+                        auth_list.append("[!]".join(t[1:4] + (t[0], )))
 
                     break
 
