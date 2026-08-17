@@ -251,7 +251,7 @@ def do_metadata_responses_import(request, spec):
 
         ctx['variables']['imported'] = "\n".join(ctx['variables']['imported'])
         keywords = ctx['variables']['not_imported']
-        ctx['instruments'] ] {'imported': [], 'not_imported': []}
+        ctx['instruments'] = {'imported': [], 'not_imported': []}
         for keyword in keywords:
             parts = keyword.split(">")
             parts[-1] = parts[-1].strip()
