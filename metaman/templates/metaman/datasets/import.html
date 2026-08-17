@@ -114,7 +114,7 @@ function accept_imports() {
   openSection("ds_info");
   openField("sciencekeywords");
   {% endif %}
-  {% if platforms %}
+  {% if platforms.imported %}
   document.getElementById("platforms_field").value = document.import_form.platforms.value;
   changed_platforms_field = true;
   reset_status("platforms_status");
@@ -251,12 +251,20 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     </div>
     {% endif %}
     {% endif %}
-    {% if platforms %}
+    {% if platforms.imported or platforms.not_imported %}
     <div class="mt-1">
     <b>Platforms:</b>
     <br>
-    <textarea name="platforms" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ platforms }}</textarea>
+    <textarea name="platforms" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ platforms.imported }}</textarea>
     </div>
+    {% if platforms.not_imported %}
+    <div class="text-red">
+        Platform keywords that could not be matched and imported:
+        <ul>
+            {{ platforms.not_imported }}
+        </ul>
+    </div>
+    {% endif %}
     {% endif %}
     {% if projects %}
     <div class="mt-1">
