@@ -107,7 +107,7 @@ function accept_imports() {
   openSection("ds_info");
   openField("summary");
   {% endif %}
-  {% if variables %}
+  {% if variables.imported %}
   document.getElementById("sciencekeywords_field").value = document.import_form.sciencekeywords.value;
   changed_sciencekeywords_field = true;
   reset_status("sciencekeywords_status");
@@ -236,12 +236,19 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     <textarea name="summary" class="fixedWidth14" style="height: 10em; width: 100%; resize: both" readonly>{{ summary }}</textarea>
     </div>
     {% endif %}
-    {% if variables %}
+    {% if variables.imported or variables.not_imported %}
     <div class="mt-1">
     <b>Variables:</b>
     <br>
-    <textarea name="sciencekeywords" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ variables }}</textarea>
+    <textarea name="sciencekeywords" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ variables.imported }}</textarea>
     </div>
+    {% if variables.not_imported %}
+    <div class="text-red">
+        Keywords that could not be matched and imported:
+        <br>
+        {{ variables.not_imported }}
+    </div>
+    {% endif %}
     {% endif %}
     {% if platforms %}
     <div class="mt-1">
