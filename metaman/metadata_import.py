@@ -269,7 +269,7 @@ def do_metadata_responses_import(request, spec):
         ctx['instruments']['imported'] = (
                 "\n".join(ctx['instruments']['imported']))
         keywords = ctx['instruments']['not_imported']
-        ctx['keywords_not_imported'] = keywords
+        ctx['keywords_not_imported'] = "<br>".join(keywords)
         platforms = values[7].replace(";", "\n").split("\n")
         ctx['platforms'] = {'imported': [], 'not_imported': []}
         for platform in platforms:
