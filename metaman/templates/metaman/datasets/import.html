@@ -121,6 +121,13 @@ function accept_imports() {
   openSection("ds_info");
   openField("platforms");
   {% endif %}
+  {% if instruments.imported %}
+  document.getElementById("instruments_field").value = document.import_form.instruments.value;
+  changed_instruments_field = true;
+  reset_status("instruments_status");
+  openSection("ds_info");
+  openField("instruments");
+  {% endif %}
   {% if projects %}
   document.getElementById("projects_field").value = document.import_form.projects.value;
   changed_projects_field = true;
@@ -236,20 +243,12 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     <textarea name="summary" class="fixedWidth14" style="height: 10em; width: 100%; resize: both" readonly>{{ summary }}</textarea>
     </div>
     {% endif %}
-    {% if variables.imported or variables.not_imported %}
+    {% if variables.imported %}
     <div class="mt-1">
     <b>Variables:</b>
     <br>
     <textarea name="sciencekeywords" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ variables.imported }}</textarea>
     </div>
-    {% if variables.not_imported %}
-    <div class="text-red">
-        Variable keywords that could not be matched and imported:
-        <ul>
-            {{ variables.not_imported }}
-        </ul>
-    </div>
-    {% endif %}
     {% endif %}
     {% if platforms.imported or platforms.not_imported %}
     <div class="mt-1">
@@ -266,11 +265,26 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     </div>
     {% endif %}
     {% endif %}
+    {% if instruments.imported %}
+    <div class="mt-1">
+    <b>Instruments:</b>
+    <br>
+    <textarea name="instruments" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ instruments.imported }}</textarea>
+    </div>
+    {% endif %}
     {% if projects %}
     <div class="mt-1">
     <b>"Collected From" Projects:</b>
     <br>
     <textarea name="projects" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ projects }}</textarea>
+    </div>
+    {% endif %}
+    {% if keywords_not_imported %}
+    <div class="text-red">
+        Column G "List all keywords" entries that could not be matched and imported into any keyword field:
+        <ul>
+            {{ keywords_not_imported }}
+        </ul>
     </div>
     {% endif %}
     {% if iso_topic %}
