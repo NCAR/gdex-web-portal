@@ -250,9 +250,26 @@ def do_metadata_responses_import(request, spec):
                 ctx['variables']['not_imported'].append(keyword.strip())
 
         ctx['variables']['imported'] = "\n".join(ctx['variables']['imported'])
-        ctx['variables']['not_imported'] = (
-                "<br>".join(ctx['variables']['not_imported']))
+        keywords = ctx['variables']['not_imported']
+        ctx['instruments'] ] {'imported': [], 'not_imported': []}
+        for keyword in keywords:
+            parts = keyword.split(">")
+            parts[-1] = parts[-1].strip()
+            cursor.execute(
+                    "select path, uuid from search.gcmd_instruments where "
+                    "last_in_path ilike %s", (parts[-1], ))
+            res = cursor.fetchall()
+            if len(res) > 0:
+                for e in res:
+                    ctx['instruments']['imported'].append("[!]".join(e))
 
+            else:
+                ctx['instruments']['not_imported'].append(keyword.strip())
+
+        ctx['instruments']['imported'] = (
+                "\n".join(ctx['instruments']['imported']))
+        keywords = ctx['instruments']['not_imported']
+        ctx['keywords_not_imported'] = keywords
         platforms = values[7].replace(";", "\n").split("\n")
         ctx['platforms'] = {'imported': [], 'not_imported': []}
         for platform in platforms:
