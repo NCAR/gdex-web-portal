@@ -284,7 +284,7 @@ def do_metadata_responses_import(request, spec):
                     ctx['platforms']['imported'].append("[!]".join(e))
 
             else:
-                ctx['platforms']['not_imported'].append(keyword.strip())
+                ctx['platforms']['not_imported'].append(platform.strip())
 
         ctx['platforms']['imported'] = "\n".join(ctx['platforms']['imported'])
         ctx['platforms']['not_imported'] = (
