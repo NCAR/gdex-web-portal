@@ -12,9 +12,7 @@ function submit_import() {
 
 function do_import(b) {
   let params = "csrfmiddlewaretoken={{ csrf_token }}";
-  if (document.import_form.gdex_path_base && document.import_form.gdex_path_base.value.length > 0) {
-    params += "&gdex_path_base=" + document.import_form.gdex_path_base.value;
-  } else if (document.import_form.row_number && document.import_form.row_number.value.length > 0) {
+  if (document.import_form.row_number && document.import_form.row_number.value.length > 0) {
     params += "&row_number=" + document.import_form.row_number.value;
   } else {
     alert("Empty input is not allowed");
@@ -34,19 +32,11 @@ function do_import(b) {
             Import from:
             <select name="import_spec" onchange="submit_import()">
                 <option value="">choose</option>
-                <option value="gdex">GDEX Metadata</option>
                 <option value="metadata_responses">GDEX-MetadataForm (Responses)</option>
             </select>
         </center>
     </div>
 </form>
-{% elif spec == "gdex" and 'gdex_path_base' not in request.POST %}
-<center>
-    GDEX path base: <input type="text" class="fixedWidth14" name="gdex_path_base" size="50">
-    <br>
-    <button class="btn btn-primary px-2 py-1 border-1 mt-3" onclick="do_import(this)">Import Metadata</button>
-    <input type="hidden" name="spec" value="{{ spec }}">
-</center>
 {% elif spec == "metadata_responses" and 'row_number' not in request.POST %}
 <center>
     Row number from spreadsheet to import: <input type="text" class="fixedWidth14" name="row_number" size="5">
