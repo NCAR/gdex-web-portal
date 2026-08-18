@@ -8,6 +8,7 @@ from django.shortcuts import render
 from google.oauth2.service_account import Credentials
 from lxml import etree
 
+from .datasets import get_data_format_options
 from .local_settings import gdex_metadata_form_id
 from .utils import get_author_from_orcid_id
 
@@ -290,6 +291,18 @@ def do_metadata_responses_import(request, spec):
         ctx['platforms']['not_imported'] = (
                 "<br>".join(ctx['platforms']['not_imported']))
 
+        data_formats = {e['value'] for e in get_data_format_options()}
+        formats = values[8].split(",")
+        ctx['formats'] = {'imported': [], 'not_imported': []}
+        for fmt in formats:
+            fmt = fmt.strip()
+            if fmt in data_formats:
+                ctx['formats']['imported'].append(fmt)
+            else:
+                ctx['formats']['not_imported'].append(fmt)
+
+        ctx['formats']['not_imported'] = (
+                "<br>".join(ctx['formats']['not_imported']))
         return render(request, "metaman/datasets/import.html", ctx)
     except Exception as err:
         return render(request, "metaman/datasets/import.html",
