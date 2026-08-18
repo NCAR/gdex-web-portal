@@ -324,6 +324,14 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     </select>
     </div>
     {% endif %}
+    {% if formats.not_imported %}
+    <div class="text-red">
+        Entries from Column I ("Select all data formats.") that could not be matched and imported:
+        <ul>
+            {{ formats.not_imported|safe }}
+        </ul>
+    </div>
+    {% endif %}
 </form>
 <center class="mt-3">
     <button class="btn btn-primary px-2 py-1 border-1" onclick="accept_imports()">Accept Imports</button><button class="btn btn-primary px-2 py-1 border-1 ms-2" onclick="hideModalWindow()">Cancel</button>
