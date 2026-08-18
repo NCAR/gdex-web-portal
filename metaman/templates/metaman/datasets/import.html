@@ -178,16 +178,19 @@ function accept_imports() {
   openSection("content_metadata");
   openField("periods");
   {% endif %}
-  {% if format %}
+  {% if formats.imported %}
   formats = document.getElementById("formats_field");
+  imported_formats = [];
+  for (n = 0; n < document.import_form.formats.length; ++n) {
+    imported_formats.push(document.import_form.formats[n].value);
+  }
   for (n = 0; n < formats.options.length; ++n) {
-    if (formats[n].value == document.import_form.formats[0].value) {
-      formats.selectedIndex = n;
+    if (imported_formats.includes(formats.options[n].value)) {
+      formats.options[n].selected = true;
       changed_formats_field = true;
       reset_status("formats_status");
       openSection("content_metadata");
       openField("formats");
-      break;
     }
   }
   {% endif %}
@@ -261,7 +264,7 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     </div>
     {% if platforms.not_imported %}
     <div class="text-red">
-        Platform keywords that could not be matched and imported:
+        Entries from Column H ("List platform(s).") that could not be matched and imported:
         <ul>
             {{ platforms.not_imported|safe }}
         </ul>
@@ -284,7 +287,7 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     {% endif %}
     {% if keywords_not_imported %}
     <div class="text-red">
-        Entries from Column G (List all keywords) that could not be matched and imported into any keyword field:
+        Entries from Column G ("List all keywords.") that could not be matched and imported into any keyword field:
         <ul>
             {{ keywords_not_imported|safe }}
         </ul>
@@ -320,12 +323,14 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     <textarea name="periods" class="fixedWidth14" style="height: 2em; width: 100%; resize: both" readonly>{{ tstart }}[!]{{ tend }}[!]Entire Dataset</textarea>
     </div>
     {% endif %}
-    {% if format %}
+    {% if formats.imported %}
     <div class="mt-1">
     <b>Data Format:</b>
     <br>
     <select name="formats" multiple size="2">
+        {% for format in formats.imported %}
         <option value="{{ format }}">{{ format }}</value>
+        {% endfor %}
     </select>
     </div>
     {% endif %}
