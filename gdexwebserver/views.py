@@ -1,3 +1,4 @@
+import logging
 import psycopg2
 import smtplib
 
@@ -7,6 +8,8 @@ from django.shortcuts import redirect, render
 from email.message import EmailMessage
 
 from . import utils
+
+logger = logging.getLogger(__name__)
 
 
 def contact_us(request):
@@ -63,6 +66,33 @@ def error(request):
                 "A server error occurred. Please try again later.")
 
     return HttpResponse("Bad request.")
+
+
+def server_error(request):
+    """
+    Custom 500 handler (registered as `handler500` in urls.py).
+
+    Renders the branded 500.html, which extends base.html and so pulls in
+    the normal site header/footer via wagtailmenus. Those menus hit the
+    database, and a 500 is sometimes caused by the database being the
+    problem in the first place -- so if rendering the branded page itself
+    raises, fall back to a bare-bones response rather than letting the
+    error handler's own exception take down the response entirely.
+    """
+    try:
+        return render(request, "500.html", status=500)
+    except Exception:
+        logger.exception("Failed to render branded 500 page")
+        return HttpResponse(
+            "<h1>Something went wrong</h1>"
+            "<h2>Sorry, an unexpected error occurred. Please try again "
+            "soon.</h2>"
+            "<p>If the problem persists, please contact the NSF NCAR "
+            "Research Data Help desk at "
+            "<a href=\"mailto:datahelp@ucar.edu\">datahelp@ucar.edu</a> "
+            "for assistance.</p>",
+            status=500,
+        )
 
 
 def robots_txt(request):
