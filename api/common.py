@@ -819,17 +819,26 @@ def get_arco_variables(dsid):
     """Get Arco Variables"""
     import csv
     from io import StringIO
+
+    # Normalize/validate dsid up front, before touching the cache or the
+    # database, so a malformed dsid (e.g. from a bad URL) can't reach the
+    # f-string table name below or leave a DB connection open.
+    dsid = format_dataset_id(dsid)
+    if dsid is None:
+        return [['unknown', 'error']]
+
     csv_info = check_cache('arco_vars', dsid)
     if csv_info is not None:
         return csv_info
-    con, cur = init_connection_new()
     wfile_table = f'wfile_{dsid}'
-    assert len(wfile_table) == 13
     match_str = 'catalog%.csv'
-    query = f'select wfile,locflag from {wfile_table} where gindex<0 and wfile like %s'
-    cur.execute(query, (match_str,))
-    result = cur.fetchall()
-    close_connection(con, cur)
+    con, cur = init_connection_new()
+    try:
+        query = f'select wfile,locflag from {wfile_table} where gindex<0 and wfile like %s'
+        cur.execute(query, (match_str,))
+        result = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     csv_files = [(i[0], i[1]) for i in result]
     res = [['unknown', 'error']]
     for _file in csv_files:
