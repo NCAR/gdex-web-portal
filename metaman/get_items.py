@@ -518,6 +518,28 @@ def get_temporal_frequency(request):
                   {'data': d})
 
 
+def get_data_type_options():
+    data_types = []
+    try:
+        tree = ElementTree.parse("/data/web/metadata/schemas/dsOverview3.xsd")
+        root = tree.getroot()
+        ns = {
+            'xsd': "http://www.w3.org/2001/XMLSchema",
+        }
+        elist = root.findall((
+                "./xsd:element[@name='contentMetadata']/xsd:complexType/xsd:"
+                "choice/xsd:sequence/xsd:element[@name='dataType']/xsd:"
+                "complexType/xsd:simpleContent/xsd:restriction/xsd:"
+                "enumeration"), ns)
+        for e in elist:
+            data_types.append({'value': e.get("value")})
+
+    except Exception:
+        pass
+
+    return data_types
+
+
 def get_data_type(request):
     d = {'type': "", 'proc': "", 'nhour': ""}
     if 'editItem' in request.POST:
@@ -531,25 +553,7 @@ def get_data_type(request):
                 d['nhour'] = d['proc'][0:idx]
                 d['proc'] = d['proc'][idx+6:]
 
-    try:
-        tree = ElementTree.parse("/data/web/metadata/schemas/dsOverview3.xsd")
-        root = tree.getroot()
-        ns = {
-            'xsd': "http://www.w3.org/2001/XMLSchema",
-        }
-        elist = root.findall((
-                "./xsd:element[@name='contentMetadata']/xsd:complexType/xsd:"
-                "choice/xsd:sequence/xsd:element[@name='dataType']/xsd:"
-                "complexType/xsd:simpleContent/xsd:restriction/xsd:"
-                "enumeration"), ns)
-        dt_opts = []
-        for e in elist:
-            dt_opts.append({'value': e.get("value")})
-
-        d.update({'data_type_options': dt_opts})
-    except Exception:
-        pass
-
+    d.update({'data_type_options': get_data_type_options()})
     return render(request, "metaman/datasets/get_data_type.html", {'data': d})
 
 
