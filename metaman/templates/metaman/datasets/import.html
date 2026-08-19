@@ -283,11 +283,11 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     <textarea name="related_sites" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>https://doi.org/{{ icarus_doi }}[!]ICARUS Dataset at UC-Davis</textarea>
     </div>
     {% endif %}
-    {% if data_type %}
+    {% if data_types.imported %}
     <div class="mt-1">
     <b>Data Type:</b>
     <br>
-    <textarea name="data_types" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ data_type }}</textarea>
+    <textarea name="data_types" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ data_types.imported }}</textarea>
     </div>
     {% endif %}
     {% if tstart and tend %}
