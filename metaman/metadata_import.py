@@ -9,6 +9,7 @@ from google.oauth2.service_account import Credentials
 from lxml import etree
 
 from .datasets import get_data_format_options
+from .get_items import get_data_type_options
 from .local_settings import gdex_metadata_form_id
 from .utils import get_author_from_orcid_id
 
@@ -303,6 +304,20 @@ def do_metadata_responses_import(request, spec):
 
         ctx['formats']['not_imported'] = (
                 "<br>".join(ctx['formats']['not_imported']))
+        data_types = {e['value'] for e in get_data_type_options()}
+        dtypes = values[11].split(",")
+        ctx['data_types'] = {'imported': [], 'not_imported': []}
+        for dtype in dtypes:
+            dtype = dtype.strip().replace(" ", "_").lower()
+            if dtype in data_types:
+                ctx['data_types']['imported'].append(dtype)
+            else:
+                ctx['data_types']['not_imported'].append(dtype)
+
+        ctx['data_types']['imported'] = (
+                "\n".join(ctx['data_types']['imported']))
+        ctx['data_types']['not_imported'] = (
+                "<br>".join(ctx['data_types']['not_imported']))
         return render(request, "metaman/datasets/import.html", ctx)
     except Exception as err:
         return render(request, "metaman/datasets/import.html",
