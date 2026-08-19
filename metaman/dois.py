@@ -569,14 +569,36 @@ def create_a_real_doi(request, dsid, iuser, ctx):
         conn = psycopg2.connect(**settings.RDADB['dssdb_config_pg'])
         cursor = conn.cursor()
     except psycopg2.Error as err:
-        ctx.update({'error': "A database error occurred: '{}'".format(err)})
-        return render(request, "metaman/dois/doi_msg.html", ctx)
+        ctx['error'] = f"A database error occurred: '{err}'"
+        return ctx
 
     with open("/data/logs/doi_log", "a") as doi_log:
         doi_log.write(
                 f"Starting DOI creation at {str(datetime.now())} - dsid: "
                 f"{dsid}, specialist: {iuser} ...\n")
 
+    cursor.execute(
+            "select vindex from dssdb.dsvrsn where dsid = %s and doi = 'X' "
+            "and status = 'A'", (dsid, ))
+    vindex, = cursor.fetchone() or (None, )
+    if vindex is None:
+        ctx['error'] = (
+                "The database is out-of-sync and DOI creation cannot "
+                "continue")
+        return ctx
+
+    cursor.execute(
+            "update dssdb.dsvrsn set doi = 'Y' where dsid = %s and vindex = "
+            "%s and doi = 'X' and status = 'A' returning doi", (dsid, vindex))
+    temp_doi, = cursor.fetchone() or (None, )
+    if temp_doi is None or temp_doi != "Y":
+        conn.rollback()
+        ctx['error'] = (
+                "The temporary database DOI record for this dataset "
+                "cannot be accessed, so DOI creation cannot continue")
+        return ctx
+
+    conn.commit()
     proc = subprocess.run((
             doi_manager['invoke_command'] + " " + doi_manager['auth_key'] +
             " create " + dsid),
@@ -586,7 +608,7 @@ def create_a_real_doi(request, dsid, iuser, ctx):
     with open("/data/logs/doi_log", "a") as doi_log:
         doi_log.write(
                 f"  dsid: {dsid}, specialist: {iuser}, DataCite response: "
-                f"{out}, timestampe: {str(datetime.now())}\n")
+                f"{out}, timestamp: {str(datetime.now())}\n")
 
     if out.find("Success:") == 0:
         lines = out.split("\n")
@@ -603,7 +625,7 @@ def create_a_real_doi(request, dsid, iuser, ctx):
         try:
             cursor.execute(
                     "update dssdb.dsvrsn set doi = %s where dsid = %s and doi "
-                    "= 'X'", (ctx['doi'], dsid))
+                    "= 'Y'", (ctx['doi'], dsid))
             if cursor.rowcount != 1:
                 raise psycopg2.Error(
                         f"Incorrect row count for update: '{cursor.rowcount}'")
@@ -630,8 +652,7 @@ def create_a_real_doi(request, dsid, iuser, ctx):
                     json.dumps(settings.RDADB['wagtail2_config_pg']) + "' " +
                     ctx['dsid']), shell=True)
         except psycopg2.Error as err:
-            ctx.update({'error': ("A database error occurred: '{}'")
-                       .format(err)})
+            ctx['error'] = f"A database error occurred: '{err}'"
             msg['To'] = ", ".join(m + "@ucar.edu" for m in metadata_managers)
             msg['Subject'] = "FAILED DOI for " + dsid
             msg.set_content(
@@ -646,11 +667,12 @@ def create_a_real_doi(request, dsid, iuser, ctx):
         with open("/data/logs/doi_log", "a") as doi_log:
             doi_log.write(
                     f"***DOI creation error: {err} - dsid: {dsid}, "
-                    f"specialist: {iuser}, timestampe: {str(datetime.now())}"
+                    f"specialist: {iuser}, timestamp: {str(datetime.now())}"
                     "\n")
 
-        ctx.update({'error': ("DOI creation failed: '{}'<br><br>A DOI was <b>"
-                              "NOT</b> assigned to this dataset").format(err)})
+        ctx['error'] = (
+                f"DOI creation failed: '{err}'<br><br>A DOI was <b>NOT</b> "
+                "assigned to this dataset")
 
     conn.close()
     return ctx
