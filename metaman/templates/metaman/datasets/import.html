@@ -246,20 +246,12 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     <textarea name="sciencekeywords" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ variables.imported }}</textarea>
     </div>
     {% endif %}
-    {% if platforms.imported or platforms.not_imported %}
+    {% if platforms.imported %}
     <div class="mt-1">
     <b>Platforms:</b>
     <br>
     <textarea name="platforms" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ platforms.imported }}</textarea>
     </div>
-    {% if platforms.not_imported %}
-    <div class="text-red">
-        Entries from Column H ("List platform(s).") that could not be matched and imported:
-        <ul>
-            {{ platforms.not_imported|safe }}
-        </ul>
-    </div>
-    {% endif %}
     {% endif %}
     {% if instruments.imported %}
     <div class="mt-1">
@@ -273,14 +265,6 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     <b>"Collected From" Projects:</b>
     <br>
     <textarea name="projects" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ projects }}</textarea>
-    </div>
-    {% endif %}
-    {% if keywords_not_imported %}
-    <div class="text-red">
-        Entries from Column G ("List all keywords.") that could not be matched and imported into any keyword field:
-        <ul>
-            {{ keywords_not_imported|safe }}
-        </ul>
     </div>
     {% endif %}
     {% if iso_topic %}
@@ -322,6 +306,22 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
         <option value="{{ format }}">{{ format }}</value>
         {% endfor %}
     </select>
+    </div>
+    {% endif %}
+    {% if keywords_not_imported %}
+    <div class="text-red">
+        Entries from Column G ("List all keywords.") that could not be matched and imported into any keyword field:
+        <ul>
+            {{ keywords_not_imported|safe }}
+        </ul>
+    </div>
+    {% endif %}
+    {% if platforms.not_imported %}
+    <div class="text-red">
+        Entries from Column H ("List platform(s).") that could not be matched and imported:
+        <ul>
+            {{ platforms.not_imported|safe }}
+        </ul>
     </div>
     {% endif %}
     {% if formats.not_imported %}
