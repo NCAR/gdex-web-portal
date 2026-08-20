@@ -46,9 +46,10 @@ def do_metadata_responses_import(request, spec):
                     break
 
         ctx['authors'] = "\n".join(auth_list)
-        keywords = values[6].replace(";", "\n").split("\n")
+        keywords = values[6].replace(";", "").split("\n")
         ctx['variables'] = {'imported': [], 'not_imported': []}
         for keyword in keywords:
+            keyword = keyword.strip()
             parts = keyword.split(">")
             parts[-1] = parts[-1].strip()
             cursor.execute(
@@ -59,13 +60,14 @@ def do_metadata_responses_import(request, spec):
                 for e in res:
                     ctx['variables']['imported'].append("[!]".join(e))
 
-            else:
-                ctx['variables']['not_imported'].append(keyword.strip())
+            elif len(keyword) > 0:
+                ctx['variables']['not_imported'].append(keyword)
 
         ctx['variables']['imported'] = "\n".join(ctx['variables']['imported'])
         keywords = ctx['variables']['not_imported']
         ctx['instruments'] = {'imported': [], 'not_imported': []}
         for keyword in keywords:
+            keyword = keyword.strip()
             parts = keyword.split(">")
             parts[-1] = parts[-1].strip()
             cursor.execute(
@@ -76,14 +78,14 @@ def do_metadata_responses_import(request, spec):
                 for e in res:
                     ctx['instruments']['imported'].append("[!]".join(e))
 
-            else:
-                ctx['instruments']['not_imported'].append(keyword.strip())
+            elif len(keyword) > 0:
+                ctx['instruments']['not_imported'].append(keyword)
 
         ctx['instruments']['imported'] = (
                 "\n".join(ctx['instruments']['imported']))
         keywords = ctx['instruments']['not_imported']
         ctx['keywords_not_imported'] = "<br>".join(keywords)
-        platforms = values[7].replace(";", "\n").split("\n")
+        platforms = values[7].replace(";", "").split("\n")
         ctx['platforms'] = {'imported': [], 'not_imported': []}
         for platform in platforms:
             parts = platform.split(">")
