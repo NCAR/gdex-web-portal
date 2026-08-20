@@ -661,23 +661,25 @@ def update_metadata_database(ctx, conn, **kwargs):
             else:
                 orcid_id = author['orcid_id'] if 'orcid_id' in author else None
                 if 'uuid' not in author:
+                    # inserting new author, get uuid that is generated on
+                    #  insert
                     cursor.execute(
                             "insert into search.authors (type, given_name, "
                             "middle_name, family_name, pid) values (%s, %s, "
                             "%s, %s, %s) on conflict on constraint pid_key do "
-                            "update set type = 'Person'returning uuid",
+                            "update set type = 'Person' returning uuid",
                             ("Person", author['fname'], author['mname'],
                              author['lname'], orcid_id))
                     author['uuid'], = cursor.fetchone()
-                else:
-                    if author['uuid'][-1] == "!":
-                        author['uuid'] = author['uuid'][:-1]
-                        cursor.execute(
-                                "update search.authors set given_name = %s, "
-                                "middle_name = %s, family_name = %s where "
-                                "uuid = %s",
-                                (author['fname'], author['mname'],
-                                 author['lname'], author['uuid']))
+                elif author['uuid'][-1] == "!":
+                    # making a change to an existing author
+                    author['uuid'] = author['uuid'][:-1]
+                    cursor.execute(
+                            "update search.authors set given_name = %s, "
+                            "middle_name = %s, family_name = %s where uuid = "
+                            "%s",
+                            (author['fname'], author['mname'],
+                             author['lname'], author['uuid']))
 
                 cursor.execute(
                         "insert into search.dataset_authors (dsid, uuid, "

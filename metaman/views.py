@@ -12,8 +12,6 @@ from . import metadata_import
 from . import utils
 
 
-from django.http import HttpResponse
-import psycopg2
 def metaman_page(request):
     if (settings.ICOOKIE['id'] not in request.COOKIES or
             settings.ICOOKIE['content'] not in
@@ -205,5 +203,3 @@ def usage_guide(request, slug):
 
 def do_import(request, spec):
     return metadata_import.do_import(request, spec)
-    ctx = {'spec': spec}
-    return render(request, "metaman/datasets/import.html", ctx)
