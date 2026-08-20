@@ -39,7 +39,7 @@ function do_import(b) {
 </form>
 {% elif spec == "metadata_responses" and 'row_number' not in request.POST %}
 <center>
-    Row number from spreadsheet to import: <input type="text" class="fixedWidth14" name="row_number" size="5">
+    Row number from spreadsheet to import: <input type="text" class="fixedWidth14 text-end" name="row_number" size="5">
     <br>
     <button class="btn btn-primary px-2 py-1 border-1 mt-3" onclick="do_import(this)">Import Metadata</button>
     <input type="hidden" name="spec" value="{{ spec }}">
