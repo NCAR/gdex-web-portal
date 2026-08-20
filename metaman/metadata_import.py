@@ -310,14 +310,42 @@ def do_metadata_responses_import(request, spec):
         for dtype in dtypes:
             dtype = dtype.strip().replace(" ", "_").lower()
             if dtype in data_types:
+                if dtype == "grid":
+                    dtype += "[!]n/a"
+
                 ctx['data_types']['imported'].append(dtype)
             else:
                 ctx['data_types']['not_imported'].append(dtype)
+
+        if ctx['data_types']['imported'] in ("elevation", "model_simulation"):
+            ctx['temporal_periods'] = {'imported':
+                                       "9999[!]9999[!]Entire Dataset"}
 
         ctx['data_types']['imported'] = (
                 "\n".join(ctx['data_types']['imported']))
         ctx['data_types']['not_imported'] = (
                 "<br>".join(ctx['data_types']['not_imported']))
+        if 'temporal_periods' not in ctx:
+            ctx['temporal_periods'] = {'imported': [], 'not_imported': []}
+            periods = values[9].split("\n")
+            for period in periods:
+                idx = period.find(";")
+                if idx > 0:
+                    period = period[0:idx]
+
+                parts = period.split("to")
+                if len(parts) == 2:
+                    ctx['temporal_periods']['imported'].append(
+                            "[!]".join([parts[0].strip(), parts[1].strip(),
+                                        "Entire Dataset"]))
+                else:
+                    ctx['temporal_periods']['not_imported'].append(period)
+
+            ctx['temporal_periods']['imported'] = (
+                    "\n".join(ctx['temporal_periods']['imported']))
+            ctx['temporal_periods']['not_imported'] = (
+                    "<br>".join(ctx['temporal_periods']['not_imported']))
+
         return render(request, "metaman/datasets/import.html", ctx)
     except Exception as err:
         return render(request, "metaman/datasets/import.html",
