@@ -154,7 +154,7 @@ function accept_imports() {
   openSection("ds_support");
   openField("related_sites");
   {% endif %}
-  {% if data_type %}
+  {% if data_types.imported %}
   document.getElementById("data_types_field").value = document.import_form.data_types.value;
   changed_data_types_field = true;
   reset_status("data_types_status");
@@ -327,6 +327,14 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     {% if formats.not_imported %}
     <div class="text-red">
         Entries from Column I ("Select all data formats.") that could not be matched and imported:
+        <ul>
+            {{ formats.not_imported|safe }}
+        </ul>
+    </div>
+    {% endif %}
+    {% if data_types.not_imported %}
+    <div class="text-red">
+        Entries from Column L ("Select data type(s).") that could not be matched and imported:
         <ul>
             {{ formats.not_imported|safe }}
         </ul>
