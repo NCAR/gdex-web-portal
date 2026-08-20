@@ -16,6 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from . import rdams
 from . import common
 from . import RDA_Response as rda_r
+from . import filesearch
 from accounts.cookies import verified_cookie_email
 
 from rest_framework.decorators import api_view, renderer_classes
@@ -72,6 +73,14 @@ from .docs import (
     get_related_resources_schema,
     get_related_datasets_schema,
     get_all_datasets_schema,
+    filesearch_datatypes_schema,
+    filesearch_filters_cyclone_fix_schema,
+    filesearch_filters_grid_schema,
+    filesearch_filters_sensor_schema,
+    filesearch_files_cyclone_fix_schema,
+    filesearch_files_grid_schema,
+    filesearch_files_sensor_schema,
+    filesearch_result_set_schema,
     exclude_schema,
 )
 
@@ -835,3 +844,43 @@ def get_all_datasets(request):
     response = rda_r.RDA_Response()
     response.add_data(json)
     return JsonResponse(response.get_json())
+
+@filesearch_datatypes_schema
+@api_view(['GET'])
+def filesearch_datatypes(request, dsid):
+    return filesearch.datatypes(dsid)
+
+@filesearch_filters_cyclone_fix_schema
+@api_view(['GET'])
+def filesearch_filters_cyclone_fix(request, dsid):
+    return filesearch.filters(request, dsid, datatype="cyclone_fix")
+
+@filesearch_filters_grid_schema
+@api_view(['GET'])
+def filesearch_filters_grid(request, dsid):
+    return filesearch.filters(request, dsid, datatype="grid")
+
+@filesearch_filters_sensor_schema
+@api_view(['GET'])
+def filesearch_filters_sensor(request, dsid):
+    return filesearch.filters(request, dsid, datatype="sensor")
+
+@filesearch_files_cyclone_fix_schema
+@api_view(['GET'])
+def filesearch_files_cyclone_fix(request, dsid):
+    return filesearch.files(request, dsid, datatype="cyclone_fix")
+
+@filesearch_files_grid_schema
+@api_view(['GET'])
+def filesearch_files_grid(request, dsid):
+    return filesearch.files(request, dsid, datatype="grid")
+
+@filesearch_files_sensor_schema
+@api_view(['GET'])
+def filesearch_files_sensor(request, dsid):
+    return filesearch.files(request, dsid, datatype="sensor")
+
+@filesearch_result_set_schema
+@api_view(['GET'])
+def filesearch_result_set(request, dsid, result_id, page_num):
+    return filesearch.serve_result_set(request, dsid, result_id, page_num)

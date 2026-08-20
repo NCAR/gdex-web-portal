@@ -38,6 +38,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 INSTALLED_APPS = [
     'ajax',
     'apis.citations',
+    'apis.dsfiles',
     'csw',
     'daas',
     'dashboard',
@@ -488,6 +489,8 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Research Data Archive API for accessing and discovering scientific datasets.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SORT_OPERATIONS': False,
+    'SORT_OPERATION_PARAMETERS': False,
     # OTHER SETTINGS
 }
 
