@@ -7,12 +7,13 @@ from django.conf import settings
 from django.http import HttpResponse
 
 
-def respond(o):
+def respond(o, touch=False):
     o = (
             o.stdout.decode("utf-8").replace("\n", "<br>") + "<br>" +
             o.stderr.decode("utf-8").replace("\n", "<br>"))
-    subprocess.run("touch /usr/local/gdexweb/gdexwebserver/wsgi.py",
-                   shell=True)
+    if touch:
+        subprocess.run("touch /usr/local/gdexweb/gdexwebserver/wsgi.py",
+                       shell=True)
     return HttpResponse(o)
 
 
@@ -36,7 +37,7 @@ def redeploy_libpkg():
     o = subprocess.run((
             "pip install git+https://github.com/rda-dattore/testpkg#"
             "subdirectory=libpkg"), shell=True, capture_output=True)
-    return respond(o)
+    return respond(o, touch=True))
 
 
 def redeploy_spellchecker():
@@ -44,7 +45,7 @@ def redeploy_spellchecker():
             "pip install git+https://github.com/NCAR/rda-dsspellchecker; "
             "/usr/local/gdexweb/bin/dsspellchecker_manage build_db"),
             shell=True, capture_output=True)
-    return respond(o)
+    return respond(o, touch=True))
 
 
 def redeploy_doi_manager():
