@@ -37,7 +37,7 @@ def redeploy_libpkg():
     o = subprocess.run((
             "pip install git+https://github.com/rda-dattore/testpkg#"
             "subdirectory=libpkg"), shell=True, capture_output=True)
-    return respond(o, touch=True))
+    return respond(o, touch=True)
 
 
 def redeploy_spellchecker():
@@ -45,7 +45,7 @@ def redeploy_spellchecker():
             "pip install git+https://github.com/NCAR/rda-dsspellchecker; "
             "/usr/local/gdexweb/bin/dsspellchecker_manage build_db"),
             shell=True, capture_output=True)
-    return respond(o, touch=True))
+    return respond(o, touch=True)
 
 
 def redeploy_doi_manager():
