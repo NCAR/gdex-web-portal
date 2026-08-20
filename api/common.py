@@ -262,11 +262,13 @@ def get_param_inventory(dsid, param_code):
     #query = "show tables like %s"
     #cursor.execute(query, (like_str,))
 
-    init_connection(config=get_IGrML_config(), schema_name=settings.RDADB['pg_schemas']['IGrML'])
-    query = "select parameter from parameters where parameter like %s"
-    cursor.execute(query, ('%'+param_code,))
-
-    response = cursor.fetchone()
+    con, cur = init_connection_new(config=get_IGrML_config(), schema_name=settings.RDADB['pg_schemas']['IGrML'])
+    try:
+        query = "select parameter from parameters where parameter like %s"
+        cur.execute(query, ('%'+param_code,))
+        response = cur.fetchone()
+    finally:
+        close_connection(con, cur)
     #if response is None:
     #    return response
     ## e.g. "ds0833_inventory_3!7-0.2-1:0.0.21"
@@ -326,10 +328,13 @@ def get_access_type(dsid):
     whereas JRA would return 'j' since it has restriced access.
     """
     dsid = format_dataset_id(dsid)
-    init_connection(get_dssdb_config())
-    query = "select access_type from dataset where dsid=%s"
-    cursor.execute(query, (dsid,))
-    response = cursor.fetchone()
+    con, cur = init_connection_new(get_dssdb_config())
+    try:
+        query = "select access_type from dataset where dsid=%s"
+        cur.execute(query, (dsid,))
+        response = cur.fetchone()
+    finally:
+        close_connection(con, cur)
     if response is None:
         return response
     return response[0]
@@ -426,9 +431,12 @@ def get_code_from_grid_definition(grid_def):
     """
     grid_def = str(grid_def)
     table = 'grid_definitions'
-    init_connection(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
-    cursor.execute("select code from "+table+" where def_params = %s", (grid_def,))
-    data = cursor.fetchall()[0] # should only return 1 entry, so take first
+    con, cur = init_connection_new(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
+    try:
+        cur.execute("select code from "+table+" where def_params = %s", (grid_def,))
+        data = cur.fetchall()[0] # should only return 1 entry, so take first
+    finally:
+        close_connection(con, cur)
 
     return data[0]
 
@@ -445,10 +453,13 @@ def get_grid_definition(code):
     value = check_cache(table, code)
     if value is not None:
         return value
-    init_connection(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
+    con, cur = init_connection_new(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
     code = str(code)
-    cursor.execute("select * from "+table+" where code = %s", (code,))
-    data = cursor.fetchall()[0] # should only return 1 entry, so take first
+    try:
+        cur.execute("select * from "+table+" where code = %s", (code,))
+        data = cur.fetchall()[0] # should only return 1 entry, so take first
+    finally:
+        close_connection(con, cur)
     return_obj =  {
             'definition':data[0],
             'def_params':data[1]
@@ -464,14 +475,17 @@ def get_level_definition(code, file_format="", key_change=None):
     if value is not None:
         return value
 
-    init_connection(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
+    con, cur = init_connection_new(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
     code = str(code)
-    query = "select map,type,value from "+table+" where code = %s"
-    cursor.execute("select map,type,value from "+table+" where code = %s", (code,))
     try:
-        data = cursor.fetchall()[0] # should only return 1 entry, so take first
-    except IndexError as e:
-        raise IndexError('code: '+code+' not found in levels table')
+        query = "select map,type,value from "+table+" where code = %s"
+        cur.execute(query, (code,))
+        try:
+            data = cur.fetchall()[0] # should only return 1 entry, so take first
+        except IndexError:
+            raise IndexError('code: '+code+' not found in levels table')
+    finally:
+        close_connection(con, cur)
 
     return_obj =  {
             'map':data[0],
@@ -525,15 +539,21 @@ def get_request_type(dsid):
     [{'request_type': u'T', 'group_index': 0}, {'request_type': u'T', 'group_index': 1}, {'request_type': u'T', 'group_index': 2}]
     ```
     """
-    init_connection()
-    cursor.execute('select rqsttype,gindex from rcrqst where dsid=%s and command is not NULL', (dsid,))
-    data = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        cur.execute('select rqsttype,gindex from rcrqst where dsid=%s and command is not NULL', (dsid,))
+        data = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     return to_dict(('request_type','group_index'), data)
 
 def get_group_title(dsid, group):
-    init_connection()
-    cursor.execute('select title from dsgroup where dsid=%s and gindex=%s', (dsid,group))
-    data = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        cur.execute('select title from dsgroup where dsid=%s and gindex=%s', (dsid,group))
+        data = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     return to_dict(('title',), data)
 
 def get_group_info(dsid, group):
@@ -618,18 +638,24 @@ def get_request_info(rindex):
 
 def get_request_indexes(email):
     """Returns rindexes of requests associated with email"""
-    init_connection()
-    query = 'select rindex from dsrqst where email=%s'
-    cursor.execute(query, (email,))
-    request = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        query = 'select rindex from dsrqst where email=%s'
+        cur.execute(query, (email,))
+        request = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     return request
 
 def get_request_status(request_index):
     """ Returns the status code for a given request index """
-    init_connection()
-    query = 'select status from dsrqst where rindex=%s'
-    cursor.execute(query, (request_index,))
-    status = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        query = 'select status from dsrqst where rindex=%s'
+        cur.execute(query, (request_index,))
+        status = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     return status[0][0]
 
 def get_request_index_from_rqstid(rqstid):
@@ -656,44 +682,47 @@ def get_request_files(request_index, with_urls=False):
     download URLs and base file names of the request files.
     """
     con,cur = init_connection_new()
-    query = 'select tarcount from dsrqst where rindex=%s'
-    cur.execute(query, (request_index,))
-    request = cur.fetchall()
-    if len(request) > 0:
-        request = to_dict(('tarcount',), request)
-        request = request[0]
-
-    if request['tarcount'] > 0:
-        tcnd = ' AND tindex=0'
-    else:
-        tcnd = ''
-
-    rcnd = ' ORDER BY disp_order, wfile'
-
-    column_names = request_column_names()
-    query = 'select ' + ','.join(column_names) + ' from wfrqst where rindex=%s' + tcnd + rcnd
-    cur.execute(query, (request_index,))
-    files = cur.fetchall()
-    if len(files) > 0:
-        files = to_dict(column_names, files)
-    else:
-        files = []
-
-    if request['tarcount'] > 0:
-        tarpath = "TarFiles/"
-        fields = ','.join(column_names)
-        field_wfile = "concat('{}', wfile) wfile".format(tarpath)
-        field_type = "'D' type"
-        fields = re.sub(r'wfile', field_wfile, fields)
-        fields = re.sub(r'type', field_type, fields)
-        query = 'select {} from tfrqst where rindex=%s {}'.format(fields, rcnd)
+    try:
+        query = 'select tarcount from dsrqst where rindex=%s'
         cur.execute(query, (request_index,))
-        tarfiles = cur.fetchall()
-        if len(tarfiles) > 0:
-            tarfiles = to_dict(column_names, tarfiles)
-            files = files + tarfiles
-    else:
-        tarpath = ''
+        request = cur.fetchall()
+        if len(request) > 0:
+            request = to_dict(('tarcount',), request)
+            request = request[0]
+
+        if request['tarcount'] > 0:
+            tcnd = ' AND tindex=0'
+        else:
+            tcnd = ''
+
+        rcnd = ' ORDER BY disp_order, wfile'
+
+        column_names = request_column_names()
+        query = 'select ' + ','.join(column_names) + ' from wfrqst where rindex=%s' + tcnd + rcnd
+        cur.execute(query, (request_index,))
+        files = cur.fetchall()
+        if len(files) > 0:
+            files = to_dict(column_names, files)
+        else:
+            files = []
+
+        if request['tarcount'] > 0:
+            tarpath = "TarFiles/"
+            fields = ','.join(column_names)
+            field_wfile = "concat('{}', wfile) wfile".format(tarpath)
+            field_type = "'D' type"
+            fields = re.sub(r'wfile', field_wfile, fields)
+            fields = re.sub(r'type', field_type, fields)
+            query = 'select {} from tfrqst where rindex=%s {}'.format(fields, rcnd)
+            cur.execute(query, (request_index,))
+            tarfiles = cur.fetchall()
+            if len(tarfiles) > 0:
+                tarfiles = to_dict(column_names, tarfiles)
+                files = files + tarfiles
+        else:
+            tarpath = ''
+    finally:
+        close_connection(con,cur)
 
     if with_urls:
         base_rpath = get_request_path(request_index)
@@ -708,7 +737,6 @@ def get_request_files(request_index, with_urls=False):
             base_file_name = os.path.basename(wfile)
             files[i].update({'url': url, 'base_file_name': base_file_name})
 
-    close_connection(con,cur)
     return files
 
 def request_column_names():
@@ -756,10 +784,13 @@ def request_type(type):
 def get_grouplevel(dsid):
     """Returns group level of dataset"""
     dsid = format_dataset_id(dsid)
-    init_connection()
-    query = 'select grouplevel from dataset where dsid=%s'
-    cursor.execute(query, (dsid,))
-    grouplevel = cursor.fetchone()[0]
+    con, cur = init_connection_new()
+    try:
+        query = 'select grouplevel from dataset where dsid=%s'
+        cur.execute(query, (dsid,))
+        grouplevel = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
     return grouplevel
 
 def get_local_emailname():
@@ -772,46 +803,52 @@ def get_local_emailname():
 
 def get_unique_tindex(request_index):
     """Returns unique tindexes (tar indexes) given request index."""
-    init_connection()
-    query = 'select distinct tindex from wfrqst where rindex=%s'
-    cursor.execute(query, (request_index,))
-    tindexes = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        query = 'select distinct tindex from wfrqst where rindex=%s'
+        cur.execute(query, (request_index,))
+        tindexes = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     return tindexes
 
 def get_random_webfile(dsid, parameter_code=None, start_date=None, end_date=None):
     """Gets a random webfile from dataset. optionally limit by parameter and date."""
-    init_connection(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
-    conditions = []
-    conditions_vars = []
-    grids_table = f'{dsid}_grids2'
-    webfiles_table = f'{dsid}_webfiles2'
+    con, cur = init_connection_new(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
+    try:
+        conditions = []
+        conditions_vars = []
+        grids_table = f'{dsid}_grids2'
+        webfiles_table = f'{dsid}_webfiles2'
 
-    if not parameter_code and not start_date and not end_date:
-        query = f'select id from {grids_table} left join {webfiles_table} on code=file_code order by RANDOM() limit 1;'
-        cursor.execute(query, ())
-        return cursor.fetchall()[0][0] # should only return 1 entry, so take first
+        if not parameter_code and not start_date and not end_date:
+            query = f'select id from {grids_table} left join {webfiles_table} on code=file_code order by RANDOM() limit 1;'
+            cur.execute(query, ())
+            return cur.fetchall()[0][0] # should only return 1 entry, so take first
 
-    if parameter_code:
-        conditions.append('parameter=%s')
-        conditions_vars.append(parameter_code)
-    if start_date:
-        conditions.append(f'{webfiles_table}.start_date>%s ')
-        conditions_vars.append(start_date)
-    if end_date:
-        conditions.append(f'{webfiles_table}.end_date<%s')
-        conditions_vars.append(end_date)
+        if parameter_code:
+            conditions.append('parameter=%s')
+            conditions_vars.append(parameter_code)
+        if start_date:
+            conditions.append(f'{webfiles_table}.start_date>%s ')
+            conditions_vars.append(start_date)
+        if end_date:
+            conditions.append(f'{webfiles_table}.end_date<%s')
+            conditions_vars.append(end_date)
 
-    conditions_str = " AND ".join(conditions)
+        conditions_str = " AND ".join(conditions)
 
-    query = f'select id from {grids_table} left join {webfiles_table} on code=file_code WHERE {conditions_str} order by RANDOM() limit 1;'
-    print(query)
-    print(conditions_vars)
-    cursor.execute(query, tuple(conditions_vars))
-    result = cursor.fetchall()
-    print(result)
-    if len(result) > 0:
-        return result[0] # should only return 1 entry, so take first
-    return None
+        query = f'select id from {grids_table} left join {webfiles_table} on code=file_code WHERE {conditions_str} order by RANDOM() limit 1;'
+        print(query)
+        print(conditions_vars)
+        cur.execute(query, tuple(conditions_vars))
+        result = cur.fetchall()
+        print(result)
+        if len(result) > 0:
+            return result[0] # should only return 1 entry, so take first
+        return None
+    finally:
+        close_connection(con, cur)
 
 _ARCO_COLS = ['path', 'variable', 'format', 'short_name', 'long_name']
 
@@ -819,17 +856,26 @@ def get_arco_variables(dsid):
     """Get Arco Variables"""
     import csv
     from io import StringIO
+
+    # Normalize/validate dsid up front, before touching the cache or the
+    # database, so a malformed dsid (e.g. from a bad URL) can't reach the
+    # f-string table name below or leave a DB connection open.
+    dsid = format_dataset_id(dsid)
+    if dsid is None:
+        return [['unknown', 'error']]
+
     csv_info = check_cache('arco_vars', dsid)
     if csv_info is not None:
         return csv_info
-    con, cur = init_connection_new()
     wfile_table = f'wfile_{dsid}'
-    assert len(wfile_table) == 13
     match_str = 'catalog%.csv'
-    query = f'select wfile,locflag from {wfile_table} where gindex<0 and wfile like %s'
-    cur.execute(query, (match_str,))
-    result = cur.fetchall()
-    close_connection(con, cur)
+    con, cur = init_connection_new()
+    try:
+        query = f'select wfile,locflag from {wfile_table} where gindex<0 and wfile like %s'
+        cur.execute(query, (match_str,))
+        result = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     csv_files = [(i[0], i[1]) for i in result]
     res = [['unknown', 'error']]
     for _file in csv_files:
@@ -874,10 +920,12 @@ def get_time_range(dsid):
         [1]: end date in datetime format
     """
     con,cur = init_connection_new(get_wagtail_config())
-    query = 'select temporal from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con,cur)
+    try:
+        query = 'select temporal from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con,cur)
     start_date = data['full'].split(' to ')[0]
     start_date = datetime.strptime(start_date.split('+')[0], '%Y-%m-%d %H:%M ')
     end_date = data['full'].split(' to ')[1]
@@ -890,33 +938,43 @@ def get_tindex_from_webfile(wfile, dsid):
     tindex_info = check_cache('web_file_tindex', dsid + wfile)
     if tindex_info is not None:
         return tindex_info
-    init_connection()
-    if settings.SPLIT_WFILE:
-        query = "SELECT wfile,file_format from wfile_{} where tindex=%s".format(dsid)
-        cursor.execute(query, (wfile,))
-    else:
-        query = "SELECT wfile,file_format from wfile where dsid='%s' and tindex=%s"
-        cursor.execute(query, (dsid,wfile))
+    con, cur = init_connection_new()
+    try:
+        if settings.SPLIT_WFILE:
+            query = "SELECT wfile,file_format from wfile_{} where tindex=%s".format(dsid)
+            cur.execute(query, (wfile,))
+        else:
+            query = "SELECT wfile,file_format from wfile where dsid='%s' and tindex=%s"
+            cur.execute(query, (dsid,wfile))
 
-    files = cursor.fetchall()
+        files = cur.fetchall()
+    finally:
+        close_connection(con, cur)
 
 def get_webid_from_code(table, code):
     webid =  check_cache('webid', code)
     if webid is not None:
         return webid
-    init_connection(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
-    query = "SELECT id from "+table+" where code=%s"
-    cursor.execute(query, (code,))
-    webid = cursor.fetchone()[0]
+    con, cur = init_connection_new(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
+    try:
+        query = "SELECT id from "+table+" where code=%s"
+        cur.execute(query, (code,))
+        webid = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
     add_to_cache('webid', code, webid)
     return webid
 
 def get_webfiles_by_param_and_date(grid_table, param, start_date, end_date):
-    init_connection(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
-    columns = ['file_code', 'grid_definition_code', 'level_type_codes', 'start_date' ,'end_date','min_nsteps','max_nsteps']
-    query = "SELECT "+ ','.join(columns) + " from "+ grid_table +" where parameter=%s and ((start_date<%s and end_date>=%s) OR (start_date>=%s and end_date<=%s) OR (start_date<=%s and end_date>%s))"
-    cursor.execute(query, (param, start_date, start_date, start_date, end_date, end_date, end_date))
-    return cursor.fetchall() # likely many files, so allow client to iterate.
+    con, cur = init_connection_new(config=get_WGrML_config(), schema_name=settings.RDADB['pg_schemas']['WGrML'])
+    try:
+        columns = ['file_code', 'grid_definition_code', 'level_type_codes', 'start_date' ,'end_date','min_nsteps','max_nsteps']
+        query = "SELECT "+ ','.join(columns) + " from "+ grid_table +" where parameter=%s and ((start_date<%s and end_date>=%s) OR (start_date>=%s and end_date<=%s) OR (start_date<=%s and end_date>%s))"
+        cur.execute(query, (param, start_date, start_date, start_date, end_date, end_date, end_date))
+        result = cur.fetchall() # likely many files, so allow client to iterate.
+    finally:
+        close_connection(con, cur)
+    return result
 
 def get_web_files(request_index):
     """Given a request index, get web file path"""
@@ -1228,16 +1286,19 @@ def get_dataset_helpfile(dsid, _type='A'):
     A (both software and documentation),"""
     dsid = format_dataset_id(dsid)
     assert _type=='D' or _type=='S' or _type=='A'
-    init_connection()
-    columns = ('hfile','data_size','date_modified','note','url')
-    columns_str = ','.join(columns)
-    if _type=='A':
-        query = 'select '+columns_str+" from hfile where status='P' and dsid=%s order by disp_order asc"
-        cursor.execute(query,(dsid,))
-    else:
-        query = 'select '+columns_str+" from hfile where status='P' and type=%s and dsid=%s order by disp_order asc"
-        cursor.execute(query,(_type,dsid,) )
-    data = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        columns = ('hfile','data_size','date_modified','note','url')
+        columns_str = ','.join(columns)
+        if _type=='A':
+            query = 'select '+columns_str+" from hfile where status='P' and dsid=%s order by disp_order asc"
+            cur.execute(query,(dsid,))
+        else:
+            query = 'select '+columns_str+" from hfile where status='P' and type=%s and dsid=%s order by disp_order asc"
+            cur.execute(query,(_type,dsid,) )
+        data = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     data = to_dict(columns, data)
 
     _dict = get_helpfile_common_metadata(dsid)
@@ -1270,12 +1331,15 @@ def get_dataset_info(dsid):
 
 def get_root_groups(dsid):
     dsid = format_dataset_id(dsid)
-    init_connection()
-    columns = ('grpid','title','gindex','inote','mnote','dwebcnt','webcnt')
-    columns_str = ','.join(columns)
-    query = 'select '+columns_str+' from dsgroup where dsid=%s and pindex=0 order by gindex asc'
-    cursor.execute(query,(dsid,))
-    data = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        columns = ('grpid','title','gindex','inote','mnote','dwebcnt','webcnt')
+        columns_str = ','.join(columns)
+        query = 'select '+columns_str+' from dsgroup where dsid=%s and pindex=0 order by gindex asc'
+        cur.execute(query,(dsid,))
+        data = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     data = to_dict(columns, data)
     return data
 
@@ -1293,17 +1357,20 @@ def has_child_groups(dsid, gindex):
 
 def has_webfiles(dsid, gindex):
     dsid = format_dataset_id(dsid)
-    init_connection()
-    columns = ('grpid','gindex')
-    columns_str = ','.join(columns)
-    if settings.SPLIT_WFILE:
-        query = 'select '+columns_str+' from wfile_{} where gindex=%s limit 1'.format(dsid)
-        cursor.execute(query,(gindex,))
-    else:
-        query = 'select '+columns_str+' from wfile where dsid=%s and gindex=%s limit 1'
-        cursor.execute(query,(dsid,gindex))
+    con, cur = init_connection_new()
+    try:
+        columns = ('grpid','gindex')
+        columns_str = ','.join(columns)
+        if settings.SPLIT_WFILE:
+            query = 'select '+columns_str+' from wfile_{} where gindex=%s limit 1'.format(dsid)
+            cur.execute(query,(gindex,))
+        else:
+            query = 'select '+columns_str+' from wfile where dsid=%s and gindex=%s limit 1'
+            cur.execute(query,(dsid,gindex))
 
-    data = cursor.fetchall()
+        data = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     return len(data) > 0
 
 def get_child_groups(dsid, gindex):
@@ -1564,9 +1631,12 @@ def has_arco(dsid):
 
 def get_staff():
     """Get DECS employee information."""
-    init_connection()
-    cursor.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp where role='S' or role='M'")
-    data = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        cur.execute("select fstname,lstname,officeno,phoneno,logname from dssgrp where role='S' or role='M'")
+        data = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     data_dict = to_dict(('first_name','last_name','officeno','phoneno','email'),data)
     for i in data_dict:
         i['email'] = i['email']+'@ucar.edu'
@@ -1586,9 +1656,12 @@ def get_staff_dsid(dsid):
 
 def check_user_exists(email):
     email.strip()
-    init_connection()
-    cursor.execute('select email from ruser where email=%s', (email,))
-    result = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        cur.execute('select email from ruser where email=%s', (email,))
+        result = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     if len(result) > 0:
         return True
     return False
@@ -1599,12 +1672,15 @@ def add_new_user(email, first_name, last_name):
     Returns False if nothing was added.
     """
     email.strip()
-    init_connection()
     if check_user_exists(email):
         return False
-    cursor.execute('INSERT INTO ruser (org, country, valid_flag, valid_email, throttle, org_type, password, email, fname, lname) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-            ('','','1',email,'0','orcid', '', email, first_name, last_name))
-    conn.commit()
+    con, cur = init_connection_new()
+    try:
+        cur.execute('INSERT INTO ruser (org, country, valid_flag, valid_email, throttle, org_type, password, email, fname, lname) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                ('','','1',email,'0','orcid', '', email, first_name, last_name))
+        con.commit()
+    finally:
+        close_connection(con, cur)
     return True
 
 def is_superuser(token):
@@ -1642,9 +1718,12 @@ def get_rqst_indexes(email):
 def update_sflag(sflag, rqstidx):
     """Upadates the sflag for a given request index."""
     assert sflag < 10
-    init_connection()
-    cursor.execute('update dsrqst set sublflag=%d where rindex=%s',(sflag, rqstidx))
-    data = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        cur.execute('update dsrqst set sublflag=%d where rindex=%s',(sflag, rqstidx))
+        data = cur.fetchall()
+    finally:
+        close_connection(con, cur)
 
 def get_user_id():
     """Get user id"""
@@ -1662,19 +1741,14 @@ def check_ds(ds):
         return False
     if len(ds) > 7 or len(ds) < 5:
         return False
-    init_connection()
-    cursor.execute('select distinct dsid from dataset')
-    data = cursor.fetchall()
+    con, cur = init_connection_new()
+    try:
+        cur.execute('select distinct dsid from dataset')
+        data = cur.fetchall()
+    finally:
+        close_connection(con, cur)
     data_list = make_list_from_index(data)
     return format_dataset_id(ds) in data_list
-
-def get_all_datasets():
-    """Returns all dataset information"""
-
-    init_connection()
-    cursor.execute('select dsid,title from dataset')
-    data = cursor.fetchall()
-    return data
 
 def get_number_of_datasets():
     """Get the total number of datasets in the GDEX
@@ -2010,10 +2084,12 @@ def get_abstract(dsid):
             - urls (list): List of URLs found in the abstract
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select abstract from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    raw_data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select abstract from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        raw_data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     result = {
         'abstract': '',
@@ -2119,10 +2195,12 @@ def get_temporal_range(dsid):
         dict: Dictionary containing temporal range information
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select temporal from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select temporal from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     full_range = data['full']
     start_date_str, end_date_str = full_range.split(' to ')
@@ -2267,10 +2345,12 @@ def get_variables(dsid):
         dict: Dictionary containing variables information
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select variables from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select variables from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     variables_list = data.get('gcmd', [])
     variables_sorted = sorted(variables_list)
@@ -2378,10 +2458,12 @@ def get_publications(dsid):
         dict: Dictionary containing publications information
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select publications from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select publications from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     publications_list = data if isinstance(data, list) else []
     cleaned_publications = []
@@ -2406,10 +2488,12 @@ def get_data_license(dsid):
         dict: Dictionary containing information regarding the data license (name and url)
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select data_license from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select data_license from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     result = {
         'name': data['name'],
@@ -2426,10 +2510,12 @@ def get_data_types(dsid):
         str: The data types text for the dataset
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select data_types from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select data_types from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     return data
 
@@ -2441,10 +2527,12 @@ def get_data_formats(dsid):
         str: Dictionary containing information regarding the data formats (description and url)
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select data_formats from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select data_formats from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     formats_list = data if isinstance(data, list) else []
     processed_formats = []
@@ -2524,10 +2612,12 @@ def get_spatial_coverage(dsid):
         dict: Dictionary containing spatial coverage information
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select spatial_coverage from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select spatial_coverage from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     details = clean_spatial_details(data.get('details', []))
 
@@ -2604,10 +2694,12 @@ def get_contributors(dsid):
         dict: Dictionary containing data contributors information
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select contributors from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select contributors from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     contributors_list = data if isinstance(data, list) else []
 
@@ -2628,10 +2720,12 @@ def get_total_volume(dsid):
         dict: Dictionary containing information regarding the total volume and volume groups
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select volume from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select volume from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     result = {
         'total_volume': data['full'],
@@ -2648,10 +2742,12 @@ def get_related_resources(dsid):
         str: Dictionary containing information regarding the related resources list
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select related_rsrc_list from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select related_rsrc_list from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     rsrc_list = data if isinstance(data, list) else []
     processed_resources = []
@@ -2678,10 +2774,12 @@ def get_related_datasets(dsid):
         str: Dictionary containing information regarding the related datasets list
     """
     con, cur = init_connection_new(get_wagtail_config())
-    query = 'select related_dslist from dataset_description_datasetdescriptionpage where dsid=%s'
-    cur.execute(query, (dsid,))
-    data = cur.fetchone()[0]
-    close_connection(con, cur)
+    try:
+        query = 'select related_dslist from dataset_description_datasetdescriptionpage where dsid=%s'
+        cur.execute(query, (dsid,))
+        data = cur.fetchone()[0]
+    finally:
+        close_connection(con, cur)
 
     datasets_list = data if isinstance(data, list) else []
     processed_ds = []
