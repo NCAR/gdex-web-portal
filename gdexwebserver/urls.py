@@ -18,6 +18,9 @@ from search import views as search_views
 from home import views as home_views
 
 
+handler500 = views.server_error
+
+
 urlpatterns = [
 #    path('django-admin/', admin.site.urls),
     path('admin/', include(wagtailadmin_urls)),
@@ -29,7 +32,7 @@ urlpatterns = [
     path('search/', search_views.search, name='search'),
     #path('resources/gcmd_viewer/', resources_views.gcmd_viewer),
     path('resources/', include('daas.urls')),
-    #path('resources/submission/', include('submit.urls')),
+    path('', include('datasubmit.urls')),
     path('api/', include('api.urls')),
     path('csw/', include("csw.urls")),
     path('doi/', include('doi.urls')),
@@ -41,6 +44,7 @@ urlpatterns = [
     path('gsearch/', include('gsearch.urls'), name='gsearch'),
     path('oai/', include("oai.urls")),
     path('metaman/', include('metaman.urls')),
+    path('metaman-lite/', include('metaman_lite.urls')),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
     path('login/', RedirectView.as_view(url='/accounts/login/')),

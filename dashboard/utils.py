@@ -1,21 +1,11 @@
 from api.common import init_connection_new
+from accounts.cookies import verified_cookie_email
 
 def get_duser(request):
-    if 'duser' not in request.COOKIES:
-        return None
-
-    duser = request.COOKIES['duser']
-    duser = duser if ":" not in duser else duser[:duser.find(":")]
-    return duser
+    return verified_cookie_email(request, 'duser')
 
 def get_user_email(request):
-    email = None
-    if 'duser' in request.COOKIES:
-        email = request.COOKIES.get('duser')
-        if ':' in email:
-            idx = email.index(':')
-            email = email[0:idx]
-    return email
+    return verified_cookie_email(request, 'duser')
 
 def is_internal_user(request):
     duser = get_duser(request)

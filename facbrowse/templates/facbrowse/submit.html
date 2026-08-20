@@ -5,7 +5,8 @@
         <div id="submit_pane">
             {% if fcodes|length == 0 %}
             <div class="alert alert-danger text-center mb-2">
-                Your selections do not match any data files, so no subset can be created.
+                Your combination of selections does not match any data files, so no subset can be created. Check the dataset metadata, or start over and make yo
+ur selections one-by-one to see what combinations are valid.
             </div>
             {% else %}
             {% if num_not_whole == 0 and not large_request %}

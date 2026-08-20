@@ -14,7 +14,9 @@ try:
     from urllib.parse import urlencode
 except Exception:
     from urllib import urlencode
+from datasets.models import CustomSubsetPage
 from wagtail.models import Page
+from accounts.cookies import verified_cookie_email
 
 from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
                                 iso_19139, json_ld)
@@ -36,7 +38,7 @@ from globus.views import get_guest_collection_url
 from gdexwebserver.utils import make_tempdir, remove_tempdir
 from dashboard.utils import get_user_email, is_internal_user
 
-from .forms import DatasetRequestForm
+from .forms import DatasetRequestForm, BUFRSubsetForm
 from rda_python_dsrqst.PgRDARqst import rda_request
 
 import logging
@@ -76,7 +78,6 @@ def get_result_list(config, query):
 
     return res_list
 
-
 def description(request, dsid, **kwargs):
     qs = Page.objects.type(DatasetDescriptionPage).filter(
                            slug__in=slug_list(dsid)).live().specific()
@@ -97,10 +98,6 @@ def description(request, dsid, **kwargs):
             ctx['page'].acknowledgement.encode("latin-1")
                                        .decode("unicode-escape"))
     ctx['has_arco'] = api.common.has_arco(ctx['page'].dsid)
-    if ctx['has_arco']:
-        tmp_vars = api.common.get_arco_variables(ctx['page'].dsid)
-        ctx['arco_assets'] = tmp_vars[1:]
-        ctx['arco_headers'] = tmp_vars[0]
     software_data = api.common.get_dataset_software(ctx['page'].dsid)
     ctx['has_software'] = bool(software_data.get('files'))
     documentation_data = api.common.get_dataset_documentation(ctx['page'].dsid)
@@ -115,11 +112,7 @@ def build_matrix(request, dsid):
     if dsid[0] != 'd' or len(dsid) != 7:
         return render(request, "404.html")
 
-    if 'duser' in request.COOKIES:
-        duser = request.COOKIES['duser']
-        duser = duser if ":" not in duser else duser[:duser.find(":")]
-    else:
-        duser = None
+    duser = verified_cookie_email(request, 'duser')
 
     ctx = Matrix(dsid, duser).to_json()
     ctx.update({'dsid': dsid})
@@ -143,7 +136,9 @@ def listopt_gindex(request, dsid, listtyp, gindex):
     if listtyp in ["web", "glade"] or 'duser' in request.COOKIES:
         ctx = {'dsid': dsid}
         if gindex is not None:
-            ctx.update({'group': gindex})
+            ctx.update({'group': {'gindex': gindex}})
+            if 'title' in request.GET:
+                ctx['group']['title'] = request.GET['title']
 
         if listtyp == 'web':
             ctx.update({'listtyp': 'Internet', 'listapp': 'weblist'})
@@ -252,15 +247,22 @@ def examples_page(request, dsnum):
 def get_software_table(request, dsnum):
     hostname = get_hostname()
     dsid = format_dataset_id(dsnum)
-    api_uri = '/api/datasets/{}/software'.format(dsid)
+    api_uri = f'/api/datasets/{dsid}/software'
     url = hostname + api_uri
     software = requests.get(url)
     software = software.content
     software_json = json.loads(software)
-    return description(request, dsnum,
-                       template="datasets/software_table.html",
-                       page_context=software_json)
 
+    template = "datasets/software_table.html"
+
+    if "HTTP_X_REQUESTED_WITH" in request.META:
+        return render(request,
+                      template,
+                      software_json)
+    else:
+        return description(request, dsnum,
+                           template=template,
+                           page_context=software_json)
 
 def get_filelist_table(request, dsnum, groupid=None):
     hostname = get_hostname()
@@ -663,9 +665,11 @@ def custom_subset(request, dsid):
          - dataset period context (date_start, time_start, date_end, time_end)
 
     """
+    _DATASET_SPECIFIC_TEMPLATES = {'d132002', 'd351000', 'd461000'}
+
     d = None
     if "HTTP_X_REQUESTED_WITH" in request.META:
-        if dsid in ['d132002']:
+        if dsid in _DATASET_SPECIFIC_TEMPLATES:
             template = f"datasets/custom-subset-page-{dsid}.html"
         else:
             template = "datasets/custom-subset-page-base.html"
@@ -695,12 +699,25 @@ def custom_subset(request, dsid):
 
     ctx = {
         'subset': subset_context,
-        'gmap_api_key': settings.GMAP_API_KEY,
-        'gmap_api_url': settings.GMAP_API_URL
         }
 
     if d:
         ctx.update({'page': d})
+        logger.info("Added dataset description context to custom subset page for dataset {}".format(dsid))
+
+    if dsid in ['d351000', 'd461000']:
+        ctx['form'] = BUFRSubsetForm(
+            auto_id='%s',
+            dsid=dsid,
+            initial={
+                'dsid':      dsid,
+                'gindex':    subset_context.get('gindex', 1),
+                'rtype':     'S',
+                'startDate': subset_context.get('date_start', ''),
+                'endDate':   subset_context.get('date_end', ''),
+                'compr':     'gz',
+            },
+        )
 
     return render(request, template, ctx)
 

@@ -1,0 +1,441 @@
+{% extends "datasubmit/submission_portal/portal_base.html" %}
+{% load static %}
+
+{% block body_class %} data-submission-page{% endblock %}
+
+{% block headextras %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'datasubmit/css/datasubmit.css' %}">
+{% endblock %}
+
+{% block portal_content %}
+<style>
+    .data-submission-page .author-row {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        background-color: #fff;
+    }
+    .data-submission-page .drag-handle {
+        cursor: grab;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        font-size: 1.5rem;
+    }
+    .data-submission-page .author-row.dragging {
+        opacity: 0.5;
+    }
+    .data-submission-page .remove-author-btn {
+        color: #fff;
+        padding: 0.25rem 0.5rem;
+        line-height: 1;
+    }
+    .data-submission-page .remove-author-btn:disabled {
+        opacity: 1 !important;
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: #fff !important;
+    }
+    .data-submission-page #empty-form-template {
+        display: none;
+    }
+    .data-submission-page #author-section {
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .data-submission-page .author-instructions-box {
+        background-color: var(--bs-card-cap-bg);
+        border: 1px solid #dee2e6;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+    .data-submission-page .author-instructions-box p:last-child {
+        margin-bottom: 0;
+    }
+    .data-submission-page .row-order-controls .btn {
+        padding: 0.1rem 0.3rem;
+        line-height: 1;
+        color: #6c757d;
+        border: none;
+        background: transparent;
+    }
+    .data-submission-page .row-order-controls .btn:hover:not(:disabled) {
+        color: #212529;
+    }
+    .data-submission-page .row-order-controls .btn:disabled {
+        opacity: 0.35;
+    }
+</style>
+<p class="visually-hidden">Step {{ step_display }} of {{ step_count }}: {{ step_title }}</p>
+<nav aria-label="Submission progress">
+    <ol class="step-indicator list-unstyled d-flex mb-3">
+        {% for s in steps %}
+        <li class="step-item">
+            <div class="step-circle {% if s.real_num == step %}active{% endif %}" {% if s.real_num == step %}aria-current="step"{% endif %}>{{ s.num }}</div>
+            <div class="step-title {% if s.real_num == step %}active{% endif %}">{{ s.title }}</div>
+        </li>
+        {% endfor %}
+    </ol>
+</nav>
+
+<div class="card rounded-4">
+    <div class="card-header">
+        <h1 class="h5 mb-0">{{ step_title }}</h1>
+    </div>
+    <div class="card-body p-4">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if meta_form.errors or formset.errors|length %}
+                <div class="alert alert-danger mb-3" id="form-errors-summary" role="alert" tabindex="-1">Please correct the highlighted field(s) below before continuing.</div>
+            {% endif %}
+
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label class="form-label fw-bold fs-5" for="{{ meta_form.submitted_by_organization.id_for_label }}">
+                        {{ meta_form.submitted_by_organization.label }} <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span>
+                    </label>
+                    {{ meta_form.submitted_by_organization }}
+                    {% if meta_form.submitted_by_organization.errors %}
+                    <div id="{{ meta_form.submitted_by_organization.auto_id }}_error" class="invalid-feedback d-block">
+                        {% for error in meta_form.submitted_by_organization.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="author-section" class="d-none">
+                <div class="author-instructions-box">
+                    <p id="author-instructions-individual" class="text-muted fs-5">
+                        Add every author who contributed to this dataset, one row per person.
+                        <strong>Last Name</strong> and <strong>First Name</strong> are required;
+                        Middle Name and ORCID iD are optional. Drag the
+                        <i class="fas fa-up-down-left-right" aria-hidden="true"></i> handle on the left to reorder authors by
+                        rank (the order they should be listed/cited in), or use the
+                        <i class="fas fa-chevron-up" aria-hidden="true"></i>/<i class="fas fa-chevron-down" aria-hidden="true"></i> arrows next to it
+                        to move an author up or down one at a time. Use the
+                        <i class="fas fa-times" aria-hidden="true"></i> button to remove an entry. At least one author is required.
+                    </p>
+                    <p id="author-instructions-org" class="text-muted fs-5 d-none">
+                        Add every institution or organization associated with this dataset, one row each.
+                        <strong>Institution/Organization</strong> is required for each entry. Drag the
+                        <i class="fas fa-up-down-left-right" aria-hidden="true"></i> handle on the left to reorder them by
+                        rank, or use the <i class="fas fa-chevron-up" aria-hidden="true"></i>/<i class="fas fa-chevron-down" aria-hidden="true"></i>
+                        arrows next to it to move an entry up or down one at a time. Use the
+                        <i class="fas fa-times" aria-hidden="true"></i> button to remove an entry.
+                        At least one entry is required.
+                    </p>
+                </div>
+
+                {{ formset.management_form }}
+                {% if formset.non_form_errors %}
+                    <div class="alert alert-danger mb-3" role="alert">
+                        {% for error in formset.non_form_errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+
+                <div id="author-rows">
+                    {% for form in formset.forms %}
+                    <div class="author-row d-flex align-items-center gap-2">
+                        <div class="drag-handle" title="Adjust the ranking of the authors" aria-hidden="true"><i class="fas fa-up-down-left-right"></i></div>
+                        <div class="row-order-controls d-flex flex-column">
+                            <button type="button" class="btn btn-sm move-up-btn" aria-label="Move this entry up in ranking">
+                                <i class="fas fa-chevron-up" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm move-down-btn" aria-label="Move this entry down in ranking">
+                                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="flex-fill row g-2">
+                            <div class="col-md-3 author-name-field">
+                                <label class="form-label fw-bold fs-5 mb-1" for="{{ form.last_name.id_for_label }}">Last Name <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}<div id="{{ form.last_name.auto_id }}_error" class="invalid-feedback d-block">{% for error in form.last_name.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 author-name-field">
+                                <label class="form-label fw-bold fs-5 mb-1" for="{{ form.first_name.id_for_label }}">First Name <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}<div id="{{ form.first_name.auto_id }}_error" class="invalid-feedback d-block">{% for error in form.first_name.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 author-name-field">
+                                <label class="form-label fw-bold fs-5 mb-1" for="{{ form.middle_name.id_for_label }}">Middle Name</label>
+                                {{ form.middle_name }}
+                                {% if form.middle_name.errors %}<div id="{{ form.middle_name.auto_id }}_error" class="invalid-feedback d-block">{% for error in form.middle_name.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 author-name-field">
+                                <label class="form-label fw-bold fs-5 mb-1" for="{{ form.orcid_id.id_for_label }}">ORCID iD</label>
+                                {{ form.orcid_id }}
+                                {% if form.orcid_id.errors %}<div id="{{ form.orcid_id.auto_id }}_error" class="invalid-feedback d-block">{% for error in form.orcid_id.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+                            </div>
+                            <div class="col-md-12 author-org-field d-none">
+                                <label class="form-label fw-bold fs-5 mb-1" for="{{ form.affiliation.id_for_label }}">Institution/Organization <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+                                {{ form.affiliation }}
+                                {% if form.affiliation.errors %}<div id="{{ form.affiliation.auto_id }}_error" class="invalid-feedback d-block">{% for error in form.affiliation.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-danger remove-author-btn" aria-label="Remove this entry"><i class="fas fa-times" aria-hidden="true"></i></button>
+                        {{ form.ORDER }}
+                        {{ form.DELETE }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button type="button" id="add-author-btn" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus" aria-hidden="true"></i> <span id="add-author-btn-label">Add author</span>
+                </button>
+                <div id="author-live-region" class="visually-hidden" aria-live="polite"></div>
+            </div>
+
+            <div id="empty-form-template">
+                <div class="author-row d-flex align-items-center gap-2">
+                    <div class="drag-handle" title="Adjust the ranking of the authors" aria-hidden="true"><i class="fas fa-up-down-left-right"></i></div>
+                    <div class="row-order-controls d-flex flex-column">
+                        <button type="button" class="btn btn-sm move-up-btn" aria-label="Move this entry up in ranking">
+                            <i class="fas fa-chevron-up" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm move-down-btn" aria-label="Move this entry down in ranking">
+                            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="flex-fill row g-2">
+                        <div class="col-md-3 author-name-field">
+                            <label class="form-label fw-bold fs-5 mb-1">Last Name <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+                            {{ formset.empty_form.last_name }}
+                        </div>
+                        <div class="col-md-3 author-name-field">
+                            <label class="form-label fw-bold fs-5 mb-1">First Name <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+                            {{ formset.empty_form.first_name }}
+                        </div>
+                        <div class="col-md-3 author-name-field">
+                            <label class="form-label fw-bold fs-5 mb-1">Middle Name</label>
+                            {{ formset.empty_form.middle_name }}
+                        </div>
+                        <div class="col-md-3 author-name-field">
+                            <label class="form-label fw-bold fs-5 mb-1">ORCID iD</label>
+                            {{ formset.empty_form.orcid_id }}
+                        </div>
+                        <div class="col-md-12 author-org-field d-none">
+                            <label class="form-label fw-bold fs-5 mb-1">Institution/Organization <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+                            {{ formset.empty_form.affiliation }}
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-danger remove-author-btn" aria-label="Remove this entry"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    {{ formset.empty_form.ORDER }}
+                    {{ formset.empty_form.DELETE }}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ prev_url }}" class="btn btn-outline-primary btn-lg">Back</a>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    {% if is_last_step %}Submit{% else %}Next{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var errorSummary = document.getElementById('form-errors-summary');
+    if (errorSummary) {
+        errorSummary.focus();
+    }
+
+    var container = document.getElementById('author-rows');
+    var authorSection = document.getElementById('author-section');
+    var totalFormsInput = document.getElementById('id_form-TOTAL_FORMS');
+    var emptyFormTemplate = document.getElementById('empty-form-template');
+    var orgSelect = document.getElementById('id_submitted_by_organization');
+    var addAuthorLabel = document.getElementById('add-author-btn-label');
+    var individualInstructions = document.getElementById('author-instructions-individual');
+    var orgInstructions = document.getElementById('author-instructions-org');
+    var liveRegion = document.getElementById('author-live-region');
+    var draggedRow = null;
+
+    function announce(message) {
+        liveRegion.textContent = message;
+    }
+
+    function entryNoun() {
+        return orgSelect.value === 'True' ? 'entry' : 'author';
+    }
+
+    function updateOrgMode() {
+        if (orgSelect.value === '') {
+            authorSection.classList.add('d-none');
+            return;
+        }
+        authorSection.classList.remove('d-none');
+
+        var isOrg = orgSelect.value === 'True';
+        individualInstructions.classList.toggle('d-none', isOrg);
+        orgInstructions.classList.toggle('d-none', !isOrg);
+        container.querySelectorAll('.author-name-field').forEach(function (el) {
+            el.classList.toggle('d-none', isOrg);
+            el.querySelectorAll('input').forEach(function (input) {
+                if (isOrg) {
+                    input.value = '';
+                }
+            });
+        });
+        container.querySelectorAll('.author-org-field').forEach(function (el) {
+            el.classList.toggle('d-none', !isOrg);
+            el.querySelectorAll('input').forEach(function (input) {
+                if (!isOrg) {
+                    input.value = '';
+                }
+            });
+        });
+        addAuthorLabel.textContent = isOrg ? 'Add institution/organization' : 'Add author';
+    }
+
+    function visibleRows() {
+        return Array.prototype.slice.call(container.querySelectorAll('.author-row')).filter(function (row) {
+            return !row.classList.contains('d-none');
+        });
+    }
+
+    function updateOrder() {
+        var rows = Array.prototype.slice.call(container.querySelectorAll('.author-row'));
+        var visibleIndex = 0;
+        rows.forEach(function (row) {
+            var orderInput = row.querySelector('input[name$="-ORDER"]');
+            if (row.classList.contains('d-none')) {
+                return;
+            }
+            if (orderInput) {
+                orderInput.value = visibleIndex;
+            }
+            visibleIndex += 1;
+        });
+        updateRemoveButtons();
+    }
+
+    function updateRemoveButtons() {
+        var rows = visibleRows();
+        rows.forEach(function (row, index) {
+            row.querySelector('.remove-author-btn').disabled = rows.length <= 1;
+            row.querySelector('.move-up-btn').disabled = index === 0;
+            row.querySelector('.move-down-btn').disabled = index === rows.length - 1;
+        });
+    }
+
+    function moveRow(row, direction) {
+        var rows = visibleRows();
+        var index = rows.indexOf(row);
+        var swapWith = direction === 'up' ? rows[index - 1] : rows[index + 1];
+        if (!swapWith) {
+            return;
+        }
+        if (direction === 'up') {
+            container.insertBefore(row, swapWith);
+        } else {
+            container.insertBefore(swapWith, row);
+        }
+        updateOrder();
+        announce('Moved ' + entryNoun() + ' ' + (direction === 'up' ? 'up' : 'down') + ' in ranking.');
+    }
+
+    function attachRowEvents(row) {
+        row.querySelector('.remove-author-btn').addEventListener('click', function () {
+            var deleteInput = row.querySelector('input[name$="-DELETE"]');
+            if (deleteInput) {
+                deleteInput.value = 'on';
+            }
+            row.classList.remove('d-flex');
+            row.classList.add('d-none');
+            updateOrder();
+            announce('Removed ' + entryNoun() + '.');
+        });
+
+        row.querySelector('.move-up-btn').addEventListener('click', function () {
+            moveRow(row, 'up');
+        });
+        row.querySelector('.move-down-btn').addEventListener('click', function () {
+            moveRow(row, 'down');
+        });
+
+        var handle = row.querySelector('.drag-handle');
+        handle.setAttribute('draggable', 'true');
+        handle.addEventListener('dragstart', function () {
+            draggedRow = row;
+            row.classList.add('dragging');
+        });
+        handle.addEventListener('dragend', function () {
+            row.classList.remove('dragging');
+            draggedRow = null;
+            updateOrder();
+        });
+    }
+
+    function rowAfter(y) {
+        var rows = visibleRows().filter(function (row) { return row !== draggedRow; });
+        var result = { offset: Number.NEGATIVE_INFINITY, element: null };
+        rows.forEach(function (row) {
+            var box = row.getBoundingClientRect();
+            var offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > result.offset) {
+                result = { offset: offset, element: row };
+            }
+        });
+        return result.element;
+    }
+
+    container.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        if (!draggedRow) {
+            return;
+        }
+        var after = rowAfter(e.clientY);
+        if (after == null) {
+            container.appendChild(draggedRow);
+        } else {
+            container.insertBefore(draggedRow, after);
+        }
+    });
+
+    Array.prototype.forEach.call(container.querySelectorAll('.author-row'), attachRowEvents);
+
+    // On a validation-failure reload, Django re-renders every row fresh (including ones
+    // already marked deleted client-side), so re-hide any row whose DELETE flag stuck.
+    container.querySelectorAll('.author-row').forEach(function (row) {
+        var deleteInput = row.querySelector('input[name$="-DELETE"]');
+        if (deleteInput && deleteInput.value) {
+            row.classList.remove('d-flex');
+            row.classList.add('d-none');
+        }
+    });
+
+    updateOrder();
+    updateOrgMode();
+    orgSelect.addEventListener('change', updateOrgMode);
+
+    document.getElementById('add-author-btn').addEventListener('click', function () {
+        var index = parseInt(totalFormsInput.value, 10);
+        var html = emptyFormTemplate.innerHTML.split('__prefix__').join(index);
+        var temp = document.createElement('div');
+        temp.innerHTML = html.trim();
+        var newRow = temp.firstElementChild;
+        container.appendChild(newRow);
+        attachRowEvents(newRow);
+        totalFormsInput.value = index + 1;
+        updateOrgMode();
+        updateOrder();
+
+        var firstVisibleField = newRow.querySelector(
+            '.author-name-field:not(.d-none) input, .author-org-field:not(.d-none) input'
+        );
+        if (firstVisibleField) {
+            firstVisibleField.focus();
+        }
+        announce('Added a new ' + entryNoun() + '.');
+    });
+});
+</script>
+{% endblock %}

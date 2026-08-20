@@ -1,0 +1,70 @@
+{% extends "base_fluid.html" %}
+
+{% block content %}
+
+<div class="container-fluid ">
+    <div class="row">
+        <div class="col-12 col-md-2 bg-light">
+            <div class="d-flex flex-column flex-lg-row justify-content-start align-items-center text-center text-lg-start mt-3 mb-0 gap-1">
+                <img src="/media/images/GDEX_Icon_2026.original.png" width="110" height="110" class="img" alt="GDEX Logo">
+                <p class="fs-5 fw-light mb-0 text-uppercase">Data Submission<br> Portal</p>
+            </div>
+
+            <nav class="d-flex flex-column gap-2 px-1 mt-3">
+
+                <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal' %}">
+                    <i class="fa-solid fa-home me-1" aria-hidden="true"></i> My Datasets
+                </a>
+                {% with url_name=request.resolver_match.url_name %}
+                <a class="btn rounded-4 border-0 text-start {% if url_name == 'data-submission-welcome' or url_name == 'data-submission-advisor' or url_name == 'data-submission-zenodo-recommendation' or url_name == 'data-submission-zenodo-next-steps' or url_name == 'data-submission-gdex-next-steps' or url_name == 'data-submission-confirmation' or url_name == 'data-submission-contributors' or url_name == 'data-submission-step' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-welcome' %}">
+                    <i class="fa-solid fa-upload me-1" aria-hidden="true"></i> Submit Data
+                </a>
+                {% endwith %}
+                <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal-messages' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-messages' %}">
+                    <i class="fa-solid fa-envelope me-1" aria-hidden="true"></i> Messages
+                </a>
+                <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal-budget' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-budget' %}">
+                    <i class="fa-solid fa-dollar-sign me-1" aria-hidden="true"></i> Budget Tool
+                </a>
+
+                <!-- <a class="btn rounded-4 border-0 text-start {% if request.resolver_match.url_name == 'data-submission-portal-proposal-templates' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'data-submission-portal-proposal-templates' %}">
+                    <i class="fa-solid fa-file-alt me-1" aria-hidden="true"></i> Proposal Templates
+                </a> --->
+
+            </nav>
+
+            {% if request.user.is_superuser %}
+            <div class="px-1 mt-3">
+                <hr>
+                <form method="post" action="{% url 'data-submission-portal-view-mode' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <div class="form-check form-switch mb-0 fs-3">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="portal-view-mode-toggle"
+                            name="view_mode"
+                            value="customer"
+                            {% if request.session.datasubmit_portal_view_mode == 'customer' %}checked{% endif %}
+                            onchange="this.form.submit()"
+                        >
+                        <label class="form-check-label fs-6" for="portal-view-mode-toggle">
+                            {% if request.session.datasubmit_portal_view_mode == 'customer' %}Customer view{% else %}Agent view{% endif %}
+                        </label>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+
+
+        </div>
+        <div class="col-12 col-md-10 bg-white px-3">
+            {% block portal_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

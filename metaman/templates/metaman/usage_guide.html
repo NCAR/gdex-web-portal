@@ -1,4 +1,7 @@
 {% load wagtailcore_tags %}
-{% autoescape off %}
-{{ content|richtext }}
-{% endautoescape %}
+<h3>{{ title }}</h3>
+<div>
+    {% autoescape off %}
+    {{ content|richtext }}
+    {% endautoescape %}
+</div>

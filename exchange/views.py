@@ -57,7 +57,7 @@ def _list_directory(pelfs, list_path, subpath, base_path, osdf_data_path, hide_r
 
     for entry in pelfs.ls(list_path, detail=True):
         name = os.path.basename(entry['name'].rstrip('/'))
-        if not name:
+        if not name or name.startswith('.'):
             continue
         if hide_readme_at_root and name == 'README.md':
             continue
@@ -113,24 +113,27 @@ def filelist(request, subpath=''):
     readme_title = None
     readme_description = None
 
-    # A top-level dataset page has exactly one path component (e.g. "my-dataset")
-    is_dataset_page = bool(subpath) and '/' not in subpath
+    if subpath and any(part in ('.', '..') for part in subpath.split('/')):
+        error = 'Invalid path.'
+    else:
+        # A top-level dataset page has exactly one path component (e.g. "my-dataset")
+        is_dataset_page = bool(subpath) and '/' not in subpath
 
-    try:
-        pelfs = _get_pelican_fs()
-        list_path = base_path.rstrip('/') + ('/' + subpath if subpath else '') + '/'
+        try:
+            pelfs = _get_pelican_fs()
+            list_path = base_path.rstrip('/') + ('/' + subpath if subpath else '') + '/'
 
-        entries, has_readme = _list_directory(
-            pelfs, list_path, subpath, base_path, osdf_data_path,
-            hide_readme_at_root=not subpath,
-        )
+            entries, has_readme = _list_directory(
+                pelfs, list_path, subpath, base_path, osdf_data_path,
+                hide_readme_at_root=not subpath,
+            )
 
-        # Read README metadata only on top-level dataset pages
-        if is_dataset_page and has_readme:
-            readme_title, readme_description = _read_dataset_readme(pelfs, base_path, subpath)
+            # Read README metadata only on top-level dataset pages
+            if is_dataset_page and has_readme:
+                readme_title, readme_description = _read_dataset_readme(pelfs, base_path, subpath)
 
-    except Exception as exc:
-        error = str(exc)
+        except Exception as exc:
+            error = str(exc)
 
     globus_endpoint_id = getattr(settings, 'GLOBUS_DATA_ENDPOINT_ID', '')
     exchange_path = '/exchange/' + (subpath.strip('/') + '/' if subpath else '')

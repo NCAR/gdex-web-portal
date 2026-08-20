@@ -10,7 +10,7 @@ webapp:
     fqdnAPI: api.gdex.ucar.edu
     secretName: incommon-cert-gdex-webserver
   container: 
-    image: docker.io/dattore/gdex-web-portal:v457
+    image: docker.io/dattore/gdex-web-portal:v506
     port: 8080
     requests:
       memory: 32Gi
@@ -19,7 +19,7 @@ webapp:
       memory: 128Gi
       cpu: 6
     responseTimeout: 180
-    maxUploadSize: 60m
+    maxUploadSize: 1000m
   ingress:
     ingressClassName: nginx-external
 

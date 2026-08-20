@@ -1,0 +1,36 @@
+{% extends "datasubmit/submission_portal/portal_base.html" %}
+{% load static %}
+
+{% block body_class %} data-submission-page{% endblock %}
+
+{% block headextras %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'datasubmit/css/datasubmit.css' %}">
+{% endblock %}
+
+{% block portal_content %}
+
+<div class="card rounded-4 mt-4">
+    <div class="card-body text-center py-5">
+        <div class="result-icon info mb-4 mx-auto" aria-hidden="true">
+            <i class="fas fa-box-archive"></i>
+        </div>
+        <h1 class="h2 mb-3">Submit Your Dataset to Zenodo</h1>
+        <p class="fs-5 text-muted">
+            {% if reason == 'software' %}
+                You're seeing this page because you indicated you'd like your software archived
+                . GDEX doesn't handle software archival, so the NSF NCAR community on Zenodo is
+                the right place for that — it can generate a DOI for you quickly.
+            {% else %}
+                You're seeing this page because you indicated you'd prefer not to have this dataset
+                hosted on GDEX. Since it's under 50 GB and doesn't need NCAR HPC access, the NSF NCAR
+                community on Zenodo can archive it and generate a DOI quickly.
+            {% endif %}
+            Use the link below to get started — you'll need to submit the dataset's information
+            directly on Zenodo.
+        </p>
+        <!-- Placeholder destination until a real target is provided -->
+        <a href="https://zenodo.org/communities/nsfncar/about" class="btn btn-primary btn-lg mt-3">Go to the NSF NCAR Zenodo Community</a>
+    </div>
+</div>
+{% endblock %}

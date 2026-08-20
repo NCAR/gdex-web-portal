@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'dataset_citation',
     'dataset_description',
     'dataset_provenance',
+    'datasubmit',
     'doi',
     'facbrowse',
     #'globus',
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
     'oai',
     'login',
     'metaman',
+    'metaman_lite',
     'search',
     #'accounts',
 
@@ -294,7 +296,7 @@ SOCIAL_AUTH_GLOBUS_SECRET = local_settings.globus_app_client_secret
 
 # This is a general Django setting if views need to redirect to login
 # https://docs.djangoproject.com/en/3.2/ref/settings/#login-url
-LOGIN_URL = '/login/globus'
+LOGIN_URL = '/accounts/login/'
 
 # Scopes will be requested on each user login
 SOCIAL_AUTH_GLOBUS_SCOPE = [

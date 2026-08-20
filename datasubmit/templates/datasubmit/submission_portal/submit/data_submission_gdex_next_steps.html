@@ -1,0 +1,27 @@
+{% extends "datasubmit/submission_portal/portal_base.html" %}
+{% load static %}
+
+{% block body_class %} data-submission-page{% endblock %}
+
+{% block headextras %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'datasubmit/css/datasubmit.css' %}">
+{% endblock %}
+
+{% block portal_content %}
+
+<div class="card rounded-4 mt-4">
+    <div class="card-body text-center py-5">
+        <div class="result-icon success mb-4 mx-auto" aria-hidden="true">
+            <i class="fas fa-database"></i>
+        </div>
+        <h1 class="h2 mb-3">GDEX Is the Right Fit for Your Dataset</h1>
+        <p class="fs-5 text-muted">
+            Based on your answers, GDEX is a good fit for archiving and distributing this dataset.
+            We'll now need some additional information about it — the next four steps will walk
+            you through submitting your dataset to GDEX.
+        </p>
+        <a href="{{ start_url }}" class="btn btn-primary btn-lg mt-3">Start GDEX Data Submission</a>
+    </div>
+</div>
+{% endblock %}

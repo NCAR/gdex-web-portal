@@ -1,0 +1,315 @@
+{% extends "datasubmit/submission_portal/portal_base.html" %}
+
+{% block portal_content %}
+<style>
+.action-card {
+    border: none;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0px 0px 10px lightgray;
+    position: relative;
+    width: 100%;
+    max-width: 540px;
+    aspect-ratio: 1 / 1;
+    /* aspect-ratio fixes height = width, but the front/back content is
+       absolutely positioned (so it can't grow the box itself) and doesn't
+       shrink past a point -- below ~420px wide, a true square becomes
+       shorter than the content needs and overflow:hidden was silently
+       clipping it. min-height is a floor: it wins over the aspect-ratio
+       height whenever the square would be too short, and does nothing once
+       the square is already taller than that (i.e. on desktop). */
+    min-height: 420px;
+    overflow: hidden;
+    margin: 0 auto;
+    transition: box-shadow .3s ease, transform .3s ease, background .3s ease;
+}
+
+/* .flipped mirrors :hover so tap-to-reveal (added below for touch, where
+   hover doesn't exist) produces the exact same flip as the original
+   mouse-hover design -- one visual mechanism, two ways to trigger it. */
+.action-card:hover,
+.action-card.flipped {
+    background: #fff;
+    box-shadow: 0 8px 28px rgba(0,87,194,.22);
+}
+@media (hover: hover) and (pointer: fine) {
+    .action-card:hover {
+        transform: translateY(-4px);
+    }
+}
+
+.card-view {
+    position: absolute;
+    inset: 0;
+    padding: 2rem 1.75rem;
+    transition: opacity .25s ease;
+}
+
+.default-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: .75rem;
+    opacity: 1;
+}
+
+.action-card:hover .default-view,
+.action-card.flipped .default-view {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.hover-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.steps-scroll {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    padding-top: .5rem;
+}
+
+.action-card:hover .hover-view,
+.action-card.flipped .hover-view {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.icon-circle {
+    width: 79px;
+    height: 79px;
+    border-radius: 50%;
+    background: #0057c2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.icon-circle i {
+    color: #fff;
+    font-size: 1.75rem;
+}
+
+.step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #0057c2;
+    color: #fff;
+    font-weight: 700;
+    font-size: .9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-title-blue {
+    color: #0057c2;
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin: 0;
+}
+
+.hint-text {
+    color: #b0b8c8;
+    font-size: 1.25rem;
+    margin-top: .5rem;
+}
+
+.default-view p {
+    font-size: 1.4rem;
+    margin-top: .75rem;
+}
+
+.badge-restricted {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: #e8f0fb;
+    color: #0057c2;
+    border: 1px solid #b3ccf5;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: .4rem 1rem;
+}
+
+.step-title {
+    font-weight: 600;
+    font-size: 1.4rem;
+    line-height: 1.3;
+}
+
+.step-desc {
+    font-size: 1.15rem;
+    color: #6c757d;
+    line-height: 1.4;
+    margin-top: .2rem;
+}
+
+.btn-action,
+a.btn-action:link,
+a.btn-action:visited {
+    background: #0057c2;
+    border-color: #0057c2;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #fff !important;
+    text-decoration: none;
+}
+.btn-action:hover {
+    background: #004aad;
+    border-color: #004aad;
+    color: #fff !important;
+}
+
+/* The square card scales with viewport width, but on narrow phones a
+   proportionally-scaled 2.5rem title / 1.4rem step text still crowds a
+   ~340px square -- step down the type scale rather than fight the ratio. */
+@media (max-width: 420px) {
+    .card-title-blue {
+        font-size: 1.75rem;
+    }
+    .default-view p,
+    .step-title {
+        font-size: 1.1rem;
+    }
+    .step-desc {
+        font-size: .95rem;
+    }
+}
+</style>
+
+
+<div class="mt-3">
+    <h3 class="mb-1 text-left">Contribute to the GDEX Repository</h3>
+    <p class="text-left text-muted fst-italic">
+        Whether you're submitting your own dataset or recommending one for the GDEX repository,
+        pick an option below to get started.
+    </p>
+</div>
+<hr>
+
+<div class="container py-2 bg-white">
+    <div class="row g-6 py-3 justify-content-left">
+
+        <!-- Submit Data Card -->
+        <div class="col-12 col-md-6 col-lg-5">
+            <div class="card action-card">
+
+                <div class="card-view default-view">
+                    <div class="icon-circle">
+                        <i class="fa-solid fa-file-arrow-up"></i>
+                    </div>
+                    <h3 class="card-title-blue">Submit Data</h3>
+                    <p class="text-muted mb-0">Upload and share your datasets</p>
+                    <span class="hint-text">Tap or hover to see process</span>
+                </div>
+
+                <div class="card-view hover-view">
+                    <div class="steps-scroll">
+                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">1</span>
+                                <div>
+                                    <div class="step-title">Submission Advisor</div>
+                                    <div class="step-desc">Answer a few quick questions about your dataset so we can figure out where it belongs.</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">2</span>
+                                <div>
+                                    <div class="step-title">GDEX Submission Form</div>
+                                    <div class="step-desc">If GDEX is the right fit, fill out basic dataset information, contributor details, and access information.</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">3</span>
+                                <div>
+                                    <div class="step-title">Confirmation</div>
+                                    <div class="step-desc">You'll get a confirmation summarizing what you submitted and what happens next.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'data-submission-welcome' %}?type=own" class="btn btn-action w-100 py-2">
+                        Start Process
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Suggest Dataset Card -->
+        <div class="col-12 col-md-6 col-lg-5">
+            <div class="card action-card">
+
+                <div class="card-view default-view">
+                    <div class="icon-circle">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <h3 class="card-title-blue">Suggest Dataset</h3>
+                    <p class="text-muted mb-0">Recommend a dataset for our catalog</p>
+                    <span class="badge-restricted"><i class="fa-solid fa-lock" aria-hidden="true"></i> NCAR Employees Only</span>
+                    <span class="hint-text">Tap or hover to see process</span>
+                </div>
+
+                <div class="card-view hover-view">
+                    <div class="steps-scroll">
+                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">1</span>
+                                <div>
+                                    <div class="step-title">GDEX Data Suggestion Form</div>
+                                    <div class="step-desc">Fill out the form with details about the dataset you'd like to see added to GDEX.</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="step-num mt-1">2</span>
+                                <div>
+                                    <div class="step-title">Confirmation</div>
+                                    <div class="step-desc">You'll get a confirmation summarizing what you submitted and what happens next.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'data-submission-welcome' %}?type=recommend" class="btn btn-action w-100 py-2">
+                        Suggest Dataset
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Desktop/mouse gets the flip for free from the :hover rules above --
+    // nothing to wire up. Touch devices have no hover at all, so give them
+    // the same flip via tap: tapping the card toggles the .flipped class,
+    // which the CSS treats identically to :hover. Tapping the CTA link
+    // itself still navigates normally instead of toggling.
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        return;
+    }
+    document.querySelectorAll('.action-card').forEach(function (card) {
+        card.addEventListener('click', function (event) {
+            if (event.target.closest('a')) {
+                return;
+            }
+            card.classList.toggle('flipped');
+        });
+    });
+});
+</script>
+{% endblock %}

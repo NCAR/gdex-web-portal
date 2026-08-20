@@ -12,8 +12,6 @@ from . import metadata_import
 from . import utils
 
 
-from django.http import HttpResponse
-import psycopg2
 def metaman_page(request):
     if (settings.ICOOKIE['id'] not in request.COOKIES or
             settings.ICOOKIE['content'] not in
@@ -188,7 +186,8 @@ def usage_guide(request, slug):
     if len(qs) == 0:
         return render(request, "404.html")
 
-    content = str(
+    ctx = {'title': qs.first().specific.title}
+    ctx['content'] = str(
         qs.first().specific.body
     ).replace(
         "&gt;", ">"
@@ -199,11 +198,8 @@ def usage_guide(request, slug):
     ).replace(
         "{{ csrf_token }}", get_token(request)
     )
-    return render(request, "metaman/usage_guide.html",
-                  {'content': content})
+    return render(request, "metaman/usage_guide.html", ctx)
 
 
 def do_import(request, spec):
     return metadata_import.do_import(request, spec)
-    ctx = {'spec': spec}
-    return render(request, "metaman/datasets/import.html", ctx)

@@ -84,9 +84,9 @@ function commitFieldChange(f, a) {
     params = params.replace(/\+/g, "%2B") + '&csrfmiddlewaretoken={{ csrf_token }}';
     document.getElementById(f + '_status').src = ldimg.src;
     if (a) {
-      getContentFromPost(f + '_status_div', 'commit-field/' + f + '/', params);
+      getContentFromPost(f + '_status_div', '/metaman/manage-datasets/commit-field/' + f + '/', params);
     } else {
-      document.getElementById(f + '_status_div').innerHTML = getContentFromSynchronousPost(f + '_status_div', 'commit-field/' + f + '/', params);
+      document.getElementById(f + '_status_div').innerHTML = getContentFromSynchronousPost(f + '_status_div', '/metaman/manage-datasets/commit-field/' + f + '/', params);
     }
     eval("changed_" + f + "_field = false");
   }
@@ -389,16 +389,16 @@ function commitChanges() {
     alert("Please enter a comment about the changes that you made");
     return false;
   }
-  document.getElementById("metaman_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
-  getContentFromPost('metaman_content', 'commit-changes/{{ dsid }}/', 'cvscomment=' + document.cvs_form.comment.value + '&csrfmiddlewaretoken={{ csrf_token }}');
+  document.getElementById("metaman{% if metaman_lite_token %}_lite{% endif %}_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
+  getContentFromPost('metaman{% if metaman_lite_token %}_lite{% endif %}_content', 'commit-changes/{{ dsid }}/', 'cvscomment=' + document.cvs_form.comment.value + '&csrfmiddlewaretoken={{ csrf_token }}');
   hideModalWindow();
   window.scrollTo(0, 0);
 }
 
 function discardChanges() {
   if (confirm("Are you sure you want to discard your changes?")) {
-    document.getElementById("metaman_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
-    getContent('metaman_content', 'discard-changes/{{ dsid }}/');
+    document.getElementById("metaman{% if metaman_lite_token %}_lite{% endif %}_content").innerHTML = '<h2>Editing the Metadata for Dataset {{ dsid }}</h2><center><br><img src="/images/loader.gif" /><br><span style="color: #a0a0a0">Working...</span></center>';
+    getContent('metaman{% if metaman_lite_token %}_lite{% endif %}_content', '/metaman/manage-datasets/discard-changes/{{ dsid }}/');
   }
 }
 
@@ -663,7 +663,7 @@ img.icon-size {
     <p>
         <font color="red">*</font> denotes a required field
     </p>
-    {% if dataset_type == "work-in-progress" %}
+    {% if dataset_type == "work-in-progress" and not metaman_lite_token %}
     <div id="import" class="ps-2 py-2 text-bg-info">
         This dataset is still marked as a work-in-progress dataset. You can try to <a href="javascript:void(0)" onclick="popModalWindowWithGetUrl(300, 200, 'import/null/')">import</a> some of the metadata.
     </div>
@@ -1594,6 +1594,6 @@ function changeCitation() {
   document.getElementById("modal-window-content").innerHTML = "Loading the citation...<br><br>";
   getContent('modal-window-content', '/cgi-bin/datasets/citation?dsnum={{ dsid }}&style=' + style + '&date=&temp=yes');
 }
-registerAjaxCallback('changeCitation');
+//registerAjaxCallback('changeCitation');
 </script>
 {% endif %}

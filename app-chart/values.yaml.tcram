@@ -9,7 +9,7 @@ webapp:
     fqdnAPI: api.tcram.k8s.ucar.edu
     secretName: incommon-cert-tcram-gdex-webserver
   container: 
-    image: hub.k8s.ucar.edu/tcram-gdex/gdex-web-portal:v26251682606
+    image: hub.k8s.ucar.edu/tcram-gdex/gdex-web-portal:v30719824830
     port: 8080
     requests:
       memory: 4Gi

@@ -29,12 +29,19 @@ from gdexwebserver.utils import make_tempdir, remove_tempdir
 
 
 def add(request):
-    if 'HTTP_X_REQUESTED_WITH' not in request.META:
-        return render(request, "404.html")
+    metaman_lite_token = None
+    parts = request.META['REQUEST_URI'].split("/")
+    if len(parts) > 3 and parts[1] == "metaman-lite" and parts[2] == "token":
+        metaman_lite_token = parts[3]
+        iuser = metaman_lite_token
 
-    iuser = utils.get_iuser(request)
-    if len(iuser) == 0:
-        return render(request, "500.html")
+    if not metaman_lite_token:
+        if 'HTTP_X_REQUESTED_WITH' not in request.META:
+            return render(request, "404.html")
+
+        iuser = utils.get_iuser(request)
+        if len(iuser) == 0:
+            return render(request, "500.html")
 
     # return any expired IDs to the pool
     try:
@@ -49,30 +56,34 @@ def add(request):
         return render(request, "metaman/datasets/add.html",
                       {'database_error': "{}".format(err)})
 
-    # check to see if an ID has already been reserved
-    try:
-        cursor.execute((
-                "select dsid, timestamp_utc from search.datasets where type = "
-                "'R' and title = '" + iuser + "'"))
-        res = cursor.fetchone()
-        if res is not None:
-            next_id = res[0]
-            expires = (res[1].replace(tzinfo=tz.tzutc())
-                       .astimezone(tz.gettz("US/Mountain")))
+    if metaman_lite_token:
+        id = "pool"
+    else:
+        # check to see if an ID has already been reserved
+        try:
+            cursor.execute(
+                    "select dsid, timestamp_utc from search.datasets where "
+                    "type = 'R' and title = %s", (iuser, ))
+            res = cursor.fetchone()
+            if res is not None:
+                next_id = res[0]
+                expires = (res[1].replace(tzinfo=tz.tzutc())
+                           .astimezone(tz.gettz("US/Mountain")))
+                return render(request, "metaman/datasets/add.html",
+                              {'next_id': next_id,
+                               'expires': str(expires)[0:19],
+                               'already_reserved': True})
+
+        except psycopg2.Error as err:
+            log_error(err, source="add")
             return render(request, "metaman/datasets/add.html",
-                          {'next_id': next_id,
-                           'expires': str(expires)[0:19],
-                           'already_reserved': True})
+                          {'database_error': "{}".format(err)})
 
-    except psycopg2.Error as err:
-        log_error(err, source="add")
-        return render(request, "metaman/datasets/add.html",
-                      {'database_error': "{}".format(err)})
+        if 'id' not in request.POST:
+            return render(request, "metaman/datasets/add.html")
 
-    if 'id' not in request.POST:
-        return render(request, "metaman/datasets/add.html")
+        id = request.POST['id']
 
-    id = request.POST['id']
     if id == "pool":
         # pull the next available ID from the 'pool'
         try:
@@ -101,14 +112,18 @@ def add(request):
                     iuser + "', '', 'N', 'N', '9999-01-01', 'N')"))
             conn.commit()
             conn.close()
+            if metaman_lite_token:
+                return next_id
+
             return render(request, "metaman/datasets/add.html",
                           {'next_id': next_id,
                            'expires': (str(expires.astimezone(tz
                                        .gettz("US/Mountain")))[0:19])})
         except psycopg2.Error as err:
             log_error(err, source="add")
+            ctx = {'database_error': f"{err}"}
             return render(request, "metaman/datasets/add.html",
-                          {'database_error': "{}".format(err)})
+                          {'database_error': f"{err}"})
 
     else:
         # a specific ID was submitted, so check if it is good and available
@@ -407,6 +422,7 @@ def commit_changes(request, dsid):
                         .replace("<", "&lt;")
                         .replace(">", "&gt;"))
                 ctx.update({'error': ("Unable to write XML file: non-ASCII "
+
                                       "characters (denoted by diamonds) in "
                                       "<i>{}</i>")
                            .format(sub_s)})
@@ -470,7 +486,7 @@ def commit_changes(request, dsid):
     env = os.environ.copy()
     env['USER'] = "apache"
     env['QUERY_STRING'] = "X"
-    if ctx['ds_type'] in ("primary", "historical"):
+    if ctx['ds_type'] in ("primary", "historical", "dead"):
         o = subprocess.run((
                 "dsgen --mdb='" +
                 json.dumps(settings.RDADB['metadata_config_pg']) + "' " +
@@ -645,23 +661,25 @@ def update_metadata_database(ctx, conn, **kwargs):
             else:
                 orcid_id = author['orcid_id'] if 'orcid_id' in author else None
                 if 'uuid' not in author:
+                    # inserting new author, get uuid that is generated on
+                    #  insert
                     cursor.execute(
                             "insert into search.authors (type, given_name, "
                             "middle_name, family_name, pid) values (%s, %s, "
                             "%s, %s, %s) on conflict on constraint pid_key do "
-                            "update set type = 'Person'returning uuid",
+                            "update set type = 'Person' returning uuid",
                             ("Person", author['fname'], author['mname'],
                              author['lname'], orcid_id))
                     author['uuid'], = cursor.fetchone()
-                else:
-                    if author['uuid'][-1] == "!":
-                        author['uuid'] = author['uuid'][:-1]
-                        cursor.execute(
-                                "update search.authors set given_name = %s, "
-                                "middle_name = %s, family_name = %s where "
-                                "uuid = %s",
-                                (author['fname'], author['mname'],
-                                 author['lname'], author['uuid']))
+                elif author['uuid'][-1] == "!":
+                    # making a change to an existing author
+                    author['uuid'] = author['uuid'][:-1]
+                    cursor.execute(
+                            "update search.authors set given_name = %s, "
+                            "middle_name = %s, family_name = %s where uuid = "
+                            "%s",
+                            (author['fname'], author['mname'],
+                             author['lname'], author['uuid']))
 
                 cursor.execute(
                         "insert into search.dataset_authors (dsid, uuid, "
@@ -1159,12 +1177,19 @@ def commit_field(request, fieldname):
 
 
 def create(request, dsid):
-    if 'HTTP_X_REQUESTED_WITH' not in request.META:
-        return render(request, "404.html")
+    metaman_lite_token = None
+    parts = request.META['REQUEST_URI'].split("/")
+    if len(parts) > 3 and parts[1] == "metaman-lite" and parts[2] == "token":
+        metaman_lite_token = parts[3]
+        iuser = metaman_lite_token
 
-    iuser = utils.get_iuser(request)
-    if len(iuser) == 0:
-        return render(request, "500.html")
+    if not metaman_lite_token:
+        if 'HTTP_X_REQUESTED_WITH' not in request.META:
+            return render(request, "404.html")
+
+        iuser = utils.get_iuser(request)
+        if len(iuser) == 0:
+            return render(request, "500.html")
 
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
@@ -1235,15 +1260,18 @@ def create(request, dsid):
             f.write(("            ID=\"" + dsid + "\" type=\""
                      "work-in-progress\">\n"))
             f.write("  <continuingUpdate value=\"no\" />\n")
-            cursor.execute(("select fstname, lstname from dssdb.dssgrp "
-                            "where logname = %s"), (iuser, ))
-            res = cursor.fetchone()
-            if res is None:
-                return render(request, "metaman/datasets/create.html",
-                              {'missing_specialist': iuser})
+            if metaman_lite_token is None:
+                cursor.execute("select fstname, lstname from dssdb.dssgrp "
+                               "where logname = %s", (iuser, ))
+                res = cursor.fetchone()
+                if res is None:
+                    return render(request, "metaman/datasets/create.html",
+                                  {'missing_specialist': iuser})
+                else:
+                    f.write((f"  <contact>{res[0]} {res[1]}</contact>\n"))
+
             else:
-                f.write(("  <contact>" + res[0] + " " + res[1] +
-                         "</contact>\n"))
+                f.write((f"  <contact>{metaman_lite_token}</contact>\n"))
 
             f.write("</dsOverview>\n")
 
@@ -1302,6 +1330,9 @@ def create(request, dsid):
     cursor.close()
     conn.close()
     remove_tempdir(tdir_name)
+    if metaman_lite_token:
+        return dsid
+
     return render(request, "metaman/datasets/create.html", {'dsid': dsid})
 
 
@@ -1457,6 +1488,24 @@ def delete(request, dsid):
         return render(request, "metaman/datasets/delete.html",
                       {'message_list': messages})
 
+    # delete any uncommitted changes
+    try:
+        cursor.execute("delete from metautil.metaman where dsid = %s",
+                       (dsid, ))
+        cursor.execute("delete from metautil.cmd where dsid = %s",
+                       (dsid, ))
+        conn.commit()
+    except psycopg2.Error:
+        pass
+
+    # delete the metaman_lite entry
+    try:
+        cursor.execute("delete from metautil.metaman_lite where dsid = %s",
+                       (dsid, ))
+        conn.commit()
+    except psycopg2.Error:
+        pass
+
     cursor.close()
     conn.close()
     return render(request, "metaman/datasets/delete.html",
@@ -1487,170 +1536,197 @@ def edit(request, dsid):
     if 'HTTP_X_REQUESTED_WITH' not in request.META:
         return render(request, "404.html")
 
-    iuser = utils.get_iuser(request)
-    if len(iuser) == 0:
-        return render(request, "500.html")
+    metaman_lite_token = None
+    parts = request.META['REQUEST_URI'].split("/")
+    if len(parts) > 3 and parts[1] == "metaman-lite" and parts[2] == "token":
+        metaman_lite_token = parts[3]
+        iuser = metaman_lite_token
+    elif 'lite_token' in request.POST:
+        metaman_lite_token = request.POST['lite_token']
+        iuser = metaman_lite_token
+    else:
+        iuser = utils.get_iuser(request)
+        if len(iuser) == 0:
+            return render(request, "metaman/datasets/edit.html",
+                          {'error': "you don't have permission to access this "
+                                    "content"})
 
     spellchecker = SpellChecker()
     if not spellchecker.ready:
-        return render(
-                request, "metaman/datasets/edit.html",
-                {'error': ("the spell checker is not ready: '" +
-                           spellchecker.error + "'")})
+        return render(request, "metaman/datasets/edit.html",
+                      {'error': "the spell checker is not ready: "
+                                f"'{spellchecker.error}'"})
 
-    ctx = {'dsid': dsid}
+    ctx = {'dsid': dsid, 'metaman_lite_token': metaman_lite_token}
     ctx.update({'is_manager': (iuser in config.metadata_managers)})
     if 'clear_changes' in request.POST:
         clear_changes = request.POST['clear_changes']
     else:
         clear_changes = ""
 
-    # check for uncommitted changes
+    # connect to the database
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
         cursor = conn.cursor()
-        cursor.execute(("select lockname, updated_any_field from metautil."
-                        "metaman where dsid = %s"), (dsid, ))
-        res = cursor.fetchall()
-        if len(res) > 0:
-            if res[0][0] != iuser:
-                ctx.update({'lock_user': res[0][0]})
-                return render(request, "metaman/datasets/uncommitted.html",
-                              ctx)
 
-            if res[0][1] == "N" or clear_changes == "yes":
-                cursor.execute((
-                        "delete from metautil.metaman where dsid = %s"),
-                        (dsid, ))
-                cursor.execute(("delete from metautil.cmd where dsid = %s"),
-                               (dsid, ))
-                conn.commit()
-                clear_changes = ""
-            elif clear_changes == "":
-                return render(request, "metaman/datasets/uncommitted.html",
-                              ctx)
+        # verify lite token, if it exists
+        if metaman_lite_token is not None:
+            cursor.execute(
+                    "select token, dsid from metautil.metaman_lite where "
+                    "token = %s and dsid = %s", (metaman_lite_token, dsid))
+            t, d = cursor.fetchone() or (None, None)
+            if t is None or d is None:
+                return render(request, "metaman/datasets/edit.html",
+                              {'error': "invalid token or token does not "
+                                        "match the dataset ID"})
 
-    except psycopg2.Error as err:
-        ctx.update({'database_error': "{}".format(err)})
-        log_error(err, source="edit")
-        return render(request, "metaman/datasets/uncommitted.html", ctx)
-
-    # check for automatic content metadata
-    try:
-        cursor.execute(("select distinct schemaname from pg_catalog.pg_tables "
-                        "where schemaname like '%ML'"))
-        res = cursor.fetchall()
-        cmd_database_names = []
-        ignore_db_prefixes = ['I', 'V']
-        for r in res:
-            if r[0][0] not in ignore_db_prefixes:
-                cmd_database_names.append(r[0])
-
-    except psycopg2.Error as err:
-        log_error(err, source="edit")
-
-    show_manual_cmd = True
-    for db in cmd_database_names:
+        # check for uncommitted changes
         try:
-            cursor.execute(("select count(*) from \"" + db + "\"." + dsid +
-                            "_webfiles2"))
+            cursor.execute("select lockname, updated_any_field from metautil."
+                           "metaman where dsid = %s", (dsid, ))
             res = cursor.fetchall()
-            if len(res) > 0 and res[0][0] != "0":
-                show_manual_cmd = False
+            if len(res) > 0:
+                if res[0][0] != iuser:
+                    ctx.update({'lock_user': res[0][0]})
+                    return render(request, "metaman/datasets/uncommitted.html",
+                                  ctx)
 
-        except psycopg2.Error:
-            conn.rollback()
+                if res[0][1] == "N" or clear_changes == "yes":
+                    cursor.execute((
+                            "delete from metautil.metaman where dsid = %s"),
+                            (dsid, ))
+                    cursor.execute("delete from metautil.cmd where dsid = %s",
+                                   (dsid, ))
+                    conn.commit()
+                    clear_changes = ""
+                elif clear_changes == "":
+                    return render(request, "metaman/datasets/uncommitted.html",
+                                  ctx)
 
-    has_doi = utils.has_doi(dsid)
-    if type(has_doi) is str:
-        log_error(has_doi, source="edit")
-        return render(
-                request,
-                "metaman/datasets/edit.html",
-                {'error': ("database error while checking for DOI lock: '{}'")
-                 .format(has_doi)})
+        except psycopg2.Error as err:
+            ctx.update({'database_error': "{}".format(err)})
+            log_error(err, source="edit")
+            return render(request, "metaman/datasets/uncommitted.html", ctx)
 
-    ctx.update({'has_doi': has_doi})
-    version = "latest_version"
-    if len(clear_changes) == 0:
-        # fill edit fields from most recent commit (CVS file)
-        tdir_name = make_tempdir()
-        if len(tdir_name) == 0:
-            return render(
-                    request,
-                    "metaman/datasets/edit.html",
-                    {'error': "unable to create a temporary directory"})
+        # check for automatic content metadata
+        try:
+            cursor.execute(
+                    "select distinct schemaname from pg_catalog.pg_tables "
+                    "where schemaname like '%ML'")
+            res = cursor.fetchall()
+            cmd_database_names = []
+            ignore_db_prefixes = ['I', 'V']
+            for r in res:
+                if r[0][0] not in ignore_db_prefixes:
+                    cmd_database_names.append(r[0])
 
-        checkout_cmd = (bin_utils['cvs'] + " -Q -d " + root_dirs['cvs'] +
-                        " checkout -d " + tdir_name)
-        if 'version' in request.POST and len(request.POST['version']) > 0:
-            version = request.POST['version']
-            checkout_cmd += " -r " + version
+        except psycopg2.Error as err:
+            log_error(err, source="edit")
 
-        checkout_cmd += " datasets/" + dsid + ".xml"
-        o = subprocess.run(checkout_cmd, shell=True, stdout=subprocess.DEVNULL,
-                           stderr=subprocess.PIPE)
-        o = o.stderr.decode("utf-8")
-        if len(o) > 0:
+        show_manual_cmd = True
+        for db in cmd_database_names:
+            try:
+                cursor.execute(f'select count(*) from "{db}".{dsid}_webfiles2')
+                res = cursor.fetchall()
+                if len(res) > 0 and res[0][0] != "0":
+                    show_manual_cmd = False
+
+            except psycopg2.Error:
+                conn.rollback()
+
+        has_doi = utils.has_doi(dsid)
+        if type(has_doi) is str:
+            log_error(has_doi, source="edit")
+            return render(request, "metaman/datasets/edit.html",
+                          {'error': "database error while checking for DOI "
+                                    f"lock: '{has_doi}'"})
+
+        ctx.update({'has_doi': has_doi})
+        version = "latest_version"
+        if len(clear_changes) == 0:
+            # fill edit fields from most recent commit (CVS file)
+            tdir_name = make_tempdir()
+            if len(tdir_name) == 0:
+                return render(
+                        request,
+                        "metaman/datasets/edit.html",
+                        {'error': "unable to create a temporary directory"})
+
+            checkout_cmd = (bin_utils['cvs'] + " -Q -d " + root_dirs['cvs'] +
+                            " checkout -d " + tdir_name)
+            if 'version' in request.POST and len(request.POST['version']) > 0:
+                version = request.POST['version']
+                checkout_cmd += " -r " + version
+
+            checkout_cmd += " datasets/" + dsid + ".xml"
+            o = subprocess.run(checkout_cmd, shell=True,
+                               stdout=subprocess.DEVNULL,
+                               stderr=subprocess.PIPE)
+            o = o.stderr.decode("utf-8")
+            if len(o) > 0:
+                remove_tempdir(tdir_name)
+                return render(
+                        request,
+                        "metaman/datasets/edit.html",
+                        {'error': "unable to check out the CVS file: <font "
+                                  f'color="red">{o}</font>'})
+
+            res = fill_from_most_recent_commit(
+                    conn, iuser, tdir_name, dsid, show_manual_cmd,
+                    spellchecker)
+            if 'error' in res[0]:
+                remove_tempdir(tdir_name)
+                return render(request, "metaman/datasets/edit.html",
+                              {'error': res[0]['error']})
+
+            ctx.update(res[0])
+            ctx.update({'errors': res[1]})
             remove_tempdir(tdir_name)
-            return render(
-                    request,
-                    "metaman/datasets/edit.html",
-                    {'error': ("unable to check out the CVS file: <font "
-                               "color=\"red\">" + o + "</font>")})
+        else:
+            # fill edit fields from uncommitted changes (DB)
+            res = fill_from_uncommitted_changes(cursor, dsid, spellchecker)
+            if 'error' in res[0]:
+                return render(request, "metaman/datasets/edit.html",
+                              {'error': res[0]['error']})
 
-        res = fill_from_most_recent_commit(
-                conn, iuser, tdir_name, dsid, show_manual_cmd, spellchecker)
-        if 'error' in res[0]:
-            remove_tempdir(tdir_name)
-            return render(
-                    request,
-                    "metaman/datasets/edit.html", {'error': res[0]['error']})
+            ctx.update(res[0])
+            ctx.update({'errors': res[1]})
 
-        ctx.update(res[0])
-        ctx.update({'errors': res[1]})
-        remove_tempdir(tdir_name)
-    else:
-        # fill edit fields from uncommitted changes (DB)
-        res = fill_from_uncommitted_changes(cursor, dsid, spellchecker)
-        if 'error' in res[0]:
-            return render(
-                    request,
-                    "metaman/datasets/edit.html", {'error': res[0]['error']})
+        ctx.update({'clear_changes': clear_changes, 'version': version,
+                    'show_manual_cmd': show_manual_cmd})
+        try:
+            tree = ElementTree.parse((root_dirs['web'] +
+                                     "/metadata/schemas/dsOverview3.xsd"))
+            root = tree.getroot()
+            ns = {
+                'xsd': "http://www.w3.org/2001/XMLSchema",
+            }
+            ctx.update({
+                    'curation_level_options': get_curation_options(root, ns)})
+            ctx.update({
+                    'update_frequency_options': get_update_frequency_options(
+                            root, ns)})
+            ctx.update({
+                    'dataset_type_options': get_dataset_type_options(
+                            root, ns, res[0]['dataset_type'], has_doi)})
+            if show_manual_cmd:
+                ctx.update({'data_format_options': get_data_format_options()})
 
-        ctx.update(res[0])
-        ctx.update({'errors': res[1]})
+        except Exception as err:
+            log_error(err, source="edit")
 
-    cursor.close()
-    conn.close()
-    ctx.update({'clear_changes': clear_changes, 'version': version,
-                'show_manual_cmd': show_manual_cmd})
-    try:
-        tree = ElementTree.parse((root_dirs['web'] +
-                                 "/metadata/schemas/dsOverview3.xsd"))
-        root = tree.getroot()
-        ns = {
-            'xsd': "http://www.w3.org/2001/XMLSchema",
-        }
-        ctx.update({'curation_level_options': get_curation_options(root, ns)})
-        ctx.update({
-                'update_frequency_options': get_update_frequency_options(
-                        root, ns)})
-        ctx.update({
-                'dataset_type_options': get_dataset_type_options(
-                        root, ns, has_doi)})
-        if show_manual_cmd:
-            ctx.update({'data_format_options': get_data_format_options()})
+        ctx.update({'license_options': get_license_options()})
+        if 'license' not in ctx:
+            ctx.update({'license': ctx['license_options'][0]['value']})
 
-    except Exception as err:
-        log_error(err, source="edit")
-
-    ctx.update({'license_options': get_license_options()})
-    if 'license' not in ctx:
-        ctx.update({'license': ctx['license_options'][0]['value']})
-
-    ctx.update({'iso_topics': config.ISO_topics})
-    return render(request, "metaman/datasets/edit.html", ctx)
+        ctx.update({'iso_topics': config.ISO_topics})
+        return render(request, "metaman/datasets/edit.html", ctx)
+    except Exception:
+        return render(request, "metaman/datasets/edit.html",
+                      {'error': "unable to connect to the database"})
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 
 def show_web_access(request, dsid):
@@ -2238,6 +2314,7 @@ def fill_from_most_recent_commit(conn, iuser, tdir_name, dsid, show_manual_cmd,
                 "usage_restrictions, access_code, variables, contacts, "
                 "platforms, instruments, projects, supports_projects, "
                 "iso_topic, keywords, _references, reflists, acknowledgement, "
+
                 "related_resources, related_dois, related_datasets, "
                 "publication_date, redundancys, license, content_metadata) "
                 "values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
@@ -2558,17 +2635,23 @@ def get_update_frequency_options(root, ns):
     return ufrequencies
 
 
-def get_dataset_type_options(root, ns, has_doi):
+def get_dataset_type_options(root, ns, ds_type, has_doi):
     elist = root.findall(("./xsd:simpleType[@name='datasetType']/xsd:"
                           "restriction/xsd:enumeration"), ns)
     types = []
     for e in elist:
         v = e.get("value")
+        appinfo = e.find("xsd:annotation/xsd:appinfo", ns).text
+        opts = []
+        if appinfo is not None:
+            opts = appinfo.split(",")
+
         if v != "internal" or not has_doi:
-            types.append({
-                'value': v,
-                'description': e.find(
-                        "xsd:annotation/xsd:documentation", ns).text})
+            if ds_type == v or ds_type in opts:
+                types.append({
+                    'value': v,
+                    'description': e.find(
+                            "xsd:annotation/xsd:documentation", ns).text})
 
     return types
 
@@ -2684,7 +2767,7 @@ def get_manual_cmd_values(root):
     elist = root.findall("levels/layer")
     for e in elist:
         levels.append("[!]".join([e.get("type"), e.get("top"), e.get("bottom"),
-                                  e.get("units")]))
+                                  (e.get("units") or "")]))
 
     d['levels'] = "\n".join(levels)
     elist = root.findall("geospatialCoverage/grid")

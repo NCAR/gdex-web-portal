@@ -1,24 +1,65 @@
-<div class="component featured-work container-lg">
-    <div class="row gx-0 pt-md-4 justify-content-center">
-        <div class="col-8 primary text-center">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="card-title mb-md-2">{{ page.search_box_title }}</h3>
-                    <form id="search-form" class="d-flex" name="search_form" action="/gsearch/dataset-search/">
-                        <input class="form-control" type="search" id="search-input" autocomplete="off" data-provide="typeahead" name="q" placeholder="{{ page.search_box_placeholder }}" value="">
-                        <button class="btn btn-primary" type="submit" aria-label="Search"><i class="fas fa-search"></i></button>
+<!-- SEARCH OUTER — negative margin overlaps the hero -->
+<div class="gdex-search-outer">
+    <div class="container-lg">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="gdex-search-block">
+                    <h2 class="gdex-search-block__title">{{ page.search_box_title|default:"Search For Datasets" }}</h2>
+                    <form action="/gsearch/dataset-search/" method="get" id="gdex-home-search-form">
+                        <div class="gdex-search-bar">
+                            <input
+                                type="text"
+                                name="q"
+                                id="gdex-home-search-input"
+                                class="gdex-search-bar__input"
+                                placeholder="{{ page.search_box_placeholder|default:"Search by keyword or dataset number" }}"
+                                aria-label="Search datasets"
+                            >
+                            <button type="submit" class="gdex-search-bar__btn" aria-label="Search">
+                                <i class="fas fa-search"></i>
+                                <span>Search</span>
+                            </button>
+                        </div>
                     </form>
-                    {% if page.search_suggestions.all %}
-                    <div id="search-suggestions" class="mt-2">
-                        {% for suggestion in page.search_suggestions.all %}
-                        <a href="{{ suggestion.search_term_url }}">
-                            <span class="badge home-search-badge rounded">{{ suggestion.search_term }}</span>
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
+                    <script>
+                        document.getElementById('gdex-home-search-form').addEventListener('submit', function (e) {
+                            if (!document.getElementById('gdex-home-search-input').value.trim()) {
+                                e.preventDefault();
+                            }
+                        });
+                        window.addEventListener('pageshow', function () {
+                            document.getElementById('gdex-home-search-input').value = '';
+                        });
+                    </script>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- CHIPS -->
+<div class="gdex-search-chips">
+    <div class="container-lg">
+        <p class="gdex-search-chips__label">Explore specialized datasets</p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <a href="/gsearch/ai-ready/" class="gdex-chip">
+                <div class="gdex-chip__icon-zone">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="gdex-chip__text-zone">
+                    <strong>AI-ready datasets</strong>
+                    <small class="d-block">Dataset prepared for AI/ML Workflow</small>
+                </div>
+            </a>
+            <a href="/gsearch/dataset-search/?q=&filter-match-all.format=Zarr" class="gdex-chip">
+                <div class="gdex-chip__icon-zone">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="gdex-chip__text-zone">
+                    <strong>Zarr datasets</strong>
+                    <small class="d-block">Cloud-optimized array data</small>
+                </div>
+            </a>
         </div>
     </div>
 </div>
