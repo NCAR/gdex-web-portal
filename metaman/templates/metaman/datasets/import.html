@@ -160,8 +160,9 @@ function accept_imports() {
   reset_status("data_types_status");
   openSection("content_metadata");
   openField("data_types");
+  affectPeriodsField();
   {% endif %}
-  {% if tstart and tend %}
+  {% if temporal_periods.imported %}
   document.getElementById("periods_field").value = document.import_form.periods.value;
   changed_periods_field = true;
   reset_status("periods_status");
@@ -290,11 +291,11 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
     <textarea name="data_types" class="fixedWidth14" style="height: 5em; width: 100%; resize: both" readonly>{{ data_types.imported }}</textarea>
     </div>
     {% endif %}
-    {% if tstart and tend %}
+    {% if temporal_periods.imported %}
     <div class="mt-1">
     <b>Temporal Period:</b>
     <br>
-    <textarea name="periods" class="fixedWidth14" style="height: 2em; width: 100%; resize: both" readonly>{{ tstart }}[!]{{ tend }}[!]Entire Dataset</textarea>
+    <textarea name="periods" class="fixedWidth14" style="height: 2em; width: 100%; resize: both" readonly>{{ temporal_periods.imported }}</textarea>
     </div>
     {% endif %}
     {% if formats.imported %}
@@ -332,11 +333,19 @@ https://doi.org/{{ icarus_doi }}[!][!]</textarea>
         </ul>
     </div>
     {% endif %}
+    {% if temporal_periods.not_imported %}
+    <div class="text-red">
+        Entries from Column J ("Print temporal range.") that could not be matched and imported:
+        <ul>
+            {{ temporal_periods.not_imported|safe }}
+        </ul>
+    </div>
+    {% endif %}
     {% if data_types.not_imported %}
     <div class="text-red">
         Entries from Column L ("Select data type(s).") that could not be matched and imported:
         <ul>
-            {{ formats.not_imported|safe }}
+            {{ data_types.not_imported|safe }}
         </ul>
     </div>
     {% endif %}
