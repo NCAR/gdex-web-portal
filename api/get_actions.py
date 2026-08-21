@@ -27,7 +27,8 @@ def initial_checks(response, dsid=None):
     Returns response
     """
     try:
-        common.init_connection()
+        con, cur = common.init_connection()
+        common.close_connection(con, cur)
     except Exception as err:
         response.add_error_message(512)
         response.add_message(str(err))
