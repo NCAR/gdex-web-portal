@@ -1,83 +1,211 @@
 {% extends 'gsearch/dataset-search/globus-portal-framework/search-base.html' %}
-{% load static index_template is_active %}
+{% load static index_template is_active gsearch_tags %}
 
-{%block body%}
-  <h1 class="h1 border-bottom">Search GDEX</h1>
-  <div class="lead mb-3">
-    Search and discover datasets in GDEX by entering a keyword search below, 
-    then filter by the facets in the menu on the left. Click
-    <a href="/datasets/">here</a> to view the full list of all datasets in GDEX.
-  </div>
-  <div class="mb-3 fst-italic">
-    GDEX search and discovery is powered by <a href="https://docs.globus.org/api/search/">Globus Search</a> and the <a href="https://django-globus-portal-framework.readthedocs.io/en/stable/">Django Globus Portal Framework</a>.
-  </div>
+{# Remove the default container-lg so the hero can span full viewport width #}
+{% block main_class %}p-0{% endblock %}
 
-  {% block search_nav %}
-    {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-nav.html' as search_nav %}
-    {% include search_nav %}
-  {% endblock %}
+{# Hide breadcrumbs — hero provides the page context #}
+{% block breadcrumbs %}{% endblock %}
 
-  <div class="tab-content" id="search-nav-tabContent">
-    <div class="tab-pane fade show active dataset p-3" id="search-form-tab-pane" role="tabpanel" aria-labelledby="search-tab" tabindex="0">
+{% block body %}
 
-    {% block search_form %}
-    <form id="search-form" class="my-4 d-flex" name="search_form"
-          action="{% block search_form_url %}{% url 'dataset_search' globus_portal_framework.index %}{% endblock %}">
-      <input class="form-control" 
-             type="text" 
-             id="search-input" 
-             autocomplete="off"
-             data-provide="typeahead" 
-             name="q" 
-             placeholder="Start your search here"
-             {% if request.session.search.query == '*' or request.session.search.query == '' %} value=""{% else %} value="{{request.session.search.query}}" {% endif %}
-      >
-      <button id="search-btn" type="submit" class="btn btn-primary">
-        <i class="fas fa-search"></i>
-      </button>
-    </form>
-    {% endblock %}
-
-    <div class="row">
-      {% block search_facets %}
-      <div id="sidebar" class="col-xs-12 col-sm-4 col-md-4">
-        <div id="filters">
-          <div id="facet-container">
-            <form id="filter-form">
-              {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-filters.html' as it_search_filters %}
-              {% include it_search_filters %}
-            </form>
-            <form id="facet-form">
-              {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-facets.html' as it_search_facets %}
-              {% include it_search_facets %}
-            </form>
-          </div>
-        </div>
+{% with hero_bg="/media/original_images/image_X2hGX6H.png" %}
+<section class="gdex-find-data-hero position-relative overflow-hidden">
+  <div class="gdex-find-data-hero__bg" style="background-image: url('{{ hero_bg }}');"></div>
+  <div class="container-lg gdex-find-data-hero__content position-relative">
+    <div class="col-lg-5 col-xl-4 gdex-find-data-hero__overlay-panel mx-auto w-75 text-center mb-2">
+    <h1 class="gdex-find-data-hero__heading">Search GDEX</h1>
+    <p class="gdex-find-data-hero__subtitle">
+      Search GDEX by keyword, variable, project, instrument, or dataset ID.
+      Use the filters on the left to narrow results and quickly find the data you need.
+    </p>
+    </div>
+    <form id="search-form" class="gdex-find-data-hero__form"
+          action="{% url 'search' globus_portal_framework.index %}">
+      <div class="gdex-find-data-hero__search-bar">
+        <input type="text" name="q" id="search-input" autocomplete="off"
+               placeholder="Start your search here..."
+               class="gdex-find-data-hero__input"
+               aria-label="Search GDEX datasets"
+               {% if request.session.search.query and request.session.search.query != '*' %}value="{{ request.session.search.query }}"{% endif %}>
+        <button type="submit" class="gdex-find-data-hero__search-btn" aria-label="Search">
+          <i class="fas fa-search"></i>
+        </button>
       </div>
+    </form>
+  </div>
+</section>
+{% endwith %}
+
+{% static 'unity/img/UCAR-Waves-Lines-Only.png' as waves_url %}
+<div class="gdex-find-data-body" style="--waves-url: url('{{ waves_url }}');">
+  <div class="container-lg">
+    <div class="gdex-find-data-layout">
+
+      {% block search_facets %}
+        {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-sidebar.html' as it_sidebar %}
+        {% include it_sidebar %}
       {% endblock %}
 
-      <div id="content" class="col-xs-12 col-sm-8 col-md-8">
-        {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-summary.html' as it_search_summary %}
-        {% include it_search_summary %}
+      <div class="gdex-results-area">
 
-        <div id="results" style="display: inline;">
-          {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-results.html' as it_search_results %}
-          {% include it_search_results %}
-          
+        {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-summary.html' as it_summary %}
+        {% include it_summary %}
+
+        {# Selected filters row — chips + reset button #}
+        <div class="gdex-results-filters-row" id="gdex-active-filters-row">
+          <span class="gdex-results-filters-label">Selected filters:</span>
+          <div class="gdex-active-filters" id="gdex-active-filters">
+            {% for facet in search.facets %}
+              {% for field in facet.buckets %}
+                {% if field.checked %}
+                <span class="gdex-active-filter-chip">
+                  <span class="gdex-active-filter-chip__group">{{ facet.name }}</span>
+                  <span class="gdex-active-filter-chip__value">
+                    {% if field.field_name == 'location' or field.field_name == 'platform' %}
+                      {% truncate_facet field.value %}
+                    {% elif field.field_name == 'spatial_resolution' or field.field_name == 'time_resolution' %}
+                      {% truncate_facet field.value separator=':' %}
+                    {% else %}
+                      {{ field.value }}
+                    {% endif %}
+                  </span>
+                  <button class="gdex-active-filter-chip__remove"
+                          aria-label="Remove {{ facet.name }} filter"
+                          onclick="gdexRemoveFilter('{{ field.search_filter_query_key|escapejs }}', '{{ field.value|escapejs }}');">&times;</button>
+                </span>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+            {% if request.session.temporal_start_input or request.session.temporal_end_input %}
+            <span class="gdex-active-filter-chip">
+              <span class="gdex-active-filter-chip__group">Time</span>
+              <span class="gdex-active-filter-chip__value">
+                {% if request.session.temporal_preset_years %}
+                  Last {{ request.session.temporal_preset_years }} year{% if request.session.temporal_preset_years != 1 %}s{% endif %}
+                {% else %}
+                  {{ request.session.temporal_start_input }}{% if request.session.temporal_end_input %} &ndash; {{ request.session.temporal_end_input }}{% endif %}
+                {% endif %}
+              </span>
+              <button class="gdex-active-filter-chip__remove"
+                      aria-label="Remove time range filter"
+                      onclick="gdexClearTemporal();">&times;</button>
+            </span>
+            {% endif %}
+          </div>
+          <button type="button" class="gdex-btn-reset" id="gdex-reset-btn" onclick="gdexResetSearch();">Reset Search</button>
+        </div>
+
+        <div id="results">
+          {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-results.html' as it_results %}
+          {% include it_results %}
+
           {% block search_pagination %}
-            {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-pagination.html' as it_search_pagination %}
-            {% include it_search_pagination %}
+            {% index_template 'gsearch/dataset-search/globus-portal-framework/components/search-pagination.html' as it_pagination %}
+            {% include it_pagination %}
           {% endblock %}
         </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="tab-pane fade dataset p-3" id="search-about-tab-pane" role="tabpanel" aria-labelledby="about-tab" tabindex="0">
-    {% block search_about %}
-      {% index_template 'gsearch/dataset-search/globus-portal-framework/search-about.html' as search_about %}
-      {% include search_about %}
-    {% endblock %}
-  </div>
+      </div>{# /.gdex-results-area #}
 
+    </div>{# /.gdex-find-data-layout #}
+  </div>{# /.container-lg #}
+</div>{# /.gdex-find-data-body #}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* Apply a quick preset (Last 1/5/10/25 years).
+   Adds the range directly to #facet-form as a hidden input so the visible
+   From / To fields stay empty — preset and custom range are independent. */
+function gdexApplyPreset(radio) {
+    var years = parseInt(radio.value, 10);
+    var d = new Date();
+    d.setFullYear(d.getFullYear() - years);
+    var mo = String(d.getMonth() + 1).padStart(2, '0');
+    var dy = String(d.getDate()).padStart(2, '0');
+    var dateStr = d.getFullYear() + '-' + mo + '-' + dy;
+
+    // Clear the custom range inputs so they stay visually empty.
+    document.getElementById('temporal_start_input').value = '';
+    document.getElementById('temporal_end_input').value = '';
+    sessionStorage.removeItem('temporal_start_input');
+    sessionStorage.removeItem('temporal_end_input');
+
+    // Strip any old temporal URL params so customSearch() doesn't re-add them.
+    removeUrlParameter('filter-range.temporal_range_end');
+    removeUrlParameter('filter-range.temporal_range_start');
+
+    // Inject the preset range directly into #facet-form.
+    // customSearch() will find it there and NOT try to re-add from URL.
+    var prev = document.getElementById('gdex-preset-range-input');
+    if (prev) prev.remove();
+    var inp = document.createElement('input');
+    inp.type = 'hidden';
+    inp.name = 'filter-range.temporal_range_end';
+    inp.id = 'gdex-preset-range-input';
+    inp.value = dateStr + '--*';
+    document.getElementById('facet-form').appendChild(inp);
+
+    customSearch(1);
+}
+
+/* Restore preset radio on page load using the server-computed session value. */
+{% if request.session.temporal_preset_years %}
+document.querySelectorAll('input[name="gdex-time-preset"]').forEach(function (r) {
+    if (parseInt(r.value, 10) === {{ request.session.temporal_preset_years }}) {
+        r.checked = true;
+    }
+});
+{% endif %}
+
+/* Uncheck a single Globus facet chip and resubmit.
+   Uses direct property comparison instead of a CSS selector so special characters
+   in facet names/values (">", ".", etc.) are never misinterpreted. */
+function gdexRemoveFilter(name, value) {
+    document.querySelectorAll('#facet-form input').forEach(function(inp) {
+        if (inp.name === name && inp.value === value) { inp.checked = false; }
+    });
+    customSearch(1);
+}
+
+/* Clear temporal range chip and resubmit.
+   MUST use clearTemporalRange() (not customSearch directly) so the current URL's
+   filter-range.* params are stripped BEFORE form submission.  If we only clear the
+   visible inputs and call customSearch(), the URL loop inside customSearch() sees
+   filter-range.temporal_range_end still in the URL, finds no matching input in
+   #facet-form (temporal inputs live outside the form), and silently re-adds the
+   filter — making the chip × permanently broken. */
+function gdexApplyCustomTemporal() {
+    var from = document.getElementById('temporal_start_input').value.trim();
+    var to   = document.getElementById('temporal_end_input').value.trim();
+    if (!from || !to) { return; }
+    document.querySelectorAll('input[name="gdex-time-preset"]').forEach(function(r) { r.checked = false; });
+    customSearch(1);
+}
+
+function gdexClearTemporal() {
+    document.querySelectorAll('input[name="gdex-time-preset"]').forEach(function(r) { r.checked = false; });
+    if (typeof $ !== 'undefined' && $.fn && $.fn.datepicker) {
+        try { $('#temporal_start_input').datepicker('setDate', null); } catch(e) {}
+        try { $('#temporal_end_input').datepicker('setDate', null); } catch(e) {}
+    }
+    document.getElementById('temporal_start_input').value = '';
+    document.getElementById('temporal_end_input').value = '';
+    clearTemporalRange();
+}
+
+/* Full reset: delegates to clearFilters() (clears temporal, unchecks everything,
+   clears search, submits) and additionally resets the location cascade dropdowns
+   and deselects any active preset radio. */
+function gdexResetSearch() {
+    document.querySelectorAll('input[name="gdex-time-preset"]').forEach(function(r) { r.checked = false; });
+    if (typeof window._resetLocationSelects === 'function') { window._resetLocationSelects(); }
+    clearFilters();
+}
+
+</script>
+<script src="{% static 'gsearch/js/gdex_geo_data.js' %}"></script>
+<script src="{% static 'gsearch/js/search_data.js' %}"></script>
 {% endblock %}

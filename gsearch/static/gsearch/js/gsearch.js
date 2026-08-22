@@ -142,6 +142,10 @@ function clearFilters()
   // Reset the search query in the session
   sessionStorage.removeItem('search_input');
 
+  // Strip temporal range URL params so the Django view clears the session chip
+  removeUrlParameter('filter-range.temporal_range_end');
+  removeUrlParameter('filter-range.temporal_range_start');
+
   // Submit the form to clear filters
   $('#facet-form').submit();
 }
