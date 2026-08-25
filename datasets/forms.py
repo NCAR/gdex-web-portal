@@ -1,6 +1,6 @@
 from django import forms
 import re
-from api.common import init_connection_new
+from api.common import init_connection
 from facbrowse.utils import get_groups
 
 

@@ -1,4 +1,4 @@
-from api.common import init_connection_new
+from api.common import init_connection
 from accounts.cookies import verified_cookie_email
 
 def get_duser(request):
@@ -14,7 +14,7 @@ def is_internal_user(request):
 
     logname = duser[:duser.find("@")]
     try:
-        conn, cursor = init_connection_new()
+        conn, cursor = init_connection()
         cursor.execute("select stat_flag from dssdb.dssgrp where logname = %s",
                        (logname, ))
         res = cursor.fetchone()

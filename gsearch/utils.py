@@ -1,5 +1,5 @@
 from django.conf import settings
-from api.common import get_search_config, init_connection_new, close_connection
+from api.common import get_search_config, init_connection, close_connection
 
 import logging
 logger = logging.getLogger(__name__)
@@ -9,7 +9,7 @@ def get_time_and_spatial_resolution_sort_indices():
     Get the time and spatial resolution sort indices from the search configuration.
     """
     search_config = get_search_config()
-    con, cur = init_connection_new(config=search_config)
+    con, cur = init_connection(config=search_config)
     q = "select * from search.time_resolution_sort"
     try:
         cur.execute(q)

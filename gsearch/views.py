@@ -11,10 +11,8 @@ from globus_portal_framework.gsearch import (
     get_template_path
 )
 from api.common import (
-    get_wagtail_config,
-    get_search_config,
-    init_connection_new,
-    close_connection
+    get_wagtail_config, get_search_config, 
+    init_connection, close_connection
 )
 
 import logging
@@ -155,7 +153,7 @@ def get_dataset_counts():
     """
     Get the number of RDA datasets and facet titles, dataset counts, and descriptions
     """
-    wconn, wcursor = init_connection_new(config=get_wagtail_config())
+    wconn, wcursor = init_connection(config=get_wagtail_config())
     q = "select refine_filters from lookfordata_lookfordatapage"
     wcursor.execute(q)
     res = wcursor.fetchone()
@@ -166,7 +164,7 @@ def get_dataset_counts():
 
     filters = json.loads(res[0])
 
-    mconn, mcursor = init_connection_new(config=get_search_config())
+    mconn, mcursor = init_connection(config=get_search_config())
     cond = "(d.type = 'P' or d.type = 'H') and d.dsid < 'd999000'"
     q = "select count(distinct dsid) from search.datasets as d where " + cond
 
