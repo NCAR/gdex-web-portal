@@ -190,6 +190,10 @@ def show_zarr_files(context):
     Takes the context from filelist.html and returns the necessary context for displaying Zarr files.
     This is intended for displaying Zarr directories/files archived under standard dsarch groups (group index >= 0).
     """
+
+    locflag = context['data']['locflag']
+    is_glade = context['data'].get('is_glade', False)
+
     groups = []
     zarr_groups = [group for group in context['data']['groups'] if int(group['gindex']) >= 0]
     for i, zarr_group in enumerate(zarr_groups):
@@ -207,8 +211,15 @@ def show_zarr_files(context):
                 elif 'data_path' in item:
                     file_info['file_path'] = item.get('data_path', '')
                     file_info['file_name'] = item.get('value', '')
-                    file_info['file_url'] = item.get('url', '')
                     file_info['file_note'] = item.get('note', None)
+                    if is_glade:
+                        if locflag == 'O':
+                            file_info['file_url'] = os.path.join(settings.NCAR_STRATUS_URL, file_info['file_path'].strip('/'))
+                        else:
+                            file_info['file_url'] = os.path.join(settings.GDEX_SHORT_PATH, 'data', file_info['file_path'].strip('/'))
+                    else:
+                        file_info['file_url'] = item.get('url', '')
+
             file_rows.append(file_info)
         groups.append({'files': file_rows, 'group_name': zarr_group['group_id']})
 
