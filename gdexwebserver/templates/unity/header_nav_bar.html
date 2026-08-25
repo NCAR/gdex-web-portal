@@ -3,8 +3,8 @@
 <div class="col-12 navbar-wrapper border-top">
     <div class="container-lg collapse navbar-collapse" id="navbarSupportedContent1">
         {% main_menu template="menus/main_menu.html" %}
-        {# Don't show search bar on the home page, since it is already in the hero section #}
-        {% if not request.path == '/' %}
+        {# Don't show search bar on the home page, since it is already in the hero section.  Also don't show search bar on search page /gsearch/dataset-search #}
+        {% if not request.path == '/' and '/gsearch/dataset-search' not in request.path %}
             {% include "unity/header_search.html" %}
         {% endif %}
     </div>

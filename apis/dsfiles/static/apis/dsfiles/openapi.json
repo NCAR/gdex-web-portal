@@ -1,0 +1,701 @@
+{
+  "openapi": "3.1.2",
+  "info": {
+    "title": "GDEX Data File API",
+    "description": "This API allows users to discover files in a specified dataset based on specified filters.",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.gdex.ucar.edu/dsfiles",
+      "description": "(JSON responses)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Data Types",
+      "description": "Categorical data types in the GDEX archive, to be used in the paths for filter and file queries"
+    },
+    {
+      "name": "Filters",
+      "description": "Filters by categorical data type that can be used to limit a query for data files"
+    },
+    {
+      "name": "Data Files",
+      "description": "Filtered lists of data files by categorical data type"
+    }
+  ],
+  "paths": {
+    "/{DSID}/datatypes": {
+      "get": {
+        "tags": [
+          "Data Types"
+        ],
+        "summary": "Get dataset-specific data types.",
+        "description": "This operation returns a list of data types that exist in the specified dataset using its GDEX DSID.",
+        "operationId": "getDatasetDatatypes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetDatatypesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/{DSID}/filters/cyclone_fix": {
+      "get": {
+        "tags": [
+          "Filters"
+        ],
+        "summary": "Get dataset-specific filters for the \"cyclone_fix\" data type.",
+        "description": "This operation returns the filters that are available for the \"cyclone_fix\" data files in the specified dataset using its GDEX DSID.",
+        "operationId": "getDatasetCycloneFixFilters",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_min"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_max"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFiltersCycloneFixResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/{DSID}/filters/grid": {
+      "get": {
+        "tags": [
+          "Filters"
+        ],
+        "summary": "Get dataset-specific filters for the \"grid\" data type.",
+        "description": "This operation returns the filters that are available for the \"grid\" data files in the specified dataset using its GDEX DSID.",
+        "operationId": "getDatasetGridFilters",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_min"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_max"
+          },
+          {
+            "name": "parameters",
+            "in": "query",
+            "description": "Restrict to specified parameter code(s)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "default": ""
+              }
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "$ref": "#/components/parameters/products"
+          },
+          {
+            "$ref": "#/components/parameters/grids"
+          },
+          {
+            "$ref": "#/components/parameters/levels"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFiltersGridResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/{DSID}/filters/observation": {
+      "get": {
+        "tags": [
+          "Filters"
+        ],
+        "summary": "Get dataset-specific filters for the \"observation\" data type.",
+        "description": "This operation returns the filters that are available for the \"observation\" data files in the specified dataset using its GDEX DSID.",
+        "operationId": "getDatasetObservationFilters",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "$ref": "#/components/parameters/valid_date_min"
+          },
+          {
+            "$ref": "#/components/parameters/valid_date_max"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFiltersObservationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/{DSID}/files/cylone_fix": {
+      "get": {
+        "tags": [
+          "Data Files"
+        ],
+        "summary": "Get a list of data files containing data type \"cyclone_fix\" data.",
+        "description": "This operation returns a list of \"cyclone_fix\" data files for the specified dataset, optionally restricted by user-specified filters.",
+        "operationId": "getDatasetCycloneFixFiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_min"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_max"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFilesCycloneFixResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/{DSID}/files/grid": {
+      "get": {
+        "tags": [
+          "Data Files"
+        ],
+        "summary": "Get a list of data files containing data type \"grid\" data.",
+        "description": "This operation returns a list of \"grid\" data files for the specified dataset, optionally restricted by user-specified filters.",
+        "operationId": "getDatasetGridFiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "name": "parameters",
+            "in": "query",
+            "description": "Restrict to specified parameter code(s)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "default": ""
+              }
+            },
+            "collectionFormat": "multi",
+            "required": true
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_min"
+          },
+          {
+            "$ref": "#/components/parameters/valid_datetime_max"
+          },
+          {
+            "$ref": "#/components/parameters/products"
+          },
+          {
+            "$ref": "#/components/parameters/grids"
+          },
+          {
+            "$ref": "#/components/parameters/levels"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFilesGridResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/{DSID}/files/observation": {
+      "get": {
+        "tags": [
+          "Data Files"
+        ],
+        "summary": "Get a list of data files containing data type \"observation\" data.",
+        "description": "This operation returns a list of \"observation\" data files for the specified dataset, optionally restricted by user-specified filters.",
+        "operationId": "getDatasetObservationFiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "$ref": "#/components/parameters/valid_date_min"
+          },
+          {
+            "$ref": "#/components/parameters/valid_date_max"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schema_defs/DatasetFilesObservationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/{DSID}/files/{RESULT_ID}/{PAGE_NUM}": {
+      "get": {
+        "tags": [
+          "Data Files"
+        ],
+        "summary": "Get a list of data files from a previously-created result set.",
+        "description": "This operation returns a list of data files for the specified dataset and previously-created result set.",
+        "operationId": "getDatasetFilesFromResultSet",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/dsid"
+          },
+          {
+            "name": "RESULT_ID",
+            "in": "path",
+            "description": "The result set ID for pagination",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "PAGE_NUM",
+            "in": "path",
+            "description": "The page number of the result set to retrieve",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    "$ref": "#/components/schema_defs/DatasetFilesGridResponse"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "dsid": {
+        "name": "DSID",
+        "in": "path",
+        "description": "Retrieve response for dataset identified by DSID",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "valid_datetime_min": {
+        "name": "valid_datetime_min",
+        "in": "query",
+        "description": "Restrict to data valid on or after date/time specified as \"YYYY-MM-DD HH:MM\"",
+        "type": "string",
+        "required": false
+      },
+      "valid_date_min": {
+        "name": "valid_date_min",
+        "in": "query",
+        "description": "Restrict to data valid on or after date specified as \"YYYY-MM-DD\"",
+        "type": "string",
+        "required": false
+      },
+      "valid_datetime_max": {
+        "name": "valid_datetime_max",
+        "in": "query",
+        "description": "Restrict to data valid on or prior to date/time specified as \"YYYY-MM-DD HH:MM\"",
+        "type": "string",
+        "required": false
+      },
+      "valid_date_max": {
+        "name": "valid_date_max",
+        "in": "query",
+        "description": "Restrict to data valid on or prior to date specified as \"YYYY-MM-DD\"",
+        "type": "string",
+        "required": false
+      },
+      "products": {
+        "name": "products",
+        "in": "query",
+        "description": "Restrict to specified product code(s)",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "collectionFormat": "multi",
+        "required": false
+      },
+      "grids": {
+        "name": "grids",
+        "in": "query",
+        "description": "Restrict to specified grid code(s)",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "collectionFormat": "multi",
+        "required": false
+      },
+      "levels": {
+        "name": "levels",
+        "in": "query",
+        "description": "Restrict to specified vertical level code(s)",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "collectionFormat": "multi",
+        "required": false
+      }
+    },
+    "schema_defs": {
+      "DatasetDatatypesResponse": {
+        "type": "object",
+        "properties": {
+          "DSID": {
+            "type": "string"
+          },
+          "datatypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "DatasetFiltersGridResponse": {
+        "type": "object",
+        "properties": {
+          "DSID": {
+            "type": "string"
+          },
+          "datatype": {
+            "type": "string",
+            "const": "grid"
+          },
+          "restrictions": {
+            "type": "object",
+            "description": "List of user-specified restrictions for limiting available filters",
+            "properties": {
+              "parameters": {
+                "type": "array",
+                "description": "List of parameters to which filters should be limited",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "filters": {
+            "type": "object",
+            "description": "List of data file filters available for this dataset",
+            "properties": {
+              "valid_datetime_min": {
+                "type": "string",
+                "description": "Earliest valid date/time as YYYY-MM-DD HH:MM"
+              },
+              "valid_datetime_max": {
+                "type": "string",
+                "description": "Latest valid date/time as YYYY-MM-DD HH:MM"
+              },
+              "parameters": {
+                "type": "array",
+                "description": "Parameter names and filter codes",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "products": {
+                "type": "array",
+                "description": "Product names and filter codes",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "grids": {
+                "type": "array",
+                "description": "Grid names and filter codes",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "levels": {
+                "type": "array",
+                "description": "Vertical level names and filter codes",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "DatasetFilesGridResponse": {
+        "type": "object",
+        "properties": {
+          "DSID": {
+            "type": "string"
+          },
+          "datatype": {
+            "type": "string",
+            "const": "grid"
+          },
+          "restrictions": {
+            "type": "object",
+            "description": "List of user-specified restrictions for limiting available filters",
+            "properties": {
+              "parameters": {
+                "type": "array",
+                "description": "List of parameters to which filters should be limited",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "files": {
+            "type": "object",
+            "description": "Data file information",
+            "properties": {
+              "https_base": {
+                "type": "string"
+              },
+              "ncar_hpc_base": {
+                "type": "string"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "description": "Metadata for result pagination",
+            "properties": {
+              "total_count": {
+                "type": "integer"
+              },
+              "num_pages": {
+                "type": "integer"
+              },
+              "num_per_page": {
+                "type": "integer"
+              },
+              "current_page": {
+                "type": "integer"
+              },
+              "next_page": {
+                "type": ["integer", "null"]
+              },
+              "result_ID" : {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error_message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "400": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error_message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error_message": {
+                  "type": "string",
+                  "const": "Server error."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
