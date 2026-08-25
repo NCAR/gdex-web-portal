@@ -1,3 +1,4 @@
+{% load custom_tags %}
 <input type='hidden' id=clipboard></input>
 <div id='zarr-container' class='container mt-4 mb-4'>
 
@@ -32,7 +33,7 @@
                             </button>
                         </td>
                         <td>{% if zarr_file.file_note %}<i class="fa-solid fa-circle-info pe-1"></i>{{ zarr_file.file_note }}{% endif %}</td>
-                        <td>{% if zarr_file.size %}<i class="fa-solid fa-circle-info pe-1"></i>{{ zarr_file.size }}{% endif %}</td>
+                        <td>{% if zarr_file.size %}{{ zarr_file.size|convert_bytes }}{% endif %}</td>
                     </tr>
                 {% endif %}
             {% endfor %}
