@@ -151,6 +151,7 @@ def show_arco_catalogs(context):
     """
     Takes the context from filelist.html and returns a list of dicts with ARCO file information
     (data format, size, date archived, file path, file name, file url, file note).
+    This is intended for displaying ARCO/Zarr catalogs archived under negative group indexes (group index < 0).
     """
     groups = []
     for i, group in enumerate(context['data']['groups']):
@@ -179,6 +180,36 @@ def show_arco_catalogs(context):
                     file_info['file_note'] = item.get('note', None)
 
             file_rows.append(file_info)
-        groups.append({'files':file_rows, 'group_name': group['group_id']})
+        groups.append({'files': file_rows, 'group_name': group['group_id']})
+
+    return { 'groups': groups }
+
+@register.inclusion_tag('datasets/filelist-zarr-files.html', takes_context=True)
+def show_zarr_files(context):
+    """
+    Takes the context from filelist.html and returns the necessary context for displaying Zarr files.
+    This is intended for displaying Zarr directories/files archived under standard dsarch groups (group index >= 0).
+    """
+    groups = []
+    zarr_groups = [group for group in context['data']['groups'] if int(group['gindex']) >= 0]
+    for i, zarr_group in enumerate(zarr_groups):
+        file_rows = []
+        for row in zarr_group['rows']:
+            file_info = { 'data_format': '', 'size': None, 'date_archived': '', 'file_path': '', 'file_name': '', 'file_url': '', 'file_note': None }
+            for item in row:
+                name = item.get('name', '').lower()
+                if name == 'data format':
+                    file_info['data_format'] = item.get('value', '').lower()
+                elif name == 'size':
+                    file_info['size'] = item.get('value', '')
+                elif name == 'date archived':
+                    file_info['date_archived'] = item.get('value', '')
+                elif 'data_path' in item:
+                    file_info['file_path'] = item.get('data_path', '')
+                    file_info['file_name'] = item.get('value', '')
+                    file_info['file_url'] = item.get('url', '')
+                    file_info['file_note'] = item.get('note', None)
+            file_rows.append(file_info)
+        groups.append({'files': file_rows, 'group_name': zarr_group['group_id']})
 
     return { 'groups': groups }

@@ -1,0 +1,42 @@
+<input type='hidden' id=clipboard></input>
+<div id='zarr-container' class='container mt-4 mb-4'>
+
+        {% for group in groups %}
+         {% if group.group_name and groups|length > 1 %}
+             {# Show group title if more than one group on the page #}
+             <h3 id='{{group.group_name|slugify}}'>
+                 {{group.group_name}}
+             </h3>
+         {% endif %}
+    <table id="zarr-files-table" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">Group Name</th>
+                <th scope="col">Access</th>
+                <th scope="col">Description</th>
+                <th scope="note">Size</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for zarr_file in group.files %}
+                {% if zarr_file.data_format != 'csv' %}
+                    <tr>
+                        <td class="roboto-regular" style="font-family: Roboto Mono;">{{ zarr_file.file_name }}</td>
+                        <td>
+                            <button class="btn btn-primary px-2 py-1 rounded" 
+                                type="button" 
+                                style="transition: all 0.2s ease; font-size: 1rem;" 
+                                onClick="copyFullLink(this, '{{ zarr_file.file_url }}', 'Copy Full {% if 'http' in zarr_file.file_url %} URL {% else %} Path {% endif %}')">
+                                <i class="fa-solid fa-copy pe-1"></i>
+                                Copy Full {% if 'http' in zarr_file.file_url %} URL {% else %} Path {% endif %}
+                            </button>
+                        </td>
+                        <td>{% if zarr_file.file_note %}<i class="fa-solid fa-circle-info pe-1"></i>{{ zarr_file.file_note }}{% endif %}</td>
+                        <td>{% if zarr_file.size %}<i class="fa-solid fa-circle-info pe-1"></i>{{ zarr_file.size }}{% endif %}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+         {% endfor %}
+</div>

@@ -65,7 +65,7 @@
             {% include "datasets/filelist-table-summary.html" with group=group %}
         {% endif %}
 
-        {% if not group.is_group_summary and data.groups|length == 1 and group.rows|length > 1 and data_format != "zarr" %}
+        {% if not group.is_group_summary and data.groups|length == 1 and group.rows|length > 1 %}
             {# Show filter option if not a summary group and only one group on the page #}
             {% include "datasets/filelist-filter.html" %}
         {% endif %}
@@ -83,7 +83,11 @@
             {% endif %}
   
             {# Main filelist table #}
-            {% include "datasets/filelist-table.html" with group=group %}
+            {% if data_format == "zarr" %}
+                {% show_zarr_files %}
+            {% else %}
+                {% include "datasets/filelist-table.html" with group=group %}
+            {% endif %}
             <hr class="my-1">
         {% else %}
             {% if data.filter_wfile %}
