@@ -22,10 +22,17 @@
 
 {% if data.is_glade %}
     {# If NCAR HPC or glade filelist is being viewed, show note about file access and generating a text file list #}
+    {% with data_format=data.groups.0.rows.0|get_data_format_from_row %}
     <p class='border p-1 bg-light d-inline-block rounded-sm'>
         <i class="pe-1 fas fa-info-circle"></i>
-        <strong>To access data files: </strong> Data files are directly accessible from any NSF NCAR HPC computing system at the file paths listed below.  You may also generate a text file containing a list of file paths by selecting any or all files in the table, then clicking the "Get Filelist" button below.
+        <strong>To access data files: </strong>   
+        {% if data_format == "zarr" %}
+        Zarr data is accessible via the URLs listed below, and can be accessed directly from any compatible Zarr client (e.g., Python with zarr or xarray library).
+        {% else %}
+        Data files are directly accessible from any NSF NCAR HPC computing system at the file paths listed below. You may also generate a text file containing a list of file paths by selecting any or all files in the table, then clicking the "Get Filelist" button below.
+        {% endif %}
     </p>
+    {% endwith %}
 {% endif %}
 
 {% if data.note %}
