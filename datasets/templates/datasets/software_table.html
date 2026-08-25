@@ -20,7 +20,7 @@ $.get('{{settings.SOFTWARE_BASE_URL}}/{{ request.path|get_dsid_from_url|dsid_das
 <thead>
 <tr>
 <th>Filename <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
-<th>Size (B) <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
+<th>Size <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
 <th>Date Modified <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
 <th>Description</th>
 </tr>
@@ -29,9 +29,9 @@ $.get('{{settings.SOFTWARE_BASE_URL}}/{{ request.path|get_dsid_from_url|dsid_das
 {% for row in data.files %}
 <tr id="row_{{ forloop.counter }}">
 
-{% for k,v in row.items %} 
+{% for k,v in row.items %}
 {% if k != 'url' %}
-<td class="{{ k }}">
+<td class="{{ k }}" {% if k == 'data_size' %}data-size='{{ v }}'{% endif %}>
 {% if k == 'hfile' %}
 {% if row.url is not None %}
 <a href='{{row.url}}' >{{ v }} </a>
@@ -41,7 +41,11 @@ $.get('{{settings.SOFTWARE_BASE_URL}}/{{ request.path|get_dsid_from_url|dsid_das
 
 {% else %}
 {% if v is not None %}
+{% if k == 'data_size' %}
+{{ v|convert_bytes }}
+{% else %}
 {{ v }}
+{% endif %}
 {% endif %}
 {% endif %}
 </td>
