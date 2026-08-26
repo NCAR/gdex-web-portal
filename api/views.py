@@ -326,7 +326,7 @@ def has_arco(request, dsid):
 def get_arco_variables(request, dsid):
     result = common.get_arco_variables(dsid)
     response = rda_r.RDA_Response()
-    response.add_data({result})
+    response.add_data(result)
     return JsonResponse(response.get_json())
 
 @search_arco_variables_schema
