@@ -141,9 +141,9 @@ def get_data_format_from_row(row):
     if not row or not isinstance(row, list):
         return ''
     for item in row:
-        name = item.get('name', '').lower()
+        name = (item.get('name') or '').lower()
         if name == 'data format':
-            return item.get('value', '').lower()
+            return (item.get('value') or '').lower()
     return ''
 
 @register.inclusion_tag('datasets/filelist-zarr-catalogs.html', takes_context=True)
@@ -159,9 +159,9 @@ def show_arco_catalogs(context):
         for row in context['data']['groups'][i]['rows']:
             file_info = { 'data_format': '', 'size': None, 'date_archived': '', 'file_path': '', 'file_name': '', 'file_url': '', 'file_note': None }
             for item in row:
-                name = item.get('name', '').lower()
+                name = (item.get('name') or '').lower()
                 if name == 'data format':
-                    file_info['data_format'] = item.get('value', '').lower()
+                    file_info['data_format'] = (item.get('value') or '').lower()
                 elif name == 'size':
                     file_info['size'] = item.get('value', '')
                 elif name == 'date archived':
@@ -201,9 +201,9 @@ def show_zarr_files(context):
         for row in zarr_group['rows']:
             file_info = { 'data_format': '', 'size': None, 'date_archived': '', 'file_path': '', 'file_name': '', 'file_url': '', 'file_note': None }
             for item in row:
-                name = item.get('name', '').lower()
+                name = (item.get('name') or '').lower()
                 if name == 'data format':
-                    file_info['data_format'] = item.get('value', '').lower()
+                    file_info['data_format'] = (item.get('value') or '').lower()
                 elif name == 'size':
                     file_info['size'] = item.get('value', '')
                 elif name == 'date archived':
