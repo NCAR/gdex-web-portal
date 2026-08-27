@@ -141,9 +141,13 @@ def get_data_format_from_row(row):
     if not row or not isinstance(row, list):
         return ''
     for item in row:
-        name = (item.get('name') or '').lower()
-        if name == 'data format':
-            return (item.get('value') or '').lower()
+        name = item.get('name', '')
+        if not name:
+            continue
+        if name.lower() == 'data format':
+            format = item.get('value', '')
+            if format:
+                return format.lower()
     return ''
 
 @register.inclusion_tag('datasets/filelist-zarr-catalogs.html', takes_context=True)
