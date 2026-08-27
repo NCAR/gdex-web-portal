@@ -238,18 +238,23 @@ class JiraEventReceiver(APIView):
         return is_match
 
 
-def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None):
+def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None, error_detail=None):
     """Helper function to handle common dataset response pattern
     Args:
         dsid: Dataset ID
         data: The data returned from common function
         error_message_template: Template for error message with {dsid} placeholder
         wrap_key: Optional key to wrap data in (e.g., 'temporal', 'data_types')
+        error_detail: Optional extra detail explaining why data is missing/invalid,
+            appended to the error message (e.g. the reason a parse failed)
     """
     response = rda_r.RDA_Response()
 
     if data is None or not data:
-        response.add_error_message(error_message_template.format(dsid=dsid))
+        message = error_message_template.format(dsid=dsid)
+        if error_detail:
+            message = "{}: {}".format(message, error_detail)
+        response.add_error_message(message)
         response.add_data('')
         return JsonResponse(response.get_json(), status=400)
     else:
@@ -696,12 +701,20 @@ def get_acknowledgement(request, dsid):
 def get_temporal(request, dsid):
     """Get temporal coverage information including start date, end date, and time range for a given dataset"""
     dsid = common.format_dataset_id(dsid)
-    temporal_data = common.get_temporal_range(dsid)
+    error_detail = None
+    try:
+        temporal_data = common.get_temporal_range(dsid)
+    except ValueError as e:
+        logger.warning("get_temporal: failed to parse temporal data for dsid %s: %s", dsid, e)
+        temporal_data = None
+        error_detail = str(e)
+
     return _handle_dataset_response(
         dsid,
         temporal_data,
         "Temporal coverage not found for dataset {dsid}",
-        wrap_key='temporal'
+        wrap_key='temporal',
+        error_detail=error_detail
     )
 
 @get_variables_schema
