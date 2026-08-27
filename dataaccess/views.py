@@ -60,7 +60,7 @@ class DataAccessAPIView(APIView):
 
             matrix = Matrix(dsid=dsid, duser=duser)
 
-            matrix_data = matrix.to_json2()
+            matrix_data = matrix.to_json()
 
             if 'matrix' in matrix_data and 'error' in matrix_data['matrix']:
                 error_info = matrix_data['matrix']['error']

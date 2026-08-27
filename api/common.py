@@ -2152,20 +2152,41 @@ def get_temporal_range(dsid):
     Args:
         dsid (str): six digit id for dataset (dxxxxxx)
     Returns:
-        dict: Dictionary containing temporal range information
+        dict: Dictionary containing temporal range information, or None if
+              no temporal metadata is available for this dataset.
+    Raises:
+        ValueError: if temporal metadata exists for the dataset but is not
+            in the expected format. The message explains what was wrong.
     """
     con, cur = init_connection(get_wagtail_config())
     try:
         query = 'select temporal from dataset_description_datasetdescriptionpage where dsid=%s'
         cur.execute(query, (dsid,))
-        data = cur.fetchone()[0]
+        row = cur.fetchone()
     finally:
         close_connection(con, cur)
 
-    full_range = data['full']
-    start_date_str, end_date_str = full_range.split(' to ')
-    start_date_clean = start_date_str.strip()
-    end_date_clean = end_date_str.strip()
+    # no dataset_description page for this dsid, or temporal column is null
+    if row is None or row[0] is None:
+        return None
+
+    data = row[0]
+    if not isinstance(data, dict):
+        logger.warning("get_temporal_range: dsid %s has non-dict temporal data: %r", dsid, data)
+        raise ValueError("temporal data for dataset {} is malformed (expected an object, got {})".format(
+            dsid, type(data).__name__))
+
+    full_range = data.get('full')
+    if not full_range:
+        return None
+
+    full_parts = full_range.split(' to ', 1)
+    if len(full_parts) != 2:
+        logger.warning("get_temporal_range: dsid %s has unparseable 'full' range: %r", dsid, full_range)
+        raise ValueError("temporal 'full' range for dataset {} is not in the expected "
+                          "'<start> to <end>' format: {!r}".format(dsid, full_range))
+    start_date_clean = full_parts[0].strip()
+    end_date_clean = full_parts[1].strip()
 
     result = {
         'start_date': start_date_clean,
@@ -2173,15 +2194,15 @@ def get_temporal_range(dsid):
         'data_groups': []
     }
 
-    for group in data['groups']:
+    for group in data.get('groups') or []:
         if '(' in group and ')' in group:
             date_part = group.split(' (')[0]
             description_part = group.split(' (')[1].rstrip(')')
 
             if ' to ' in date_part:
-                group_start, group_end = date_part.split(' to ')
-                group_start_clean = group_start.strip()
-                group_end_clean = group_end.strip()
+                group_parts = date_part.split(' to ', 1)
+                group_start_clean = group_parts[0].strip()
+                group_end_clean = group_parts[1].strip()
             else:
                 group_start_clean = date_part.strip()
                 group_end_clean = date_part.strip()
