@@ -2323,17 +2323,27 @@ def get_variables(dsid):
     Args:
         dsid (str): six digit id for dataset (dxxxxxx)
     Returns:
-        dict: Dictionary containing variables information
+        dict: Dictionary containing variables information, or None if no
+              variables metadata is available for this dataset.
     """
     con, cur = init_connection(get_wagtail_config())
     try:
         query = 'select variables from dataset_description_datasetdescriptionpage where dsid=%s'
         cur.execute(query, (dsid,))
-        data = cur.fetchone()[0]
+        row = cur.fetchone()
     finally:
         close_connection(con, cur)
 
-    variables_list = data.get('gcmd', [])
+    # no dataset_description page for this dsid, or variables column is null
+    if row is None or row[0] is None:
+        return None
+
+    data = row[0]
+    if not isinstance(data, dict):
+        logger.warning("get_variables: dsid %s has non-dict variables data: %r", dsid, data)
+        return None
+
+    variables_list = data.get('gcmd') or []
     variables_sorted = sorted(variables_list)
 
     result = {
@@ -2698,19 +2708,29 @@ def get_total_volume(dsid):
     Args:
         dsid (str): six digit id for dataset (dxxxxxx)
     Returns:
-        dict: Dictionary containing information regarding the total volume and volume groups
+        dict: Dictionary containing information regarding the total volume and volume
+              groups, or None if no volume metadata is available for this dataset.
     """
     con, cur = init_connection(get_wagtail_config())
     try:
         query = 'select volume from dataset_description_datasetdescriptionpage where dsid=%s'
         cur.execute(query, (dsid,))
-        data = cur.fetchone()[0]
+        row = cur.fetchone()
     finally:
         close_connection(con, cur)
 
+    # no dataset_description page for this dsid, or volume column is null
+    if row is None or row[0] is None:
+        return None
+
+    data = row[0]
+    if not isinstance(data, dict):
+        logger.warning("get_total_volume: dsid %s has non-dict volume data: %r", dsid, data)
+        return None
+
     result = {
-        'total_volume': data['full'],
-        'volume_groups': data['groups']
+        'total_volume': data.get('full'),
+        'volume_groups': data.get('groups') or []
     }
 
     return result
