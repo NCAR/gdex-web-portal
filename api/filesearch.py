@@ -31,7 +31,7 @@ files_response = {'dsid': "", 'datatype': "", 'restrictions': {},
                   'files': {
                       'http_base': settings.RDA_DATA_BASE_URL,
                       'ncar_hpc_base': settings.GDEX_CANONICAL_DATA_PATH,
-                      'files': []
+                      'files': {'paths': []}
                    },
                   'pagination': {}}
 
