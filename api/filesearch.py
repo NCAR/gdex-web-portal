@@ -29,7 +29,7 @@ PAGE_SIZE = 1000
 
 files_response = {'dsid': "", 'datatype': "", 'restrictions': {},
                   'files': {
-                      'https_base': settings.RDA_DATA_BASE_URL,
+                      'http_base': settings.RDA_DATA_BASE_URL,
                       'ncar_hpc_base': settings.GDEX_CANONICAL_DATA_PATH,
                       'files': []
                    },
