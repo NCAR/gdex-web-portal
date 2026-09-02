@@ -1,17 +1,13 @@
-from functools import wraps
-
-from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
 from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import login_required, user_passes_test
 
-from .forms import (
+from ..forms import (
     ACCESS_METHOD_CHOICES,
     ACCESS_METHOD_DETECTION_ORDER,
     ACCESS_METHOD_INFO,
+    SUBMISSION_TYPE_CHOICES,
     AccessInfoForm,
     AuthorFormSet,
     BasicInfoForm,
@@ -22,183 +18,9 @@ from .forms import (
     convert_dataset_size_to_mb,
     mark_invalid_fields,
 )
-from .models import SUBMISSION_TYPE_CHOICES, DatasetLocation, Submission
+from ..models import DatasetLocation, PreSubmission, Submission, SubmissionStatus
+from .common import _format_dataset_size, _get_pre_submission, _portal_dev_mode, portal_view
 
-
-@never_cache
-def data_submission_welcome(request):
-    """Landing page with the Submit Data / Suggest Dataset cards. Deliberately
-    a separate URL from 'data-submission-advisor' -- the various mid-flow
-    redirects that send a user back here when session data is missing should
-    land them on the cards, not re-explain the process every time.
-
-    Each card links straight here with ?type=own or ?type=recommend rather
-    than posting a form -- there's nothing to validate beyond "is this one of
-    the two known values", so a plain link is simpler than a form only to
-    immediately redirect on submit."""
-    requested_type = request.GET.get('type')
-    if requested_type in dict(SUBMISSION_TYPE_CHOICES):
-        wizard_data = request.session.get(SESSION_KEY, {})
-        wizard_data['welcome'] = {'submission_type': requested_type}
-        request.session[SESSION_KEY] = wizard_data
-        if requested_type == 'recommend':
-            # Recommendations skip the Advisor entirely and go straight
-            # into the GDEX form, starting at Basic Information.
-            return redirect(_step_url(1))
-        return redirect('data-submission-advisor')
-
-    return render(request, 'datasubmit/submission_portal/submit/data_submission_welcome.html')
-
-
-PORTAL_VIEW_MODE_SESSION_KEY = 'datasubmit_portal_view_mode'
-
-
-def _agent_view_active(request):
-    """Superusers can flip the sidebar toggle to preview My Datasets the way
-    a regular submitter sees it (their own submissions only). Everyone else
-    always sees only their own submissions; superusers default to the agent
-    side (all submissions) until they flip the toggle to customer."""
-    if not request.user.is_authenticated or not request.user.is_superuser:
-        return False
-    return request.session.get(PORTAL_VIEW_MODE_SESSION_KEY, 'agent') != 'customer'
-
-
-def _portal_dev_mode():
-    """True only under gdexwebserver/settings/local_dev.py, which installs no
-    login system at all (no allauth/accounts app -- see that file's own
-    docstring). Every /submitportal/ view and dataset lookup branches on this
-    so local testing works without a real login, while dev.py/production.py
-    (where the setting is simply undefined) always get the real, secure
-    per-user behavior."""
-    return getattr(settings, 'DATASUBMIT_SHOW_ALL_SUBMISSIONS', False)
-
-
-def portal_view(view_func):
-    """Every /submitportal/ view renders account-specific data, so bundle the
-    two things that implies: never cache it, and require login -- except in
-    local dev, where there's no login system to require (see
-    _portal_dev_mode). Apply this to every new data_submission_portal_* view
-    instead of stacking @login_required/@never_cache by hand, so the gate
-    can't be forgotten the way it was for the first round of these views."""
-    @never_cache
-    @wraps(view_func)
-    def wrapped(request, *args, **kwargs):
-        if _portal_dev_mode():
-            return view_func(request, *args, **kwargs)
-        return login_required(view_func)(request, *args, **kwargs)
-    return wrapped
-
-
-def _get_owned_submission(request, pk, prefetch=()):
-    """Fetch a Submission by pk, scoped to the requesting user -- except in
-    local dev (_portal_dev_mode), where fixture rows aren't tied to any real
-    user. Centralizes the ownership check so every per-dataset portal view
-    (overview/files/metadata/...) enforces it the same way by construction,
-    rather than each view remembering its own filter."""
-    qs = Submission.objects.all()
-    if prefetch:
-        qs = qs.prefetch_related(*prefetch)
-    if _portal_dev_mode():
-        return get_object_or_404(qs, pk=pk)
-    return get_object_or_404(qs, pk=pk, submitted_by=request.user)
-
-
-@portal_view
-def data_submission_portal_set_view_mode(request):
-    """Flips the superuser-only agent/customer sidebar toggle. Anyone else
-    posting here is a no-op -- they always see their own submissions
-    regardless of the session value."""
-    if request.method == 'POST' and request.user.is_superuser:
-        view_mode = 'customer' if request.POST.get('view_mode') == 'customer' else 'agent'
-        request.session[PORTAL_VIEW_MODE_SESSION_KEY] = view_mode
-
-    next_url = request.POST.get('next')
-    if not next_url or not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
-        next_url = reverse('data-submission-portal')
-    return redirect(next_url)
-
-
-@portal_view
-def data_submission_portal(request):
-    show_all = _portal_dev_mode() or _agent_view_active(request)
-    datasets = Submission.objects.all() if show_all else Submission.objects.filter(submitted_by=request.user)
-    datasets = datasets.order_by('-created')
-
-    query = request.GET.get('q', '').strip()
-    if query:
-        datasets = datasets.filter(dataset_title__icontains=query)
-
-    submission_type = request.GET.get('type', '')
-    if submission_type in dict(SUBMISSION_TYPE_CHOICES):
-        datasets = datasets.filter(submission_type=submission_type)
-
-    return render(request, 'datasubmit/submission_portal/my_datasets/home.html', {
-        'datasets': datasets,
-        'query': query,
-        'submission_type': submission_type,
-        'submission_type_choices': SUBMISSION_TYPE_CHOICES,
-    })
-
-@portal_view
-def data_submission_portal_view(request, pk):
-    dataset = _get_owned_submission(request, pk, prefetch=('locations',))
-
-    access_method_labels = dict(ACCESS_METHOD_CHOICES)
-    locations = [
-        {
-            'location': loc.location,
-            'access_method_label': access_method_labels.get(loc.access_method, loc.access_method),
-            'access_verification': loc.access_verification,
-        }
-        for loc in dataset.locations.all()
-    ]
-
-    return render(request, 'datasubmit/submission_portal/my_datasets/dataset-overview.html', {
-        'dataset': dataset,
-        'dataset_size_display': _format_dataset_size(dataset.dataset_size_mb),
-        'locations': locations,
-        'active_tab': 'Home',
-    })
-
-@portal_view
-def data_submission_portal_files(request, pk):
-    dataset = _get_owned_submission(request, pk, prefetch=('locations',))
-
-    access_method_labels = dict(ACCESS_METHOD_CHOICES)
-    locations = [
-        {
-            'location': loc.location,
-            'access_method_label': access_method_labels.get(loc.access_method, loc.access_method),
-            'access_verification': loc.access_verification,
-        }
-        for loc in dataset.locations.all()
-    ]
-
-    return render(request, 'datasubmit/submission_portal/my_datasets/dataset-files.html', {
-        'dataset': dataset,
-        'locations': locations,
-        'active_tab': 'Files',
-    })
-
-@portal_view
-def data_submission_portal_metadata(request, pk):
-    dataset = _get_owned_submission(request, pk)
-    return render(request, 'datasubmit/submission_portal/my_datasets/dataset-metadata.html', {
-        'dataset': dataset,
-        'active_tab': 'Metadata',
-    })
-
-@portal_view
-def data_submission_portal_proposal_templates(request):
-    return render(request, 'datasubmit/submission_portal/proposal_templates/home.html')
-
-@portal_view
-def data_submission_portal_messages(request):
-    return render(request, 'datasubmit/submission_portal/messages/home.html')
-
-@portal_view
-def data_submission_portal_budget(request):
-    return render(request, 'datasubmit/submission_portal/budget_billing/home.html')
 # Small, HPC-independent datasets can be archived faster via Zenodo than through
 # the full GDEX intake process, so those submitters get offered that option first.
 ZENODO_SIZE_THRESHOLD_MB = 50 * 1024
@@ -293,12 +115,63 @@ def _zenodo_reason(wizard_data):
     return None
 
 
-def _format_dataset_size(size_mb):
-    if size_mb >= 1024 * 1024:
-        return f"{size_mb / (1024 * 1024):.2f} TB"
-    if size_mb >= 1024:
-        return f"{size_mb / 1024:.2f} GB"
-    return f"{size_mb:.2f} MB"
+def _wizard_gate_redirect(wizard_data, step):
+    """Shared access control for any step (1-4) of the GDEX wizard. Returns a redirect, or None if allowed."""
+    is_recommendation = wizard_data.get('welcome', {}).get('submission_type') == 'recommend'
+
+    # Recommendations skip the Advisor entirely, so none of its
+    # answers (or the Zenodo detour that depends on them) apply.
+    if not is_recommendation:
+        if '0' not in wizard_data:
+            return redirect('data-submission-advisor')
+
+        if not _bypasses_zenodo(wizard_data['0']):
+            if wizard_data['0'].get('submission_content') == 'software_only':
+                return redirect('data-submission-zenodo-next-steps')
+
+            if _qualifies_for_zenodo(wizard_data['0']):
+                zenodo_choice = wizard_data.get('zenodo', {}).get('continue_with_gdex')
+                if zenodo_choice == 'False':
+                    return redirect('data-submission-zenodo-next-steps')
+                if zenodo_choice != 'True':
+                    return redirect('data-submission-zenodo-recommendation')
+
+    for earlier_step in range(1, step):
+        if _skips_authors_step(is_recommendation) and earlier_step == 2:
+            # Authors is skipped -- it'll never be in wizard_data, and
+            # that's expected, not a gap.
+            continue
+        if str(earlier_step) not in wizard_data:
+            if is_recommendation:
+                return redirect(_step_url(1))
+            return redirect('data-submission-advisor')
+
+    return None
+
+
+@portal_view
+def data_submission_welcome(request):
+    """Landing page with the Submit Data / Suggest Dataset cards. Deliberately
+    a separate URL from 'data-submission-advisor' -- the various mid-flow
+    redirects that send a user back here when session data is missing should
+    land them on the cards, not re-explain the process every time.
+
+    Each card links straight here with ?type=own or ?type=recommend rather
+    than posting a form -- there's nothing to validate beyond "is this one of
+    the two known values", so a plain link is simpler than a form only to
+    immediately redirect on submit."""
+    requested_type = request.GET.get('type')
+    if requested_type in dict(SUBMISSION_TYPE_CHOICES):
+        wizard_data = request.session.get(SESSION_KEY, {})
+        wizard_data['welcome'] = {'submission_type': requested_type}
+        request.session[SESSION_KEY] = wizard_data
+        if requested_type == 'recommend':
+            # Recommendations skip the Advisor entirely and go straight
+            # into the GDEX form, starting at Basic Information.
+            return redirect(_step_url(1))
+        return redirect('data-submission-advisor')
+
+    return render(request, 'datasubmit/submission_portal/submit/data_submission_welcome.html')
 
 @portal_view
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
@@ -307,21 +180,24 @@ def submission_confirmation(request):
     submission_id = request.session.pop('last_submission_id', None)
     submission = None
     if submission_id:
-        submission = Submission.objects.prefetch_related('locations').filter(pk=submission_id).first()
+        submission = Submission.objects.prefetch_related('locations', 'pre_submissions').filter(pk=submission_id).first()
 
     access_method_labels = dict(ACCESS_METHOD_CHOICES)
     locations = []
+    pre_submission = None
     if submission:
+        pre_submission = _get_pre_submission(submission)
         for loc in submission.locations.all():
             locations.append({
                 'location': loc.location,
                 'access_method_label': access_method_labels.get(loc.access_method, loc.access_method),
-                'access_verification': loc.access_verification,
+                'readable': loc.readable,
+                'reachable': loc.reachable,
             })
 
     # The wizard session (including 'welcome') is already cleared by the time
     # we get here, so read the recommendation flag off the saved row instead.
-    is_recommendation = bool(submission and submission.submission_type == 'recommend')
+    is_recommendation = bool(submission and submission.is_wishlist)
     steps = _progress_steps(is_recommendation)
     step_display, step_count = _step_progress(steps, CONFIRMATION_STEP)
 
@@ -331,6 +207,7 @@ def submission_confirmation(request):
         'step_display': step_display,
         'step_count': step_count,
         'submission': submission,
+        'pre_submission': pre_submission,
         'dataset_size_display': _format_dataset_size(submission.dataset_size_mb) if submission else None,
         'locations': locations,
     })
@@ -414,40 +291,6 @@ def data_submission_gdex_next_steps(request):
         return redirect('data-submission-advisor')
 
     return render(request, 'datasubmit/submission_portal/submit/data_submission_gdex_next_steps.html', {'start_url': _step_url(1)})
-
-
-def _wizard_gate_redirect(wizard_data, step):
-    """Shared access control for any step (1-4) of the GDEX wizard. Returns a redirect, or None if allowed."""
-    is_recommendation = wizard_data.get('welcome', {}).get('submission_type') == 'recommend'
-
-    # Recommendations skip the Advisor entirely, so none of its
-    # answers (or the Zenodo detour that depends on them) apply.
-    if not is_recommendation:
-        if '0' not in wizard_data:
-            return redirect('data-submission-advisor')
-
-        if not _bypasses_zenodo(wizard_data['0']):
-            if wizard_data['0'].get('submission_content') == 'software_only':
-                return redirect('data-submission-zenodo-next-steps')
-
-            if _qualifies_for_zenodo(wizard_data['0']):
-                zenodo_choice = wizard_data.get('zenodo', {}).get('continue_with_gdex')
-                if zenodo_choice == 'False':
-                    return redirect('data-submission-zenodo-next-steps')
-                if zenodo_choice != 'True':
-                    return redirect('data-submission-zenodo-recommendation')
-
-    for earlier_step in range(1, step):
-        if _skips_authors_step(is_recommendation) and earlier_step == 2:
-            # Authors is skipped -- it'll never be in wizard_data, and
-            # that's expected, not a gap.
-            continue
-        if str(earlier_step) not in wizard_data:
-            if is_recommendation:
-                return redirect(_step_url(1))
-            return redirect('data-submission-advisor')
-
-    return None
 
 @portal_view
 # TODO: temporary gate for prod testing before public launch -- remove this line to reopen to all logged-in users.
@@ -565,30 +408,41 @@ def gdex_submission_form_step(request, step_slug):
 
                 submission = Submission.objects.create(
                     submitted_by=request.user,
-                    submission_type=wizard_data.get('welcome', {}).get('submission_type', 'own'),
+                    is_wishlist=wizard_data.get('welcome', {}).get('submission_type') == 'recommend',
+                    dataset_size_mb=dataset_size_mb,
+                )
+                SubmissionStatus.objects.create(
+                    submission=submission,
+                    status=SubmissionStatus.Status.PENDING_DECISION,
+                )
+                PreSubmission.objects.create(
+                    submission=submission,
                     dataset_title=basic_info['dataset_title'],
                     dataset_abstract=basic_info['dataset_abstract'],
                     dataset_details=basic_info['dataset_details'],
-                    dataset_size_mb=dataset_size_mb,
                     hpc_access=hpc_access,
                     cif_fare_contributors=cif_fare_contributors,
                     is_ncar_employee=is_ncar_employee,
                     data_policy_agreement=policies_info['data_policy_agreement'],
                     data_deposit_agreement=policies_info['data_deposit_agreement'],
                 )
+                verification = access_info.get('access_verification', '')
                 DatasetLocation.objects.create(
                     submission=submission,
                     location=access_info['dataset_location'],
                     access_method=access_info['access_method'],
-                    access_verification=access_info.get('access_verification', ''),
+                    readable=verification == 'readable',
+                    reachable=verification == 'reachable',
                     order=0,
                 )
                 if access_info.get('dataset_location_2'):
+                    verification_2 = access_info.get('access_verification_2', '')
                     DatasetLocation.objects.create(
                         submission=submission,
                         location=access_info['dataset_location_2'],
                         access_method=access_info.get('access_method_2', ''),
-                        access_verification=access_info.get('access_verification_2', ''),
+                        readable=verification_2 == 'readable',
+                        reachable=verification_2 == 'reachable',
                         order=1,
                     )
                 del request.session[SESSION_KEY]

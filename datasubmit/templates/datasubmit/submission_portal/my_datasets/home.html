@@ -2,46 +2,208 @@
 
 {% block portal_content %}
 
+{% comment %}
+No Bootstrap utility expresses "transparent at rest, light circle only on
+hover" -- .btn-light etc. always show their fill, and there's no
+hover-only background class in this Bootstrap version. Real, narrowly
+scoped CSS for just the kebab buttons. Also overrides Bootstrap's
+:active/.show border-color (added automatically while the dropdown is
+open), which otherwise reads as a hard black ring, in favor of a soft
+box-shadow instead.
+{% endcomment %}
+<style>
+.kebab-btn:hover, .kebab-btn:active, .kebab-btn.show {
+    background-color: #f8f9fa;
+    border-color: transparent;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+</style>
+
 <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center gap-2 mt-3">
     <h3 class="mb-0 text-left">My Datasets</h3>
-    <a href="{% url 'data-submission-welcome' %}" class="btn btn-primary btn-right">
-        <i class="fa-solid fa-plus me-2" aria-hidden="true"></i> New Submission
-    </a>
+    <form method="get" class="d-flex align-items-center flex-shrink-0">
+        {% for t in selected_types %}<input type="hidden" name="type" value="{{ t }}">{% endfor %}
+        {% for s in selected_statuses %}<input type="hidden" name="status" value="{{ s }}">{% endfor %}
+        <div class="input-group input-group-lg">
+            <input type="search" name="q" value="{{ query }}" class="form-control" placeholder="Search datasets..." oninput="if (!this.value) this.form.submit()">
+            <button type="submit" class="btn btn-outline-secondary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></button>
+        </div>
+    </form>
 </div>
-<p class="text-left text-muted fst-italic">View and manage all of your dataset submissions</p>
-<hr>
+<p class="text-left text-muted fst-italic mb-3">View and manage all of your dataset submissions</p>
 
-<div class="table-responsive">
-    <table class="table table-striped table-hover mt-3">
-        <thead>
-            <tr>
-                <th scope="col">Dataset ID</th>
-                <th scope="col">Dataset Name</th>
-                <th scope="col">Submission Type</th>
-                <th scope="col">Created</th>
-                <th scope="col">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for dataset in datasets %}
-            <tr>
-                <td>{{ dataset.id }}</td>
-                <td>{{ dataset.dataset_title }}</td>
-                <td>{{ dataset.get_submission_type_display }}</td>
-                <td>{{ dataset.created|date:"M d, Y H:i" }}</td>
-                <td>
-                    <a href="{% url 'data-submission-portal-view' dataset.id %}" class="btn btn-sm btn-outline-primary">
-                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i> Open
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center">No datasets found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+{% comment %}
+No "All Datasets" button -- just the type filter links. It only renders as
+its own element when there's more than one type actually present
+(data_submission_portal only counts types with data); with just one,
+filtering by it is a no-op, so skipping it entirely beats showing a
+single, pointless toggle.
+{% endcomment %}
+{% if type_filters|length > 1 %}
+<div class="d-flex flex-wrap align-items-center gap-3">
+    <div class="d-flex gap-3">
+        {% for f in type_filters %}
+        <a href="{{ f.toggle_url }}" class="text-decoration-none pb-1 {% if f.value in selected_types %}border-bottom border-2 fw-bold{% else %}text-muted{% endif %}" {% if f.value in selected_types %}style="color: #0057c2; border-color: #0057c2;"{% endif %}>
+            <i class="fa-solid {{ f.icon }} me-1" aria-hidden="true"></i>{{ f.label }} ({{ f.count }})
+        </a>
+        {% endfor %}
+    </div>
 </div>
+{% endif %}
+
+{% comment %}
+Spells out in words what the bolder pill fill implies visually -- without
+this, changing which cards render below (via a pill click) has no
+explanation nearby. Each chip removes just that one value (its own
+toggle_url, or query_clear_url for the search chip); "Clear all" goes back
+to all_datasets_url, which now also strips ?q= so it's a true full reset.
+{% endcomment %}
+{% if any_filter_selected or query %}
+<div class="d-flex flex-wrap justify-content-start align-items-center gap-2 mb-3 mt-2">
+    <span class="text-muted small">Showing:</span>
+    {% if query %}
+    <a href="{{ query_clear_url }}" class="badge rounded-pill text-white text-decoration-none" style="background-color: #faa119;">
+        <i class="fa-solid fa-magnifying-glass me-1" aria-hidden="true"></i>&ldquo;{{ query }}&rdquo; <i class="fa-solid fa-xmark ms-1" aria-hidden="true"></i>
+    </a>
+    {% endif %}
+    {% for f in type_filters %}
+    {% if f.value in selected_types %}
+    <a href="{{ f.toggle_url }}" class="badge rounded-pill text-white text-decoration-none" style="background-color: #faa119;">
+        {{ f.label }} <i class="fa-solid fa-xmark ms-1" aria-hidden="true"></i>
+    </a>
+    {% endif %}
+    {% endfor %}
+    {% for f in status_filters %}
+    {% if f.value in selected_statuses %}
+    <a href="{{ f.toggle_url }}" class="badge rounded-pill text-white text-decoration-none" style="background-color: #faa119;">
+        {{ f.label }} <i class="fa-solid fa-xmark ms-1" aria-hidden="true"></i>
+    </a>
+    {% endif %}
+    {% endfor %}
+    <a href="{{ all_datasets_url }}" class="small fw-bold text-decoration-none">Clear all</a>
+</div>
+{% endif %}
+
+{% comment %}
+One card per status that actually has datasets (data_submission_portal
+drops empty statuses before this template ever sees them).
+{% endcomment %}
+{% comment %}
+Each status card is a shadowed, padded, bordered container (not just the
+plain flat .card default). Inside it, every dataset is its OWN small
+rounded/bordered card with a gap between them -- not a list-group -- so
+columns still align like a table while each row visually behaves like a
+card, per the explicit "not a traditional table" spec.
+{% endcomment %}
+{% comment %}
+One outer container wrapping every status card together, so the whole
+group of status sections reads as a single block on the page rather than
+several unrelated cards floating side by side.
+{% endcomment %}
+<div class="card rounded-4 p-3 mb-2 bg-white border-0">
+{% for group in status_groups %}
+<div class="card rounded-4 shadow-sm p-3 mb-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="h5 mb-0 d-flex align-items-center">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-{{ group.color }} text-white me-2" style="width: 2.25rem; height: 2.25rem; flex-shrink: 0;">
+                <i class="fa-solid {{ group.icon }} fa-2m" aria-hidden="true"></i>
+            </span>
+            {{ group.label }} ({{ group.count }})
+        </h3>
+        <div class="d-flex align-items-center gap-3">
+            {% if group.key == 'active' %}
+            <a href="{% url 'data-submission-welcome' %}" class="btn btn-primary btn-sm rounded">
+                <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>{{ new_submission_label }}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% comment %}
+    Column headers with no literal table underneath -- just labels aligned
+    to the same grid columns each row below uses, hidden on narrow screens
+    since rows there stack vertically instead of aligning into columns.
+    {% endcomment %}
+    <div class="row gx-3 px-2 mt-2 small text-uppercase fw-bold d-none d-md-flex align-items-center">
+        {% for col in sort_columns %}
+        <div class="{{ col.col }} text-{{ col.align }}">
+            <a href="{{ col.url }}" class="text-decoration-none {% if col.active %}text-dark{% else %}text-muted{% endif %}">
+                {{ col.label }}
+                {% if col.active %}
+                <i class="fa-solid {% if col.desc %}fa-caret-down{% else %}fa-caret-up{% endif %} ms-1" aria-hidden="true"></i>
+                {% else %}
+                <i class="fa-solid fa-sort ms-1 opacity-50" aria-hidden="true"></i>
+                {% endif %}
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% comment %}Every dataset in this status, shown at once -- no truncation, no "Show more" toggle.{% endcomment %}
+    <div class="d-flex flex-column gap-2 bg-white rounded-3 p-2">
+        {% for dataset in group.datasets %}
+        <div class="card border-0 border-top">
+            <div class="card-body py-2">
+                <div class="row gx-3 align-items-center">
+                    <div class="col-12 col-md-5 d-flex align-items-center gap-3">
+                        <img src="/media/images/bannerimage2.original.jpg" alt="Dataset Thumbnail" class="rounded-circle flex-shrink-0"  style="width: 4.5rem; height: 4.5rem; object-fit: cover;">
+                        <div>
+                            <div>{{ dataset.dataset_title|default:"Untitled Dataset" }}</div>
+                            <div class="small text-muted fst-italic">{% if dataset.dsid %}{{ dataset.dsid }}{% else %}{% endif %}</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">{{ dataset.created|date:"M d, Y" }}</div>
+                    <div class="col-6 col-md-2">
+                        {% if dataset.submission_status == 'pending_decision' %}
+                        <span class="badge rounded-pill text-white" style="background-color: #dc3545;">{{ dataset.status_label }}</span>
+                        {% else %}
+                        <div class="small text-muted mb-1">{{ dataset.status_label }}</div>
+                        {% if dataset.status_percent %}
+                        <div class="progress" style="height: 1.25rem;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ dataset.status_percent }}%;" aria-valuenow="{{ dataset.status_percent }}" aria-valuemin="0" aria-valuemax="100">{{ dataset.status_percent }}%</div>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="col-6 col-md-3 d-flex justify-content-end gap-1">
+                        <a href="{% url 'data-submission-portal-view' dataset.id %}" class="btn btn-sm">
+                            {% if dataset.submission_status == 'in_progress' %}Continue{% else %}View{% endif %}
+                            <i class="fa-solid fa-chevron-right ms-1" aria-hidden="true"></i>
+                        </a>
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-sm shadow-none rounded-circle kebab-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-ellipsis-vertical text-secondary" aria-hidden="true"></i>
+                                <span class="visually-hidden">More actions</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border bg-white">
+                                <li><a class="dropdown-item text-secondary" href="{% url 'data-submission-portal-metadata' dataset.id %}">Edit Metadata</a></li>
+                                <li><a class="dropdown-item text-secondary" href="{% url 'data-submission-portal-files' dataset.id %}">Edit Files</a></li>
+                                <li><a class="dropdown-item text-secondary" href="#">Edit Contributors</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-secondary" href="#">Cancel Submission</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% empty %}
+<p class="text-center text-muted">No datasets found.</p>
+{% endfor %}
+
+{% if status_groups %}
+<div class="card rounded-4 border-0 mb-3">
+    <div class="card-body bg-light text-center text-muted py-3">
+        <i class="fa-solid fa-circle-info me-2" aria-hidden="true"></i>
+        Can't find what you're looking for? Try adjusting your filters or use the search bar.
+    </div>
+</div>
+</div>
+
+
+{% endif %}
+
 
 {% endblock %}
