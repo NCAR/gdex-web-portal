@@ -482,7 +482,7 @@ def supersede(request, dsid):
             cursor = conn.cursor()
             cursor.execute(
                     "select vindex from dssdb.dsvrsn where dsid = %s and doi "
-                    "== 'X'", (dsid, ))
+                    "= 'X'", (dsid, ))
             vindex, = cursor.fetchone() or (None, )
             conn.close()
         except psycopg2.Error as err:
@@ -510,11 +510,11 @@ def supersede(request, dsid):
 def create_a_test_doi(dsid, action):
     adoi, err = get_active_doi(dsid)
     if action == "assign":
-        if len(adoi) > 0 and adoi != "X":
+        if len(adoi) > 0 and adoi != "Y":
             return {'already_active': True, 'adoi': adoi}
 
     elif action == "supersede":
-        if len(adoi) == 0 or adoi == "X":
+        if len(adoi) == 0 or adoi in ("X", "Y"):
             return {'noactive': True}
 
     else:
@@ -531,7 +531,7 @@ def create_a_test_doi(dsid, action):
             capture_output=True)
     err = o.stderr.decode("utf-8")
     if len(err) > 0:
-        return {'error': "test DOI creation failed: '{}'".format(err)}
+        return {'error': f"test DOI creation failed: '{err}'"}
 
     out = o.stdout.decode("utf-8")
     if out.find("Success:") == 0:
@@ -664,6 +664,9 @@ def create_a_real_doi(request, dsid, iuser, ctx):
 
     else:
         err = proc.stderr.decode("utf-8")
+        if len(err) == 0:
+            err = out
+
         with open("/data/logs/doi_log", "a") as doi_log:
             doi_log.write(
                     f"***DOI creation error: {err} - dsid: {dsid}, "
