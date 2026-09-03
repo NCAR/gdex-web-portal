@@ -510,7 +510,7 @@ def supersede(request, dsid):
 def create_a_test_doi(dsid, action):
     adoi, err = get_active_doi(dsid)
     if action == "assign":
-        if len(adoi) > 0 and adoi != "Y":
+        if len(adoi) > 0 and adoi not in ("X", "Y"):
             return {'already_active': True, 'adoi': adoi}
 
     elif action == "supersede":

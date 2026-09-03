@@ -268,8 +268,8 @@ def dsids_without_doi():
     cursor.execute((
             "select distinct s.dsid from search.datasets as s left join dssdb."
             "dsvrsn as v on v.dsid = s.dsid where s.dsid < 'd999000' and s."
-            "type in ('P', 'H') and (v.doi is null or v.doi = 'X') order by s."
-            "dsid"))
+            "type in ('P', 'H') and (v.doi is null or v.doi in ('X', 'Y')) "
+            "order by s.dsid"))
     res = cursor.fetchall()
     cursor.close()
     for e in res:
