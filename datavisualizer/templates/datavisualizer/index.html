@@ -1,0 +1,471 @@
+{% extends "datavisualizer/base.html" %} 
+{% load static %} 
+{% block content %}
+{{ down_caches|json_script:"down-caches-data" }} 
+{{ healthy_caches|json_script:"healthy-caches-data" }}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+  <div class="col-lg-10">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h1 class="card-title text-center mb-3">Outage Map</h1>
+        <p class="text-center text-muted mb-3">
+          This interactive map displays cache servers that are currently down or have unknown status. If you grant location access, the map will also show you the nearest working cache server
+        <div
+          id="map"
+          style="
+            height: 60vh;
+            min-height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+          "
+        ></div>
+        <div class="alert alert-info py-2 mb-0 mt-3">
+          <div class="d-flex justify-content-between align-items-center mt-1">
+            <div class="legend-item">
+              <img
+                src="{% static 'markers/leaf-red.png' %}"
+                alt="Down"
+                style="height: 24px; vertical-align: middle"
+              />
+              Down Cache
+            </div>
+            <div class="legend-item">
+              <img
+                src="{% static 'markers/leaf-orange.png' %}"
+                alt="Unknown"
+                style="height: 24px; vertical-align: middle"
+              />
+              Unknown Status
+            </div>
+            <div class="legend-item">
+              <img
+                src="{% static 'markers/leaf-green.png' %}"
+                alt="Origin"
+                style="height: 24px; vertical-align: middle"
+              />
+              Nearest Working Cache
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col-md-12">
+            <div
+              class="alert alert-info py-2"
+              id="distance-info"
+              style="display: none"
+            >
+              <strong>Distance Information:</strong>
+              <div class="row mt-2">
+                <div class="col-md-6">
+                  <div id="nearest-down-cache"></div>
+                </div>
+                <div class="col-md-6">
+                  <div id="nearest-healthy-cache"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <div
+              class="alert alert-red py-2"
+              id="down-caches-list"
+              style="display: none"
+            >
+              <strong class="text-dark"
+                >Down Caches (<span id="down-caches-count">0</span>
+                total):</strong
+              >
+              <ul class="mb-0 text-dark" id="down-caches-names"></ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div
+              class="alert alert-yellow py-2"
+              id="unknown-caches-list"
+              style="display: none"
+            >
+              <strong class="text-dark"
+                >Unknown Status Caches (<span id="unknown-caches-count">0</span>
+                total):</strong
+              >
+              <ul class="mb-0 text-dark" id="unknown-caches-names"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+  .text-red {
+    color: #dc3545;
+  }
+  .text-yellow {
+    color: #ffc107;
+  }
+  .text-green {
+    color: #28a745;
+  }
+  .alert-red {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #721c24 !important;
+  }
+  .alert-yellow {
+    background-color: #fff3cd !important;
+    border-color: #ffeeba !important;
+    color: #856404 !important;
+  }
+</style>
+<script>
+  var map = L.map("map").fitWorld();
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap",
+  }).addTo(map);
+
+  var userLocation = null;
+  var userMarker = null;
+  var markers = [];
+  var nearestHealthyLine = null;
+
+  // Function to calculate distance in kilometers between two points using Haversine formula
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; 
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; 
+    return distance;
+  }
+
+  // Function to find nearest cache
+  function findNearestCache(userLat, userLon, caches) {
+    if (!caches || caches.length === 0) return null;
+
+    let nearest = null;
+    let minDistance = Infinity;
+
+    caches.forEach((cache) => {
+      if (cache.latitude && cache.longitude) {
+        const distance = calculateDistance(
+          userLat,
+          userLon,
+          cache.latitude,
+          cache.longitude
+        );
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearest = { ...cache, distance: distance };
+        }
+      }
+    });
+
+    return nearest;
+  }
+
+  // Function to update distance information
+  function updateDistanceInfo(userLat, userLon, downCaches, healthyCaches) {
+    const errorDownCaches = downCaches.filter(cache => cache.status === "Error");
+    const nearestDown = findNearestCache(userLat, userLon, errorDownCaches);
+    const nearestHealthy = findNearestCache(userLat, userLon, healthyCaches);
+
+    const distanceInfo = document.getElementById("distance-info");
+    const nearestDownDiv = document.getElementById("nearest-down-cache");
+    const nearestHealthyDiv = document.getElementById("nearest-healthy-cache");
+
+    // Update nearest down cache info
+    if (nearestDown) {
+      nearestDownDiv.innerHTML = `
+            <strong>Nearest Down Cache:</strong><br>
+            ${nearestDown.name} - ${nearestDown.distance.toFixed(2)} km away
+        `;
+    } else {
+      nearestDownDiv.innerHTML = "<strong>No down caches found</strong>";
+    }
+
+    if (nearestHealthy) {
+      nearestHealthyDiv.innerHTML = `
+            <strong>Nearest Working Cache:</strong><br>
+            ${nearestHealthy.name} - ${nearestHealthy.distance.toFixed(
+        2
+      )} km away
+        `;
+
+      if (nearestHealthyLine) {
+        map.removeLayer(nearestHealthyLine);
+      }
+
+      // Draw line to nearest healthy cache
+      nearestHealthyLine = L.polyline(
+        [
+          [userLat, userLon],
+          [nearestHealthy.latitude, nearestHealthy.longitude],
+        ],
+        {
+          color: "green",
+          weight: 3,
+          opacity: 0.7,
+          dashArray: "10, 10",
+        }
+      ).addTo(map);
+
+      nearestHealthyLine.bindPopup(`
+            <div>
+                <strong>Route to Nearest Healthy Cache</strong><br>
+                <strong>Cache:</strong> ${nearestHealthy.name}<br>
+                <strong>Distance:</strong> ${nearestHealthy.distance.toFixed(
+                  2
+                )} km
+            </div>
+        `);
+    } else {
+      nearestHealthyDiv.innerHTML = "<strong>No healthy caches found</strong>";
+    }
+
+    distanceInfo.style.display = "";
+  }
+
+  // Function to initialize map with user location
+  function initializeMap() {
+    map.locate({ setView: false, maxZoom: 16 });
+  }
+
+  function onLocationFound(e) {
+    userLocation = e.latlng;
+    var radius = e.accuracy;
+
+    if (userMarker) {
+      map.removeLayer(userMarker);
+    }
+
+    userMarker = L.marker(e.latlng)
+      .addTo(map)
+      .bindPopup("You are within " + radius + " meters from this point")
+    L.circle(e.latlng, radius).addTo(map);
+    
+    console.log("Location found:", userLocation);
+
+    // Update the map data with the new location
+    var downCaches = JSON.parse(document.getElementById("down-caches-data").textContent);
+    var healthyCaches = JSON.parse(document.getElementById("healthy-caches-data").textContent);
+    updateMapData(downCaches, healthyCaches);
+  }
+
+  map.on("locationfound", onLocationFound);
+
+  function onLocationError(e) {
+    alert(e.message);
+    // Still load the map data even without user location
+    var downCaches = JSON.parse(document.getElementById("down-caches-data").textContent);
+    var healthyCaches = JSON.parse(document.getElementById("healthy-caches-data").textContent);
+    updateMapData(downCaches, healthyCaches);
+  }
+
+  map.on("locationerror", onLocationError);
+
+  var LeafIcon = L.Icon.extend({
+    options: {
+      shadowUrl: "{% static 'markers/leaf-shadow.png' %}",
+      iconSize: [38, 95],
+      shadowSize: [50, 64],
+      iconAnchor: [22, 94],
+      shadowAnchor: [4, 62],
+      popupAnchor: [-3, -76],
+    },
+  });
+
+  var greenIcon = new LeafIcon({
+      iconUrl: "{% static 'markers/leaf-green.png' %}",
+    }),
+    redIcon = new LeafIcon({ iconUrl: "{% static 'markers/leaf-red.png' %}" }),
+    orangeIcon = new LeafIcon({
+      iconUrl: "{% static 'markers/leaf-orange.png' %}",
+    });
+
+  // Function to get icon and status class based on cache status
+  function getIconAndClass(status) {
+    if (status === "Unknown") {
+      return { icon: orangeIcon, statusClass: "text-yellow" };
+    } else if (status === "Health Test Disabled") {
+      return { icon: greenIcon, statusClass: "text-green" };
+    } else if (status === "OK") {
+      return { icon: greenIcon, statusClass: "text-green" };
+    } else {
+      return { icon: redIcon, statusClass: "text-red" };
+    }
+  }
+
+  // Function to update markers and lists
+  function updateMapData(downCaches, healthyCaches) {
+    markers.forEach((marker) => map.removeLayer(marker));
+    markers = [];
+
+    if (nearestHealthyLine) {
+      map.removeLayer(nearestHealthyLine);
+      nearestHealthyLine = null;
+    }
+
+    var downCount = 0;
+    var unknownCount = 0;
+    var downNames = [];
+    var unknownNames = [];
+
+    // Find nearest healthy cache 
+    let nearestHealthyCache = null;
+    if (userLocation && healthyCaches.length > 0) {
+      nearestHealthyCache = findNearestCache(
+        userLocation.lat,
+        userLocation.lng,
+        healthyCaches
+      );
+    } else {
+      console.log("Cannot find nearest healthy cache:", {
+        hasUserLocation: !!userLocation,
+        healthyCachesLength: healthyCaches.length
+      });
+    }
+
+    // Add down caches to the map
+    downCaches.forEach(function (cache) {
+      if (cache.latitude && cache.longitude) {
+        const { icon, statusClass } = getIconAndClass(cache.status);
+
+        if (cache.status === "Unknown") {
+          unknownCount++;
+          unknownNames.push(cache.name);
+        } else if (cache.status === "Error") {
+          downCount++;
+          downNames.push(cache.name);
+        }
+
+        var marker = L.marker([cache.latitude, cache.longitude], {
+          icon: icon,
+        }).addTo(map).bindPopup(`
+                    <div>
+                        <h6><strong>${cache.name}</strong></h6>
+                        <p><strong>Type:</strong> ${cache.type}</p>
+                        <p><strong>Status:</strong> <span class="${statusClass}">${cache.status}</span></p>
+                    </div>
+                `);
+        markers.push(marker);
+      }
+    });
+
+    // Add only the nearest healthy cache to the map and draw a line from user location to it
+    if (nearestHealthyCache) {
+      const { icon, statusClass } = getIconAndClass(nearestHealthyCache.status);
+
+      var healthyMarker = L.marker(
+        [nearestHealthyCache.latitude, nearestHealthyCache.longitude],
+        { icon: greenIcon }
+      ).addTo(map).bindPopup(`
+                <div>
+                    <h6><strong>${nearestHealthyCache.name}</strong></h6>
+                    <p><strong>Type:</strong> ${nearestHealthyCache.type}</p>
+                    <p><strong>Status:</strong> <span class="${statusClass}">${nearestHealthyCache.status}</span></p>
+                    <p><strong>Distance:</strong> ${nearestHealthyCache.distance.toFixed(2)} km</p>
+                    <p><em>Nearest Working Cache</em></p>
+                </div>
+            `);
+      markers.push(healthyMarker);
+
+      if (nearestHealthyLine) {
+        map.removeLayer(nearestHealthyLine);
+      }
+      nearestHealthyLine = L.polyline(
+        [
+          [userLocation.lat, userLocation.lng],
+          [nearestHealthyCache.latitude, nearestHealthyCache.longitude],
+        ],
+        {
+          color: "green",
+          weight: 3,
+          opacity: 0.7,
+          dashArray: "10, 10",
+        }
+      ).addTo(map);
+      nearestHealthyLine.bindPopup(`
+        <div>
+            <strong>Route to nearest working cache</strong><br>
+            <strong>Cache:</strong> ${nearestHealthyCache.name}<br>
+            <strong>Distance:</strong> ${nearestHealthyCache.distance.toFixed(2)} km
+        </div>
+      `);
+    }
+
+    // Update the cache counts
+    document.getElementById("down-caches-count").textContent = downCount;
+    document.getElementById("unknown-caches-count").textContent = unknownCount;
+
+    // Update down caches list
+    const downList = document.getElementById("down-caches-names");
+    const downPanel = document.getElementById("down-caches-list");
+    downList.innerHTML = "";
+    if (downNames.length > 0) {
+      downPanel.style.display = "";
+      downNames.forEach((name) => {
+        const li = document.createElement("li");
+        li.textContent = name;
+        downList.appendChild(li);
+      });
+    } else {
+      downPanel.style.display = "none";
+    }
+
+    // Update unknown status caches list
+    const unknownList = document.getElementById("unknown-caches-names");
+    const unknownPanel = document.getElementById("unknown-caches-list");
+    unknownList.innerHTML = "";
+    if (unknownNames.length > 0) {
+      unknownPanel.style.display = "";
+      unknownNames.forEach((name) => {
+        const li = document.createElement("li");
+        li.textContent = name;
+        unknownList.appendChild(li);
+      });
+    } else {
+      unknownPanel.style.display = "none";
+    }
+
+    // Update distance information if user location is available
+    if (userLocation) {
+      updateDistanceInfo(
+        userLocation.lat,
+        userLocation.lng,
+        downCaches,
+        healthyCaches
+      );
+    }
+
+    // Fit map to show all points
+    if (markers.length > 0) {
+      var group = new L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.1));
+    }
+  }
+
+  initializeMap();
+
+  // 300000 ms = 5 mins -> Auto refresh
+  setInterval(function () {
+    fetch("{% url 'cache_data_api' %}")
+      .then((response) => response.json())
+      .then((data) => {
+        updateMapData(data.down_caches || [], data.healthy_caches || []);
+      })
+      .catch((error) => console.error("Error refreshing data:", error));
+  }, 300000); 
+</script>
+{% endblock content %}
