@@ -461,7 +461,7 @@
         // fall back to the Globus bucket checked flag.
 
         var urlParams = new URLSearchParams(window.location.search);
-        var activeValues = urlParams.getAll('filter-match-any.location');
+        var activeValues = urlParams.getAll('filter-match-any.gcmd_location_path');
 
         if (!activeValues.length) {
             for (var i = 0; i < buckets.length; i++) {

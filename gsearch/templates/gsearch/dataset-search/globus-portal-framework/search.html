@@ -62,7 +62,7 @@
                 <span class="gdex-active-filter-chip">
                   <span class="gdex-active-filter-chip__group">{{ facet.name }}</span>
                   <span class="gdex-active-filter-chip__value">
-                    {% if field.field_name == 'location' or field.field_name == 'platform' %}
+                    {% if field.field_name == 'gcmd_location_path' or field.field_name == 'platform' %}
                       {% truncate_facet field.value %}
                     {% elif field.field_name == 'spatial_resolution' or field.field_name == 'time_resolution' %}
                       {% truncate_facet field.value separator=':' %}

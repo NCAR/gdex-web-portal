@@ -62,7 +62,7 @@ SEARCH_INDEXES = {
           },
           {
             'name': 'Location',
-            'field_name': 'location',
+            'field_name': 'gcmd_location_path',
             'size': 1000
           },
         ],
@@ -103,6 +103,7 @@ SEARCH_INDEXES = {
           ("dataset_url",             search_fields.dataset_url),
           ("https_url",               search_fields.https_url),
           ("dataset_type",            search_fields.dataset_type),
+          ("gcmd_location_path",      search_fields.gcmd_location_path),
           ("search_highlights",       search_fields.search_highlights),
           # New fields for redesigned result cards
           ("summary",                 search_fields.summary),
