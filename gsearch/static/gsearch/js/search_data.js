@@ -413,35 +413,67 @@
             }
         }
 
-        // Walk the tree along the currently-selected values of levels [0, upTo)
-        function nodeAt(upTo) {
-            var node = root;
-            for (var i = 0; i < upTo; i++) {
-                var v = levels[i].sel.value;
-                if (!v || !node.childMap[v]) return null;
-                node = node.childMap[v];
-            }
-            return node;
+        // Gather every bucket at or below a node — selecting an intermediate
+        // tier (e.g. "North America") should match all datasets anywhere in
+        // that subtree, not just ones tagged at that exact depth.
+        function collectBuckets(node) {
+            var result = node.buckets.slice();
+            node.childOrder.forEach(function (label) {
+                result = result.concat(collectBuckets(node.childMap[label]));
+            });
+            return result;
         }
 
-        // Populate levels[index] from node's children and wait for a deeper
-        // pick, or — once there's nowhere deeper to go (a leaf, or we've run
-        // out of dropdown levels) — apply node's own buckets and search.
-        function expand(index, node) {
-            resetFrom(index);
-            hiddenDiv.innerHTML = '';
-            if (!node) { customSearch(1); return; }
-
-            if (index < levels.length && node.childOrder.length > 0) {
-                var lvl = levels[index];
-                node.childOrder.forEach(function (l) { lvl.sel.appendChild(makeOpt(l)); });
-                lvl.sel.disabled = false;
-                if (lvl.row) lvl.row.style.display = '';
-                // Wait for the deeper selection before filtering/searching.
-            } else {
-                setHiddenInputs(node.buckets);
-                customSearch(1);
+        // Walk the tree along the *current* select values, stopping at the
+        // first empty/invalid one. depth = how many contiguous levels (from
+        // Category down) are currently selected.
+        function deepestNode() {
+            var node = root, depth = 0;
+            for (var i = 0; i < levels.length; i++) {
+                var v = levels[i].sel.value;
+                if (!v || !node.childMap[v]) break;
+                node = node.childMap[v];
+                depth++;
             }
+            return { node: depth > 0 ? node : null, depth: depth };
+        }
+
+        // Populate levels[atIndex] from node's children (for further drilling).
+        function populateNext(atIndex, node) {
+            if (atIndex >= levels.length || !node.childOrder.length) return;
+            var lvl = levels[atIndex];
+            node.childOrder.forEach(function (l) { lvl.sel.appendChild(makeOpt(l)); });
+            lvl.sel.disabled = false;
+            if (lvl.row) lvl.row.style.display = '';
+        }
+
+        // A location filter is "live" once we've actually searched on one —
+        // used so clearing back down doesn't skip the search that removes it.
+        var filterActive = false;
+
+        // Re-evaluate the cascade from current select values and (re)search.
+        // Category alone is too broad to search on automatically; every
+        // deeper tier searches immediately against its whole subtree.
+        function refresh() {
+            var state = deepestNode();
+            resetFrom(state.depth);
+            hiddenDiv.innerHTML = '';
+
+            if (!state.node) {
+                if (filterActive) { filterActive = false; customSearch(1); }
+                return;
+            }
+
+            populateNext(state.depth, state.node);
+
+            if (state.depth <= 1) {
+                if (filterActive) { filterActive = false; customSearch(1); }
+                return;
+            }
+
+            setHiddenInputs(collectBuckets(state.node));
+            filterActive = true;
+            customSearch(1);
         }
 
         /* ── Populate top-level (Category) dropdown ────────────────────── */
@@ -450,11 +482,7 @@
 
         /* ── Event listeners ─────────────────────────────────────────── */
 
-        levels.forEach(function (lvl, i) {
-            lvl.sel.addEventListener('change', function () {
-                expand(i + 1, nodeAt(i + 1));
-            });
-        });
+        levels.forEach(function (lvl) { lvl.sel.addEventListener('change', refresh); });
 
         /* ── Restore cascade state on page load ──────────────────────── */
         // Read from URL params first (reliable after F5 refresh), then
@@ -470,14 +498,16 @@
         }
 
         if (activeValues.length) {
-            var activeValue = activeValues[0];
-            var labels = pathLabels(activeValue);
-
-            // Find the matching Globus bucket so we can wire the hidden input
-            var activeBucket = null;
-            for (var j = 0; j < buckets.length; j++) {
-                if (buckets[j].value === activeValue) { activeBucket = buckets[j]; break; }
-            }
+            // A tier selection (e.g. "North America") applies every bucket in
+            // its subtree, so the active values may span several buckets that
+            // all share a common path prefix — find that prefix to know which
+            // tier was actually selected.
+            var labelsList = activeValues.map(pathLabels);
+            var labels = labelsList.reduce(function (prefix, cur) {
+                var i = 0;
+                while (i < prefix.length && i < cur.length && prefix[i] === cur[i]) i++;
+                return prefix.slice(0, i);
+            });
 
             // Force the location group open (it might still be collapsed)
             var locGroup = levels[0].sel.closest('.gdex-filter-group');
@@ -497,7 +527,11 @@
                 if (!node) break;
             }
 
-            if (activeBucket) setHiddenInputs([activeBucket]);
+            if (node) {
+                populateNext(labels.length, node);
+                setHiddenInputs(collectBuckets(node));
+                filterActive = labels.length > 1;
+            }
         }
 
         window._resetLocationSelects = function () {
