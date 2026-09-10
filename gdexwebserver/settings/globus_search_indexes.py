@@ -61,8 +61,33 @@ SEARCH_INDEXES = {
             'size': 1000
           },
           {
-            'name': 'Location',
-            'field_name': 'gcmd_location_path',
+            'name': 'Location Category',
+            'field_name': 'gcmd_location_category',
+            'size': 1000
+          },
+          {
+            'name': 'Location Type',
+            'field_name': 'gcmd_location_type',
+            'size': 1000
+          },
+          {
+            'name': 'Location Subregion 1',
+            'field_name': 'gcmd_location_subregion1',
+            'size': 1000
+          },
+          {
+            'name': 'Location Subregion 2',
+            'field_name': 'gcmd_location_subregion2',
+            'size': 1000
+          },
+          {
+            'name': 'Location Subregion 3',
+            'field_name': 'gcmd_location_subregion3',
+            'size': 1000
+          },
+          {
+            'name': 'Detailed Location',
+            'field_name': 'gcmd_location_detailed',
             'size': 1000
           },
         ],

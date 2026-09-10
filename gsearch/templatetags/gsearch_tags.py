@@ -17,6 +17,15 @@ def has_active_bucket(facet):
     return False
 
 @register.simple_tag
+def get_facet(facets, field_name):
+    """Return the facet dict/object with the given field_name from a facets list, or None."""
+    for f in (facets or []):
+        name = f.get('field_name') if isinstance(f, dict) else getattr(f, 'field_name', None)
+        if name == field_name:
+            return f
+    return None
+
+@register.simple_tag
 def truncate_facet(value, separator='>', num=1):
     """ Split a facet string value by the given separator,
         and return the last num element(s) joined by the separator.
