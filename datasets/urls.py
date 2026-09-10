@@ -31,4 +31,5 @@ urlpatterns = [
         lambda request, id1, id2, rest:
             redirect(f"/datasets/d{id1}00{id2}/{rest}", permanent=True)
     ),
+    path("collections/", views.collections),
 ]

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-grid d-print-flex">
+    <article class="main-content-wrapper">
+        <h1>{{ title }}</h1>
+        <ul>
+            {% for collection in collections %}
+            <li>
+                <a href="/datasets/collections/{{ collection.slug }}/">{{ collection.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </article>
+</div>
+{% endblock %}
