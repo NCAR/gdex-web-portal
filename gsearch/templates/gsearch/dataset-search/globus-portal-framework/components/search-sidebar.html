@@ -63,12 +63,14 @@
       {% if facet.buckets %}
 
       {% if facet.field_name == 'gcmd_location_category' %}
-      {# ── Location: cascading dropdowns, one per GCMD hierarchy field.
+      {% comment %} 
+      ── Location: cascading dropdowns, one per GCMD hierarchy field.
          Options are built client-side from the gcmd_location_path facet
          (the full hierarchy, used only to compute correct parent→child
          narrowing — Globus Search does not scope facets to currently
          applied filters). Each dropdown still filters against its own
-         split field below, for compact query strings/chips. ── #}
+         split field below, for compact query strings/chips. ── 
+      {% endcomment %}
       {% get_facet search.facets 'gcmd_location_path' as loc_path_facet %}
       {% get_facet search.facets 'gcmd_location_type' as loc_type_facet %}
       {% get_facet search.facets 'gcmd_location_subregion1' as loc_sub1_facet %}
