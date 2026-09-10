@@ -63,7 +63,13 @@
       {% if facet.buckets %}
 
       {% if facet.field_name == 'gcmd_location_category' %}
-      {# ── Location: cascading dropdowns, one per GCMD hierarchy field ── #}
+      {# ── Location: cascading dropdowns, one per GCMD hierarchy field.
+         Options are built client-side from the gcmd_location_path facet
+         (the full hierarchy, used only to compute correct parent→child
+         narrowing — Globus Search does not scope facets to currently
+         applied filters). Each dropdown still filters against its own
+         split field below, for compact query strings/chips. ── #}
+      {% get_facet search.facets 'gcmd_location_path' as loc_path_facet %}
       {% get_facet search.facets 'gcmd_location_type' as loc_type_facet %}
       {% get_facet search.facets 'gcmd_location_subregion1' as loc_sub1_facet %}
       {% get_facet search.facets 'gcmd_location_subregion2' as loc_sub2_facet %}
@@ -79,70 +85,62 @@
             <div class="gdex-location-cascade__row">
               <label class="gdex-location-cascade__label" for="loc-category">Category</label>
               <select class="gdex-location-select" id="loc-category"
-                      data-filter-key="{{ facet.buckets.0.search_filter_query_key }}">
+                      data-filter-key="{{ facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ facet|checked_value }}">
                 <option value="">Select category&hellip;</option>
-                {% for field in facet.buckets %}
-                <option value="{{ field.value }}" {% if field.checked %}selected{% endif %}>{{ field.value|title }}</option>
-                {% endfor %}
               </select>
             </div>
             <div class="gdex-location-cascade__row" id="loc-type-row" style="display:none">
               <label class="gdex-location-cascade__label" for="loc-type">Type</label>
               <select class="gdex-location-select" id="loc-type" disabled
-                      data-filter-key="{{ loc_type_facet.buckets.0.search_filter_query_key }}">
+                      data-filter-key="{{ loc_type_facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ loc_type_facet|checked_value }}">
                 <option value="">Select type&hellip;</option>
-                {% for field in loc_type_facet.buckets %}
-                <option value="{{ field.value }}" {% if field.checked %}selected{% endif %}>{{ field.value|title }}</option>
-                {% endfor %}
               </select>
             </div>
             <div class="gdex-location-cascade__row" id="loc-subregion1-row" style="display:none">
               <label class="gdex-location-cascade__label" for="loc-subregion1">Subregion 1</label>
               <select class="gdex-location-select" id="loc-subregion1" disabled
-                      data-filter-key="{{ loc_sub1_facet.buckets.0.search_filter_query_key }}">
+                      data-filter-key="{{ loc_sub1_facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ loc_sub1_facet|checked_value }}">
                 <option value="">Select subregion&hellip;</option>
-                {% for field in loc_sub1_facet.buckets %}
-                <option value="{{ field.value }}" {% if field.checked %}selected{% endif %}>{{ field.value|title }}</option>
-                {% endfor %}
               </select>
             </div>
             <div class="gdex-location-cascade__row" id="loc-subregion2-row" style="display:none">
               <label class="gdex-location-cascade__label" for="loc-subregion2">Subregion 2</label>
               <select class="gdex-location-select" id="loc-subregion2" disabled
-                      data-filter-key="{{ loc_sub2_facet.buckets.0.search_filter_query_key }}">
+                      data-filter-key="{{ loc_sub2_facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ loc_sub2_facet|checked_value }}">
                 <option value="">Select subregion&hellip;</option>
-                {% for field in loc_sub2_facet.buckets %}
-                <option value="{{ field.value }}" {% if field.checked %}selected{% endif %}>{{ field.value|title }}</option>
-                {% endfor %}
               </select>
             </div>
             <div class="gdex-location-cascade__row" id="loc-subregion3-row" style="display:none">
               <label class="gdex-location-cascade__label" for="loc-subregion3">Subregion 3</label>
               <select class="gdex-location-select" id="loc-subregion3" disabled
-                      data-filter-key="{{ loc_sub3_facet.buckets.0.search_filter_query_key }}">
+                      data-filter-key="{{ loc_sub3_facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ loc_sub3_facet|checked_value }}">
                 <option value="">Select subregion&hellip;</option>
-                {% for field in loc_sub3_facet.buckets %}
-                <option value="{{ field.value }}" {% if field.checked %}selected{% endif %}>{{ field.value|title }}</option>
-                {% endfor %}
               </select>
             </div>
             <div class="gdex-location-cascade__row" id="loc-detailed-row" style="display:none">
               <label class="gdex-location-cascade__label" for="loc-detailed">Detailed Location</label>
               <select class="gdex-location-select" id="loc-detailed" disabled
-                      data-filter-key="{{ loc_detailed_facet.buckets.0.search_filter_query_key }}">
+                      data-filter-key="{{ loc_detailed_facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ loc_detailed_facet|checked_value }}">
                 <option value="">Select location&hellip;</option>
-                {% for field in loc_detailed_facet.buckets %}
-                <option value="{{ field.value }}" {% if field.checked %}selected{% endif %}>{{ field.value|title }}</option>
-                {% endfor %}
               </select>
             </div>
           </div>
           {# Hidden inputs injected by JS to reflect the chosen tiers — must stay inside #facet-form #}
           <div id="gdex-location-hidden"></div>
+          {# Full GCMD hierarchy (not submitted) — drives client-side narrowing only #}
+          <script id="gdex-location-data" type="application/json">
+          [{% for field in loc_path_facet.buckets %}"{{ field.value|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]
+          </script>
         </div>
       </div>
 
-      {% elif facet.field_name == 'gcmd_location_type' or facet.field_name == 'gcmd_location_subregion1' or facet.field_name == 'gcmd_location_subregion2' or facet.field_name == 'gcmd_location_subregion3' or facet.field_name == 'gcmd_location_detailed' %}
+      {% elif facet.field_name == 'gcmd_location_path' or facet.field_name == 'gcmd_location_type' or facet.field_name == 'gcmd_location_subregion1' or facet.field_name == 'gcmd_location_subregion2' or facet.field_name == 'gcmd_location_subregion3' or facet.field_name == 'gcmd_location_detailed' %}
       {# ── Rendered above as part of the combined Location cascade — skip ── #}
 
       {% else %}

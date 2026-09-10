@@ -314,17 +314,22 @@
     });
 
     /* ---------- location cascade dropdowns ---------- */
-    // Each dropdown is backed by its own GCMD Globus Search facet
-    // (gcmd_location_category/_type/_subregion1-3/_detailed), so the server
-    // already returns each tier's options narrowed to the currently-applied
-    // filters, and the <option> values/labels/selected state are rendered
-    // directly by the template. This code only has to: reveal deeper
-    // dropdowns as shallower ones get picked, mirror the picked values into
-    // hidden inputs (so exactly one filter + one "selected filter" chip is
-    // submitted per tier, not one per underlying leaf value), and re-search
-    // on every change.
+    // Globus Search doesn't scope facet buckets to the currently-applied
+    // filters, so the per-tier facets (gcmd_location_category/_type/
+    // _subregion1-3/_detailed) can't be used to narrow each dropdown's
+    // options on their own — they'd always list every value in the whole
+    // corpus. Instead, the full GCMD hierarchy (gcmd_location_path facet)
+    // is parsed client-side into a tree, which drives which options each
+    // dropdown shows. Filtering/searching still targets the six split
+    // fields directly (one value per tier), so query strings and "selected
+    // filter" chips stay compact.
 
     (function () {
+        var dataEl = document.getElementById('gdex-location-data');
+        if (!dataEl) return;
+        var paths;
+        try { paths = JSON.parse(dataEl.textContent); } catch (e) { return; }
+
         var LEVELS = [
             { selId: 'loc-category',   rowId: null },
             { selId: 'loc-type',       rowId: 'loc-type-row' },
@@ -340,27 +345,84 @@
         var hiddenDiv = document.getElementById('gdex-location-hidden');
         if (!hiddenDiv || levels.some(function (l) { return !l.sel; })) return;
 
-        // Reveal/enable levels[1..] up through the first one with no value
-        // yet selected; hide/disable + clear everything deeper than that.
-        function syncVisibility() {
-            var reveal = true;
-            levels.forEach(function (lvl, i) {
-                if (i === 0) return; // Category is always visible.
-                if (reveal) {
-                    lvl.sel.disabled = false;
-                    if (lvl.row) lvl.row.style.display = '';
-                } else {
-                    lvl.sel.value = '';
-                    lvl.sel.disabled = true;
-                    if (lvl.row) lvl.row.style.display = 'none';
-                }
-                reveal = reveal && !!lvl.sel.value;
-            });
+        function toTitle(str) {
+            if (!str) return str;
+            return str.toLowerCase()
+                .replace(/(?:^|[\s\-\/])\S/g, function (c) { return c.toUpperCase(); });
         }
 
-        // Rebuild the hidden inputs from every level's current value — one
-        // checked input per selected tier, each under that tier's own filter
-        // key so the tiers combine with AND semantics.
+        // GCMD path -> up to 6 {raw, label} segments, one per dropdown
+        // level, stopping at the first blank segment (paths are contiguous).
+        function pathSegments(value) {
+            var segs = value.split('>').map(function (s) { return s.trim(); }).filter(Boolean);
+            var out = [];
+            for (var i = 0; i < levels.length && i < segs.length; i++) {
+                if (!segs[i]) break;
+                out.push({ raw: segs[i], label: toTitle(segs[i]) });
+            }
+            return out;
+        }
+
+        /* ── Build hierarchy tree, keyed by each level's raw GCMD value ── */
+
+        function newNode(raw, label) { return { raw: raw, label: label, childMap: {}, childOrder: [] }; }
+
+        var root = newNode(null, null);
+
+        paths.forEach(function (value) {
+            var node = root;
+            pathSegments(value).forEach(function (seg) {
+                if (!node.childMap[seg.raw]) {
+                    node.childMap[seg.raw] = newNode(seg.raw, seg.label);
+                    node.childOrder.push(seg.raw);
+                }
+                node = node.childMap[seg.raw];
+            });
+        });
+        root.childOrder.sort(function (a, b) { return root.childMap[a].label.localeCompare(root.childMap[b].label); });
+
+        /* ── DOM helpers ──────────────────────────────────────────────── */
+
+        function makeOpt(node) {
+            var o = document.createElement('option');
+            o.value = node.raw; o.textContent = node.label;
+            return o;
+        }
+
+        // Clear + disable + hide levels [from, levels.length)
+        function resetFrom(from) {
+            for (var i = from; i < levels.length; i++) {
+                var lvl = levels[i];
+                lvl.sel.innerHTML = '<option value="">Select…</option>';
+                lvl.sel.disabled = true;
+                if (lvl.row) lvl.row.style.display = 'none';
+            }
+        }
+
+        // Populate levels[index] from node's children (for further drilling).
+        function populate(index, node) {
+            if (index >= levels.length || !node.childOrder.length) return;
+            var lvl = levels[index];
+            node.childOrder.forEach(function (raw) { lvl.sel.appendChild(makeOpt(node.childMap[raw])); });
+            lvl.sel.disabled = false;
+            if (lvl.row) lvl.row.style.display = '';
+        }
+
+        // Walk the tree along the *current* select values, stopping at the
+        // first empty/invalid one.
+        function nodeAt(upTo) {
+            var node = root;
+            for (var i = 0; i < upTo; i++) {
+                var v = levels[i].sel.value;
+                if (!v || !node.childMap[v]) return null;
+                node = node.childMap[v];
+            }
+            return node;
+        }
+
+        // One hidden checkbox per tier that currently has a value, each
+        // under that tier's own filter key — the tiers combine with AND
+        // semantics, and each is a single exact value (no subtree OR-ing).
         function syncHiddenInputs() {
             hiddenDiv.innerHTML = '';
             levels.forEach(function (lvl) {
@@ -374,20 +436,36 @@
             });
         }
 
+        /* ── Populate top-level (Category) dropdown ────────────────────── */
+
+        root.childOrder.forEach(function (raw) { levels[0].sel.appendChild(makeOpt(root.childMap[raw])); });
+
+        /* ── Event listeners ─────────────────────────────────────────── */
+
         levels.forEach(function (lvl, i) {
             lvl.sel.addEventListener('change', function () {
-                // A shallower pick invalidates any deeper selection.
-                for (var j = i + 1; j < levels.length; j++) levels[j].sel.value = '';
-                syncVisibility();
+                resetFrom(i + 1);
+                var node = nodeAt(i + 1);
+                if (node) populate(i + 1, node);
                 syncHiddenInputs();
                 customSearch(1);
             });
         });
 
-        // Initial state: options/selected values already came from the
-        // server (per-bucket `selected` attribute), so just reveal the
-        // right rows and open the group if a filter is already active.
-        syncVisibility();
+        /* ── Restore cascade state on page load ──────────────────────── */
+        // Each level's currently-checked value (if any) was rendered
+        // server-side as data-selected, from that tier's own split-field
+        // facet — walk the tree to reveal/populate the matching dropdowns.
+
+        var node = root;
+        for (var k = 0; k < levels.length; k++) {
+            var v = levels[k].sel.dataset.selected;
+            if (!v) break;
+            if (k > 0) populate(k, node);
+            if (!node.childMap[v]) break;
+            levels[k].sel.value = v;
+            node = node.childMap[v];
+        }
         syncHiddenInputs();
         if (levels[0].sel.value) {
             var locGroup = levels[0].sel.closest('.gdex-filter-group');
@@ -395,8 +473,8 @@
         }
 
         window._resetLocationSelects = function () {
-            levels.forEach(function (lvl) { lvl.sel.value = ''; });
-            syncVisibility();
+            levels[0].sel.value = '';
+            resetFrom(1);
             hiddenDiv.innerHTML = '';
         };
     }());

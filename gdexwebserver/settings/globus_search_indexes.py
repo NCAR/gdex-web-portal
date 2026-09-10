@@ -90,6 +90,15 @@ SEARCH_INDEXES = {
             'field_name': 'gcmd_location_detailed',
             'size': 1000
           },
+          {
+            # Not filtered on directly — used only to drive correct
+            # client-side narrowing of the tier dropdowns above, since
+            # Globus Search does not scope facets to currently-applied
+            # filters. See search-sidebar.html / search_data.js.
+            'name': 'Location Path',
+            'field_name': 'gcmd_location_path',
+            'size': 1000
+          },
         ],
         'filter_match': 'match-any',
         'boosts': [

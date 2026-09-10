@@ -25,6 +25,19 @@ def get_facet(facets, field_name):
             return f
     return None
 
+@register.filter
+def checked_value(facet):
+    """Return the value of the first checked bucket in a facet, or ''."""
+    try:
+        buckets = facet.get('buckets') if isinstance(facet, dict) else getattr(facet, 'buckets', [])
+    except Exception:
+        return ''
+    for b in (buckets or []):
+        checked = b.get('checked') if isinstance(b, dict) else getattr(b, 'checked', False)
+        if checked:
+            return b.get('value') if isinstance(b, dict) else getattr(b, 'value', '')
+    return ''
+
 @register.simple_tag
 def truncate_facet(value, separator='>', num=1):
     """ Split a facet string value by the given separator,
