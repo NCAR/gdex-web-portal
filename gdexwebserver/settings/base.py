@@ -478,6 +478,14 @@ CSRF_TRUSTED_ORIGINS = ["https://gdex.k8s.ucar.edu", "https://*.ucar.edu"]
 
 LOCAL_API_KEYS = local_settings.LOCAL_API_KEYS
 
+########################################################################
+# SAM (UCAR staff/user directory) API settings
+########################################################################
+
+SAM_API_BASE_URL = "https://sam.hpc.ucar.edu"
+SAM_API_USER = local_settings.sam_api_user
+SAM_API_KEY = local_settings.sam_api_key
+
 REST_FRAMEWORK = {
     # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
