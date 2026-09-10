@@ -2,7 +2,7 @@
 
 <ul class="menu navbar-nav me-auto mb-2 mb-md-0 align-items-center">
     {% for menu in settings.NAVIGATION_BAR.menus %}
-        <li class="nav-item">
+        <li class="nav-item{% if menu.subitems %} dropdown d-flex flex-wrap justify-content-between{% endif %}">
             {% if page %}
                 {% with a=menu|is_active:page.url b=menu.submenus|is_active:page.url %}
                     <a class="nav-link{% if a or b %} active{% endif %}" aria-current="page" href="{{ menu.url }}">{{ menu.title }}</a>
@@ -12,9 +12,19 @@
                     <a class="nav-link{% if a or b %} active{% endif %}" aria-current="page" href="{{ menu.url }}">{{ menu.title }}</a>
                 {% endwith %}
             {% endif %}
+            {% if menu.subitems %}
+                <button aria-expanded="false" aria-label="Expand/Collapse" class="btn dropdown-toggle px-3 px-md-0 mx-md-1" data-bs-toggle="dropdown" id="{{ menu.id | slugify }}" role="button" href="#"></button>
+                <ul class="dropdown-menu" aria-labelledby="{{ menu.title|slugify }}">
+                    {% for item in menu.subitems %}
+                    <li>
+                        <a class="dropdown-item" href="{{ item.url }}">{{ item.title }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </li>
     {% endfor %}
-    
+
     {% for item in menu_items %}
         <li class="nav-item{% if item.has_children_in_menu %} dropdown d-flex flex-wrap justify-content-between{% endif %}">
             <a class="nav-link {{ item.active_class }}" aria-current="page" href="{{ item.href }}">{{ item.specific.menu_title|default:item.text }}</a>

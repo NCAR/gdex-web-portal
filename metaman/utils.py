@@ -1421,10 +1421,20 @@ def get_author_from_orcid_id(orcid_id):
             return ({'error': "No last name is available for this ID"}, None,
                     None, None, None, None)
 
+        lname_display = lname.text
+        lname = (lname.text.encode("unicode-escape")
+                           .decode("ascii") .replace("\\x", "\\u00"))
         fname = root.find(
                 "./personal-details:name/personal-details:given-names", ns)
-        return ("", fname.text if fname is not None else "", "", lname.text,
-                fname.text, lname.text)
+        if fname is not None:
+            fname_display = fname.text
+            fname = (fname.text.encode("unicode-escape")
+                               .decode("ascii").replace("\\x", "\\u00"))
+        else:
+            fname_display = ""
+            fname = ""
+
+        return ("", fname, "", lname, fname_display, lname_display)
 
     except Exception as err:
         return ({'error': err}, None, None, None, None, None)
