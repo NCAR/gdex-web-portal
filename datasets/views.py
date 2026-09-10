@@ -757,3 +757,14 @@ def product_detail(request, dsid, markup_type, time_range_code,
     return transform.product_detail(request, dsid, markup_type,
                                     time_range_code, grid_definition_code,
                                     file)
+
+
+def collections(request):
+    collections_home = Page.objects.get(slug="collections")
+    ctx = {'title': collections_home.title, 'collections': []}
+    collections_pages = collections_home.get_children()
+    for page in collections_pages:
+        ctx['collections'].append({'title': page.title, 'slug': page.slug})
+
+    ctx['collections'] = sorted(ctx['collections'], key=lambda x: x['title'])
+    return render(request, "datasets/collections_page.html", ctx)
