@@ -351,6 +351,12 @@
                 .replace(/(?:^|[\s\-\/])\S/g, function (c) { return c.toUpperCase(); });
         }
 
+        // Case/whitespace-insensitive key for matching a split field's own
+        // value against a segment parsed out of gcmd_location_path — the two
+        // fields aren't guaranteed to agree on casing/trimming even though
+        // they describe the same GCMD value.
+        function normKey(str) { return (str || '').trim().toUpperCase(); }
+
         // GCMD path -> up to 6 {raw, label} segments, one per dropdown
         // level, stopping at the first blank segment (paths are contiguous).
         function pathSegments(value) {
@@ -363,7 +369,7 @@
             return out;
         }
 
-        /* ── Build hierarchy tree, keyed by each level's raw GCMD value ── */
+        /* ── Build hierarchy tree, keyed by each level's normalized value ── */
 
         function newNode(raw, label) { return { raw: raw, label: label, childMap: {}, childOrder: [] }; }
 
@@ -372,11 +378,12 @@
         paths.forEach(function (value) {
             var node = root;
             pathSegments(value).forEach(function (seg) {
-                if (!node.childMap[seg.raw]) {
-                    node.childMap[seg.raw] = newNode(seg.raw, seg.label);
-                    node.childOrder.push(seg.raw);
+                var key = normKey(seg.raw);
+                if (!node.childMap[key]) {
+                    node.childMap[key] = newNode(seg.raw, seg.label);
+                    node.childOrder.push(key);
                 }
-                node = node.childMap[seg.raw];
+                node = node.childMap[key];
             });
         });
         root.childOrder.sort(function (a, b) { return root.childMap[a].label.localeCompare(root.childMap[b].label); });
@@ -413,7 +420,7 @@
         function nodeAt(upTo) {
             var node = root;
             for (var i = 0; i < upTo; i++) {
-                var v = levels[i].sel.value;
+                var v = normKey(levels[i].sel.value);
                 if (!v || !node.childMap[v]) return null;
                 node = node.childMap[v];
             }
@@ -460,11 +467,13 @@
         var node = root;
         var depth = 0;
         for (; depth < levels.length; depth++) {
-            var v = levels[depth].sel.dataset.selected;
-            if (!v || !node.childMap[v]) break;
+            var key = normKey(levels[depth].sel.dataset.selected);
+            if (!key || !node.childMap[key]) break;
             if (depth > 0) populate(depth, node);
-            levels[depth].sel.value = v;
-            node = node.childMap[v];
+            node = node.childMap[key];
+            // Select by the tree's own raw casing — that's what populate()
+            // used as each <option>'s value, so this is guaranteed to match.
+            levels[depth].sel.value = node.raw;
         }
         // Reveal the level *after* the deepest match too, even though it has
         // no selection of its own yet — otherwise the cascade dead-ends the
