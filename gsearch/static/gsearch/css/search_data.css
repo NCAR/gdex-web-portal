@@ -181,9 +181,10 @@
 }
 .gdex-filter-group__info:hover { color: var(--gdex-blue); }
 
-/* Wider tooltip for the Location filter's longer help text — scoped via
-   data-bs-custom-class so it doesn't affect Bootstrap's other tooltips. */
-.gdex-location-tooltip .tooltip-inner {
+/* Wider tooltip for filter-help text that runs long (Location, Keyword,
+   Variables, etc.) — scoped via data-bs-custom-class so it doesn't affect
+   Bootstrap's other tooltips elsewhere on the site. */
+.gdex-filter-tooltip .tooltip-inner {
     max-width: 320px;
     text-align: left;
     white-space: normal;

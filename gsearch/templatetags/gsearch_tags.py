@@ -38,6 +38,27 @@ def checked_value(facet):
             return b.get('value') if isinstance(b, dict) else getattr(b, 'value', '')
     return ''
 
+# Help text for the info-icon tooltip shown next to a facet's header.
+# Keyed by field_name; a facet with no entry here gets no tooltip icon.
+FACET_TOOLTIPS = {
+    'gcmd_topics_and_terms': (
+        "Keywords are high level concepts describing a topic or subject "
+        "area following the NASA GCMD Earth Science Keyword vocabulary - "
+        "e.g. Atmosphere (topic), Clouds (subtopic of Atmosphere)."
+    ),
+    'gcmd_variables': (
+        "Variables are more specifically defined subcategories of "
+        "keywords following the NASA GCMD Earth Science Keyword "
+        "vocabulary. These are measured variables and parameters that "
+        "specifically describe data."
+    ),
+}
+
+@register.simple_tag
+def facet_tooltip(field_name):
+    """Return the info-tooltip help text for a facet field_name, or '' if none is defined."""
+    return FACET_TOOLTIPS.get(field_name, '')
+
 @register.simple_tag
 def truncate_facet(value, separator='>', num=1):
     """ Split a facet string value by the given separator,

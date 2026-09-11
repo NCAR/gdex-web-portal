@@ -84,8 +84,9 @@
             <i class="fas fa-circle-info gdex-filter-group__info"
                data-bs-toggle="tooltip"
                data-bs-placement="right"
-               data-bs-custom-class="gdex-location-tooltip"
-               title="*NOTE* This filter only applies to observational datasets with GCMD location information. This cannot be used for reanalysis datasets or gridded model output.  Narrow results by location: pick a Category (e.g. Continent or Ocean), then optionally drill down through Type, Subregion, and Detailed Location as they become available. Each pick filters your results immediately — you don't need to fill in every level, and you can stop at any level or go back and change an earlier one."
+               data-bs-custom-class="gdex-filter-tooltip"
+               data-bs-html="true"
+               title="*NOTE* This filter only applies to observational datasets with GCMD location information. This cannot be used for reanalysis datasets or gridded model output.  <br><br>Narrow results by location: pick a Category (e.g. Continent or Ocean), then optionally drill down through Type, Subregion, and Detailed Location as they become available. Each pick filters your results immediately — you don't need to fill in every level, and you can stop at any level or go back and change an earlier one."
                onclick="event.stopPropagation();"></i>
           </span>
           <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
@@ -155,9 +156,20 @@
 
       {% else %}
       {# ── All other facets — generic flat list ── #}
+      {% facet_tooltip facet.field_name as tooltip_text %}
       <div class="gdex-filter-group {% if not facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
         <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
-          <span class="gdex-filter-group__name">{{ facet.name }}</span>
+          <span class="gdex-filter-group__name">
+            {{ facet.name }}
+            {% if tooltip_text %}
+            <i class="fas fa-circle-info gdex-filter-group__info"
+               data-bs-toggle="tooltip"
+               data-bs-placement="right"
+               data-bs-custom-class="gdex-filter-tooltip"
+               title="{{ tooltip_text }}"
+               onclick="event.stopPropagation();"></i>
+            {% endif %}
+          </span>
           <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
         </div>
         <div class="gdex-filter-group__body">
