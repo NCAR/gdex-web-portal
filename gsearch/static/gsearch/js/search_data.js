@@ -458,14 +458,18 @@
         // facet — walk the tree to reveal/populate the matching dropdowns.
 
         var node = root;
-        for (var k = 0; k < levels.length; k++) {
-            var v = levels[k].sel.dataset.selected;
-            if (!v) break;
-            if (k > 0) populate(k, node);
-            if (!node.childMap[v]) break;
-            levels[k].sel.value = v;
+        var depth = 0;
+        for (; depth < levels.length; depth++) {
+            var v = levels[depth].sel.dataset.selected;
+            if (!v || !node.childMap[v]) break;
+            if (depth > 0) populate(depth, node);
+            levels[depth].sel.value = v;
             node = node.childMap[v];
         }
+        // Reveal the level *after* the deepest match too, even though it has
+        // no selection of its own yet — otherwise the cascade dead-ends the
+        // moment a shallower pick is the only one applied so far.
+        if (depth > 0) populate(depth, node);
         syncHiddenInputs();
         if (levels[0].sel.value) {
             var locGroup = levels[0].sel.closest('.gdex-filter-group');
