@@ -502,6 +502,16 @@
         };
     }());
 
+    /* ---------- bootstrap tooltips ---------- */
+    // Bootstrap tooltips require explicit JS activation — the data-bs-*
+    // attributes alone don't do anything.
+
+    if (typeof bootstrap !== 'undefined') {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+            new bootstrap.Tooltip(el);
+        });
+    }
+
     /* ---------- filter search + see more ---------- */
 
     (function () {

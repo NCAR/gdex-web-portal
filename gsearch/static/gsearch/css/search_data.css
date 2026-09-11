@@ -173,6 +173,13 @@
     font-size: 0.95rem;
     color: var(--gdex-text-dark);
 }
+.gdex-filter-group__info {
+    margin-left: 0.35rem;
+    font-size: 0.82rem;
+    color: var(--gdex-text-muted);
+    cursor: help;
+}
+.gdex-filter-group__info:hover { color: var(--gdex-blue); }
 .gdex-filter-group__chevron {
     font-size: 0.78rem;
     color: var(--gdex-text-muted);

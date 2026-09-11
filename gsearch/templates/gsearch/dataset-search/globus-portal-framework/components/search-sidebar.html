@@ -79,7 +79,14 @@
       {% get_facet search.facets 'gcmd_location_detailed' as loc_detailed_facet %}
       <div class="gdex-filter-group {% if not facet|has_active_bucket and not loc_type_facet|has_active_bucket and not loc_sub1_facet|has_active_bucket and not loc_sub2_facet|has_active_bucket and not loc_sub3_facet|has_active_bucket and not loc_detailed_facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
         <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
-          <span class="gdex-filter-group__name">Location</span>
+          <span class="gdex-filter-group__name">
+            Location
+            <i class="fas fa-circle-info gdex-filter-group__info"
+               data-bs-toggle="tooltip"
+               data-bs-placement="right"
+               title="Narrow results by location: pick a Category (e.g. Continent or Ocean), then optionally drill down through Type, Subregion, and Detailed Location as they become available. Each pick filters your results immediately — you don't need to fill in every level, and you can stop at any level or go back and change an earlier one."
+               onclick="event.stopPropagation();"></i>
+          </span>
           <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
         </div>
         <div class="gdex-filter-group__body">
