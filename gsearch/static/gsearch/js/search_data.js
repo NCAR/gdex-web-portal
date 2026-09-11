@@ -427,19 +427,29 @@
             return node;
         }
 
-        // One hidden checkbox per tier that currently has a value, each
-        // under that tier's own filter key — the tiers combine with AND
-        // semantics, and each is a single exact value (no subtree OR-ing).
+        // One *persistent* hidden checkbox per tier, created once and only
+        // ever toggled — never removed/recreated. customSearch() (gsearch.js)
+        // re-adds a filter's old URL value whenever #facet-form has NO input
+        // at all under that name, to preserve filters untouched by this page.
+        // An ordinary facet checkbox never triggers that: unchecking it
+        // leaves the element in the DOM. Removing our input on clear (as an
+        // earlier version did) looked identical to "untouched" to that
+        // logic, so a cleared tier's stale value kept coming back.
+        var hiddenInputs = levels.map(function (lvl) {
+            var inp = document.createElement('input');
+            inp.type = 'checkbox';
+            inp.name = lvl.sel.dataset.filterKey || '';
+            inp.autocomplete = 'off';
+            inp.style.display = 'none';
+            hiddenDiv.appendChild(inp);
+            return inp;
+        });
+
         function syncHiddenInputs() {
-            hiddenDiv.innerHTML = '';
-            levels.forEach(function (lvl) {
-                var key = lvl.sel.dataset.filterKey;
-                if (!lvl.sel.value || !key) return;
-                var inp = document.createElement('input');
-                inp.type = 'checkbox'; inp.checked = true;
-                inp.name = key; inp.value = lvl.sel.value;
-                inp.autocomplete = 'off'; inp.style.display = 'none';
-                hiddenDiv.appendChild(inp);
+            levels.forEach(function (lvl, i) {
+                var inp = hiddenInputs[i];
+                inp.checked = !!lvl.sel.value;
+                inp.value = lvl.sel.value;
             });
         }
 
@@ -488,7 +498,7 @@
         window._resetLocationSelects = function () {
             levels[0].sel.value = '';
             resetFrom(1);
-            hiddenDiv.innerHTML = '';
+            syncHiddenInputs();
         };
     }());
 
