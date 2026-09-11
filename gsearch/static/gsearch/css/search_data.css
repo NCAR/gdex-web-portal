@@ -180,6 +180,16 @@
     cursor: help;
 }
 .gdex-filter-group__info:hover { color: var(--gdex-blue); }
+
+/* Wider tooltip for the Location filter's longer help text — scoped via
+   data-bs-custom-class so it doesn't affect Bootstrap's other tooltips. */
+.gdex-location-tooltip .tooltip-inner {
+    max-width: 320px;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
 .gdex-filter-group__chevron {
     font-size: 0.78rem;
     color: var(--gdex-text-muted);
