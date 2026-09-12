@@ -62,48 +62,114 @@
       {% for facet in search.facets %}
       {% if facet.buckets %}
 
-      {% if facet.field_name == 'location' %}
-      {# ── Location: cascading continent → country → state dropdowns ── #}
-      <div class="gdex-filter-group {% if not facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
+      {% if facet.field_name == 'gcmd_location_category' %}
+      {% comment %} 
+      ── Location: cascading dropdowns, one per GCMD hierarchy field.
+         Options are built client-side from the gcmd_location_path facet
+         (the full hierarchy, used only to compute correct parent→child
+         narrowing — Globus Search does not scope facets to currently
+         applied filters). Each dropdown still filters against its own
+         split field below, for compact query strings/chips. ── 
+      {% endcomment %}
+      {% get_facet search.facets 'gcmd_location_path' as loc_path_facet %}
+      {% get_facet search.facets 'gcmd_location_type' as loc_type_facet %}
+      {% get_facet search.facets 'gcmd_location_subregion1' as loc_sub1_facet %}
+      {% get_facet search.facets 'gcmd_location_subregion2' as loc_sub2_facet %}
+      {% get_facet search.facets 'gcmd_location_subregion3' as loc_sub3_facet %}
+      {% get_facet search.facets 'gcmd_location_detailed' as loc_detailed_facet %}
+      <div class="gdex-filter-group {% if not facet|has_active_bucket and not loc_type_facet|has_active_bucket and not loc_sub1_facet|has_active_bucket and not loc_sub2_facet|has_active_bucket and not loc_sub3_facet|has_active_bucket and not loc_detailed_facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
         <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
-          <span class="gdex-filter-group__name">{{ facet.name }}</span>
+          <span class="gdex-filter-group__name">
+            GCMD Location
+            <i class="fas fa-circle-info gdex-filter-group__info"
+               data-bs-toggle="tooltip"
+               data-bs-placement="right"
+               data-bs-custom-class="gdex-filter-tooltip"
+               data-bs-html="true"
+               title="*NOTE* This filter only applies to observational datasets with GCMD location information. This cannot be used for reanalysis datasets or gridded model output.  <br><br>Narrow results by location: pick a Category (e.g. Continent or Ocean), then optionally drill down through Type, Subregion, and Detailed Location as they become available. Each pick filters your results immediately — you don't need to fill in every level, and you can stop at any level or go back and change an earlier one."
+               onclick="event.stopPropagation();"></i>
+          </span>
           <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
         </div>
         <div class="gdex-filter-group__body">
           <div class="gdex-location-cascade">
             <div class="gdex-location-cascade__row">
-              <label class="gdex-location-cascade__label" for="loc-continent">Continent / Region</label>
-              <select class="gdex-location-select" id="loc-continent">
-                <option value="">Select continent&hellip;</option>
+              <label class="gdex-location-cascade__label" for="loc-category">Category</label>
+              <select class="gdex-location-select" id="loc-category"
+                      data-filter-key="{{ facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ facet|checked_value }}">
+                <option value="">Select category&hellip;</option>
               </select>
             </div>
-            <div class="gdex-location-cascade__row">
-              <label class="gdex-location-cascade__label" for="loc-country">Country</label>
-              <select class="gdex-location-select" id="loc-country" disabled>
-                <option value="">Select country&hellip;</option>
+            <div class="gdex-location-cascade__row" id="loc-type-row" style="display:none">
+              <label class="gdex-location-cascade__label" for="loc-type">Type</label>
+              <select class="gdex-location-select" id="loc-type" disabled
+                      data-filter-key="{{ loc_type_facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ loc_type_facet|checked_value }}">
+                <option value="">Select type&hellip;</option>
               </select>
             </div>
-            <div class="gdex-location-cascade__row" id="loc-state-row" style="display:none">
-              <label class="gdex-location-cascade__label" for="loc-state">State / Region</label>
-              <select class="gdex-location-select" id="loc-state" disabled>
-                <option value="">Select state&hellip;</option>
+            <div class="gdex-location-cascade__row" id="loc-subregion1-row" style="display:none">
+              <label class="gdex-location-cascade__label" for="loc-subregion1">Subregion 1</label>
+              <select class="gdex-location-select" id="loc-subregion1" disabled
+                      data-filter-key="{{ loc_sub1_facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ loc_sub1_facet|checked_value }}">
+                <option value="">Select subregion&hellip;</option>
+              </select>
+            </div>
+            <div class="gdex-location-cascade__row" id="loc-subregion2-row" style="display:none">
+              <label class="gdex-location-cascade__label" for="loc-subregion2">Subregion 2</label>
+              <select class="gdex-location-select" id="loc-subregion2" disabled
+                      data-filter-key="{{ loc_sub2_facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ loc_sub2_facet|checked_value }}">
+                <option value="">Select subregion&hellip;</option>
+              </select>
+            </div>
+            <div class="gdex-location-cascade__row" id="loc-subregion3-row" style="display:none">
+              <label class="gdex-location-cascade__label" for="loc-subregion3">Subregion 3</label>
+              <select class="gdex-location-select" id="loc-subregion3" disabled
+                      data-filter-key="{{ loc_sub3_facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ loc_sub3_facet|checked_value }}">
+                <option value="">Select subregion&hellip;</option>
+              </select>
+            </div>
+            <div class="gdex-location-cascade__row" id="loc-detailed-row" style="display:none">
+              <label class="gdex-location-cascade__label" for="loc-detailed">Detailed Location</label>
+              <select class="gdex-location-select" id="loc-detailed" disabled
+                      data-filter-key="{{ loc_detailed_facet.buckets.0.search_filter_query_key }}"
+                      data-selected="{{ loc_detailed_facet|checked_value }}">
+                <option value="">Select location&hellip;</option>
               </select>
             </div>
           </div>
-          {# Hidden input injected by JS when a location is chosen — must stay inside #facet-form #}
+          {# Hidden inputs injected by JS to reflect the chosen tiers — must stay inside #facet-form #}
           <div id="gdex-location-hidden"></div>
-          {# Globus bucket data for JS population — not submitted, read-only #}
+          {# Full GCMD hierarchy (not submitted) — drives client-side narrowing only #}
           <script id="gdex-location-data" type="application/json">
-          [{% for field in facet.buckets %}{"name":"{{ field.search_filter_query_key }}","value":"{{ field.value|escapejs }}","count":{{ field.count }},"checked":{% if field.checked %}true{% else %}false{% endif %}}{% if not forloop.last %},{% endif %}{% endfor %}]
+          [{% for field in loc_path_facet.buckets %}"{{ field.value|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]
           </script>
         </div>
       </div>
 
+      {% elif facet.field_name == 'gcmd_location_path' or facet.field_name == 'gcmd_location_type' or facet.field_name == 'gcmd_location_subregion1' or facet.field_name == 'gcmd_location_subregion2' or facet.field_name == 'gcmd_location_subregion3' or facet.field_name == 'gcmd_location_detailed' %}
+      {# ── Rendered above as part of the combined Location cascade — skip ── #}
+
       {% else %}
       {# ── All other facets — generic flat list ── #}
+      {% facet_tooltip facet.field_name as tooltip_text %}
       <div class="gdex-filter-group {% if not facet|has_active_bucket %}gdex-filter-group--collapsed{% endif %}">
         <div class="gdex-filter-group__header gdex-filter-group__header--toggle" data-gdex-toggle>
-          <span class="gdex-filter-group__name">{{ facet.name }}</span>
+          <span class="gdex-filter-group__name">
+            {{ facet.name }}
+            {% if tooltip_text %}
+            <i class="fas fa-circle-info gdex-filter-group__info"
+               data-bs-toggle="tooltip"
+               data-bs-placement="right"
+               data-bs-custom-class="gdex-filter-tooltip"
+               title="{{ tooltip_text }}"
+               onclick="event.stopPropagation();"></i>
+            {% endif %}
+          </span>
           <span class="gdex-filter-group__chevron"><i class="fas fa-chevron-down"></i></span>
         </div>
         <div class="gdex-filter-group__body">

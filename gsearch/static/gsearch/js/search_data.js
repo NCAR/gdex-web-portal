@@ -314,80 +314,36 @@
     });
 
     /* ---------- location cascade dropdowns ---------- */
+    // Globus Search doesn't scope facet buckets to the currently-applied
+    // filters, so the per-tier facets (gcmd_location_category/_type/
+    // _subregion1-3/_detailed) can't be used to narrow each dropdown's
+    // options on their own — they'd always list every value in the whole
+    // corpus. Instead, the full GCMD hierarchy (gcmd_location_path facet)
+    // is parsed client-side into a tree, which drives which options each
+    // dropdown shows. Filtering/searching still targets the six split
+    // fields directly (one value per tier), so query strings and "selected
+    // filter" chips stay compact.
 
     (function () {
         var dataEl = document.getElementById('gdex-location-data');
         if (!dataEl) return;
-        var buckets;
-        try { buckets = JSON.parse(dataEl.textContent); } catch (e) { return; }
+        var paths;
+        try { paths = JSON.parse(dataEl.textContent); } catch (e) { return; }
 
-        /* ── Geographic lookup tables ───────────────────────────────── */
+        var LEVELS = [
+            { selId: 'loc-category',   rowId: null },
+            { selId: 'loc-type',       rowId: 'loc-type-row' },
+            { selId: 'loc-subregion1', rowId: 'loc-subregion1-row' },
+            { selId: 'loc-subregion2', rowId: 'loc-subregion2-row' },
+            { selId: 'loc-subregion3', rowId: 'loc-subregion3-row' },
+            { selId: 'loc-detailed',   rowId: 'loc-detailed-row' },
+        ];
 
-        var US_STATES = {};
-        ['ALABAMA','ALASKA','ARIZONA','ARKANSAS','CALIFORNIA','COLORADO','CONNECTICUT',
-         'DELAWARE','FLORIDA','GEORGIA','HAWAII','IDAHO','ILLINOIS','INDIANA','IOWA',
-         'KANSAS','KENTUCKY','LOUISIANA','MAINE','MARYLAND','MASSACHUSETTS','MICHIGAN',
-         'MINNESOTA','MISSISSIPPI','MISSOURI','MONTANA','NEBRASKA','NEVADA',
-         'NEW HAMPSHIRE','NEW JERSEY','NEW MEXICO','NEW YORK','NORTH CAROLINA',
-         'NORTH DAKOTA','OHIO','OKLAHOMA','OREGON','PENNSYLVANIA','RHODE ISLAND',
-         'SOUTH CAROLINA','SOUTH DAKOTA','TENNESSEE','TEXAS','UTAH','VERMONT',
-         'VIRGINIA','WASHINGTON','WEST VIRGINIA','WISCONSIN','WYOMING',
-         'DISTRICT OF COLUMBIA'].forEach(function (s) { US_STATES[s] = true; });
-
-        var CA_PROVS = {};
-        ['ALBERTA','BRITISH COLUMBIA','MANITOBA','NEW BRUNSWICK',
-         'NEWFOUNDLAND AND LABRADOR','NORTHWEST TERRITORIES','NOVA SCOTIA','NUNAVUT',
-         'ONTARIO','PRINCE EDWARD ISLAND','QUEBEC','SASKATCHEWAN','YUKON']
-            .forEach(function (p) { CA_PROVS[p] = true; });
-
-        var COUNTRY_CONT = {
-            'CANADA':'North America','MEXICO':'North America','GREENLAND':'North America',
-            'CUBA':'North America','PUERTO RICO':'North America','BERMUDA':'North America',
-            'BELIZE':'North America','COSTA RICA':'North America','EL SALVADOR':'North America',
-            'GUATEMALA':'North America','HONDURAS':'North America','NICARAGUA':'North America',
-            'PANAMA':'North America','HAITI':'North America','DOMINICAN REPUBLIC':'North America',
-            'JAMAICA':'North America','TRINIDAD AND TOBAGO':'North America',
-            'BRAZIL':'South America','ARGENTINA':'South America','CHILE':'South America',
-            'COLOMBIA':'South America','PERU':'South America','VENEZUELA':'South America',
-            'ECUADOR':'South America','BOLIVIA':'South America','PARAGUAY':'South America',
-            'URUGUAY':'South America','GUYANA':'South America','SURINAME':'South America',
-            'UNITED KINGDOM':'Europe','FRANCE':'Europe','GERMANY':'Europe','ITALY':'Europe',
-            'SPAIN':'Europe','PORTUGAL':'Europe','NETHERLANDS':'Europe','BELGIUM':'Europe',
-            'SWITZERLAND':'Europe','AUSTRIA':'Europe','SWEDEN':'Europe','NORWAY':'Europe',
-            'DENMARK':'Europe','FINLAND':'Europe','IRELAND':'Europe','GREECE':'Europe',
-            'POLAND':'Europe','CZECH REPUBLIC':'Europe','SLOVAKIA':'Europe',
-            'HUNGARY':'Europe','ROMANIA':'Europe','BULGARIA':'Europe','CROATIA':'Europe',
-            'UKRAINE':'Europe','RUSSIA':'Europe',
-            'CHINA':'Asia','JAPAN':'Asia','INDIA':'Asia','SOUTH KOREA':'Asia',
-            'NORTH KOREA':'Asia','TAIWAN':'Asia','INDONESIA':'Asia','MALAYSIA':'Asia',
-            'PHILIPPINES':'Asia','THAILAND':'Asia','VIETNAM':'Asia','CAMBODIA':'Asia',
-            'MYANMAR':'Asia','LAOS':'Asia','SINGAPORE':'Asia','BANGLADESH':'Asia',
-            'SRI LANKA':'Asia','NEPAL':'Asia','PAKISTAN':'Asia','AFGHANISTAN':'Asia',
-            'IRAN':'Asia','IRAQ':'Asia','SAUDI ARABIA':'Asia','TURKEY':'Asia',
-            'SYRIA':'Asia','JORDAN':'Asia','ISRAEL':'Asia','LEBANON':'Asia',
-            'OMAN':'Asia','YEMEN':'Asia','KUWAIT':'Asia',
-            'UNITED ARAB EMIRATES':'Asia','UAE':'Asia','MONGOLIA':'Asia',
-            'KAZAKHSTAN':'Asia','UZBEKISTAN':'Asia','TAJIKISTAN':'Asia',
-            'KYRGYZSTAN':'Asia','TURKMENISTAN':'Asia',
-            'NIGERIA':'Africa','ETHIOPIA':'Africa','EGYPT':'Africa',
-            'SOUTH AFRICA':'Africa','KENYA':'Africa','GHANA':'Africa',
-            'TANZANIA':'Africa','ALGERIA':'Africa','ANGOLA':'Africa',
-            'MOZAMBIQUE':'Africa','CAMEROON':'Africa','NIGER':'Africa',
-            'MALI':'Africa','SENEGAL':'Africa','CHAD':'Africa','SOMALIA':'Africa',
-            'RWANDA':'Africa','ZAMBIA':'Africa','ZIMBABWE':'Africa',
-            'MOROCCO':'Africa','TUNISIA':'Africa','LIBYA':'Africa','SUDAN':'Africa',
-            'SOUTH SUDAN':'Africa',
-            'AUSTRALIA':'Oceania','NEW ZEALAND':'Oceania',
-            'PAPUA NEW GUINEA':'Oceania','FIJI':'Oceania'
-        };
-
-        var GCMD_TOP = { 'CONTINENT':true, 'OCEAN':true, 'GEOGRAPHIC REGION':true,
-                         'VERTICAL LOCATION':true, 'WATERSHED':true };
-
-        var CONT_ORDER = ['North America','South America','Europe','Asia',
-                          'Africa','Oceania','Polar Regions','Ocean Basins'];
-
-        /* ── Classify a bucket value into {continent, country, state} ── */
+        var levels = LEVELS.map(function (l) {
+            return { sel: document.getElementById(l.selId), row: l.rowId ? document.getElementById(l.rowId) : null };
+        });
+        var hiddenDiv = document.getElementById('gdex-location-hidden');
+        if (!hiddenDiv || levels.some(function (l) { return !l.sel; })) return;
 
         function toTitle(str) {
             if (!str) return str;
@@ -395,235 +351,166 @@
                 .replace(/(?:^|[\s\-\/])\S/g, function (c) { return c.toUpperCase(); });
         }
 
-        function classifyBucket(value) {
-            var up = value.toUpperCase().trim();
+        // Case/whitespace-insensitive key for matching a split field's own
+        // value against a segment parsed out of gcmd_location_path — the two
+        // fields aren't guaranteed to agree on casing/trimming even though
+        // they describe the same GCMD value.
+        function normKey(str) { return (str || '').trim().toUpperCase(); }
 
-            // Full GCMD hierarchical path (contains ">")
-            if (up.indexOf('>') !== -1) {
-                var parts = up.split('>').map(function (p) { return p.trim(); });
-                var si = GCMD_TOP[parts[0]] ? 1 : 0;
-                var cont = parts[si] || 'Other';
-                if (cont === 'OCEAN' || /\bOCEAN\b/.test(cont)) cont = 'Ocean Basins';
-                else if (cont === 'GEOGRAPHIC REGION') {
-                    cont = (parts[si + 1] && /POLAR|ARCTIC|ANTARCT/.test(parts[si + 1]))
-                        ? 'Polar Regions' : (parts[si + 1] ? toTitle(parts[si + 1]) : 'Other');
-                    si++;
-                }
-                else cont = toTitle(cont);
-                return {
-                    continent: cont,
-                    country:   parts.length > si + 1 ? toTitle(parts[si + 1]) : null,
-                    state:     parts.length > si + 2 ? toTitle(parts[si + 2]) : null,
-                };
+        // GCMD path -> up to 6 {raw, label} segments, one per dropdown
+        // level, stopping at the first blank segment (paths are contiguous).
+        function pathSegments(value) {
+            var segs = value.split('>').map(function (s) { return s.trim(); }).filter(Boolean);
+            var out = [];
+            for (var i = 0; i < levels.length && i < segs.length; i++) {
+                if (!segs[i]) break;
+                out.push({ raw: segs[i], label: toTitle(segs[i]) });
             }
-
-            // Flat value — classify by lookup tables
-            if (US_STATES[up]) return { continent: 'North America', country: 'United States', state: toTitle(value) };
-            if (CA_PROVS[up])  return { continent: 'North America', country: 'Canada',        state: toTitle(value) };
-
-            if (/\bARCTIC\b|\bANTARCT/.test(up))
-                return { continent: 'Polar Regions', country: toTitle(value), state: null };
-
-            if (/\bOCEAN\b|\bSEA\b|\bGULF OF\b|\bBAY OF\b/.test(up))
-                return { continent: 'Ocean Basins', country: toTitle(value), state: null };
-
-            var knownCont = COUNTRY_CONT[up];
-            if (knownCont) return { continent: knownCont, country: toTitle(value), state: null };
-
-            // Default — show as a standalone entry in the continent dropdown
-            return { continent: toTitle(value), country: null, state: null };
+            return out;
         }
 
-        /* ── Build hierarchy from Globus buckets ─────────────────────── */
+        /* ── Build hierarchy tree, keyed by each level's normalized value ── */
 
-        var continentMap = {};
-        var continentOrder = [];
+        function newNode(raw, label) { return { raw: raw, label: label, childMap: {}, childOrder: [] }; }
 
-        buckets.forEach(function (b) {
-            var cls  = classifyBucket(b.value);
-            var cont = cls.continent;
+        var root = newNode(null, null);
 
-            if (!continentMap[cont]) {
-                continentMap[cont] = { countryMap: {}, countryOrder: [], buckets: [] };
-                continentOrder.push(cont);
-            }
-
-            if (cls.country) {
-                var ctry = cls.country;
-                if (!continentMap[cont].countryMap[ctry]) {
-                    continentMap[cont].countryMap[ctry] = { stateMap: {}, stateOrder: [], buckets: [] };
-                    continentMap[cont].countryOrder.push(ctry);
+        paths.forEach(function (value) {
+            var node = root;
+            pathSegments(value).forEach(function (seg) {
+                var key = normKey(seg.raw);
+                if (!node.childMap[key]) {
+                    node.childMap[key] = newNode(seg.raw, seg.label);
+                    node.childOrder.push(key);
                 }
-                if (cls.state) {
-                    var st = cls.state;
-                    if (!continentMap[cont].countryMap[ctry].stateMap[st]) {
-                        continentMap[cont].countryMap[ctry].stateMap[st] = [];
-                        continentMap[cont].countryMap[ctry].stateOrder.push(st);
-                    }
-                    continentMap[cont].countryMap[ctry].stateMap[st].push(b);
-                } else {
-                    continentMap[cont].countryMap[ctry].buckets.push(b);
-                }
-            } else {
-                continentMap[cont].buckets.push(b);
-            }
+                node = node.childMap[key];
+            });
         });
+        root.childOrder.sort(function (a, b) { return root.childMap[a].label.localeCompare(root.childMap[b].label); });
 
-        // Sort continents in preferred order; unknowns alphabetically after
-        continentOrder.sort(function (a, b) {
-            var ai = CONT_ORDER.indexOf(a), bi = CONT_ORDER.indexOf(b);
-            if (ai === -1 && bi === -1) return a.localeCompare(b);
-            return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-        });
+        /* ── DOM helpers ──────────────────────────────────────────────── */
 
-        /* ── DOM refs ─────────────────────────────────────────────────── */
-
-        var contSel    = document.getElementById('loc-continent');
-        var countrySel = document.getElementById('loc-country');
-        var stateSel   = document.getElementById('loc-state');
-        var stateRow   = document.getElementById('loc-state-row');
-        var hiddenDiv  = document.getElementById('gdex-location-hidden');
-        if (!contSel || !countrySel || !stateSel || !hiddenDiv) return;
-
-        function makeOpt(label) {
+        function makeOpt(node) {
             var o = document.createElement('option');
-            o.value = o.textContent = label;
+            o.value = node.raw; o.textContent = node.label;
             return o;
         }
 
-        // Collect only the Globus buckets that directly match the selected level
-        function getBuckets(cont, ctry, st) {
-            var node = continentMap[cont];
-            if (!node) return [];
-            if (!ctry) return node.buckets;
-            var cNode = node.countryMap[ctry];
-            if (!cNode) return [];
-            if (!st) return cNode.buckets; // only the direct country-level bucket(s)
-            return cNode.stateMap[st] || [];
+        // Clear + disable + hide levels [from, levels.length)
+        function resetFrom(from) {
+            for (var i = from; i < levels.length; i++) {
+                var lvl = levels[i];
+                lvl.sel.innerHTML = '<option value="">Select…</option>';
+                lvl.sel.disabled = true;
+                if (lvl.row) lvl.row.style.display = 'none';
+            }
         }
 
-        function setHiddenInputs(bs) {
-            hiddenDiv.innerHTML = '';
-            (bs || []).forEach(function (b) {
-                var inp = document.createElement('input');
-                inp.type = 'checkbox'; inp.checked = true;
-                inp.name = b.name; inp.value = b.value;
-                inp.autocomplete = 'off'; inp.style.display = 'none';
-                hiddenDiv.appendChild(inp);
+        // Populate levels[index] from node's children (for further drilling).
+        function populate(index, node) {
+            if (index >= levels.length || !node.childOrder.length) return;
+            var lvl = levels[index];
+            node.childOrder.forEach(function (raw) { lvl.sel.appendChild(makeOpt(node.childMap[raw])); });
+            lvl.sel.disabled = false;
+            if (lvl.row) lvl.row.style.display = '';
+        }
+
+        // Walk the tree along the *current* select values, stopping at the
+        // first empty/invalid one.
+        function nodeAt(upTo) {
+            var node = root;
+            for (var i = 0; i < upTo; i++) {
+                var v = normKey(levels[i].sel.value);
+                if (!v || !node.childMap[v]) return null;
+                node = node.childMap[v];
+            }
+            return node;
+        }
+
+        // One *persistent* hidden checkbox per tier, created once and only
+        // ever toggled — never removed/recreated. customSearch() (gsearch.js)
+        // re-adds a filter's old URL value whenever #facet-form has NO input
+        // at all under that name, to preserve filters untouched by this page.
+        // An ordinary facet checkbox never triggers that: unchecking it
+        // leaves the element in the DOM. Removing our input on clear (as an
+        // earlier version did) looked identical to "untouched" to that
+        // logic, so a cleared tier's stale value kept coming back.
+        var hiddenInputs = levels.map(function (lvl) {
+            var inp = document.createElement('input');
+            inp.type = 'checkbox';
+            inp.name = lvl.sel.dataset.filterKey || '';
+            inp.autocomplete = 'off';
+            inp.style.display = 'none';
+            hiddenDiv.appendChild(inp);
+            return inp;
+        });
+
+        function syncHiddenInputs() {
+            levels.forEach(function (lvl, i) {
+                var inp = hiddenInputs[i];
+                inp.checked = !!lvl.sel.value;
+                inp.value = lvl.sel.value;
             });
         }
 
-        function resetState() {
-            stateSel.innerHTML = '<option value="">Select state…</option>';
-            stateSel.disabled = true; stateRow.style.display = 'none';
-        }
-        function resetCountry() {
-            countrySel.innerHTML = '<option value="">Select country…</option>';
-            countrySel.disabled = true; resetState();
-        }
+        /* ── Populate top-level (Category) dropdown ────────────────────── */
 
-        /* ── Populate continent dropdown ─────────────────────────────── */
-
-        continentOrder.forEach(function (label) { contSel.appendChild(makeOpt(label)); });
+        root.childOrder.forEach(function (raw) { levels[0].sel.appendChild(makeOpt(root.childMap[raw])); });
 
         /* ── Event listeners ─────────────────────────────────────────── */
 
-        contSel.addEventListener('change', function () {
-            var cv = this.value;
-            resetCountry(); hiddenDiv.innerHTML = '';
-            if (!cv) { customSearch(1); return; }
-
-            var node = continentMap[cv];
-            if (!node) return;
-
-            if (node.countryOrder.length > 0) {
-                node.countryOrder.forEach(function (l) { countrySel.appendChild(makeOpt(l)); });
-                countrySel.disabled = false;
-            } else {
-                setHiddenInputs(node.buckets);
+        levels.forEach(function (lvl, i) {
+            lvl.sel.addEventListener('change', function () {
+                resetFrom(i + 1);
+                var node = nodeAt(i + 1);
+                if (node) populate(i + 1, node);
+                syncHiddenInputs();
                 customSearch(1);
-            }
-        });
-
-        countrySel.addEventListener('change', function () {
-            var cv = contSel.value, ctv = this.value;
-            resetState(); hiddenDiv.innerHTML = '';
-            if (!ctv) { customSearch(1); return; }
-
-            var cNode = continentMap[cv] && continentMap[cv].countryMap[ctv];
-            if (!cNode) return;
-
-            if (cNode.stateOrder.length > 0) {
-                // Has states — show the dropdown and wait; don't search yet
-                cNode.stateOrder.forEach(function (l) { stateSel.appendChild(makeOpt(l)); });
-                stateSel.disabled = false; stateRow.style.display = '';
-            } else {
-                // Leaf country — filter immediately
-                setHiddenInputs(getBuckets(cv, ctv, null));
-                customSearch(1);
-            }
-        });
-
-        stateSel.addEventListener('change', function () {
-            var cv = contSel.value, ctv = countrySel.value, sv = this.value;
-            setHiddenInputs(getBuckets(cv, ctv, sv || null));
-            customSearch(1);
+            });
         });
 
         /* ── Restore cascade state on page load ──────────────────────── */
-        // Read from URL params first (reliable after F5 refresh), then
-        // fall back to the Globus bucket checked flag.
+        // Each level's currently-checked value (if any) was rendered
+        // server-side as data-selected, from that tier's own split-field
+        // facet — walk the tree to reveal/populate the matching dropdowns.
 
-        var urlParams = new URLSearchParams(window.location.search);
-        var activeValues = urlParams.getAll('filter-match-any.location');
-
-        if (!activeValues.length) {
-            for (var i = 0; i < buckets.length; i++) {
-                if (buckets[i].checked) { activeValues = [buckets[i].value]; break; }
-            }
+        var node = root;
+        var depth = 0;
+        for (; depth < levels.length; depth++) {
+            var key = normKey(levels[depth].sel.dataset.selected);
+            if (!key || !node.childMap[key]) break;
+            if (depth > 0) populate(depth, node);
+            node = node.childMap[key];
+            // Select by the tree's own raw casing — that's what populate()
+            // used as each <option>'s value, so this is guaranteed to match.
+            levels[depth].sel.value = node.raw;
         }
-
-        if (activeValues.length) {
-            var activeValue = activeValues[0];
-            var cls = classifyBucket(activeValue);
-
-            // Find the matching Globus bucket so we can wire the hidden input
-            var activeBucket = null;
-            for (var j = 0; j < buckets.length; j++) {
-                if (buckets[j].value === activeValue) { activeBucket = buckets[j]; break; }
-            }
-
-            // Pre-select continent
-            contSel.value = cls.continent;
-
-            // Force the location group open (it might still be collapsed)
-            var locGroup = contSel.closest('.gdex-filter-group');
+        // Reveal the level *after* the deepest match too, even though it has
+        // no selection of its own yet — otherwise the cascade dead-ends the
+        // moment a shallower pick is the only one applied so far.
+        if (depth > 0) populate(depth, node);
+        syncHiddenInputs();
+        if (levels[0].sel.value) {
+            var locGroup = levels[0].sel.closest('.gdex-filter-group');
             if (locGroup) locGroup.classList.remove('gdex-filter-group--collapsed');
-
-            if (cls.country && continentMap[cls.continent]) {
-                continentMap[cls.continent].countryOrder.forEach(function (l) {
-                    countrySel.appendChild(makeOpt(l));
-                });
-                countrySel.disabled = false;
-                countrySel.value = cls.country;
-
-                if (cls.state && continentMap[cls.continent].countryMap[cls.country]) {
-                    continentMap[cls.continent].countryMap[cls.country].stateOrder.forEach(function (l) {
-                        stateSel.appendChild(makeOpt(l));
-                    });
-                    stateSel.disabled = false;
-                    stateRow.style.display = '';
-                    stateSel.value = cls.state;
-                }
-            }
-
-            if (activeBucket) setHiddenInputs([activeBucket]);
         }
 
         window._resetLocationSelects = function () {
-            contSel.value = ''; resetCountry(); hiddenDiv.innerHTML = '';
+            levels[0].sel.value = '';
+            resetFrom(1);
+            syncHiddenInputs();
         };
     }());
+
+    /* ---------- bootstrap tooltips ---------- */
+    // Bootstrap tooltips require explicit JS activation — the data-bs-*
+    // attributes alone don't do anything.
+
+    if (typeof bootstrap !== 'undefined') {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+            new bootstrap.Tooltip(el);
+        });
+    }
 
     /* ---------- filter search + see more ---------- */
 

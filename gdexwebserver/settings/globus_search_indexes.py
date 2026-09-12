@@ -61,8 +61,42 @@ SEARCH_INDEXES = {
             'size': 1000
           },
           {
-            'name': 'Location',
-            'field_name': 'location',
+            'name': 'Location Category',
+            'field_name': 'gcmd_location_category',
+            'size': 1000
+          },
+          {
+            'name': 'Location Type',
+            'field_name': 'gcmd_location_type',
+            'size': 1000
+          },
+          {
+            'name': 'Location Subregion 1',
+            'field_name': 'gcmd_location_subregion1',
+            'size': 1000
+          },
+          {
+            'name': 'Location Subregion 2',
+            'field_name': 'gcmd_location_subregion2',
+            'size': 1000
+          },
+          {
+            'name': 'Location Subregion 3',
+            'field_name': 'gcmd_location_subregion3',
+            'size': 1000
+          },
+          {
+            'name': 'Detailed Location',
+            'field_name': 'gcmd_location_detailed',
+            'size': 1000
+          },
+          {
+            # Not filtered on directly — used only to drive correct
+            # client-side narrowing of the tier dropdowns above, since
+            # Globus Search does not scope facets to currently-applied
+            # filters. See search-sidebar.html / search_data.js.
+            'name': 'Location Path',
+            'field_name': 'gcmd_location_path',
             'size': 1000
           },
         ],
@@ -103,6 +137,7 @@ SEARCH_INDEXES = {
           ("dataset_url",             search_fields.dataset_url),
           ("https_url",               search_fields.https_url),
           ("dataset_type",            search_fields.dataset_type),
+          ("gcmd_location_path",      search_fields.gcmd_location_path),
           ("search_highlights",       search_fields.search_highlights),
           # New fields for redesigned result cards
           ("summary",                 search_fields.summary),

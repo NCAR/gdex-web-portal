@@ -111,6 +111,9 @@ def dataset_type(result):
         return None
     return result[0]["dataset_type"]
 
+def gcmd_location_path(result):
+    """GCMD location paths for the dataset. Formatted as the full GCMD hierarchy path (Location Category > Location Type > Subregion1-4)."""
+    return result[0].get('gcmd_location_path') or 'N/A'
 
 # ---------------------------------------------------------------------------
 # New field extractors for the redesigned result cards

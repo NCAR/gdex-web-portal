@@ -173,6 +173,24 @@
     font-size: 0.95rem;
     color: var(--gdex-text-dark);
 }
+.gdex-filter-group__info {
+    margin-left: 0.35rem;
+    font-size: 0.82rem;
+    color: var(--gdex-text-muted);
+    cursor: help;
+}
+.gdex-filter-group__info:hover { color: var(--gdex-blue); }
+
+/* Wider tooltip for filter-help text that runs long (Location, Keyword,
+   Variables, etc.) — scoped via data-bs-custom-class so it doesn't affect
+   Bootstrap's other tooltips elsewhere on the site. */
+.gdex-filter-tooltip .tooltip-inner {
+    max-width: 320px;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
 .gdex-filter-group__chevron {
     font-size: 0.78rem;
     color: var(--gdex-text-muted);
