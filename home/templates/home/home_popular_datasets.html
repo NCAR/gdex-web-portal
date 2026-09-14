@@ -1,11 +1,11 @@
 {% load static wagtailcore_tags %}
 
 <!-- POPULAR DATASETS -->
-<section class="gdex-popular-section">
+<section class="gdex-popular-section" aria-labelledby="gdex-popular-heading">
     <div class="container-lg">
 
         <div class="d-flex align-items-center justify-content-between mb-2">
-            <h2 class="gdex-section-title mb-0">Explore Popular Datasets</h2>
+            <h2 class="gdex-section-title mb-0" id="gdex-popular-heading">Explore Popular Datasets</h2>
             <a href="/gsearch/popular/" class="gdex-popular-section__view-all">
                 View all datasets &rarr;
             </a>
@@ -17,8 +17,8 @@
                     <!-- slides injected by JS after API call -->
                 </div>
             </div>
-            <div class="gdex-swiper-prev"><i class="fas fa-chevron-left"></i></div>
-            <div class="gdex-swiper-next"><i class="fas fa-chevron-right"></i></div>
+            <div class="gdex-swiper-prev" role="button" tabindex="0" aria-label="Previous datasets"><i class="fas fa-chevron-left" aria-hidden="true"></i></div>
+            <div class="gdex-swiper-next" role="button" tabindex="0" aria-label="Next datasets"><i class="fas fa-chevron-right" aria-hidden="true"></i></div>
         </div>
 
     </div>
@@ -89,5 +89,17 @@
         .catch(function () {
             document.getElementById('gdex-popular-datasets-wrapper').closest('.gdex-datasets-swiper-wrapper').style.display = 'none';
         });
+
+    // The prev/next controls are role="button" divs (Swiper needs plain
+    // elements, not real <button>s, to attach its own nav behavior), so
+    // native Enter/Space activation isn't provided automatically.
+    document.querySelectorAll('.gdex-swiper-prev, .gdex-swiper-next').forEach(function (el) {
+        el.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                el.click();
+            }
+        });
+    });
 }());
 </script>

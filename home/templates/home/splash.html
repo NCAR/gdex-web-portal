@@ -17,21 +17,21 @@
     <div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 g-2 g-md-4'>
         <div class='col text-center'>
             <div class='card h-100 pt-3 pb-3'>
-                <i class="fa-solid fa-file fs-1"></i>
+                <i class="fa-solid fa-file fs-1" aria-hidden="true"></i>
                 <div id="btn-datasets" class="fs-1 fw-bold pt-3">&hellip;</div>
                 <div class="fs-5 text-secondary pt-2">Total Number of GDEX Datasets</div>
             </div>
         </div>
         <div class='col text-center'>
             <div class='card h-100 pt-3 pb-3'>
-                <i class="fa-solid fa-book-open fs-1"></i>
+                <i class="fa-solid fa-book-open fs-1" aria-hidden="true"></i>
                 <div id="btn-citations" class="fs-1 fw-bold pt-3">&hellip;</div>
                 <div class="fs-5 text-secondary pt-2">Total Number of Citations</div>
             </div>
         </div>
         <div class='col text-center'>
             <div class='card h-100 pt-3 pb-3'>
-                <i class="fa-solid fa-users fs-1"></i>
+                <i class="fa-solid fa-users fs-1" aria-hidden="true"></i>
                 <div id="btn-users" class="fs-1 fw-bold pt-3">&hellip;</div>
                 <div class="fs-5 text-secondary pt-2">Total Number of Unique IPs</div>
                 <div class='small text-secondary'>that Accessed Data in the Past Year</div>
@@ -39,7 +39,7 @@
         </div>
         <div class='col text-center'>
             <div class='card h-100 pt-3 pb-3'>
-                <i class="fa-solid fa-download fs-1"></i>
+                <i class="fa-solid fa-download fs-1" aria-hidden="true"></i>
                 <div id="btn-downloaded" class="fs-1 fw-bold pt-3">&hellip;</div>
                 <div class="fs-5 text-secondary pt-2">Total Volume Downloaded</div>
                 <div class='small text-secondary'>in the Past Year</div>
@@ -47,14 +47,14 @@
         </div>
         <div class='col text-center'>
             <div class='card h-100 pt-3 pb-3'>
-                <i class="fa-solid fa-server fs-1"></i>
+                <i class="fa-solid fa-server fs-1" aria-hidden="true"></i>
                 <div id="btn-volume" class="fs-1 fw-bold pt-3">&hellip;</div>
                 <div class="fs-5 text-secondary pt-2">Size of the GDEX</div>
             </div>
         </div>
         <div class='col text-center'>
             <div class='card h-100 pt-3 pb-3'>
-                <i class="fa-solid fa-envelope fs-1"></i>
+                <i class="fa-solid fa-envelope fs-1" aria-hidden="true"></i>
                 <div id="btn-requests" class="fs-1 fw-bold pt-3">&hellip;</div>
                 <div class="fs-5 text-secondary pt-2">Customized Subset Requests</div>
                 <div class='small text-secondary'>in the Past Year</div>
@@ -64,14 +64,14 @@
 </div>
 
 <hr>
-<div id="list" class="component list mt-3">
-    <h2 class='text-center'><i class="fa-solid fa-robot pe-1"></i>AI-Ready Datasets</h2>
-    <div id="ai-datasets-list" style='height:34em; overflow:auto'></div>
+<div id="ai-ready-list" class="component list mt-3">
+    <h2 class='text-center' id="ai-ready-heading"><i class="fa-solid fa-robot pe-1" aria-hidden="true"></i>AI-Ready Datasets</h2>
+    <div id="ai-datasets-list" aria-labelledby="ai-ready-heading" style='height:34em; overflow:auto'></div>
 </div>
 <hr>
-<div id="list" class="component list mt-3">
-    <h2 class='text-center'><i class="fa-solid fa-thumbs-up pe-1"></i>Popular Datasets</h2>
-    <div id="top-datasets-list" style='height:34em; overflow:auto'></div>
+<div id="popular-datasets-list" class="component list mt-3">
+    <h2 class='text-center' id="popular-datasets-heading"><i class="fa-solid fa-thumbs-up pe-1" aria-hidden="true"></i>Popular Datasets</h2>
+    <div id="top-datasets-list" aria-labelledby="popular-datasets-heading" style='height:34em; overflow:auto'></div>
 </div>
 
 <script>
