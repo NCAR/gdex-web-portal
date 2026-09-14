@@ -20,10 +20,10 @@
 
   <div class="gdex-specialized-header">
     <div class="gdex-specialized-header__icon">
-      <i class="fas fa-fire"></i>
+      <i class="fas fa-fire" aria-hidden="true"></i>
     </div>
     <div>
-      <h1 class="gdex-specialized-header__title">Popular Datasets</h1>
+      <h1 class="gdex-specialized-header__title" id="popular-datasets-heading">Popular Datasets</h1>
       <p class="gdex-specialized-header__desc">
         The most accessed datasets on GDEX, ranked by number of unique users over the past year.
         This list updates automatically as usage data changes.
@@ -34,7 +34,7 @@
   <p class="gdex-specialized-count">Top {{ datasets|length }} dataset{{ datasets|length|pluralize }}</p>
 
   {% if datasets %}
-  <div class="gdex-specialized-list">
+  <div class="gdex-specialized-list" aria-labelledby="popular-datasets-heading">
     {% for ds in datasets %}
     <article class="gdex-dataset-result">
       <div class="gdex-dataset-result__thumb gdex-specialized-card__thumb--rank">
@@ -46,7 +46,7 @@
             <h3 class="gdex-dataset-result__title">
               <a href="/datasets/{{ ds.dsid }}/" data-summary="{{ ds.summary }}">
                 {{ ds.title }}
-                <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon"></i>
+                <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon" aria-hidden="true"></i>
               </a>
             </h3>
           </div>
@@ -55,15 +55,15 @@
         <div class="gdex-dataset-result__actions">
           <div class="gdex-specialized-card__meta">
             <span class="gdex-specialized-card__badge">
-              <i class="fas fa-users"></i> {{ ds.users }} unique users
+              <i class="fas fa-users" aria-hidden="true"></i> {{ ds.users }} unique users
             </span>
             <span class="gdex-specialized-card__badge">
-              <i class="fas fa-download"></i> {{ ds.volume_tb }} TB downloaded
+              <i class="fas fa-download" aria-hidden="true"></i> {{ ds.volume_tb }} TB downloaded
             </span>
           </div>
           <div class="gdex-dataset-result__actions-buttons">
             <a href="/datasets/{{ ds.dsid }}/dataaccess/" class="gdex-btn-access">
-              <i class="fas fa-download"></i> Access Data
+              <i class="fas fa-download" aria-hidden="true"></i> Access Data
             </a>
           </div>
         </div>
