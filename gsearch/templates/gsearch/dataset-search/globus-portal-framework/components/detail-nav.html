@@ -7,7 +7,7 @@ Requires the following fields:
 {% endcomment %}
 
 <div class="card-header">
-  <nav class="navbar">
+  <nav class="navbar" aria-label="Dataset actions">
     <h3>{{title|default:'Result'}}</h3>
     <ul class="nav nav-pills nav-detail-nav justify-content-end">
       <li class="nav-item nav-item-detail-nav mx-1">
@@ -19,7 +19,7 @@ Requires the following fields:
                 class="btn btn-primary nav-link disabled" href="#"
                 {% endif %}
         >
-          <i class="fas fa-exchange-alt"></i>
+          <i class="fas fa-exchange-alt" aria-hidden="true"></i>
           Transfer/Sync
         </a>
         {% endblock %}
@@ -34,7 +34,7 @@ Requires the following fields:
                 {% endif %}
 
         >
-          <i class="fas fa-cloud-download-alt"></i>
+          <i class="fas fa-cloud-download-alt" aria-hidden="true"></i>
           Download via HTTPS
         </a>
         {% endblock %}
@@ -49,7 +49,7 @@ Requires the following fields:
                 class="btn btn-light nav-link disabled" href="#"
                 {% endif %}
         >
-          <i class="fas fa-link"></i>
+          <i class="fas fa-link" aria-hidden="true"></i>
           Get link
         </a>
         {% endblock %}
