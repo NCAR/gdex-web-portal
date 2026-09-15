@@ -181,3 +181,7 @@ def time_resolution_display(result):
     seen  = set()
     unique = [p for p in parts if not (p in seen or seen.add(p))]
     return ', '.join(unique) or 'N/A'
+
+def dataset_logo(result):
+    """URL to the dataset logo image."""
+    return result[0].get('dataset_logo') or 'N/A'
