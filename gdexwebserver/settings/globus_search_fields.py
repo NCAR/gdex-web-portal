@@ -184,4 +184,4 @@ def time_resolution_display(result):
 
 def dataset_logo(result):
     """URL to the dataset logo image."""
-    return result[0].get('dataset_logo') or 'N/A'
+    return result[0].get('dataset_logo') or None
