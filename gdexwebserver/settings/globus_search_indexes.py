@@ -149,6 +149,7 @@ SEARCH_INDEXES = {
           ("data_source",             search_fields.data_source),
           ("data_format_display",     search_fields.data_format_display),
           ("time_resolution_display", search_fields.time_resolution_display),
+          ("dataset_logo",            search_fields.dataset_logo),
         ],
         'facet_modifiers': [
             'gsearch.modifiers.custom_sort_facets',
