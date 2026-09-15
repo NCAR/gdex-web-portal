@@ -1,6 +1,6 @@
 {% load static %}
 
-<nav class="navbar navbar-expand-lg navbar-base-nav top-nav">
+<nav class="navbar navbar-expand-lg navbar-base-nav top-nav" aria-label="Primary navigation">
   <a class="navbar-brand title" href="{% block project_url %}{{ project_url|default:'/' }}{% endblock %}">
     {% block project_title %}
     {% if globus_portal_framework.index_data.tagline %}
@@ -19,7 +19,7 @@
       {%if globus_portal_framework.auth_enabled and request.user.is_authenticated %}
       <li>
         <a class="nav-link nav-link-base-nav btn login nav-link-search" href="{% url 'logout' %}?next=/">
-          <img class="inverse" src="{% static 'globus-portal-framework/images/logout.svg'%}">
+          <img class="inverse" src="{% static 'globus-portal-framework/images/logout.svg'%}" alt="">
           <div>LOG OUT</div>
         </a>
       </li>
@@ -27,7 +27,7 @@
       <li>
         <a class="nav-link nav-link-search nav-link-base-nav btn login nav-link-search"
           href="{% url 'social:begin' 'globus' %}?next={{ request.get_full_path|urlencode }}">
-          <img class="inverse" src="{% static 'globus-portal-framework/images/login.svg'%}">
+          <img class="inverse" src="{% static 'globus-portal-framework/images/login.svg'%}" alt="">
           <div>LOG IN</div>
         </a>
       </li>

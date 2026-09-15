@@ -1,5 +1,5 @@
 {% load static %}
-<div>
+<div role="region" aria-label="Search results">
   {% for result in search.search_results %}
   <article class="gdex-dataset-result">
 
@@ -16,7 +16,7 @@
             <a href="{{ result.dataset_url }}/"
                data-summary="{{ result.summary }}">
               {{ result.title }}
-              <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon"></i>
+              <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon" aria-hidden="true"></i>
             </a>
           </h3>
         </div>
@@ -25,14 +25,14 @@
       <p class="gdex-dataset-result__doi">
         DOI: {{ result.doi }}
         {% if result.doi != 'N/A' %}
-        <button class="gdex-doi-copy" title="Copy DOI" data-doi="{{ result.doi }}">
-          <i class="fas fa-copy"></i>
+        <button class="gdex-doi-copy" title="Copy DOI" aria-label="Copy DOI to clipboard" data-doi="{{ result.doi }}">
+          <i class="fas fa-copy" aria-hidden="true"></i>
         </button>
         {% endif %}
       </p>
       {% if result.dataset_type == 'H' %}
       <p class="gdex-ancillary-badge">
-        <i class="fa-solid fa-triangle-exclamation"></i>
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
         Ancillary use only — not recommended as a primary research dataset. Likely superseded by newer datasets.
       </p>
       {% endif %}
@@ -52,7 +52,7 @@
           <span class="gdex-dataset-result__meta-value">{{ result.data_format_display }}</span>
         </div>
         <a href="{{ result.dataset_url }}/dataaccess/" class="gdex-btn-access">
-          <i class="fas fa-download"></i> Access Data
+          <i class="fas fa-download" aria-hidden="true"></i> Access Data
         </a>
       </div>
 

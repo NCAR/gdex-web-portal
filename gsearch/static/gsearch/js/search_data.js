@@ -306,9 +306,20 @@
     document.querySelectorAll('[data-gdex-toggle]').forEach(function (h) {
         h.addEventListener('click', function () {
             var group = this.closest('.gdex-filter-group');
-            group.classList.toggle('gdex-filter-group--collapsed');
-            if (group.classList.contains('gdex-filter-group--collapsed') && group._gdexResetSeeMore) {
+            var collapsed = group.classList.toggle('gdex-filter-group--collapsed');
+            this.setAttribute('aria-expanded', String(!collapsed));
+            if (collapsed && group._gdexResetSeeMore) {
                 group._gdexResetSeeMore();
+            }
+        });
+        // These headers are role="button" divs, not real <button>s (so a
+        // click here doesn't also activate the fa-circle-info tooltip
+        // trigger nested inside), so Enter/Space activation isn't native.
+        h.addEventListener('keydown', function (e) {
+            if (e.target !== h) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                h.click();
             }
         });
     });

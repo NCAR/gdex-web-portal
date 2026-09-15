@@ -14,13 +14,13 @@
   <div class="gdex-find-data-hero__bg" style="background-image: url('{{ hero_bg }}');"></div>
   <div class="container-lg gdex-find-data-hero__content position-relative">
     <div class="col-lg-5 col-xl-4 gdex-find-data-hero__overlay-panel mx-auto w-75 text-center mb-2">
-    <h1 class="gdex-find-data-hero__heading">Search GDEX</h1>
+    <h1 class="gdex-find-data-hero__heading" id="gdex-find-data-heading">Search GDEX</h1>
     <p class="gdex-find-data-hero__subtitle">
       Search GDEX by keyword, variable, project, instrument, or dataset ID.
       Use the filters on the left to narrow results and quickly find the data you need.
     </p>
     </div>
-    <form id="search-form" class="gdex-find-data-hero__form"
+    <form id="search-form" class="gdex-find-data-hero__form" role="search" aria-labelledby="gdex-find-data-heading"
           action="{% url 'search' globus_portal_framework.index %}">
       <div class="gdex-find-data-hero__search-bar">
         <input type="text" name="q" id="search-input" autocomplete="off"
@@ -29,7 +29,7 @@
                aria-label="Search GDEX datasets"
                {% if request.session.search.query and request.session.search.query != '*' %}value="{{ request.session.search.query }}"{% endif %}>
         <button type="submit" class="gdex-find-data-hero__search-btn" aria-label="Search">
-          <i class="fas fa-search"></i>
+          <i class="fas fa-search" aria-hidden="true"></i>
         </button>
       </div>
     </form>
