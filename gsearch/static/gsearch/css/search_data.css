@@ -607,7 +607,7 @@
     height: 100%;
     object-fit: cover;
 }
-.gdex-dataset-result__thumb-img--logo {
+.gdex-dataset-result__thumb .gdex-dataset-result__thumb-img--logo {
     width: auto;
     height: auto;
     max-width: 100%;
