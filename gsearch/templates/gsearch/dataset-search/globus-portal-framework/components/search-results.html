@@ -4,7 +4,11 @@
   <article class="gdex-dataset-result">
 
     <div class="gdex-dataset-result__thumb">
+      {% if result.dataset_logo %}
+      <img src="/images/ds_logos/{{ result.dataset_logo }}" alt="{{ result.title }}">
+      {% else %}
       <img src="/media/original_images/MPAS_image.png" alt="{{ result.title }}">
+      {% endif %}
     </div>
 
     <div class="gdex-dataset-result__body">
