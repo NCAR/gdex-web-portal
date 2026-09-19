@@ -189,26 +189,14 @@ def dataset_logo(result):
 def dataset_tags(result):
     """List of dataset tags, plus tags derived from other fields."""
     out = []
+    field_names = ["tags", "gcmd_topics_and_terms", "format"]
 
-    for tag in result[0].get('tags') or []:
-        out.append({
-            "field_name": "tags",
-            "value": tag,
-            "search_filter_query_key": "filter-match-all.tags",
-        })
-
-    for topic in result[0].get('gcmd_topics_and_terms') or []:
-        out.append({
-            "field_name": "gcmd_topics_and_terms",
-            "value": topic,
-            "search_filter_query_key": "filter-match-all.gcmd_topics_and_terms",
-        })
-
-    for fmt in result[0].get('format') or []:
-        out.append({
-            "field_name": "format",
-            "value": fmt,
-            "search_filter_query_key": "filter-match-all.format",
-        })
+    for field_name in field_names:
+        for value in result[0].get(field_name) or []:
+            out.append({
+                "field_name": field_name,
+                "value": value,
+                "search_filter_query_key": f"filter-match-all.{field_name}",
+            })
 
     return out
