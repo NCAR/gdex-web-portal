@@ -772,6 +772,12 @@
     gap: 0.6rem;
     margin-left: auto;
 }
+.gdex-dataset-result__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
 a.gdex-btn-access,
 a.gdex-btn-access:link,
 a.gdex-btn-access:visited {
@@ -937,7 +943,7 @@ a.gdex-btn-more:hover { color: var(--gdex-blue); text-decoration: none; }
 @media (max-width: 991px) {
     .gdex-find-data-layout { gap: 1rem; }
     .gdex-filters-sidebar { width: 220px; }
-    .gdex-dataset-result__thumb { width: 140px; min-width: 140px; }
+    .gdex-dataset-result__thumb { width: 140px; min-width: 140px; }    
 }
 
 @media (max-width: 767px) {
@@ -954,6 +960,7 @@ a.gdex-btn-more:hover { color: var(--gdex-blue); text-decoration: none; }
     .gdex-dataset-result__thumb { width: 100%; min-width: unset; height: 120px; }
     .gdex-dataset-result__meta { gap: 0.25rem 0.75rem; }
     .gdex-results-filters-row { flex-wrap: wrap; }
+    .gdex-dataset-result__tags { gap: 0.3rem; }
 }
 
 
