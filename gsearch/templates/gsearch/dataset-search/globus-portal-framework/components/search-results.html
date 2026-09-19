@@ -4,7 +4,11 @@
   <article class="gdex-dataset-result">
 
     <div class="gdex-dataset-result__thumb">
+      {% if result.dataset_logo %}
+      <img class="gdex-dataset-result__thumb-img--logo" src="/images/ds_logos/{{ result.dataset_logo }}" alt="{{ result.title }}">
+      {% else %}
       <img src="/media/original_images/MPAS_image.png" alt="{{ result.title }}">
+      {% endif %}
     </div>
 
     <div class="gdex-dataset-result__body">
@@ -14,7 +18,7 @@
         <div class="gdex-dataset-result__title-block">
           <h3 class="gdex-dataset-result__title">
             <a href="{{ result.dataset_url }}/"
-               data-summary="{{ result.summary }}">
+               data-summary="{{ result.summary }}" target="_blank">
               {{ result.title }}
               <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon" aria-hidden="true"></i>
             </a>
@@ -54,6 +58,15 @@
         <a href="{{ result.dataset_url }}/dataaccess/" class="gdex-btn-access">
           <i class="fas fa-download" aria-hidden="true"></i> Access Data
         </a>
+      </div>
+
+      {# ── Tags row ── #}
+      <div class="gdex-dataset-result__tags">
+        {% for item in result.dataset_tags %}
+            <a href="{% url 'dataset_search' index='dataset_search' %}?q=&{{ item.search_filter_query_key }}={{ item.value }}" class="text-decoration-none">
+                <span class="badge gsearch-badge rounded">{{ item.value }}</span>
+            </a>
+        {% endfor %}
       </div>
 
     </div>

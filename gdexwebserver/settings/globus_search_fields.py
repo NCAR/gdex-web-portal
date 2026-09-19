@@ -181,3 +181,47 @@ def time_resolution_display(result):
     seen  = set()
     unique = [p for p in parts if not (p in seen or seen.add(p))]
     return ', '.join(unique) or 'N/A'
+
+def dataset_logo(result):
+    """URL to the dataset logo image."""
+    return result[0].get('dataset_logo') or None
+
+def dataset_tags(result):
+    """List of dataset tags."""
+    tags = result[0].get('tags') or []
+
+    if tags:
+        field_name = "tags"
+        for tag in tags:
+            tag_highlights = {
+                "field_name": field_name,
+                "value": tag,
+                "search_filter_query_key": f"filter-match-all.{field_name}"
+            }
+            tags.append(tag_highlights)
+
+    # Append any additional tags derived from other fields if needed.
+    if result[0].get('gcmd_topics_and_terms'):
+        topics = result[0].get('gcmd_topics_and_terms') or []
+        if topics:
+            field_name = "gcmd_topics_and_terms"
+            for topic in topics:
+                tag_highlights = {
+                    "field_name": field_name,
+                    "value": topic,
+                    "search_filter_query_key": f"filter-match-all.{field_name}"
+                }
+                tags.append(tag_highlights)
+    if result[0].get('format'):
+        formats = result[0].get('format') or []
+        if formats:
+            field_name = "format"
+            for fmt in formats:
+                tag_highlights = {
+                    "field_name": field_name,
+                    "value": fmt,
+                    "search_filter_query_key": f"filter-match-all.{field_name}"
+                }
+                tags.append(tag_highlights)
+
+    return tags
