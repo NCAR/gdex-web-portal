@@ -187,41 +187,28 @@ def dataset_logo(result):
     return result[0].get('dataset_logo') or None
 
 def dataset_tags(result):
-    """List of dataset tags."""
-    tags = result[0].get('tags') or []
+    """List of dataset tags, plus tags derived from other fields."""
+    out = []
 
-    if tags:
-        field_name = "tags"
-        for tag in tags:
-            tag_highlights = {
-                "field_name": field_name,
-                "value": tag,
-                "search_filter_query_key": f"filter-match-all.{field_name}"
-            }
-            tags.append(tag_highlights)
+    for tag in result[0].get('tags') or []:
+        out.append({
+            "field_name": "tags",
+            "value": tag,
+            "search_filter_query_key": "filter-match-all.tags",
+        })
 
-    # Append any additional tags derived from other fields if needed.
-    if result[0].get('gcmd_topics_and_terms'):
-        topics = result[0].get('gcmd_topics_and_terms') or []
-        if topics:
-            field_name = "gcmd_topics_and_terms"
-            for topic in topics:
-                tag_highlights = {
-                    "field_name": field_name,
-                    "value": topic,
-                    "search_filter_query_key": f"filter-match-all.{field_name}"
-                }
-                tags.append(tag_highlights)
-    if result[0].get('format'):
-        formats = result[0].get('format') or []
-        if formats:
-            field_name = "format"
-            for fmt in formats:
-                tag_highlights = {
-                    "field_name": field_name,
-                    "value": fmt,
-                    "search_filter_query_key": f"filter-match-all.{field_name}"
-                }
-                tags.append(tag_highlights)
+    for topic in result[0].get('gcmd_topics_and_terms') or []:
+        out.append({
+            "field_name": "gcmd_topics_and_terms",
+            "value": topic,
+            "search_filter_query_key": "filter-match-all.gcmd_topics_and_terms",
+        })
 
-    return tags
+    for fmt in result[0].get('format') or []:
+        out.append({
+            "field_name": "format",
+            "value": fmt,
+            "search_filter_query_key": "filter-match-all.format",
+        })
+
+    return out
