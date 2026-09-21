@@ -773,13 +773,22 @@
     margin-left: auto;
 }
 .gdex-dataset-result__tags {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--gdex-space);
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
     margin-top: 0.5rem;
+}
+.gdex-dataset-result__tags .badge {
+    background: var(--gdex-light-gray);
+    color: var(--gdex-space);
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.gdex-dataset-result__tags:hover .badge {
+    background: var(--gdex-border-input);
+    color: var(--gdex-space);
 }
 a.gdex-btn-access,
 a.gdex-btn-access:link,
