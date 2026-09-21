@@ -1,5 +1,4 @@
-/* TEST HOME PAGE: Overrides base layout; loaded only on test_home_page.html */
-
+/* Home page specific styles for the GDEX web portal */
 body { overflow-x: hidden; }
 main:has(.gdex-hero) { padding-top: 0 !important; }
 main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
