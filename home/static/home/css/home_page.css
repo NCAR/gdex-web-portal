@@ -1,5 +1,4 @@
-/* TEST HOME PAGE: Overrides base layout; loaded only on test_home_page.html */
-
+/* Home page specific styles for the GDEX web portal */
 body { overflow-x: hidden; }
 main:has(.gdex-hero) { padding-top: 0 !important; }
 main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
@@ -9,7 +8,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
     font-size: clamp(1.5rem, 2.8vw, 2rem);
-    color: var(--gdex-blue-dark);
+    color: var(--gdex-dark-blue);
     margin-bottom: 2.25rem;
 }
 .gdex-section-subtitle {
@@ -49,7 +48,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    background-color: var(--gdex-navy);
+    background-color: var(--gdex-space);
     padding-bottom: 6rem;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
@@ -124,8 +123,8 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     border: 2px solid var(--gdex-blue);
 }
 .gdex-hero__btn--primary:hover {
-    background-color: var(--gdex-blue-dark);
-    border-color: var(--gdex-blue-dark);
+    background-color: var(--gdex-dark-blue);
+    border-color: var(--gdex-dark-blue);
     color: var(--gdex-white);
     transform: translateY(-2px);
     text-decoration: none;
@@ -193,7 +192,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 .gdex-search-bar__input::placeholder { color: #8a9bb0; font-weight: 400; }
 .gdex-search-bar__btn {
     background-color: #f59e0b;
-    color: var(--gdex-blue-dark);
+    color: var(--gdex-dark-blue);
     border: none;
     border-radius: 8px;
     padding: 1.1rem 2.25rem;
@@ -229,7 +228,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
     font-size: clamp(1.5rem, 2.8vw, 2rem);
-    color: var(--gdex-blue-dark);
+    color: var(--gdex-dark-blue);
     margin-bottom: 2.25rem;
 }
 .gdex-chip {
@@ -240,7 +239,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     min-width: 295px;
     background-color: var(--gdex-white);
     border: 1.5px solid rgba(0, 87, 194, 0.35);
-    color: var(--gdex-blue-dark);
+    color: var(--gdex-dark-blue);
     border-radius: 12px;
     padding: 0.75rem 1.1rem;
     font-size: 0.875rem;
@@ -263,7 +262,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     flex-direction: column;
     justify-content: center;
 }
-.gdex-chip strong { display: block; font-weight: 600; font-size: 1rem; color: var(--gdex-blue-dark); }
+.gdex-chip strong { display: block; font-weight: 600; font-size: 1rem; color: var(--gdex-dark-blue); }
 .gdex-chip small { font-weight: 400; font-size: 0.85rem; color: var(--gdex-text-body); }
 .gdex-chip i { color: var(--gdex-white); font-size: 1.45rem; }
 .gdex-chip:hover {
@@ -317,7 +316,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
     font-size: 1.2rem;
-    color: var(--gdex-blue-dark);
+    color: var(--gdex-dark-blue);
     margin-bottom: 0.5rem;
 }
 .gdex-feature-card__desc {
@@ -336,7 +335,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     text-decoration: none;
     transition: color 0.2s ease;
 }
-.gdex-feature-card__link:hover { color: var(--gdex-blue-dark) !important; text-decoration: underline; }
+.gdex-feature-card__link:hover { color: var(--gdex-dark-blue) !important; text-decoration: underline; }
 
 
 /* POPULAR DATASETS */
@@ -348,7 +347,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
     font-size: clamp(1.5rem, 2.8vw, 2rem);
-    color: var(--gdex-blue-dark);
+    color: var(--gdex-dark-blue);
 }
 .gdex-popular-section__view-all {
     font-size: 1rem;
@@ -356,7 +355,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     color: var(--gdex-blue) !important;
     text-decoration: none;
 }
-.gdex-popular-section__view-all:hover { text-decoration: underline; color: var(--gdex-blue-dark) !important; }
+.gdex-popular-section__view-all:hover { text-decoration: underline; color: var(--gdex-dark-blue) !important; }
 .gdex-datasets-swiper-wrapper {
     position: relative;
     padding: 0 3rem;
@@ -450,7 +449,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
     font-size: 1.2rem;
-    color: var(--gdex-blue-dark) !important;
+    color: var(--gdex-dark-blue) !important;
     line-height: 1.45;
     margin: 0;
     display: -webkit-box;
@@ -476,7 +475,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 
 /* METRICS */
 .gdex-metrics-section {
-    background-color: var(--gdex-navy);
+    background-color: var(--gdex-space);
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;
