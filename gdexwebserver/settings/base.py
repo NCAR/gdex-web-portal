@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     'metaman',
     'metaman_lite',
     'search',
-    #'accounts',
+    'accounts',
 
     'wagtail.contrib.forms',
     'wagtail.contrib.redirects',
