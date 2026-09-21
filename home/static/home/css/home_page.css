@@ -311,7 +311,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     margin-bottom: 1.25rem;
     flex-shrink: 0;
 }
-.gdex-feature-card__icon i { font-size: 1.45rem; color: var(--gdex-white); }
+.gdex-feature-card__icon i { font-size: 2rem; color: var(--gdex-white); }
 .gdex-feature-card__title {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
