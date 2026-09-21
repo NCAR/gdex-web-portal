@@ -49,7 +49,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    background-color: var(--gdex-navy);
+    background-color: var(--gdex-space);
     padding-bottom: 6rem;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
@@ -476,7 +476,7 @@ main:has(.gdex-metrics-section) { padding-bottom: 0 !important; }
 
 /* METRICS */
 .gdex-metrics-section {
-    background-color: var(--gdex-navy);
+    background-color: var(--gdex-space);
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;

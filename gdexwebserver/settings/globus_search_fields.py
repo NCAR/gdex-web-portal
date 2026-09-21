@@ -189,7 +189,7 @@ def dataset_logo(result):
 def dataset_tags(result):
     """List of dataset tags, plus tags derived from other fields."""
     out = []
-    field_names = ["tags", "gcmd_topics_and_terms", "format"]
+    field_names = ["tags", "format", "gcmd_topics_and_terms"]
 
     for field_name in field_names:
         for value in result[0].get(field_name) or []:
