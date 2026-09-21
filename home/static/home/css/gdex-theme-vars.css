@@ -1,7 +1,7 @@
+/* GDEX theme colors adhere to the NCAR branding color guidelines.  See https://news.ucar.edu/brand. */
 :root {
     --gdex-blue: #0057C2;
-    --gdex-blue-dark: #00357A;
-    --gdex-navy: #011837;
+    --gdex-dark-blue: #00357A;
     --gdex-space: #011837;
     --gdex-white: #FFFFFF;
     --gdex-light-gray: #F1F0EE;

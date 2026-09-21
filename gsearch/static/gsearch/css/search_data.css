@@ -84,7 +84,7 @@
     transition: background-color 0.2s ease;
     flex-shrink: 0;
 }
-.gdex-find-data-hero__search-btn:hover { background: var(--gdex-blue-dark); }
+.gdex-find-data-hero__search-btn:hover { background: var(--gdex-dark-blue); }
 
 
 /* Page body (below hero) */
@@ -401,7 +401,7 @@
     transition: background-color 0.15s ease, transform 0.1s ease;
 }
 .gdex-temporal-apply-btn:hover {
-    background-color: var(--gdex-blue-dark);
+    background-color: var(--gdex-dark-blue);
     transform: translateY(-1px);
 }
 .gdex-temporal-apply-btn:active { transform: translateY(0); }
@@ -565,7 +565,7 @@
     display: inline-block;
     transition: background-color 0.2s ease;
 }
-.gdex-btn-reset:hover { background: var(--gdex-blue-dark); color: var(--gdex-white); text-decoration: none; }
+.gdex-btn-reset:hover { background: var(--gdex-dark-blue); color: var(--gdex-white); text-decoration: none; }
 
 
 /* Dataset result cards */
@@ -595,7 +595,7 @@
     width: 160px;
     min-width: 160px;
     min-height: 110px;
-    background: var(--gdex-blue-dark);
+    background: var(--gdex-dark-blue);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -657,7 +657,7 @@
 .gdex-dataset-result__title a:hover {
     text-decoration: underline;
     border-bottom-color: var(--gdex-blue);
-    color: var(--gdex-blue-dark);
+    color: var(--gdex-dark-blue);
 }
 .gdex-ancillary-badge {
     display: flex;
@@ -798,7 +798,7 @@ a.gdex-btn-access:visited {
     white-space: nowrap;
     transition: background-color 0.2s ease;
 }
-a.gdex-btn-access:hover { background: var(--gdex-blue-dark); color: var(--gdex-white); text-decoration: none; }
+a.gdex-btn-access:hover { background: var(--gdex-dark-blue); color: var(--gdex-white); text-decoration: none; }
 
 a.gdex-btn-citation,
 a.gdex-btn-citation:link,
@@ -932,7 +932,7 @@ a.gdex-btn-more:hover { color: var(--gdex-blue); text-decoration: none; }
     color: var(--gdex-white);
     border-radius: 8px;
 }
-.gdex-pagination__page--active:hover { background: var(--gdex-blue-dark); color: var(--gdex-white); }
+.gdex-pagination__page--active:hover { background: var(--gdex-dark-blue); color: var(--gdex-white); }
 .gdex-pagination__arrow { color: var(--gdex-icon-muted); font-size: 0.8rem; }
 .gdex-pagination__arrow:hover { background: var(--gdex-bg-tint); color: var(--gdex-blue); }
 .gdex-pagination__arrow--disabled { color: #d0d8e4; cursor: default; pointer-events: none; }
