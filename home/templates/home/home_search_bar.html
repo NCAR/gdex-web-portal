@@ -42,24 +42,17 @@
     <div class="container-lg">
         <p class="gdex-search-chips__label" id="gdex-search-chips-label">Explore specialized datasets</p>
         <div class="d-flex flex-wrap gap-3 justify-content-center" role="group" aria-labelledby="gdex-search-chips-label">
-            <a href="{% url 'dataset_search' index='dataset-search' %}?q=&filter-match-any.tags=AI%20Ready" class="gdex-chip">
+            {% for suggestion in page.search_suggestions.all %}
+            <a href="{{ suggestion.search_term_url }}" class="gdex-chip">
                 <div class="gdex-chip__icon-zone">
-                    <i class="fas fa-robot" aria-hidden="true"></i>
+                    <i class="{{ suggestion.icon }}" aria-hidden="true"></i>
                 </div>
                 <div class="gdex-chip__text-zone">
-                    <strong>AI-ready datasets</strong>
-                    <small class="d-block">Datasets prepared for AI/ML Workflows</small>
+                    <strong>{{ suggestion.search_term }}</strong>
+                    <small class="d-block">{{ suggestion.description }}</small>
                 </div>
             </a>
-            <a href="{% url 'dataset_search' index='dataset-search' %}?q=&filter-match-any.format=Zarr" class="gdex-chip">
-                <div class="gdex-chip__icon-zone">
-                    <i class="fas fa-layer-group" aria-hidden="true"></i>
-                </div>
-                <div class="gdex-chip__text-zone">
-                    <strong>Zarr datasets</strong>
-                    <small class="d-block">Analysis-ready, Cloud-optimized data</small>
-                </div>
-            </a>
+            {% endfor %}
         </div>
     </div>
 </div>
