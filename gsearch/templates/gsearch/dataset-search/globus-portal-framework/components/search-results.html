@@ -64,7 +64,7 @@
       <div class="gdex-dataset-result__tags">
         {% for item in result.dataset_tags %}
             <a href="{% url 'dataset_search' index='dataset-search' %}?q=&{{ item.search_filter_query_key }}={{ item.value }}" class="text-decoration-none">
-                <span class="badge gsearch-badge rounded">{{ item.value }}</span>
+                <span class="badge rounded">{{ item.value }}</span>
             </a>
         {% endfor %}
       </div>

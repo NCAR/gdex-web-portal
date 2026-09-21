@@ -788,8 +788,8 @@
     font-weight: 500;
 }
 .gdex-dataset-result__tags .badge:hover {
-    background: var(--gdex-border-input);
-    color: var(--gdex-space);
+    background: var(--gdex-blue);
+    color: var(--gdex-light-gray);
 }
 a.gdex-btn-access,
 a.gdex-btn-access:link,
