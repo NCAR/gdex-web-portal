@@ -108,6 +108,35 @@ def _has_hpc_account(self):
         return False
 
 
+def _get_hpc_username(self):
+    """Returns this user's SAM/HPC username, or None if it can't be
+    determined. For a ucar.edu email it's the local part of the address;
+    otherwise it's looked up in SAM by email (cached for
+    SAM_HPC_ACCOUNT_CACHE_TTL seconds). Does not check that the account
+    is active -- see has_hpc_account for that.
+    """
+    email = self.email
+    if not email:
+        return None
+    if _is_ucar_email(email):
+        return _ucar_username_from_email(email)
+
+    cache_key = f'sam_hpc_username:{email.lower()}'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached or None
+
+    try:
+        username = _find_sam_username(email)
+    except (requests.RequestException, ValueError):
+        logger.warning("SAM username lookup failed for %s", email, exc_info=True)
+        cache.set(cache_key, '', SAM_HPC_ACCOUNT_ERROR_CACHE_TTL)
+        return None
+    # '' is cached for "no match" since cache.get() can't tell None from a miss.
+    cache.set(cache_key, username or '', SAM_HPC_ACCOUNT_CACHE_TTL)
+    return username
+
+
 def _get_ucar_username(self):
     """Returns the local part of a ucar.edu email address, e.g.
     'jdoe' for 'jdoe@ucar.edu'. Returns None if the user's email
@@ -121,4 +150,5 @@ def _get_ucar_username(self):
 # methods to. Attaching a property/method here is the standard way to
 # extend it without a custom user model / migration.
 User.add_to_class('has_hpc_account', property(_has_hpc_account))
+User.add_to_class('hpc_username', property(_get_hpc_username))
 User.add_to_class('get_ucar_username', _get_ucar_username)

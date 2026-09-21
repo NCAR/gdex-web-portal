@@ -13,7 +13,34 @@
     <div class="col-12">
 
         {% if not current_subpath %}
-        <h2 class="mb-3">Exchange Space <small class="text-muted fw-normal fs-6">Community space for sharing data</small></h2>
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <h2 class="mb-0">Exchange Space <small class="text-muted fw-normal fs-6">Community space for sharing data</small></h2>
+            {% if new_project_state == 'enabled' %}
+                <button id="exchange-new-project-btn" type="button" class="btn btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#exchange-new-project-modal">
+                    <i class="fas fa-plus me-1"></i>Create New Project
+                </button>
+            {% else %}
+                {# Disabled buttons don't fire tooltip events, so the tooltip lives on a wrapper #}
+                <span class="d-inline-block" tabindex="0"
+                      data-bs-toggle="tooltip" data-bs-placement="bottom"
+                      title="{% if new_project_state == 'needs_login' %}Sign in to create a new project{% else %}An NCAR/UCAR HPC account is required to create a new project{% endif %}">
+                    <button id="exchange-new-project-btn" type="button" class="btn btn-primary"
+                            disabled style="pointer-events: none;">
+                        <i class="fas fa-plus me-1"></i>Create New Project
+                    </button>
+                </span>
+            {% endif %}
+        </div>
+        {% if new_project_state == 'needs_login' %}
+            <p class="text-muted small text-end mb-1">
+                <a href="/accounts/login/?next={{ request.path }}">Sign in</a> to create a new project.
+            </p>
+        {% elif new_project_state == 'needs_hpc' %}
+            <p class="text-muted small text-end mb-1">
+                Creating a project requires an HPC account associated with your email address.
+            </p>
+        {% endif %}
         <hr class="my-2">
         {% endif %}
 
@@ -68,5 +95,54 @@
 
     </div>
 </div>
+{% if new_project_state == 'enabled' %}
+<div class="modal fade" id="exchange-new-project-modal" tabindex="-1"
+     aria-labelledby="exchange-new-project-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exchange-new-project-title">Create New Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="exchange-new-project-form" onsubmit="return false;">
+                <div class="modal-body">
+                    <p class="mb-3">
+                        This project will be created for HPC user:
+                        {% if hpc_username %}
+                            <strong>{{ hpc_username }}</strong>
+                        {% else %}
+                            <strong class="text-danger">unknown</strong>
+                        {% endif %}
+                    </p>
+                    <div class="mb-3">
+                        <label for="exchange-project-name" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="exchange-project-name"
+                               name="project_name" maxlength="74" required autocomplete="off">
+                        <div class="form-text">Fewer than 75 characters.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exchange-project-full-title" class="form-label">
+                            Full Title <span class="text-muted">(optional)</span>
+                        </label>
+                        <input type="text" class="form-control" id="exchange-project-full-title"
+                               name="full_title" autocomplete="off">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exchange-project-abstract" class="form-label">
+                            Abstract <span class="text-muted">(optional)</span>
+                        </label>
+                        <textarea class="form-control" id="exchange-project-abstract"
+                                  name="abstract" rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="exchange-create-project-btn" class="btn btn-primary">Create Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 <script src="{% static 'exchange/js/exchange.js' %}"></script>
 {% endblock %}

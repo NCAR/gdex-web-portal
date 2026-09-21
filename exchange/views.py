@@ -143,7 +143,23 @@ def filelist(request, subpath=''):
         '&origin_path=' + quote(exchange_path, safe='')
     )
 
+    # Creating a project requires a signed-in user with an HPC account.
+    # Only look this up on the root page, where the button is shown, to
+    # avoid a SAM call on every directory listing.
+    new_project_state = None
+    hpc_username = None
+    if not subpath:
+        if not request.user.is_authenticated:
+            new_project_state = 'needs_login'
+        elif not request.user.has_hpc_account:
+            new_project_state = 'needs_hpc'
+        else:
+            new_project_state = 'enabled'
+            hpc_username = request.user.hpc_username
+
     return render(request, 'exchange/filelist.html', {
+        'new_project_state': new_project_state,
+        'hpc_username': hpc_username,
         'entries': entries,
         'current_subpath': subpath,
         'readme_title': readme_title,
