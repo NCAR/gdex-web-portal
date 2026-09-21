@@ -196,7 +196,7 @@ def dataset_tags(result):
             out.append({
                 "field_name": field_name,
                 "value": value,
-                "search_filter_query_key": f"filter-match-all.{field_name}",
+                "search_filter_query_key": f"filter-match-any.{field_name}",
             })
 
     return out
