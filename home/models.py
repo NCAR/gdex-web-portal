@@ -259,14 +259,16 @@ class AlertMessage(models.Model):
 class HomePageSearchSuggestion(Orderable):
     """ Search suggestions for the home page search bar """
     page = ParentalKey('HomePage', related_name='search_suggestions', on_delete=models.CASCADE)
-    search_term = models.CharField(max_length=25, verbose_name='Search Term', help_text='Search term displayed under the home page search bar as a search suggestion badge.  For example, "AI Ready Datasets" or "Zarr Format Datasets".')
-    search_term_url = models.CharField(max_length=255, verbose_name='Search Term URL', help_text='Search term URL specified as the GDEX Search URL to link to when the search term is clicked.  This can be a relative URL or absolute URL. For example, a relative URL could be /gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready and an absolute URL could be https://gdex.ucar.edu/gsearch/dataset-search/?q=&filter-match-all.tags=AI%20Ready to link to a search for AI-Ready datasets.')
-    description = models.CharField(max_length=100, blank=True, default="", verbose_name='Search Term Description', help_text='Optional short description of the search term to be displayed under the search term badge.  For example, "Datasets prepared for AI/ML applications" or "Cloud-optimized array data".')
+    search_term = models.CharField(max_length=25, verbose_name='Search Term', help_text='Search term displayed under the home page search bar as a search suggestion chip.  For example, "AI Ready Datasets" or "Zarr Format Datasets".')
+    search_term_url = models.CharField(max_length=255, verbose_name='Search Term URL', help_text='Search term URL specified as the GDEX Search URL to link to when the search term is clicked.  This can be a relative URL or absolute URL. For example, a relative URL could be /gsearch/dataset-search/?q=&filter-match-any.tags=AI%20Ready and an absolute URL could be https://gdex.ucar.edu/gsearch/dataset-search/?q=&filter-match-any.tags=AI%20Ready to link to a search for AI-Ready datasets.')
+    description = models.CharField(max_length=100, blank=True, default="", verbose_name='Search Term Description', help_text='Optional short description of the search term to be displayed in the search suggestion chip.  For example, "Datasets prepared for AI/ML applications" or "Cloud-optimized array data".')
+    icon = models.CharField(max_length=50, blank=True, default="", verbose_name='Icon', help_text='Icon name class from the fontawesome icon set to be displayed in the search suggestion chip.')
 
     panels = [
         FieldPanel('search_term'),
         FieldPanel('search_term_url'),
         FieldPanel('description'),
+        FieldPanel('icon'),
     ]
 
 class FeaturedCard(Orderable):
