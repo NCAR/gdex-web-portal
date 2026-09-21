@@ -773,6 +773,9 @@
     margin-left: auto;
 }
 .gdex-dataset-result__tags {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gdex-space);
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
