@@ -675,7 +675,7 @@
 .gdex-dataset-result__doi {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #000000;
+    color: var(--gdex-space);
     background-color: var(--gdex-bg-meta);
     border: 1px solid #d8d6d2;
     border-radius: 8px;
@@ -781,12 +781,13 @@
 .gdex-dataset-result__tags .badge {
     background: var(--gdex-light-gray);
     color: var(--gdex-space);
+    border: 1px solid var(--gdex-border-input);
     border-radius: 4px;
     padding: 0.2rem 0.4rem;
     font-size: 0.85rem;
     font-weight: 500;
 }
-.gdex-dataset-result__tags:hover .badge {
+.gdex-dataset-result__tags .badge:hover {
     background: var(--gdex-border-input);
     color: var(--gdex-space);
 }
