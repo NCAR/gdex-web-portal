@@ -50,11 +50,13 @@
                 } else {
                     var img = placeholderImgs[i % placeholderImgs.length];
                 }
+                var circleClass = 'gdex-dataset-card__circle' +
+                    (ds.dslogo === 'default_200_200.png' ? ' gdex-dataset-card__circle--no-border' : '');
                 var slide = document.createElement('div');
                 slide.className = 'swiper-slide';
                 slide.innerHTML =
                     '<a href="/datasets/' + ds.dataset + '/" class="gdex-dataset-card">' +
-                        '<div class="gdex-dataset-card__circle">' +
+                        '<div class="' + circleClass + '">' +
                             '<img src="' + img + '" alt="' + ds.OName + '">' +
                         '</div>' +
                         '<div class="gdex-dataset-card__body">' +
