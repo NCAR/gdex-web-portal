@@ -7,7 +7,7 @@ from . import utils
 urlpatterns = [
     re_path(r"^(d[0-9]{6})/$", views.description, name="dataset_description"),
     re_path(r"^(d[0-9]{6})/bookmark/$", utils.bookmark, name="dataset_bookmark"),
-    re_path(r"^(d[0-9]{6})/citation/", include("dataset_citation.urls"), name="dataset_citation"),
+    re_path(r"^(d[0-9]{6})/citation/", include("dataset_citation.urls")),
     re_path(r"^(d[0-9]{6})/dataaccess/$", views.build_matrix, name="dataset_dataaccess"),
     re_path(r"^(d[0-9]{6})/documentation/$", views.get_documentation_table, name="dataset_documentation"),
     re_path(r"^(d[0-9]{6})/listopt/([^/]+)/$", views.listopt, name="dataset_listopt"),
