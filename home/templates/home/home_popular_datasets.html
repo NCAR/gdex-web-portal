@@ -53,7 +53,7 @@
                 var slide = document.createElement('div');
                 slide.className = 'swiper-slide';
                 slide.innerHTML =
-                    '<a href="{% url \'dataset_description\' dsid=ds.dataset %}" class="gdex-dataset-card">' +
+                    '<a href="/datasets/' + ds.dataset + '/" class="gdex-dataset-card">' +
                         '<div class="gdex-dataset-card__circle">' +
                             '<img src="' + img + '" alt="' + ds.OName + '">' +
                         '</div>' +
