@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 import re
 import requests
 import json
+from datasets.views import get_dataset_description_context
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -1748,11 +1749,20 @@ def get_top_datasets(top=15):
     rankings_file = '/data/local/gdexweb/media/metrics/rankings/rankingsYear.json'
     try:
         rankings = json.load(open(rankings_file))
-        return rankings[:top]
-
     except FileNotFoundError as e:
         print(e)
         return 'Unknown'
+
+    top_datasets = []
+    for i, ds in enumerate(rankings[:top]):
+        ds_context = get_dataset_description_context(ds['dataset'])
+        dslogo = ds_context.get('dslogo', None)
+        if not dslogo:
+            dslogo = None
+        rankings[i]['dslogo'] = dslogo
+        top_datasets.append(rankings[i])
+
+    return top_datasets
 
 def get_AI_datasets(limit=50):
     con,cur = init_connection(config=get_WGrML_config())
