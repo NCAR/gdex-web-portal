@@ -46,14 +46,14 @@
             var wrapper = document.getElementById('gdex-popular-datasets-wrapper');
             data.top_datasets.forEach(function (ds, i) {
                 if (ds.dslogo) {
-                    img = ds.dslogo;
+                    img = "/images/ds_logos/" + ds.dslogo;
                 } else {
                     var img = placeholderImgs[i % placeholderImgs.length];
                 }
                 var slide = document.createElement('div');
                 slide.className = 'swiper-slide';
                 slide.innerHTML =
-                    '<a href="/datasets/' + ds.dataset + '" class="gdex-dataset-card">' +
+                    '<a href="{% url \'dataset_description\' dsid=ds.dataset %}" class="gdex-dataset-card">' +
                         '<div class="gdex-dataset-card__circle">' +
                             '<img src="' + img + '" alt="' + ds.OName + '">' +
                         '</div>' +
