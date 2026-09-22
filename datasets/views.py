@@ -70,7 +70,7 @@ def get_dataset_logos_bulk(dsids):
     normalized = {dsid: ng_gdex_id(dsid) for dsid in dsids}
     qs = Page.objects.type(DatasetDescriptionPage).filter(
                            dsid__in=normalized.values()).live().specific()
-    logo_by_dsid = {page.dsid: page.dslogo for page in qs}
+    logo_by_dsid = {page.dsid: (page.dslogo or None) for page in qs}
 
     return {dsid: logo_by_dsid.get(norm) for dsid, norm in normalized.items()}
 
