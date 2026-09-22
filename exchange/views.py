@@ -3,9 +3,18 @@ import re
 from datetime import datetime
 from urllib.parse import quote, urlparse
 
+import bleach
+import markdown
 import pelicanfs
 from django.conf import settings
 from django.shortcuts import render
+from django.utils.safestring import mark_safe
+
+_README_ALLOWED_TAGS = [
+    'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'code', 'pre',
+    'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr',
+]
+_README_ALLOWED_ATTRS = {'a': ['href', 'title', 'rel']}
 
 
 def _format_size(size_bytes):
@@ -40,6 +49,12 @@ def _parse_readme(content):
 
     description = '\n'.join(desc_lines).strip() or None
     return title, description
+
+
+def _render_readme_markdown(text):
+    """Convert README markdown to sanitized HTML safe for template rendering."""
+    html = markdown.markdown(text, extensions=['fenced_code', 'tables'])
+    return mark_safe(bleach.clean(html, tags=_README_ALLOWED_TAGS, attributes=_README_ALLOWED_ATTRS))
 
 
 def _get_pelican_fs():
@@ -98,7 +113,10 @@ def _read_dataset_readme(pelfs, base_path, subpath):
     readme_path = base_path.rstrip('/') + '/' + subpath + '/README.md'
     try:
         content = pelfs.cat(readme_path).decode('utf-8')
-        return _parse_readme(content)
+        title, description = _parse_readme(content)
+        if description:
+            description = _render_readme_markdown(description)
+        return title, description
     except Exception:
         return None, None
 
