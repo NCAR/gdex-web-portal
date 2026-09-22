@@ -65,6 +65,16 @@ def get_dataset_description_context(dsid):
     return None
 
 
+def get_dataset_logos_bulk(dsids):
+    """ Return {dsid: dslogo_or_None} for a batch of dataset ids, in a single DB query. """
+    normalized = {dsid: ng_gdex_id(dsid) for dsid in dsids}
+    qs = Page.objects.type(DatasetDescriptionPage).filter(
+                           dsid__in=normalized.values()).live().specific()
+    logo_by_dsid = {page.dsid: page.dslogo for page in qs}
+
+    return {dsid: logo_by_dsid.get(norm) for dsid, norm in normalized.items()}
+
+
 def get_result_list(config, query):
     conn = psycopg2.connect(**config)
     cursor = conn.cursor()

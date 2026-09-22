@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import re
 import requests
 import json
-from datasets.views import get_dataset_description_context
+from datasets.views import get_dataset_logos_bulk
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -1753,13 +1753,12 @@ def get_top_datasets(top=15):
         print(e)
         return 'Unknown'
 
+    top_rankings = rankings[:top]
+    logos = get_dataset_logos_bulk([ds['dataset'] for ds in top_rankings])
+
     top_datasets = []
-    for i, ds in enumerate(rankings[:top]):
-        ds_context = get_dataset_description_context(ds['dataset'])
-        dslogo = ds_context.get('dslogo', None)
-        if not dslogo:
-            dslogo = None
-        rankings[i]['dslogo'] = dslogo
+    for i, ds in enumerate(top_rankings):
+        rankings[i]['dslogo'] = logos.get(ds['dataset'])
         top_datasets.append(rankings[i])
 
     return top_datasets
