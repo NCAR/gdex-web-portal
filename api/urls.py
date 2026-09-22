@@ -95,28 +95,6 @@ _urlpatterns = [
     # "globus" tag
     path(r'globus_download/<rindex>/<endpoint>', views.globus_download ),
 
-    # "metrics" tag
-    path(r'metrics/ai_datasets/', views.ai_datasets, name='ai_datasets'),
-    path(r'metrics/gdex_volume/', views.gdex_volume, name='gdex_volume'),
-    path(r'metrics/dataset/<dsid>/users_month/', views.dataset_users_month, name='dataset_users_month'),
-    path(r'metrics/dataset/<dsid>/users_year/', views.dataset_users_year, name='dataset_users_year'),
-    path(r'metrics/dataset/<dsid>/volume_month/', views.dataset_volume_month, name='dataset_volume_month'),
-    path(r'metrics/dataset/<dsid>/volume_year/', views.dataset_volume_year, name='dataset_volume_year'),
-    path(r'metrics/top_datasets/', views.top_datasets, name='top_datasets'),
-    path(r'metrics/total_datasets/', views.total_datasets, name='total_datasets'),
-    path(r'metrics/total_citations/', views.total_citations, name='total_citations'),
-    path(r'metrics/total_requests/', views.total_requests, name='total_requests'),
-    path(r'metrics/unique_users/', views.unique_users, name='unique_users'),
-    path(r'metrics/volume_downloaded/', views.volume_downloaded, name='volume_downloaded'),
-
-    # Notebook script
-    path(r'generate_notebook', views.generate_notebook),
-
-    # Jira Webhook 
-    path(r'jira-event/<ticket_id>', views.JiraEventReceiver.as_view(), name = 'jira-event-receiver'),
-
-    path(r'clear_cache/<dsid>/', views.clear_cache),
-
     #path(r'accept/', views.accept),
     #path(r'reject/', views.reject)
 ]

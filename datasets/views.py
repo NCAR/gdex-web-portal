@@ -65,6 +65,30 @@ def get_dataset_description_context(dsid):
     return None
 
 
+def get_dataset_fields_bulk(dsids):
+    """ Return {dsid: {'dslogo': ..., 'summary': ...}} for a batch of dataset ids, in a single DB query. """
+    normalized = {dsid: ng_gdex_id(dsid) for dsid in dsids}
+    qs = Page.objects.type(DatasetDescriptionPage).filter(
+                           slug__in=normalized.values()).live().specific()
+
+    def clean_summary(abstract):
+        if not abstract:
+            return ''
+        text = re.sub(r'<[^>]+>', '', abstract)
+        return re.sub(r'\s+', ' ', text).strip()
+
+    fields_by_dsid = {
+        page.dsid: {
+            'dslogo': page.dslogo or None,
+            'summary': clean_summary(page.abstract),
+        }
+        for page in qs
+    }
+
+    empty = {'dslogo': None, 'summary': ''}
+    return {dsid: fields_by_dsid.get(norm, empty) for dsid, norm in normalized.items()}
+
+
 def get_result_list(config, query):
     conn = psycopg2.connect(**config)
     cursor = conn.cursor()

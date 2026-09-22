@@ -1743,16 +1743,27 @@ def get_total_requests(since=None):
     close_connection(con,cur)
     return response[0]
 
-
 def get_top_datasets(top=15):
+    from datasets.views import get_dataset_fields_bulk
+
     rankings_file = '/data/local/gdexweb/media/metrics/rankings/rankingsYear.json'
     try:
         rankings = json.load(open(rankings_file))
-        return rankings[:top]
-
     except FileNotFoundError as e:
         print(e)
         return 'Unknown'
+
+    top_rankings = rankings[:top]
+    fields = get_dataset_fields_bulk([ds['dataset'] for ds in top_rankings])
+
+    top_datasets = []
+    for i, ds in enumerate(top_rankings):
+        ds_fields = fields.get(ds['dataset'], {})
+        rankings[i]['dslogo'] = ds_fields.get('dslogo')
+        rankings[i]['summary'] = ds_fields.get('summary', '')
+        top_datasets.append(rankings[i])
+
+    return top_datasets
 
 def get_AI_datasets(limit=50):
     con,cur = init_connection(config=get_WGrML_config())
