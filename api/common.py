@@ -1744,7 +1744,6 @@ def get_total_requests(since=None):
     close_connection(con,cur)
     return response[0]
 
-
 def get_top_datasets(top=15):
     rankings_file = '/data/local/gdexweb/media/metrics/rankings/rankingsYear.json'
     try:
