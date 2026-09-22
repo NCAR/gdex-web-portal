@@ -11,7 +11,6 @@ from datetime import datetime, timedelta
 import re
 import requests
 import json
-from datasets.views import get_dataset_logos_bulk
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -1745,6 +1744,8 @@ def get_total_requests(since=None):
     return response[0]
 
 def get_top_datasets(top=15):
+    from datasets.views import get_dataset_logos_bulk
+
     rankings_file = '/data/local/gdexweb/media/metrics/rankings/rankingsYear.json'
     try:
         rankings = json.load(open(rankings_file))
