@@ -1744,7 +1744,7 @@ def get_total_requests(since=None):
     return response[0]
 
 def get_top_datasets(top=15):
-    from datasets.views import get_dataset_logos_bulk
+    from datasets.views import get_dataset_fields_bulk
 
     rankings_file = '/data/local/gdexweb/media/metrics/rankings/rankingsYear.json'
     try:
@@ -1754,11 +1754,13 @@ def get_top_datasets(top=15):
         return 'Unknown'
 
     top_rankings = rankings[:top]
-    logos = get_dataset_logos_bulk([ds['dataset'] for ds in top_rankings])
+    fields = get_dataset_fields_bulk([ds['dataset'] for ds in top_rankings])
 
     top_datasets = []
     for i, ds in enumerate(top_rankings):
-        rankings[i]['dslogo'] = logos.get(ds['dataset'])
+        ds_fields = fields.get(ds['dataset'], {})
+        rankings[i]['dslogo'] = ds_fields.get('dslogo')
+        rankings[i]['summary'] = ds_fields.get('summary', '')
         top_datasets.append(rankings[i])
 
     return top_datasets
