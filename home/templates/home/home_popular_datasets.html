@@ -28,9 +28,8 @@
 (function () {
     var default_img = '/images/ds_logos/default_200_200.png';
     var placeholderImgs = [
-    //    '/media/original_images/hero_earth.png',
-    //    '/media/original_images/image_X2hGX6H.png',
-        default_img
+        '/media/original_images/hero_earth.png',
+        '/media/original_images/image_X2hGX6H.png'
     ];
     var apiUrl = '{% url "top_datasets" %}';
 
@@ -51,7 +50,8 @@
                 if (ds.dslogo) {
                     img = '/images/ds_logos/' + ds.dslogo;
                 } else {
-                    img = placeholderImgs[i % placeholderImgs.length];
+                  //  img = placeholderImgs[i % placeholderImgs.length];
+                    img = default_img;
                 }
                 var circleClass = 'gdex-dataset-card__circle' +
                     (img === default_img ? ' gdex-dataset-card__circle--no-border' : '');
