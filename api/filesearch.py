@@ -346,6 +346,12 @@ def parse_sensor_filters_request(request, dsid, cursor):
                     filters['platforms'].append(
                             {'name': e[1], 'code': str(e[0])})
 
+        if 'platforms' in restrictions:
+            restrictions['platforms'].sort(key=lambda x: x['code'])
+
+        if 'platforms' in filters:
+            filters['platforms'].sort(key=lambda x: x['code'])
+
         return (restrictions, filters, "", 200)
     except Exception as err:
         print("FILESEARCH API SERVER ERROR: parse_sensor_filters_request(): "
