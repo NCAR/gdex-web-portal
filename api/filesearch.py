@@ -77,6 +77,10 @@ def datatypes(dsid):
             conn.close()
 
 
+def parse_cyclone_fix_filters_request(request, dsid, cursor):
+    return ({}, {}, "Not yet implemented.", 500)
+
+
 def parse_grid_filters_request(request, dsid, cursor):
     try:
         if 'parameters' in request.GET and len(request.GET['parameters']) > 0:
@@ -284,7 +288,7 @@ def parse_grid_filters_request(request, dsid, cursor):
 
         return (restrictions, filters, "", 200)
     except Exception as err:
-        print("filesearch API SERVER ERROR: parse_grid_filters_request(): "
+        print("FILESEARCH API SERVER ERROR: parse_grid_filters_request(): "
               f"'{err}'")
         return ({}, {}, "Server error.", 500)
 
@@ -342,9 +346,26 @@ def parse_sensor_filters_request(request, dsid, cursor):
 
         return (restrictions, filters, "", 200)
     except Exception as err:
-        print("filesearch API SERVER ERROR: parse_sensor_filters_request(): "
+        print("FILESEARCH API SERVER ERROR: parse_sensor_filters_request(): "
               f"'{err}'")
         return ({}, {}, "Server error.", 500)
+
+
+def parse_filters_request(request, dsid, datatype, cursor):
+    if datatype == "cyclone_fix":
+        return parse_cyclone_fix_filters_request(request, dsid, cursor)
+
+    if datatype == "grid":
+        return parse_grid_filters_request(request, dsid, cursor)
+
+    if datatype == "sensor":
+        return parse_sensor_filters_request(request, dsid, cursor)
+
+    err_msg = ("API file discovery is not available for data type "
+               f"'{datatype}'. See the "
+               f"'/api/datasets/{dsid}/filesearch/datatypes/' endpoint for "
+               "the valid data types for this dataset.")
+    return ({}, {}, err_msg, 400)
 
 
 def filters(request, dsid, datatype):
@@ -358,31 +379,16 @@ def filters(request, dsid, datatype):
                     status=400)
 
         response = {'dsid': dsid}
-        if datatype == "cyclone_fix":
-            return JsonResponse({'error_message': "Not yet implemented."},
-                                status=500)
+        restrictions, filters, err, status = (
+                parse_filters_request(request, dsid, datatype, cursor))
+        if len(err) > 0:
+            return JsonResponse({'error_message': err}, status=status)
 
-        if datatype == "grid":
-            restrictions, filters, err, status = (
-                    parse_grid_filters_request(request, dsid, cursor))
-            if len(err) > 0:
-                return JsonResponse({'error_message': err}, status=status)
+        if len(restrictions) > 0:
+            response['restrictions'] = restrictions
 
-            if len(restrictions) > 0:
-                response['restrictions'] = restrictions
-
-            response['filters'] = filters
-            return JsonResponse(response)
-
-        if datatype == "sensor":
-            return JsonResponse({'error_message': "Not yet implemented."},
-                                status=500)
-
-        msg = ("API file discovery is not available for data type "
-               f"'{datatype}'. See the "
-               f"'/api/datasets/{dsid}/filesearch/datatypes/' endpoint for "
-               "the valid data types for this dataset.")
-        return JsonResponse({'error_message': msg}, status=400)
+        response['filters'] = filters
+        return JsonResponse(response)
     except Exception as err:
         # log the error in the Apache error log
         print(f"FILESEARCH API SERVER ERROR: filters(dsid={dsid}, "
@@ -623,7 +629,7 @@ def serve_result_set(request, dsid, result_id, page_num):
 
         return JsonResponse(files_response, status=200)
     except Exception as err:
-        print(f"filesearch API SERVER ERROR: serve_result_set(): '{err}'")
+        print(f"FILESEARCH API SERVER ERROR: serve_result_set(): '{err}'")
         return JsonResponse({'error_message': "Server error."}, status=500)
     finally:
         if 'conn' in locals():
