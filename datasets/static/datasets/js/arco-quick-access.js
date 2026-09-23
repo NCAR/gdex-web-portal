@@ -81,10 +81,10 @@ $(document).ready(function () {
 
     $(".copy-btn").click(function () {
         var code = $('#quickstart').text();
-        const btn = $(this);
+        const popup = $('.copy-popup');
         navigator.clipboard.writeText(code).then(() => {
-            btn.addClass('copy-btn--copied').html('<i class="fa-solid fa-check pe-1"></i>Copied!');
-            setTimeout(() => btn.removeClass('copy-btn--copied').html('<i class="fa-solid fa-copy pe-1"></i>Copy'), 1500);
+            popup.addClass('show');
+            setTimeout(() => popup.removeClass('show'), 1500);
         });
     });
 
