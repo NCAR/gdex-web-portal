@@ -284,7 +284,65 @@ def parse_grid_filters_request(request, dsid, cursor):
 
         return (restrictions, filters, "", 200)
     except Exception as err:
-        print("DSFILES API SERVER ERROR: parse_grid_filters_request(): "
+        print("filesearch API SERVER ERROR: parse_grid_filters_request(): "
+              f"'{err}'")
+        return ({}, {}, "Server error.", 500)
+
+
+def parse_sensor_filters_request(request, dsid, cursor):
+    try:
+        if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
+            request_platforms = (
+                    [part for e in request.GET.getlist('platforms') for part in
+                     e.split(",")])
+
+        restrictions = {'valid_datetime_min': 999999999999,
+                        'valid_datetime_max': 0,
+                        'platforms': [], }
+        filters = copy.deepcopy(restrictions)
+        query = ("select distinct d.platform_type_code, p.platform_type from "
+                 f'"WObML".{dsid}_data_types_list as d left join "WObML".'
+                 "platform_types as p on p.code = d.platform_type_code")
+        qparams = []
+        wc = []
+        if 'request_platforms' in locals():
+            wc.append("d.platform_type_code in %s")
+            qparams.append(tuple([int(e) for e in request_platforms]))
+            del filters['platforms']
+        else:
+            del restrictions['platforms']
+
+        query += f" where {' and '.join(wc)}"
+        cursor.execute(query, tuple(qparams))
+        res = cursor.fetchall()
+        if len(res) == 0:
+            if len(request.GET) > 0:
+                err = ("No filters were identified. Perhaps an invalid query "
+                       "parameter was specified. See the "
+                       f"'/api/datasets/{dsid}/filesearch/filters/sensor' "
+                       "endpoint for valid parameter values for this dataset.")
+                return ({}, {}, err, 400)
+
+            err = ("API file discovery is not available for data type "
+                   "'sensor'. See the "
+                   f"'/api/datasets/{dsid}/filesearch/datatypes' endpoint "
+                   "for the valid data types for this dataset.")
+            return ({}, {}, err, 400)
+
+        plat_set = set()
+        for e in res:
+            if e[0] not in plat_set:
+                plat_set.add(e[0])
+                if 'request_platforms' in locals():
+                    restrictions['platforms'].append(
+                            {'name': e[1], 'code': str(e[0])})
+                else:
+                    filters['platforms'].append(
+                            {'name': e[1], 'code': str(e[0])})
+
+        return (restrictions, filters, "", 200)
+    except Exception as err:
+        print("filesearch API SERVER ERROR: parse_sensor_filters_request(): "
               f"'{err}'")
         return ({}, {}, "Server error.", 500)
 
@@ -565,7 +623,7 @@ def serve_result_set(request, dsid, result_id, page_num):
 
         return JsonResponse(files_response, status=200)
     except Exception as err:
-        print(f"DSFILES API SERVER ERROR: serve_result_set(): '{err}'")
+        print(f"filesearch API SERVER ERROR: serve_result_set(): '{err}'")
         return JsonResponse({'error_message': "Server error."}, status=500)
     finally:
         if 'conn' in locals():
