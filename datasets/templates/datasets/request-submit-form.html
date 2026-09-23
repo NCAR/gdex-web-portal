@@ -7,7 +7,7 @@
     <p class="mb-0">This form allows DECS staff to manually enter and submit subset data requests for themselves or on behalf of users. Fields marked with an asterisk (*) are required.</p>
 </div>
 <div id="request-form" class="component webform yellow-orange-border p-2 mb-4">
-    <form method="post" class="row g-3" action="/datasets/{{ page.dsid }}/request/">
+    <form method="post" class="row g-3" action="{% url 'submit_web_data_request' page.dsid %}">
         {% csrf_token %}
         {% for field in form.visible_fields %}
             <div class="form-field">
