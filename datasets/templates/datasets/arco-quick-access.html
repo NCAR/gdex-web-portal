@@ -4,25 +4,24 @@
 <script>hljs.highlightAll();</script>
 <link rel="stylesheet" href="{% static 'datasets/css/arco-quick-access.css' %}">
 <div class="row gx-0 mb-2 mb-md-1">
-  <div class="col-12 col-md-2 dataset-label">
+  <div class="col-12 col-md-2 dataset-label" id="quick-access-label">
     Quick Access:
   </div>
-  <div class="col-12 col-md-10">
+  <div class="col-12 col-md-10" role="group" aria-labelledby="quick-access-label">
     <div>
-      <pre class="position-relative"><i class="fa-solid fa-copy copy-btn" title="Copy to clipboard"></i><span class="copy-popup">Copied!</span><code id='quickstart'>import xarray
+      <pre class="position-relative"><button type="button" class="copy-btn" aria-label="Copy code to clipboard" title="Copy to clipboard"><i class="fa-solid fa-copy" aria-hidden="true"></i></button><span class="copy-popup" role="status" aria-live="polite"></span><code id='quickstart'>import xarray
 ds = xarray.open_dataset('filename', engine='kerchunk')
 ds[varname]</code></pre>
     </div>
-    <p class="text-muted small mb-1">Search for a variable to get a specific filename in the code block above</p>
+    <p class="text-muted small mb-1" id="arco-search-help">Search for a variable to get a specific filename in the code block above</p>
     <div id='search_container' class='d-flex justify-content-start align-items-center' data-dsid="{{ page.dsid }}">
       <div class='me-3' style='position:relative; width:300px'>
+        <label for="searchBar" class="visually-hidden">Search dataset variables</label>
         <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text"><i class="fa-solid fa-search fa-sm text-muted"></i></span>
-          </div>
-          <input type="text" id="searchBar" class="form-control border-start-0 ps-1" placeholder="Search variables...">
+          <span class="input-group-text"><i class="fa-solid fa-search fa-sm text-muted" aria-hidden="true"></i></span>
+          <input type="text" id="searchBar" class="form-control border-start-0 ps-1" placeholder="Search variables..." autocomplete="off" role="combobox" aria-expanded="false" aria-controls="dropdown" aria-autocomplete="list" aria-describedby="arco-search-help">
         </div>
-        <div id="dropdown"></div>
+        <div id="dropdown" role="listbox" aria-label="Matching variables"></div>
       </div>
       <div class="form-check mb-0">
         <input class="form-check-input" type="checkbox" value="" id="onHPC">

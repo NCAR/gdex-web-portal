@@ -1,8 +1,4 @@
 /* CSS for the Arco Quick Access component */
-.input-group-text {
-    background-color: var(--gdex-blue);
-    color: var(--gdex-white);
-}
 #dropdown {
     position: absolute;
     top: calc(100% + 3px);
@@ -37,12 +33,20 @@
     position: absolute;
     top: 12px;
     right: 12px;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
     color: var(--gdex-blue);
     cursor: pointer;
     font-size: 1.5rem;
 }
 .copy-btn:hover {
     color: var(--gdex-dark-blue);
+}
+.copy-btn:focus-visible {
+    outline: 2px solid var(--gdex-blue);
+    outline-offset: 2px;
 }
 .copy-popup {
     position: absolute;
