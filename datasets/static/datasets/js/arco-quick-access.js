@@ -2,6 +2,18 @@ $(document).ready(function () {
     var dsid = $('#search_container').data('dsid');
     var PAGE_SIZE = 8;
     var _lastCode = null;
+    var $searchInput = $('#searchBar');
+    var $dropdown = $('#dropdown');
+
+    function showDropdown() {
+        $dropdown.show();
+        $searchInput.attr('aria-expanded', 'true');
+    }
+
+    function hideDropdown() {
+        $dropdown.hide();
+        $searchInput.attr('aria-expanded', 'false');
+    }
 
     function showLoadingCode() {
         if (_lastCode !== null) {
@@ -25,11 +37,12 @@ $(document).ready(function () {
 
     function makeOptionDiv(value) {
         return $("<div>")
+            .attr("role", "option")
             .addClass("dropdown_option")
             .text(value)
             .on("click", function () {
-                $("#searchBar").val(value);
-                $("#dropdown").hide();
+                $searchInput.val(value);
+                hideDropdown();
                 $.getJSON('https://' + window.location.hostname + '/api/search_arco_vars/' + dsid + '/' + value, {}, function (data) {
                     update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'));
                 });
@@ -37,29 +50,30 @@ $(document).ready(function () {
     }
 
     function renderOptions(filtered) {
-        $("#dropdown").empty();
+        $dropdown.empty();
         if (filtered.data.length === 0) {
-            $("#dropdown").hide();
+            hideDropdown();
             return;
         }
-        $("#dropdown").show();
+        showDropdown();
         const values = filtered.data.map(function (row) { return row[4]; });
         const visible = values.slice(0, PAGE_SIZE);
         const hidden = values.slice(PAGE_SIZE);
         $.each(visible, function (_, value) {
-            makeOptionDiv(value).appendTo("#dropdown");
+            makeOptionDiv(value).appendTo($dropdown);
         });
         if (hidden.length > 0) {
             $("<div>")
+                .attr("role", "option")
                 .addClass("dropdown_option text-muted")
                 .css("font-style", "italic")
                 .text(hidden.length + " more...")
-                .appendTo("#dropdown")
+                .appendTo($dropdown)
                 .on("click", function (e) {
                     e.stopPropagation();
                     $(this).remove();
                     $.each(hidden, function (_, value) {
-                        makeOptionDiv(value).appendTo("#dropdown");
+                        makeOptionDiv(value).appendTo($dropdown);
                     });
                 });
         }
@@ -83,16 +97,16 @@ $(document).ready(function () {
         var code = $('#quickstart').text();
         const popup = $('.copy-popup');
         navigator.clipboard.writeText(code).then(() => {
-            popup.addClass('show');
-            setTimeout(() => popup.removeClass('show'), 1500);
+            popup.text('Copied!').addClass('show');
+            setTimeout(() => popup.removeClass('show').text(''), 1500);
         });
     });
 
-    const searchInput = document.getElementById('searchBar');
-    searchInput.addEventListener('input', (event) => {
+    $searchInput.on('input', function (event) {
         const query = event.target.value;
 
-        $("#dropdown").html('<div class="dropdown_option text-muted">Loading...</div>').show();
+        $dropdown.html('<div class="dropdown_option text-muted" role="option">Loading...</div>');
+        showDropdown();
         showLoadingCode();
         $.getJSON('https://' + window.location.hostname + '/api/search_arco_vars/' + dsid + '/' + query, {}, function (data) {
             update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'));
@@ -100,19 +114,25 @@ $(document).ready(function () {
         })
             .fail(function () {
                 console.error("Error fetching data");
-                $("#dropdown").hide();
+                hideDropdown();
             });
     });
 
-    $("#searchBar").on("focus", function () {
-        if ($("#dropdown").children().length > 0) {
-            $("#dropdown").show();
+    $searchInput.on('focus', function () {
+        if ($dropdown.children().length > 0) {
+            showDropdown();
+        }
+    });
+
+    $searchInput.on('keydown', function (e) {
+        if (e.key === 'Escape') {
+            hideDropdown();
         }
     });
 
     $(document).on("click", function (e) {
         if (!$(e.target).closest("#search_container").length) {
-            $("#dropdown").hide();
+            hideDropdown();
         }
     });
 });
