@@ -339,12 +339,13 @@ def parse_sensor_filters_request(request, dsid, cursor):
         for e in res:
             if e[0] not in plat_set:
                 plat_set.add(e[0])
+                code = str(e[0])
+                name = e[1].replace("_", " ").title()
                 if 'request_platforms' in locals():
                     restrictions['platforms'].append(
-                            {'name': e[1], 'code': str(e[0])})
+                            {'name': name, 'code': code})
                 else:
-                    filters['platforms'].append(
-                            {'name': e[1], 'code': str(e[0])})
+                    filters['platforms'].append({'name': name, 'code': code})
 
         if 'platforms' in restrictions:
             restrictions['platforms'].sort(key=lambda x: x['code'])
