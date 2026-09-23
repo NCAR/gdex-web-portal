@@ -83,8 +83,8 @@ $(document).ready(function () {
         var code = $('#quickstart').text();
         const btn = $(this);
         navigator.clipboard.writeText(code).then(() => {
-            btn.removeClass('btn-primary').addClass('btn-success').html('<i class="fa-solid fa-check pe-1"></i>Copied!');
-            setTimeout(() => btn.removeClass('btn-success').addClass('btn-primary').html('<i class="fa-solid fa-copy pe-1"></i>Copy'), 1500);
+            btn.addClass('copy-btn--copied').html('<i class="fa-solid fa-check pe-1"></i>Copied!');
+            setTimeout(() => btn.removeClass('copy-btn--copied').html('<i class="fa-solid fa-copy pe-1"></i>Copy'), 1500);
         });
     });
 
