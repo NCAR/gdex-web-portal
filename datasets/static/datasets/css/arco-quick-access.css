@@ -1,4 +1,8 @@
 /* CSS for the Arco Quick Access component */
+.input-group-text {
+    background-color: var(--gdex-blue);
+    color: var(--gdex-white);
+}
 #dropdown {
     position: absolute;
     top: calc(100% + 3px);
