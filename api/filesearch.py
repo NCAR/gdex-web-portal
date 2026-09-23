@@ -316,7 +316,9 @@ def parse_sensor_filters_request(request, dsid, cursor):
         else:
             del restrictions['platforms']
 
-        query += f" where {' and '.join(wc)}"
+        if len(wc) > 0:
+            query += f" where {' and '.join(wc)}"
+
         cursor.execute(query, tuple(qparams))
         res = cursor.fetchall()
         if len(res) == 0:
