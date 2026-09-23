@@ -8,7 +8,7 @@
     Quick Access:
   </div>
   <div class="col-12 col-md-10">
-    <div id='search_container' class='d-flex justify-content-end align-items-center' data-dsid="{{ page.dsid }}">
+    <div id='search_container' class='d-flex justify-content-start align-items-center' data-dsid="{{ page.dsid }}">
       <div class='me-3' style='position:relative; width:300px'>
         <div class="input-group">
           <span class="input-group-text bg-white border-end-0"><i class="fas fa-search fa-sm text-muted"></i></span>
@@ -21,18 +21,11 @@
         <label class="form-check-label" for="onHPC">On NCAR HPC?</label>
       </div>
     </div>
-    <div style='position:relative'>
-      <button class="copy-btn">
-        <i class="fas fa-clipboard"></i>Copy
-      </button>
-      <pre>
-        <code id='quickstart'>
-          # Search for a variable above to get a specific filename
-          import xarray
-          ds = xarray.open_dataset('filename', engine='kerchunk')
-          ds[varname]
-        </code>
-      </pre>
+    <div>
+      <p class="text-muted small mb-1">Search for a variable above to get a specific filename</p>
+      <pre class="position-relative"><button class="copy-btn"><i class="fa-solid fa-copy pe-1"></i>Copy</button><code id='quickstart'>import xarray
+ds = xarray.open_dataset('filename', engine='kerchunk')
+ds[varname]</code></pre>
     </div>
   </div>
 </div>
