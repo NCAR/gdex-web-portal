@@ -41,5 +41,9 @@
 }
 .copy-btn:hover {
     background: var(--gdex-white);
-    color: var(--gdex-text);
+    color: var(--gdex-dark-blue);
+}
+.copy-btn--copied {
+    background: var(--gdex-blue);
+    color: var(--gdex-white);
 }
