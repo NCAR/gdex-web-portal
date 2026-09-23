@@ -29,6 +29,7 @@ $(document).ready(function () {
             .text(value)
             .on("click", function () {
                 $("#searchBar").val(value);
+                $("#dropdown").hide();
                 $.getJSON('https://' + window.location.hostname + '/api/search_arco_vars/' + dsid + '/' + value, {}, function (data) {
                     update_quickstart_code(data.data[0][0], 'kerchunk', data.data[0][1], data.data[0][4], $('#onHPC').prop('checked'));
                 });
