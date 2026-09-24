@@ -18,7 +18,7 @@ urlpatterns = [
     re_path(r"^(d[0-9]{6})/detailed_metadata/$", views.get_detailed_metadata, name="dataset_detailed_metadata"),
     re_path(r"^(d[0-9]{6})/metadata_view/$", views.metadata_view, name="dataset_metadata_view"),
     re_path(r"^(d[0-9]{6})/metadata_view/(\w+ML)/(.*)$", views.markup_view, name="dataset_markup_view"),
-    re_path(r"^(d[0-9]{6})/metadata_product_detail/(\w+ML)/([0-9]+)/([0-9]+)/(.*)$", views.product_detail, name="dataset_product_detail"),
+    re_path(r"^(d[0-9]{6})/metadata_product_detail/(\w+ML)/([0-9]+)/([0-9]+)/(.*)$", views.product_detail, name="metadata_product_detail"),
     re_path(r"^(d[0-9]{6})/metrics/$", views.get_metrics, name="dataset_metrics"),
     re_path(r"^(d[0-9]{6})/example/$", views.example_view, name="dataset_example"),
     re_path(r"^(d[0-9]{6})/facbrowse/", include("facbrowse.urls")),
