@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import hmac
 import hashlib
 import re
+import time
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseBadRequest
@@ -236,6 +237,50 @@ class JiraEventReceiver(APIView):
         ).hexdigest()
         is_match = hmac.compare_digest(computed_hmac, received_signature)
         return is_match
+
+GDEX_SERVICES_RESULT_TTL = 60 * 60  # how long a task result is kept in the cache (seconds)
+
+def gdex_services_cache_key(task_id: str) -> str:
+    return f"gdex-services-task:{task_id}"
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GdexServicesReceiver(APIView):
+    """
+    Internal callback for gdex-services (Celery/PBS). When a task finishes,
+    gdex-services POSTs the result here, e.g.
+        {"task_id": "<uuid>", "status": "SUCCESS", "result": "..."}
+    The result is stored in the cache under the task_id so the portal can
+    pick it up (e.g. an SSE stream or status poll waiting on that task).
+    """
+    renderer_classes = [JSONRenderer] # disable UI rendering, return JSON only
+    http_method_names = ['post'] # allow POST only
+    authentication_classes = [] # no user session; gdex-services is not a logged-in user
+    permission_classes = []
+
+    @exclude_schema
+    def post(self, request, task_id=None):
+        # TODO: add authentication before this leaves test; right now anyone can post here
+        payload = request.body
+        try:
+            data = json.loads(payload)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return Response({"status": "error", "message": "Invalid JSON"}, status=400)
+
+        if not isinstance(data, dict) or data.get("task_id") != task_id:
+            return Response({"status": "error", "message": "task_id mismatch"}, status=400)
+        if "status" not in data:
+            return Response({"status": "error", "message": "Missing status"}, status=400)
+
+        from django.core.cache import cache
+        cache.set(gdex_services_cache_key(task_id), {
+            "task_id": task_id,
+            "status": data["status"],
+            "result": data.get("result"),
+            "received": int(time.time()),
+        }, timeout=GDEX_SERVICES_RESULT_TTL)
+        logger.info(f"Received gdex-services result for task {task_id}: {data['status']}")
+
+        return Response({"status": "ok", "task_id": task_id})
 
 
 def _handle_dataset_response(dsid, data, error_message_template, wrap_key=None, error_detail=None):
