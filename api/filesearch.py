@@ -10,7 +10,7 @@ from django.conf import settings
 from django.http import HttpRequest, JsonResponse, QueryDict
 from django.shortcuts import render
 from facbrowse.grml_query import parse_grml_query
-from facbrowse.utils import service_list
+from facbrowse.utils import cache_file, service_list
 from libpkg.codemaps import decode_level, decode_parameter
 from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
@@ -319,33 +319,56 @@ def parse_sensor_filters_request(request, dsid, cursor):
         if len(wc) > 0:
             query += f" where {' and '.join(wc)}"
 
-        cursor.execute(query, tuple(qparams))
-        res = cursor.fetchall()
-        if len(res) == 0:
-            if len(request.GET) > 0:
-                err = ("No filters were identified. Perhaps an invalid query "
-                       "parameter was specified. See the "
-                       f"'/api/datasets/{dsid}/filesearch/filters/sensor' "
-                       "endpoint for valid parameter values for this dataset.")
+        if len(qparams) > 0:
+            cursor.execute(query, tuple(qparams))
+            res = cursor.fetchall()
+            if len(res) == 0:
+                if len(request.GET) > 0:
+                    err = ("No filters were identified. Perhaps an invalid "
+                           "query parameter was specified. See the "
+                           f"'/api/datasets/{dsid}/filesearch/filters/sensor' "
+                           "endpoint for valid parameter values for this "
+                           "dataset.")
+                    return ({}, {}, err, 400)
+
+                err = ("API file discovery is not available for data type "
+                       "'sensor'. See the "
+                       f"'/api/datasets/{dsid}/filesearch/datatypes' endpoint "
+                       "for the valid data types for this dataset.")
                 return ({}, {}, err, 400)
 
-            err = ("API file discovery is not available for data type "
-                   "'sensor'. See the "
-                   f"'/api/datasets/{dsid}/filesearch/datatypes' endpoint "
-                   "for the valid data types for this dataset.")
-            return ({}, {}, err, 400)
+            plat_set = set()
+            for e in res:
+                if e[0] not in plat_set:
+                    plat_set.add(e[0])
+                    code = str(e[0])
+                    name = e[1].replace("_", " ").title()
+                    if 'request_platforms' in locals():
+                        restrictions['platforms'].append(
+                                {'name': name, 'code': code})
+                    else:
+                        filters['platforms'].append(
+                                {'name': name, 'code': code})
 
-        plat_set = set()
-        for e in res:
-            if e[0] not in plat_set:
-                plat_set.add(e[0])
-                code = str(e[0])
-                name = e[1].replace("_", " ").title()
-                if 'request_platforms' in locals():
-                    restrictions['platforms'].append(
-                            {'name': name, 'code': code})
-                else:
-                    filters['platforms'].append({'name': name, 'code': code})
+        else:
+            cfile = cache_file(dsid, None, "ObML", "weblist")
+            if len(cfile) == 0:
+                err = ("API file discovery is not available for data type "
+                       "'sensor'. See the "
+                       f"'/api/datasets/{dsid}/filesearch/datatypes' endpoint "
+                       "for the valid data types for this dataset.")
+                return ({}, {}, err, 400)
+
+            with open(cfile) as f:
+                line = f.readline()
+                line = f.readline()
+                nlines = int(line)
+                for n in range(nlines):
+                    line = f.readline()
+                    parts = line.strip().split("<!>")
+                    name = parts[1].replace("_", " ").title()
+                    filters['platforms'].append(
+                            {'name': name, 'code': parts[0]})
 
         if 'platforms' in restrictions:
             restrictions['platforms'].sort(key=lambda x: x['code'])
