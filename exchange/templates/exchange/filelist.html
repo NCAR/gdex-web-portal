@@ -105,7 +105,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="exchange-new-project-form" onsubmit="return false;">
+                {% csrf_token %}
                 <div class="modal-body">
+                    <div id="exchange-new-project-error" class="alert alert-danger d-none" role="alert"></div>
                     <p class="mb-3">
                         This project will be created for HPC user:
                         {% if hpc_username %}

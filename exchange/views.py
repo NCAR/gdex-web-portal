@@ -1,12 +1,15 @@
 import os
 import re
+import smtplib
 from datetime import datetime
+from email.message import EmailMessage
 from urllib.parse import quote, urlparse
 
 import bleach
 import markdown
 import pelicanfs
 from django.conf import settings
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
@@ -121,10 +124,55 @@ def _read_dataset_readme(pelfs, base_path, subpath):
         return None, None
 
 
+def _create_project(request):
+    """Handle the "Create New Project" form submission.
+
+    TEMPORARY: project creation isn't automated yet, so this just emails the
+    submitted details to be handled manually.
+    """
+    if not request.user.is_authenticated or not request.user.has_hpc_account:
+        return JsonResponse(
+            {'error': 'You must be signed in with an HPC account to create a project.'},
+            status=403,
+        )
+
+    project_name = request.POST.get('project_name', '').strip()
+    if not project_name:
+        return JsonResponse({'error': 'Project name is required.'}, status=400)
+
+    full_title = request.POST.get('full_title', '').strip()
+    abstract = request.POST.get('abstract', '').strip()
+    hpc_username = request.user.hpc_username
+
+    body = (
+        "A new GDEX Exchange project has been requested.\n\n"
+        f"Requested by: {request.user.email}\n"
+        f"HPC username: {hpc_username}\n"
+        f"Project name: {project_name}\n"
+        f"Full title: {full_title or '(none)'}\n\n"
+        "Abstract:\n"
+        f"{abstract or '(none)'}\n"
+    )
+
+    msg = EmailMessage()
+    msg['From'] = request.user.email
+    msg['To'] = "rpconroy@ucar.edu"
+    msg['Subject'] = f"GDEX Exchange: new project request — {project_name}"
+    msg.set_content(body)
+    with smtplib.SMTP("localhost") as s:
+        s.send_message(msg)
+
+    return JsonResponse({'success': True})
+
+
 def filelist(request, subpath=''):
     base_path = getattr(settings, 'PELICAN_EXCHANGE_BASE_PATH', None)
     osdf_data_path = getattr(settings, 'OSDF_DIRECTOR_URL', '').rstrip('/')
     subpath = subpath.strip('/')
+
+    # The "Create New Project" form posts to the exchange root.
+    if request.method == 'POST' and not subpath:
+        return _create_project(request)
 
     entries = []
     error = None
