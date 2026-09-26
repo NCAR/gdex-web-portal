@@ -295,18 +295,33 @@ def parse_grid_filters_request(request, dsid, cursor):
 
 def parse_sensor_filters_request(request, dsid, cursor):
     try:
+        cfile = cache_file(dsid, None, "ObML", "weblist")
+        if len(cfile) == 0:
+            err = ("API file discovery is not available for data type "
+                   "'sensor'. See the "
+                   f"'/api/datasets/{dsid}/filesearch/datatypes' endpoint for "
+                   "the valid data types for this dataset.")
+            return ({}, {}, err, 400)
+
         if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
             request_platforms = (
                     [part for e in request.GET.getlist('platforms') for part in
                      e.split(",")])
 
+        if 'variables' in request.GET and len(request.GET['variables']) > 0:
+            request_variables = (
+                    [part for e in request.GET.getlist('variables') for part in
+                     e.split(",")])
+
         restrictions = {'valid_datetime_min': 999999999999,
                         'valid_datetime_max': 0,
-                        'platforms': [], }
+                        'platforms': [],
+                        'variables': [], }
         filters = copy.deepcopy(restrictions)
-        query = ("select distinct d.platform_type_code, p.platform_type from "
-                 f'"WObML".{dsid}_data_types_list as d left join "WObML".'
-                 "platform_types as p on p.code = d.platform_type_code")
+        query = ("select distinct d.platform_type_code, p.platform_type, d."
+                 f'"code, d.data_type from "WObML".{dsid}_data_types_list as '
+                 f'd left join "WObML".platform_types as p on p.code = d.'
+                 "platform_type_code")
         qparams = []
         wc = []
         if 'request_platforms' in locals():
@@ -316,6 +331,13 @@ def parse_sensor_filters_request(request, dsid, cursor):
         else:
             del restrictions['platforms']
 
+        if 'request_variables' in locals():
+            wc.append("d.code in %s")
+            qparams.append(tuple([int(e) for e in request_variables]))
+            del filters['variables']
+        else:
+            del restrictions['variables']
+
         if len(wc) > 0:
             query += f" where {' and '.join(wc)}"
 
@@ -323,18 +345,10 @@ def parse_sensor_filters_request(request, dsid, cursor):
             cursor.execute(query, tuple(qparams))
             res = cursor.fetchall()
             if len(res) == 0:
-                if len(request.GET) > 0:
-                    err = ("No filters were identified. Perhaps an invalid "
-                           "query parameter was specified. See the "
-                           f"'/api/datasets/{dsid}/filesearch/filters/sensor' "
-                           "endpoint for valid parameter values for this "
-                           "dataset.")
-                    return ({}, {}, err, 400)
-
-                err = ("API file discovery is not available for data type "
-                       "'sensor'. See the "
-                       f"'/api/datasets/{dsid}/filesearch/datatypes' endpoint "
-                       "for the valid data types for this dataset.")
+                err = ("No filters were identified. Perhaps an invalid query "
+                       "parameter was specified. See the "
+                       f"'/api/datasets/{dsid}/filesearch/filters/sensor' "
+                       "endpoint for valid parameter values for this dataset.")
                 return ({}, {}, err, 400)
 
             plat_set = set()
@@ -351,14 +365,6 @@ def parse_sensor_filters_request(request, dsid, cursor):
                                 {'name': name, 'code': code})
 
         else:
-            cfile = cache_file(dsid, None, "ObML", "weblist")
-            if len(cfile) == 0:
-                err = ("API file discovery is not available for data type "
-                       "'sensor'. See the "
-                       f"'/api/datasets/{dsid}/filesearch/datatypes' endpoint "
-                       "for the valid data types for this dataset.")
-                return ({}, {}, err, 400)
-
             with open(cfile) as f:
                 line = f.readline()
                 line = f.readline()
@@ -369,6 +375,14 @@ def parse_sensor_filters_request(request, dsid, cursor):
                     name = parts[1].replace("_", " ").title()
                     filters['platforms'].append(
                             {'name': name, 'code': parts[0]})
+
+                line = f.readline()
+                nlines = int(line)
+                for n in range(nlines):
+                    line = f.readline()
+                    parts = line.strip().split("<!>")
+                    filters['variables'].append(
+                            {'name': parts[1], 'code': parts[0]})
 
         if 'platforms' in restrictions:
             restrictions['platforms'].sort(key=lambda x: x['code'])
