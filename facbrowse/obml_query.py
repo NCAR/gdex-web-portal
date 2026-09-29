@@ -49,10 +49,11 @@ def parse_obml_query(cursor, dsid, listtyp, request):
         if 'id_match' in request.POST:
             if request.POST['id_match'] == "exact":
                 wc.append("i.id = %s")
+                vars.append(request.POST['id'])
             elif request.POST['id_match'] == "partial":
-                wc.append("i.id ilike %%%s%%")
+                wc.append("i.id ilike %s")
+                vars.append(f"%%{request.POST['id']}%%")
 
-            vars.append(request.POST['id'])
         else:
             wc.append(("i.sw_lat <= %s and i.ne_lat >= %s and i.sw_lon <= %s "
                        "and i.ne_lon >= %s"))
