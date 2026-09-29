@@ -68,13 +68,6 @@ def parse_obml_query(cursor, dsid, listtyp, request):
     res = cursor.fetchall()
     fcodes = set([e[0] for e in res])
     opts['platforms'] = set([e[1] for e in res])
-    if len(opts['platforms']) > 0:
-        cursor.execute('select code, platform_type from "WObML".'
-                       "platform_types where code in %s",
-                       (tuple(opts['platforms']), ))
-        res = cursor.fetchall()
-        opts['platforms'] = [(str(e[0]), snake_to_capital(e[1])) for e in res]
-
     opts['data_types'] = set([e[4] for e in res])
     opts['formats'] = list(set([e[5] for e in res]))
     for e in res:
@@ -85,6 +78,13 @@ def parse_obml_query(cursor, dsid, listtyp, request):
     opts['min_start'] = "-".join([s[0:4], s[4:6], s[6:8]])
     s = str(opts['max_end'])
     opts['max_end'] = "-".join([s[0:4], s[4:6], s[6:8]])
+    if len(opts['platforms']) > 0:
+        cursor.execute('select code, platform_type from "WObML".'
+                       "platform_types where code in %s",
+                       (tuple(opts['platforms']), ))
+        res = cursor.fetchall()
+        opts['platforms'] = [(str(e[0]), snake_to_capital(e[1])) for e in res]
+
     cfile = cache_file(dsid, request.POST.get('gindex'), "ObML", listtyp)
     with open(cfile) as f:
         line = f.readline()
