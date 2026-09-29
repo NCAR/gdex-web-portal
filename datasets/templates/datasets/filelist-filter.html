@@ -1,7 +1,7 @@
 <hr class="my-1">
 <div class="pb-2" id="filter_search">
     <div><strong>File name filter</strong></div>
-    <div><em>Enter a case-sensitive file name pattern to filter this file list.</em></div>
+    <div><em>Enter a case-sensitive file name pattern to filter this file list. You may use the <code>*</code> wildcard (glob-style), e.g. <code>*2020*.nc</code>.</em></div>
     <div class="d-flex align-items-center gap-2">
         <input type="text" id="filterwfile" class='form-control' placeholder="Enter a filter string" name="filter_wfile"{% if data.filter_wfile %} value="{{data.filter_wfile}}"{% endif %}>
         <button class="btn btn-primary rounded text-nowrap" style="font-size:1rem" id="applyFilters">Apply filter</button>
