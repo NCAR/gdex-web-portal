@@ -119,7 +119,7 @@
             </table>
         </div>
         {% else %}
-        See the <a href="javascript:void(0)" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/detailed_metadata/?view=level')">detailed metadata</a> for level information.
+        See the <a href="javascript:void(0)" onclick="get_ajax_with_history('{% url 'dataset_detailed_metadata' page.dsid %}?view=level')">detailed metadata</a> for level information.
         {% if page.levels.grib2 %}
         See also the <a href="javascript:void(0)" onclick="$.get('/datasets/{{ page.dsid }}/metadata/grib2_levels.html', replace_ds_content)">GRIB2 level table</a>.
         {% endif %}
@@ -245,7 +245,7 @@
     <div class="col-12 col-md-10">
         <div style="display: grid; grid-template-columns: 1fr 1fr 98fr">
         {% for ds in page.related_dslist %}
-            <div style="grid-column: 1"><center><a href="/datasets/{{ ds.dsid }}/">{{ ds.dsid }}</a></center></div>
+            <div style="grid-column: 1"><center><a href="{% url 'dataset_description' ds.dsid %}">{{ ds.dsid }}</a></center></div>
             <div class="ps-1 pe-1" style="grid-column: 2">-</div>
             <div style="grid-column: 3">{{ ds.title }}</div>
         {% endfor %}
@@ -258,7 +258,7 @@
 <div class="row gx-0 mb-2 mb-md-1">
     <div class="col-12 col-md-2 dataset-label">More Details:</div>
     <div class="col-12 col-md-10">
-        View a <a href="javascript:void(0)" onclick="get_ajax_with_history('/datasets/{{ page.dsid }}/detailed_metadata/')">more detailed summary</a> of the data, including specific date ranges and locations by parameter
+        View a <a href="javascript:void(0)" onclick="get_ajax_with_history('{% url 'dataset_detailed_metadata' page.dsid %}')">more detailed summary</a> of the data, including specific date ranges and locations by parameter
     </div>
 </div>
 {% endif %}
@@ -267,7 +267,7 @@
     <div class="col-12 col-md-2 dataset-label">Metadata Record:</div>
     <div id="meta_record" class="col-12 col-md-10">
     </div>
-    <img class="w-auto h-auto" src="/images/transpace.gif" width="0" height="0" alt="" aria-hidden="true" onload="getAjaxContent('GET', null, '/datasets/{{ page.dsid }}/metadata_view/', 'meta_record')">
+    <img class="w-auto h-auto" src="/images/transpace.gif" width="0" height="0" alt="" aria-hidden="true" onload="getAjaxContent('GET', null, '{% url 'dataset_metadata_view' page.dsid %}', 'meta_record')">
 </div>
 
 <div class="row gx-0 mb-2 mb-md-1">
