@@ -347,7 +347,7 @@ def filelist_preview(request, dsnum):
         logger.exception("Preview failed for %s", glade_path)
         return JsonResponse({'error': 'Unable to generate a preview for this file.'}, status=502)
     if isinstance(result, dict):
-        url = next((result[k] for k in ('url', 'public_url', 'image_url') if result.get(k)), None)
+        url = next((result[k] for k in ('location', 'url') if result.get(k)), None)
     else:
         url = result if isinstance(result, str) else None
     if not url:

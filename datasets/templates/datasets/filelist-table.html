@@ -68,22 +68,22 @@
                     <td class='access-options text-nowrap'>
                         {% if file_col.is_file %}
                             {% if file_col.url %}
-                                <a class='btn btn-sm btn-outline-primary me-1 py-0' title='Download file' href="{{ file_col.url }}"><i class="fas fa-download"></i></a>
+                                <a class='btn btn-sm btn-outline-primary me-1 p-1' title='Download file' href="{{ file_col.url }}"><i class="fas fa-download"></i></a>
                             {% endif %}
                             {% if data.is_glade %}
-                                <button type='button' class='btn btn-sm btn-outline-primary me-1 py-0 copy-path-btn' title='Copy file path'
+                                <button type='button' class='btn btn-sm btn-outline-primary me-1 p-1 copy-path-btn' title='Copy file path'
                                         data-path="{% if data.locflag == 'O' %}{{ file_col.url|make_local_os_URL }}{% else %}{{ file_col.data_path|make_glade_URL }}{% endif %}">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             {% endif %}
                             {% if file_col.value|get_extension == 'nc' and data.locflag != 'O' %}
-                                <button type='button' class='btn btn-sm btn-outline-primary me-1 py-0 preview-file-btn' title='Preview file'
+                                <button type='button' class='btn btn-sm btn-outline-primary me-1 p-1 preview-file-btn' title='Preview file'
                                         data-dsid="{{ data.dsid }}" data-path="{{ file_col.data_path }}" data-name="{{ file_col.value }}">
-                                    <i class="fas fa-chart-area"></i>
+                                    <i class="fas fa-image"></i>
                                 </button>
                             {% endif %}
                             {% if file_col.meta_link != 'N' and file_col.meta_link %}
-                                <a title='Click for Detailed Metadata' target='_blank' class='btn btn-sm btn-outline-primary py-0'
+                                <a title='Click for Detailed Metadata' target='_blank' class='btn btn-sm btn-outline-primary p-1'
                                    href="/ajax/#cgi-bin/transform?xml=/datasets/{{data.dsid}}/metadata/wfmd{{file_col.data_path|remove_datadsid}}.{{file_col.meta_link}}ML">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
