@@ -7,7 +7,7 @@ import subprocess
 
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from os.path import exists
 try:
@@ -23,6 +23,7 @@ from libpkg.metaformats import (datacite_4, dublin_core, fgdc, gcmd_dif,
 
 from . import transform
 from .utils import get_custom_subset_context, get_hostname, ng_gdex_id
+from .services import visualize_file
 from .CodeExample import CodeExample
 from api.common import (format_dataset_id, get_request_info,
                         get_request_files, get_request_status,
@@ -325,6 +326,34 @@ def get_filelist_table(request, dsnum, groupid=None):
     return render(request,
                   'datasets/filelist.html',
                   filelist_json)
+
+
+def filelist_preview(request, dsnum):
+    """Proxy to the GDEX visualize service for a single NetCDF file in the
+    dataset. The client sends the dataset-relative path (never a /glade path)
+    so the service can only be pointed at files inside this dataset."""
+    dsid = format_dataset_id(dsnum)
+    rel_path = request.GET.get('path', '').strip('/')
+    variable = request.GET.get('variable') or None
+    if not rel_path.lower().endswith('.nc'):
+        return JsonResponse({'error': 'Preview is only available for NetCDF files.'}, status=400)
+    root = os.path.normpath(os.path.join(settings.RDA_CANONICAL_DATA_PATH, dsid))
+    glade_path = os.path.normpath(os.path.join(root, rel_path))
+    if not glade_path.startswith(root + os.sep):
+        return JsonResponse({'error': 'Invalid file path.'}, status=400)
+    try:
+        result = visualize_file(glade_path, variable)
+    except (requests.RequestException, ValueError):
+        logger.exception("Preview failed for %s", glade_path)
+        return JsonResponse({'error': 'Unable to generate a preview for this file.'}, status=502)
+    if isinstance(result, dict):
+        url = next((result[k] for k in ('url', 'public_url', 'image_url') if result.get(k)), None)
+    else:
+        url = result if isinstance(result, str) else None
+    if not url:
+        logger.error("Unexpected visualize response for %s: %r", glade_path, result)
+        return JsonResponse({'error': 'Unable to generate a preview for this file.'}, status=502)
+    return JsonResponse({'url': url})
 
 
 def get_request(request, rqstid):

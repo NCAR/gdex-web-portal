@@ -15,6 +15,7 @@ urlpatterns = [
     re_path(r"^(d[0-9]{6})/software/$", views.get_software_table, name="dataset_software"),
     re_path(r"^(d[0-9]{6})/filelist/$", views.get_filelist_table, name="dataset_filelist"),
     re_path(r"^(d[0-9]{6})/filelist/(.*)/$", views.get_filelist_table, name="dataset_filelist_filtered"),
+    re_path(r"^(d[0-9]{6})/filelist-preview/$", views.filelist_preview, name="dataset_filelist_preview"),
     re_path(r"^(d[0-9]{6})/detailed_metadata/$", views.get_detailed_metadata, name="dataset_detailed_metadata"),
     re_path(r"^(d[0-9]{6})/metadata_view/$", views.metadata_view, name="dataset_metadata_view"),
     re_path(r"^(d[0-9]{6})/metadata_view/(\w+ML)/(.*)$", views.markup_view, name="dataset_markup_view"),

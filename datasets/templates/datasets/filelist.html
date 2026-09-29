@@ -6,6 +6,18 @@
 {% endif %}
 {% csrf_token %}
 
+<div class="modal fade" id="filePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filePreviewTitle">Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center" id="filePreviewBody"></div>
+        </div>
+    </div>
+</div>
+
 <input type="hidden" id="clipboard"></input> {# Used for copying text to clipboard #}
 <button class="btn btn-primary rounded" id="topButton" title="Scroll to top"><i class="fas fa-arrow-up"></i>&nbsp;Top</button>
 <div class='d-none' id='file_table' data-dsid='{{ data.dsid }}'></div>

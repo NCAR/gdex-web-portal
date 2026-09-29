@@ -27,6 +27,35 @@ $('.sort-column').on('click', sortColumn);
 $('.clear-group-btn').on('click', clearFileSelections);
 $('.btn-all-files').on('click', selectAllFiles);
 
+// Access Options column: delegated so it works for ajax-loaded tables. Unbind
+// first because this script is re-included each time the filelist is loaded.
+$(document).off('.accessOptions')
+   .on('click.accessOptions', '.copy-path-btn', copyPathClicked)
+   .on('click.accessOptions', '.preview-file-btn', previewFileClicked);
+
+function copyPathClicked() {
+   var btn = $(this);
+   navigator.clipboard.writeText(btn.data('path'));
+   btn.find('i').removeClass('fa-copy').addClass('fa-check');
+   setTimeout(function() { btn.find('i').removeClass('fa-check').addClass('fa-copy'); }, 2000);
+}
+
+function previewFileClicked() {
+   var btn = $(this);
+   var body = $('#filePreviewBody');
+   $('#filePreviewTitle').text(btn.data('name'));
+   body.html('<div class="spinner-border" role="status"></div><p class="mt-2 mb-0">Generating preview&hellip;</p>');
+   bootstrap.Modal.getOrCreateInstance(document.getElementById('filePreviewModal')).show();
+   $.get('/datasets/' + btn.data('dsid') + '/filelist-preview/', {path: btn.data('path')})
+      .done(function(d) {
+         body.empty().append($('<img class="img-fluid">').attr('src', d.url).attr('alt', 'Preview of ' + btn.data('name')));
+      })
+      .fail(function(xhr) {
+         var msg = (xhr.responseJSON && xhr.responseJSON.error) || 'Unable to generate a preview for this file.';
+         body.empty().append($('<div class="alert alert-danger mb-0">').text(msg));
+      });
+}
+
 $(document).ready(function() {
    $.ajaxSetup({
       headers: {
