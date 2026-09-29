@@ -303,37 +303,43 @@ def parse_sensor_filters_request(request, dsid, cursor):
                    "the valid data types for this dataset.")
             return ({}, {}, err, 400)
 
-        if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
-            request_platforms = (
-                    [part for e in request.GET.getlist('platforms') for part in
-                     e.split(",")])
-
-        if 'variables' in request.GET and len(request.GET['variables']) > 0:
-            request_variables = (
-                    [part for e in request.GET.getlist('variables') for part in
-                     e.split(",")])
-
-        restrictions = {'valid_datetime_min': 999999999999,
-                        'valid_datetime_max': 0,
+        restrictions = {'valid_date_min': 99999999,
+                        'valid_date_max': 0,
                         'platforms': [],
                         'variables': [], }
         filters = copy.deepcopy(restrictions)
         query = ("select distinct d.platform_type_code, p.platform_type, d."
-                 f'"code, d.data_type from "WObML".{dsid}_data_types_list as '
-                 f'd left join "WObML".platform_types as p on p.code = d.'
+                 f'data_type from "WObML".{dsid}_data_types_list as d left '
+                 f'join "WObML".platform_types as p on p.code = d.'
                  "platform_type_code")
         qparams = []
         wc = []
-        if 'request_platforms' in locals():
+        if ('valid_date_min' in request.GET and
+                len(request.GET['valid_date_min']) > 0):
+            del filters['valid_date_min']
+        else:
+            del restrictions['valid_date_min']
+
+        if ('valid_date_max' in request.GET and
+                len(request.GET['valid_date_max']) > 0):
+            del filters['valid_date_max']
+        else:
+            del restrictions['valid_date_max']
+
+        if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
             wc.append("d.platform_type_code in %s")
-            qparams.append(tuple([int(e) for e in request_platforms]))
+            qparams.append(
+                    tuple([int(part) for e in request.GET.getlist('platforms')
+                           for part in e.split(",")]))
             del filters['platforms']
         else:
             del restrictions['platforms']
 
-        if 'request_variables' in locals():
-            wc.append("d.code in %s")
-            qparams.append(tuple([int(e) for e in request_variables]))
+        if 'variables' in request.GET and len(request.GET['variables']) > 0:
+            wc.append("d.data_type in %s")
+            qparams.append(
+                    tuple([part for e in request.GET.getlist('variables') for
+                           part in e.split(",")]))
             del filters['variables']
         else:
             del restrictions['variables']
@@ -352,21 +358,38 @@ def parse_sensor_filters_request(request, dsid, cursor):
                 return ({}, {}, err, 400)
 
             plat_set = set()
+            var_set = set()
             for e in res:
                 if e[0] not in plat_set:
                     plat_set.add(e[0])
                     code = str(e[0])
                     name = e[1].replace("_", " ").title()
-                    if 'request_platforms' in locals():
+                    if 'platforms' in restrictions:
                         restrictions['platforms'].append(
                                 {'name': name, 'code': code})
                     else:
                         filters['platforms'].append(
                                 {'name': name, 'code': code})
 
+                if e[2] not in var_set:
+                    var_set.add(e[2])
+                    if 'varaibles' in restrictions:
+                        restrictions['variables'].append(
+                                {'name': None, 'code': e[2]})
+                    else:
+                        filters['variables'].append(
+                                {'name': None, 'code': e[2]})
+
         else:
             with open(cfile) as f:
                 line = f.readline()
+                dates = line.strip().split()
+                filters['valid_date_min'] = (
+                        "-".join([dates[0][0:4], dates[0][4:6],
+                                  dates[0][6:8]]))
+                filters['valid_date_min'] = (
+                        "-".join([dates[1][0:4], dates[1][4:6],
+                                  dates[1][6:8]]))
                 line = f.readline()
                 nlines = int(line)
                 for n in range(nlines):
