@@ -220,7 +220,7 @@ def get_documentation_table(request, dsnum):
     hostname = get_hostname()
     dsid = format_dataset_id(dsnum)
     dsnum = format_dataset_id(dsnum, remove_ds=True)
-    api_uri = reverse('get-dataset-documentation', kwargs={'dsid': dsid})
+    api_uri = reverse('api:get-dataset-documentation', kwargs={'dsid': dsid})
     url = hostname + api_uri
     documentation = requests.get(url)
     documentation = documentation.content
@@ -243,7 +243,7 @@ def examples_page(request, dsnum):
     hostname = get_hostname()
     dsid = format_dataset_id(dsnum)
     dsnum = format_dataset_id(dsnum, remove_ds=True)
-    api_uri = reverse('get-dataset-documentation', kwargs={'dsid': dsid})
+    api_uri = reverse('api:get-dataset-documentation', kwargs={'dsid': dsid})
     url = hostname + api_uri
     documentation = requests.get(url)
     documentation = documentation.content
@@ -272,7 +272,7 @@ def examples_page(request, dsnum):
 def get_software_table(request, dsnum):
     hostname = get_hostname()
     dsid = format_dataset_id(dsnum)
-    api_uri = reverse('get-dataset-software', kwargs={'dsid': dsid})
+    api_uri = reverse('api:get-dataset-software', kwargs={'dsid': dsid})
     url = hostname + api_uri
     software = requests.get(url)
     software = software.content
@@ -293,9 +293,9 @@ def get_filelist_table(request, dsnum, groupid=None):
     hostname = get_hostname()
     dsid = format_dataset_id(dsnum)
     if groupid:
-        api_uri = reverse('get-assembled-groups-gindex', kwargs={'dsid': dsid, 'gindex': groupid})
+        api_uri = reverse('api:get-assembled-groups-gindex', kwargs={'dsid': dsid, 'gindex': groupid})
     else:
-        api_uri = reverse('get-assembled-groups', kwargs={'dsid': dsid})
+        api_uri = reverse('api:get-assembled-groups', kwargs={'dsid': dsid})
     page = request.GET.get('page', '')
     filter_wfile = request.GET.get('filter_wfile', '')
     filelist_source = request.GET.get('fl', 'web')
