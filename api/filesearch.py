@@ -10,7 +10,7 @@ from django.conf import settings
 from django.http import HttpRequest, JsonResponse, QueryDict
 from django.shortcuts import render
 from facbrowse.grml_query import parse_grml_query
-from facbrowse.utils import cache_file, service_list
+from facbrowse.utils import cache_file, get_groups, service_list
 from libpkg.codemaps import decode_level, decode_parameter
 from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
@@ -305,6 +305,7 @@ def parse_sensor_filters_request(request, dsid, cursor):
 
         restrictions = {'valid_date_min': 99999999,
                         'valid_date_max': 0,
+                        'products': [],
                         'platforms': [],
                         'variables': [], }
         filters = copy.deepcopy(restrictions)
@@ -325,6 +326,11 @@ def parse_sensor_filters_request(request, dsid, cursor):
             del filters['valid_date_max']
         else:
             del restrictions['valid_date_max']
+
+        if 'products' in request.GET and len(request.GET['products']) > 0:
+            del filters['products']
+        else:
+            del restrictions['products']
 
         if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
             wc.append("d.platform_type_code in %s")
@@ -407,10 +413,26 @@ def parse_sensor_filters_request(request, dsid, cursor):
                     filters['variables'].append(
                             {'name': parts[1], 'code': parts[0]})
 
+            groups = get_groups(dsid)
+            for group in groups:
+                if 'products' in restrictions:
+                    restrictions['products'].append(
+                            {'name': group['title'], 'code': group['gindex']})
+                else:
+                    filters['products'].append(
+                            {'name': group['title'], 'code': group['gindex']})
+
+        if 'products' in restrictions:
+            if len(restrictions['products']) < 2:
+                del restrictions['products']
+
+        else:
+            if len(filters['products']) < 2:
+                del filters['products']
+
         if 'platforms' in restrictions:
             restrictions['platforms'].sort(key=lambda x: x['code'])
-
-        if 'platforms' in filters:
+        else:
             filters['platforms'].sort(key=lambda x: x['code'])
 
         return (restrictions, filters, "", 200)
