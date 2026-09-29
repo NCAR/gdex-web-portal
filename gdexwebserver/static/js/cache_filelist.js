@@ -46,7 +46,9 @@ function previewFileClicked() {
    $('#filePreviewTitle').text(btn.data('name'));
    body.html('<div class="spinner-border" role="status"></div><p class="mt-2 mb-0">Generating preview&hellip;</p>');
    bootstrap.Modal.getOrCreateInstance(document.getElementById('filePreviewModal')).show();
-   $.get('/datasets/' + btn.data('dsid') + '/filelist-preview/', {path: btn.data('path')})
+   // global:false keeps the page-wide ajaxSend/ajaxSuccess hooks above from replacing
+   // #ds_content with the loading spinner (which would wipe the table and this modal)
+   $.ajax({url: '/datasets/' + btn.data('dsid') + '/filelist-preview/', data: {path: btn.data('path')}, global: false})
       .done(function(d) {
          body.empty().append($('<img class="img-fluid">').attr('src', d.url).attr('alt', 'Preview of ' + btn.data('name')));
       })

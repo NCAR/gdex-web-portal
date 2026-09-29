@@ -330,16 +330,18 @@ def get_filelist_table(request, dsnum, groupid=None):
 
 def filelist_preview(request, dsnum):
     """Proxy to the GDEX visualize service for a single NetCDF file in the
-    dataset. The client sends the dataset-relative path (never a /glade path)
-    so the service can only be pointed at files inside this dataset."""
+    dataset. The client sends the file's data_path (never a /glade path) and
+    the service can only be pointed at files inside this dataset."""
     dsid = format_dataset_id(dsnum)
     rel_path = request.GET.get('path', '').strip('/')
     variable = request.GET.get('variable') or None
     if not rel_path.lower().endswith('.nc'):
         return JsonResponse({'error': 'Preview is only available for NetCDF files.'}, status=400)
-    root = os.path.normpath(os.path.join(settings.RDA_CANONICAL_DATA_PATH, dsid))
-    glade_path = os.path.normpath(os.path.join(root, rel_path))
-    if not glade_path.startswith(root + os.sep):
+    # rel_path is the row's data_path, which already starts with the dataset id
+    # (e.g. d651000/atm/file.nc), so join it to the data root, not the dataset dir
+    dataset_dir = os.path.normpath(os.path.join(settings.RDA_CANONICAL_DATA_PATH, dsid))
+    glade_path = os.path.normpath(os.path.join(settings.RDA_CANONICAL_DATA_PATH, rel_path))
+    if not glade_path.startswith(dataset_dir + os.sep):
         return JsonResponse({'error': 'Invalid file path.'}, status=400)
     try:
         result = visualize_file(glade_path, variable)

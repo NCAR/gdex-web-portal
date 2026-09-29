@@ -75,12 +75,7 @@
         {% endif %}
   
         {% if not group.is_group_summary and group.rows|length > 1 and data_format != "zarr"%}
-            {# Show download buttons, and table summary if not a summary group and there are files in the group #}
-            {% if data.is_glade %}
-                {% include "datasets/glade_buttons.html" %}
-            {% else %}
-                {% include "datasets/download_buttons.html" %}
-            {% endif %}
+            {# Show table summary (which includes the download buttons) if not a summary group and there are files in the group #}
             {% include "datasets/filelist-table-summary.html" with group=group %}
         {% endif %}
 

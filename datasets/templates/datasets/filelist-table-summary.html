@@ -5,6 +5,12 @@
             This group contains a total of <strong>{{ group.total_file_count }}</strong> files.  Please use the filelist page navigation below to view files on other pages, or use the file name filter to filter this file listing.
         {% endif %}
     </div>
+    {# Download buttons sit directly below the file count #}
+    {% if data.is_glade %}
+        {% include "datasets/glade_buttons.html" %}
+    {% else %}
+        {% include "datasets/download_buttons.html" %}
+    {% endif %}
     <div class="pt-2">
         {% if not data.is_glade %}
             <strong>To download files:</strong> click a filename to download a single file, or select multiple files to generate a download script or submit a Globus transfer to your endpoint.
