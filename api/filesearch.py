@@ -387,7 +387,7 @@ def parse_sensor_filters_request(request, dsid, cursor):
                 filters['valid_date_min'] = (
                         "-".join([dates[0][0:4], dates[0][4:6],
                                   dates[0][6:8]]))
-                filters['valid_date_min'] = (
+                filters['valid_date_max'] = (
                         "-".join([dates[1][0:4], dates[1][4:6],
                                   dates[1][6:8]]))
                 line = f.readline()
