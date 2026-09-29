@@ -119,8 +119,12 @@
                     <div class="mb-3">
                         <label for="exchange-project-name" class="form-label">Project Name</label>
                         <input type="text" class="form-control" id="exchange-project-name"
-                               name="project_name" maxlength="74" required autocomplete="off">
-                        <div class="form-text">Fewer than 75 characters.</div>
+                               name="project_name" maxlength="74" required autocomplete="off"
+                               pattern="(?!\.\.?$)(?!-)[A-Za-z0-9._-]{1,74}"
+                               title="Letters, numbers, periods, underscores, and hyphens only. Cannot start with a hyphen or be &quot;.&quot; or &quot;..&quot;.">
+                        <div class="form-text">
+                            Letters, numbers, periods, underscores, and hyphens only. Fewer than 75 characters.
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="exchange-project-full-title" class="form-label">

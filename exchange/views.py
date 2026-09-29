@@ -19,6 +19,14 @@ _README_ALLOWED_TAGS = [
 ]
 _README_ALLOWED_ATTRS = {'a': ['href', 'title', 'rel']}
 
+# Must be safe to use as a single POSIX path component: no "/", no null bytes,
+# not "." or "..", and no leading "-" (which some tools would treat as a flag).
+_PROJECT_NAME_RE = re.compile(r'^(?!\.\.?$)(?!-)[A-Za-z0-9._-]{1,74}$')
+
+
+def _is_valid_project_name(name):
+    return bool(_PROJECT_NAME_RE.match(name))
+
 
 def _format_size(size_bytes):
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
@@ -139,6 +147,16 @@ def _create_project(request):
     project_name = request.POST.get('project_name', '').strip()
     if not project_name:
         return JsonResponse({'error': 'Project name is required.'}, status=400)
+    if not _is_valid_project_name(project_name):
+        return JsonResponse(
+            {
+                'error': (
+                    'Project name may only contain letters, numbers, periods, '
+                    'underscores, and hyphens; it cannot start with a hyphen or be "." or "..".'
+                ),
+            },
+            status=400,
+        )
 
     full_title = request.POST.get('full_title', '').strip()
     abstract = request.POST.get('abstract', '').strip()
