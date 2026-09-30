@@ -6,16 +6,21 @@
     <button class="btn btn-primary my-2 rounded" style="font-size:1rem" id="applyFilters">Apply filter</button>
     <button class="btn btn-outline-primary my-2 rounded" style="font-size:1rem" id="clearFilters">Clear filter</button>
 </div>
+{% if group.gindex != 0 %}
+    {% url 'dataset_filelist_filtered' data.dsid group.gindex as filelist_base_url %}
+{% else %}
+    {% url 'dataset_filelist' data.dsid as filelist_base_url %}
+{% endif %}
 <script>
 $("#applyFilters").on("click", function() {
-    url='/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?filter_wfile='+encodeURIComponent($("#filterwfile").val());
+    url='{{ filelist_base_url }}?filter_wfile='+encodeURIComponent($("#filterwfile").val());
     $.get(url, function(d) {
         replace_ds_content(d);
     });
 })
 $("#clearFilters").on("click", function() {
     $("input[id^='filter']").val("");
-    url='/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}{% endif %}';
+    url='{{ filelist_base_url }}';
     $.get(url, function(d) {
         replace_ds_content(d);
     });

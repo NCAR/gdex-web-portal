@@ -8,6 +8,7 @@ import subprocess
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from os.path import exists
 try:
@@ -219,7 +220,7 @@ def get_documentation_table(request, dsnum):
     hostname = get_hostname()
     dsid = format_dataset_id(dsnum)
     dsnum = format_dataset_id(dsnum, remove_ds=True)
-    api_uri = '/api/datasets/{}/documentation/'.format(dsid)
+    api_uri = reverse('get-dataset-documentation', kwargs={'dsid': dsid})
     url = hostname + api_uri
     documentation = requests.get(url)
     documentation = documentation.content
@@ -242,7 +243,7 @@ def examples_page(request, dsnum):
     hostname = get_hostname()
     dsid = format_dataset_id(dsnum)
     dsnum = format_dataset_id(dsnum, remove_ds=True)
-    api_uri = '/api/datasets/{}/documentation/'.format(dsid)
+    api_uri = reverse('get-dataset-documentation', kwargs={'dsid': dsid})
     url = hostname + api_uri
     documentation = requests.get(url)
     documentation = documentation.content
@@ -271,7 +272,7 @@ def examples_page(request, dsnum):
 def get_software_table(request, dsnum):
     hostname = get_hostname()
     dsid = format_dataset_id(dsnum)
-    api_uri = f'/api/datasets/{dsid}/software'
+    api_uri = reverse('get-dataset-software', kwargs={'dsid': dsid})
     url = hostname + api_uri
     software = requests.get(url)
     software = software.content
@@ -292,9 +293,9 @@ def get_filelist_table(request, dsnum, groupid=None):
     hostname = get_hostname()
     dsid = format_dataset_id(dsnum)
     if groupid:
-        api_uri = '/api/datasets/{}/filelist/{}'.format(dsid, groupid)
+        api_uri = reverse('get-assembled-groups-gindex', kwargs={'dsid': dsid, 'gindex': groupid})
     else:
-        api_uri = '/api/datasets/{}/filelist/'.format(dsid)
+        api_uri = reverse('get-assembled-groups', kwargs={'dsid': dsid})
     page = request.GET.get('page', '')
     filter_wfile = request.GET.get('filter_wfile', '')
     filelist_source = request.GET.get('fl', 'web')

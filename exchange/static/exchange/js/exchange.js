@@ -31,6 +31,51 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // --- Create New Project ---
+
+    const createProjectBtn = document.getElementById('exchange-create-project-btn');
+    if (createProjectBtn) {
+        const form = document.getElementById('exchange-new-project-form');
+        const modalEl = document.getElementById('exchange-new-project-modal');
+        const errorEl = document.getElementById('exchange-new-project-error');
+
+        createProjectBtn.addEventListener('click', function () {
+            if (!form.reportValidity()) return;
+
+            errorEl.classList.add('d-none');
+            createProjectBtn.disabled = true;
+
+            fetch(window.location.pathname, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: new FormData(form),
+            })
+                .then(function (resp) {
+                    return resp.json().then(function (data) {
+                        return { ok: resp.ok, data: data };
+                    });
+                })
+                .then(function (result) {
+                    if (result.ok) {
+                        form.reset();
+                        if (modalEl) { bootstrap.Modal.getOrCreateInstance(modalEl).hide(); }
+                        popModalWindowWithHTML(true, true,
+                            '<div style="padding:8px">Thanks! Your project request has been submitted.</div>');
+                    } else {
+                        errorEl.textContent = result.data.error || 'Something went wrong. Please try again.';
+                        errorEl.classList.remove('d-none');
+                    }
+                })
+                .catch(function () {
+                    errorEl.textContent = 'Something went wrong. Please try again.';
+                    errorEl.classList.remove('d-none');
+                })
+                .finally(function () {
+                    createProjectBtn.disabled = false;
+                });
+        });
+    }
+
     // --- Get Filelist button ---
 
     const btn = document.getElementById('exchange-filelist-btn');
