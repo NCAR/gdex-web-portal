@@ -341,13 +341,23 @@ def search_arco_variables(request, dsid, search_text):
     header = data[0]
     _vars = data[1:]
     matches = []
-    for i in _vars:
-        for j in i:
-            if search_text.lower() in j.lower():
-                matches.append(i)
+    for var in _vars:
+        for item in var:
+            if search_text.lower() in item.lower():
+                matches.append(var)
                 break
+
+    # Remove duplicates from matches based on last element 'long_name'
+    seen = set()
+    unique_matches = []
+    for match in matches:
+        last_item = match[-1]
+        if last_item not in seen:
+            seen.add(last_item)
+            unique_matches.append(match)
+
     response = rda_r.RDA_Response()
-    response.add_data(matches)
+    response.add_data(unique_matches)
     return JsonResponse(response.get_json())
 
 @get_child_groups_schema

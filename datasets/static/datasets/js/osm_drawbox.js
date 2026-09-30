@@ -259,7 +259,10 @@ function initDrawBoxMap() {
     worldCopyJump: true
   });
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // OSM tile policy requires a Referer header; Django's default
+    // Referrer-Policy (same-origin) would otherwise strip it.
+    referrerPolicy: "strict-origin-when-cross-origin",
     attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
     maxZoom: 19
   }).addTo(drawbox);
