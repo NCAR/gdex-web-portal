@@ -51,7 +51,7 @@ _urlpatterns = [
     path(r'jira-event/<ticket_id>', views.JiraEventReceiver.as_view(), name = 'jira-event-receiver'),
 
     # Celery and PBS Event Receiver
-    path(r'gdex-services-event/<task_id>', views.GdexServicesReceiver.as_view(), name = 'gdex-services-receiver'),
+    path(r'gdex-services-event/', views.GdexServicesReceiver.as_view(), name = 'gdex-services-receiver'),
 
     # "Dataset-level Metadata" tag
     path(r'datasets/', views.get_all_datasets ),

@@ -258,7 +258,7 @@ class GdexServicesReceiver(APIView):
     permission_classes = []
 
     @exclude_schema
-    def post(self, request, task_id=None):
+    def post(self, request):
         # TODO: add authentication before this leaves test; right now anyone can post here
         payload = request.body
         try:
@@ -266,8 +266,11 @@ class GdexServicesReceiver(APIView):
         except (json.JSONDecodeError, UnicodeDecodeError):
             return Response({"status": "error", "message": "Invalid JSON"}, status=400)
 
-        if not isinstance(data, dict) or data.get("task_id") != task_id:
-            return Response({"status": "error", "message": "task_id mismatch"}, status=400)
+        if not isinstance(data, dict):
+            return Response({"status": "error", "message": "Expected a JSON object"}, status=400)
+        task_id = data.get("task_id")
+        if not task_id:
+            return Response({"status": "error", "message": "Missing task_id"}, status=400)
         if "status" not in data:
             return Response({"status": "error", "message": "Missing status"}, status=400)
 
