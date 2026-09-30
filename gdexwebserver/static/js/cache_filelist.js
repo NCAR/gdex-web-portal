@@ -53,7 +53,8 @@ function previewFileClicked() {
          body.empty().append($('<img class="img-fluid">').attr('src', d.url).attr('alt', 'Preview of ' + btn.data('name')));
       })
       .fail(function(xhr) {
-         var msg = (xhr.responseJSON && xhr.responseJSON.error) || 'Unable to generate a preview for this file.';
+         var msg = (xhr.responseJSON && xhr.responseJSON.error) ||
+                   'Unable to generate a preview for this file. (HTTP ' + xhr.status + ' from the portal)';
          body.empty().append($('<div class="alert alert-danger mb-0">').text(msg));
       });
 }

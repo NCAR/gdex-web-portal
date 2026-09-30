@@ -338,16 +338,31 @@ def filelist_preview(request, dsnum):
     if not rel_path.lower().endswith('.nc'):
         return JsonResponse({'error': 'Preview is only available for NetCDF files.'}, status=400)
     # rel_path is the row's data_path, which already starts with the dataset id
-    # (e.g. d651000/atm/file.nc), so join it to the data root, not the dataset dir
-    dataset_dir = os.path.normpath(os.path.join(settings.RDA_CANONICAL_DATA_PATH, dsid))
-    glade_path = os.path.normpath(os.path.join(settings.RDA_CANONICAL_DATA_PATH, rel_path))
+    # (e.g. d651000/atm/file.nc), so join it to the data root, not the dataset dir.
+    # The service only accepts real /glade paths; RDA_CANONICAL_DATA_PATH is the
+    # HPC-facing path (/gdex/data), which it rejects with a 403.
+    data_root = settings.GLOBUS_RDA_DATA_BASE_PATH
+    dataset_dir = os.path.normpath(os.path.join(data_root, dsid))
+    glade_path = os.path.normpath(os.path.join(data_root, rel_path))
     if not glade_path.startswith(dataset_dir + os.sep):
         return JsonResponse({'error': 'Invalid file path.'}, status=400)
     try:
         result = visualize_file(glade_path, variable)
-    except (requests.RequestException, ValueError):
+    except requests.HTTPError as e:
+        # The service answered with an error (e.g. 404 file not found); pass its detail along
+        detail = ''
+        try:
+            detail = e.response.json().get('detail', '')
+        except (ValueError, AttributeError):
+            pass
+        logger.exception("Preview failed for %s (service returned %s: %s)", glade_path, e.response.status_code, detail)
+        return JsonResponse({'error': 'Unable to generate a preview for this file. '
+                             'The preview service returned {}{}'.format(e.response.status_code, ': ' + detail if detail else '')},
+                            status=502)
+    except (requests.RequestException, ValueError) as e:
         logger.exception("Preview failed for %s", glade_path)
-        return JsonResponse({'error': 'Unable to generate a preview for this file.'}, status=502)
+        return JsonResponse({'error': 'Unable to generate a preview for this file. '
+                             'Could not reach the preview service ({}).'.format(type(e).__name__)}, status=502)
     if isinstance(result, dict):
         url = next((result[k] for k in ('location', 'url') if result.get(k)), None)
     else:
