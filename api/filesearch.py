@@ -317,12 +317,17 @@ def parse_sensor_filters_request(request, dsid, cursor):
         wc = []
         if ('valid_date_min' in request.GET and
                 len(request.GET['valid_date_min']) > 0):
+            restrictions['valid_date_min'] = request.GET['valid_date_min']
+            wc.append("w.end_date >= %s")
+            qparams.append(request.GET['valid_date_min'].replace("-", ""))
             del filters['valid_date_min']
         else:
             del restrictions['valid_date_min']
 
         if ('valid_date_max' in request.GET and
                 len(request.GET['valid_date_max']) > 0):
+            wc.append("w.start_date <= %s")
+            qparams.append(request.GET['valid_date_max'].replace("-", ""))
             del filters['valid_date_max']
         else:
             del restrictions['valid_date_max']
@@ -331,6 +336,14 @@ def parse_sensor_filters_request(request, dsid, cursor):
             del filters['products']
         else:
             del restrictions['products']
+
+        if ('valid_date_min' in restrictions or 'valid_date_max' in
+                restrictions or 'products' in restrictions):
+            query += (f' left join "WObML".{dsid}_data_types as t on t.'
+                      f'data_type_code = d.code left join "WObML".{dsid}'
+                      "_webfiles2 as w on w.code = t.file_code")
+            if 'products' in restrictions:
+                pass
 
         if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
             wc.append("d.platform_type_code in %s")
