@@ -415,13 +415,13 @@ def parse_sensor_filters_request(request, dsid, cursor):
                         filters['variables'].append(
                                 {'name': name, 'code': e[2]})
 
-                if 'valid_min_date' in filters:
-                    filters['valid_min_date'] = min(e[3],
-                                                    filters['valid_min_date'])
+                if 'valid_date_min' in filters:
+                    filters['valid_date_min'] = min(e[3],
+                                                    filters['valid_date_min'])
 
-                if 'valid_max_date' in filters:
-                    filters['valid_max_date'] = max(e[4],
-                                                    filters['valid_max_date'])
+                if 'valid_date_max' in filters:
+                    filters['valid_date_max'] = max(e[4],
+                                                    filters['valid_date_max'])
 
         else:
             with open(cfile) as f:
