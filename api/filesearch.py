@@ -371,6 +371,23 @@ def parse_sensor_filters_request(request, dsid, cursor):
                        "endpoint for valid parameter values for this dataset.")
                 return ({}, {}, err, 400)
 
+            variable_names = {}
+            with open(cfile) as f:
+                line = f.readline()
+                line = f.readline()
+                nlines = int(line)
+                # skip the platforms
+                for n in range(nlines):
+                    line = f.readline()
+
+                line = f.readline()
+                nlines = int(line)
+                # get the variables
+                for n in range(nlines):
+                    line = f.readline()
+                    parts = line.strip().split("<!>")
+                    variable_names[parts[0]] = parts[1]
+
             plat_set = set()
             var_set = set()
             for e in res:
@@ -389,10 +406,10 @@ def parse_sensor_filters_request(request, dsid, cursor):
                     var_set.add(e[2])
                     if 'variables' in restrictions:
                         restrictions['variables'].append(
-                                {'name': None, 'code': e[2]})
+                                {'name': variable_names[e[2]], 'code': e[2]})
                     else:
                         filters['variables'].append(
-                                {'name': None, 'code': e[2]})
+                                {'name': variable_names[e[2]], 'code': e[2]})
 
                 if 'valid_min_date' in filters:
                     filters['valid_min_date'] = min(e[3],
