@@ -358,10 +358,12 @@ def parse_sensor_filters_request(request, dsid, cursor):
         else:
             del restrictions['variables']
 
-        if len(wc) > 0:
-            query += f" where {' and '.join(wc)}"
-
         if len(qparams) > 0:
+            if len(wc) > 0:
+                query += f" where {' and '.join(wc)}"
+
+            query += (" group by d.platform_type_code, p.platform_type, d."
+                      "data_type")
             cursor.execute(query, tuple(qparams))
             res = cursor.fetchall()
             if len(res) == 0:
