@@ -30,8 +30,17 @@ $('.btn-all-files').on('click', selectAllFiles);
 // Access Options column: delegated so it works for ajax-loaded tables. Unbind
 // first because this script is re-included each time the filelist is loaded.
 $(document).off('.accessOptions')
+   .on('click.accessOptions', '.file-toggle-btn', toggleFileDetail)
    .on('click.accessOptions', '.copy-path-btn', copyPathClicked)
    .on('click.accessOptions', '.preview-file-btn', previewFileClicked);
+
+function toggleFileDetail() {
+   var btn = $(this);
+   var detail = btn.closest('tr').next('.file-detail').toggleClass('d-none');
+   var open = !detail.hasClass('d-none');
+   btn.attr('aria-expanded', open).attr('title', open ? 'Hide file details' : 'Show file details');
+   btn.find('i').toggleClass('fa-chevron-right', !open).toggleClass('fa-chevron-down', open);
+}
 
 function copyPathClicked() {
    var btn = $(this);
@@ -83,10 +92,12 @@ $("#topButton").on("click", function() {
 function sortColumn()
 {
     var table = $(this).parents('table').eq(0)
-    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).parent().index()))
+    var rows = table.find('tr:gt(0):not(.file-detail)').toArray().sort(comparer($(this).parent().index()))
     this.asc = !this.asc
     if (!this.asc){rows = rows.reverse()}
-    for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+    // keep each file's expandable detail row directly beneath it
+    var details = rows.map(function(r) { return $(r).next('.file-detail'); });
+    for (var i = 0; i < rows.length; i++){table.append(rows[i]); table.append(details[i])}
 }
 function comparer(index) {
     return function(a, b) {
@@ -179,7 +190,7 @@ function getCheckedFiles(parse=false)
         if(file_info['filename'] === undefined) {
             file_info['filename'] = row.find('a').text().trim();
         }
-        file_info['size'] = row.find('.Size').attr('data-size');
+        file_info['size'] = row.attr('data-size');
         files.push(file_info);
     }
     return files;
@@ -623,7 +634,7 @@ function setTableSummary(table) {
     table.find("tbody tr").each(
 	    function () {
          var self = $(this);
-         var size = self.find('td.Size').attr('data-size');
+         var size = self.attr('data-size') || self.find('td.Size').attr('data-size');
          if (!size) {
             size = self.find('td.size').attr('data-size');
          }
