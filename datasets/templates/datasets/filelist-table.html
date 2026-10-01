@@ -85,7 +85,7 @@
                             {% if group.has_thredds and data.locflag != 'O' and file_col.data_path %}
                                 <a class='btn btn-sm btn-outline-primary me-1 p-1' title='TDS Access' target='_blank' rel='noopener'
                                    href="{{ file_col.data_path|make_tds_url }}">
-                                    <i class="fas fa-server"></i> TDS Access
+                                    <img src="{% static 'img/thredds_tds.png' %}" alt="TDS Access" style="height:1.1em;width:auto;vertical-align:-0.15em;">
                                 </a>
                             {% endif %}
                             {% if file_col.meta_link != 'N' and file_col.meta_link %}
