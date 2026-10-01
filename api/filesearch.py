@@ -387,7 +387,7 @@ def parse_sensor_filters_request(request, dsid, cursor):
 
                 if e[2] not in var_set:
                     var_set.add(e[2])
-                    if 'varaibles' in restrictions:
+                    if 'variables' in restrictions:
                         restrictions['variables'].append(
                                 {'name': None, 'code': e[2]})
                     else:
