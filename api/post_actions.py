@@ -6,7 +6,7 @@ import pdb
 import json
 import re
 from subprocess import check_output
-from datetime import datetime
+from datetime import datetime, timedelta
 from . import common
 from . import get_actions
 from .RDA_Response import RDA_Response
@@ -33,8 +33,9 @@ def purge(request_index, email=None):
         return response
 
     date_purge = get_purge_date()
+    time_purge = (datetime.now() + timedelta(hours=1)).strftime('%H:%M:%S')
     try:
-        rdams_purge(request_index, date_purge, '00:00:00')
+        rdams_purge(request_index, date_purge, time_purge)
     except Exception as e:
         print(e)
         response.add_error_message(461)
@@ -51,7 +52,7 @@ def rdams_purge(rindex, purge_date, purge_time):
     Args:
         rindex (int): 6 digit request index.
         purge_date (str): Date at which to purge in format YYYY-MM-DD
-        purge_time (str): Time at which to purge in format HH:MM
+        purge_time (str): Time at which to purge in format HH:MM:SS
     """
     from rda_python_common import PgDBI
 
