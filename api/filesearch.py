@@ -406,12 +406,14 @@ def parse_sensor_filters_request(request, dsid, cursor):
 
                 if e[2] not in var_set:
                     var_set.add(e[2])
+                    name = (variable_names[e[2]] if e[2] in variable_names else
+                            None)
                     if 'variables' in restrictions:
                         restrictions['variables'].append(
-                                {'name': variable_names[e[2]], 'code': e[2]})
+                                {'name': name, 'code': e[2]})
                     else:
                         filters['variables'].append(
-                                {'name': variable_names[e[2]], 'code': e[2]})
+                                {'name': name, 'code': e[2]})
 
                 if 'valid_min_date' in filters:
                     filters['valid_min_date'] = min(e[3],
