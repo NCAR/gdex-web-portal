@@ -111,6 +111,9 @@ def dataset_type(result):
         return None
     return result[0]["dataset_type"]
 
+def gcmd_location_path(result):
+    """GCMD location paths for the dataset. Formatted as the full GCMD hierarchy path (Location Category > Location Type > Subregion1-4)."""
+    return result[0].get('gcmd_location_path') or 'N/A'
 
 # ---------------------------------------------------------------------------
 # New field extractors for the redesigned result cards
@@ -178,3 +181,22 @@ def time_resolution_display(result):
     seen  = set()
     unique = [p for p in parts if not (p in seen or seen.add(p))]
     return ', '.join(unique) or 'N/A'
+
+def dataset_logo(result):
+    """URL to the dataset logo image."""
+    return result[0].get('dataset_logo') or None
+
+def dataset_tags(result):
+    """List of dataset tags, plus tags derived from other fields."""
+    out = []
+    field_names = ["tags", "format", "gcmd_topics_and_terms"]
+
+    for field_name in field_names:
+        for value in result[0].get(field_name) or []:
+            out.append({
+                "field_name": field_name,
+                "value": value,
+                "search_filter_query_key": f"filter-match-any.{field_name}",
+            })
+
+    return out

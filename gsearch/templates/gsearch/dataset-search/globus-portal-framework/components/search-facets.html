@@ -4,9 +4,9 @@
 <fieldset class="facet-fieldset">
   <legend class="border-bottom">
     {% if facet.name == 'Location' %}
-      <i class="fa-solid fa-location-dot"></i>
+      <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
     {% else %}
-      <i class="fa-solid fa-filter"></i>
+      <i class="fa-solid fa-filter" aria-hidden="true"></i>
     {% endif %}
     {{facet.name}}
     <a class="i-xtimes--before text-gray-base float-end" href="javascript:void(0)" onclick="clearBuckets('{{facet.name}}')">Clear</a>
@@ -15,24 +15,26 @@
     {% if facet.buckets %}
     {% for field in facet.buckets %}
     <div class="facet-field mr-3 ps-1">
-      <input type="checkbox" class="facet-checkbox gsearch-checkbox mr-1" name="{{field.search_filter_query_key}}"
-        value="{{field.value}}" {# Reset page to 1 if user facets on a paginated search #} onchange="customSearch(1);"
-        autocomplete="off" {% if field.checked %} checked {% endif %}>
-      {% if field.filter_type == 'year' %}
-        {{field.datetime|date:'Y'}}
-      {% elif field.filter_type == 'month' %}
-        {{field.datetime|date:'F Y'}}
-      {% elif field.filter_type == 'day' %}
-        {{field.datetime|date:'M d Y'}}
-      {% elif field.filter_type in 'hour minute second' %}
-        {{field.datetime|date:'M d Y H:i:s T'}}
-      {% elif field.field_name == 'location' or field.field_name == 'platform' %}
-        {% truncate_facet field.value %}
-      {% elif field.field_name == 'spatial_resolution' or field.field_name == 'time_resolution' %}
-        {% truncate_facet field.value separator=':' %}
-      {% else %}
-        {{field.value}}
-      {% endif %}
+      <label class="facet-checkbox-label">
+        <input type="checkbox" class="facet-checkbox gsearch-checkbox mr-1" name="{{field.search_filter_query_key}}"
+          value="{{field.value}}" {# Reset page to 1 if user facets on a paginated search #} onchange="customSearch(1);"
+          autocomplete="off" {% if field.checked %} checked {% endif %}>
+        {% if field.filter_type == 'year' %}
+          {{field.datetime|date:'Y'}}
+        {% elif field.filter_type == 'month' %}
+          {{field.datetime|date:'F Y'}}
+        {% elif field.filter_type == 'day' %}
+          {{field.datetime|date:'M d Y'}}
+        {% elif field.filter_type in 'hour minute second' %}
+          {{field.datetime|date:'M d Y H:i:s T'}}
+        {% elif field.field_name == 'location' or field.field_name == 'platform' %}
+          {% truncate_facet field.value %}
+        {% elif field.field_name == 'spatial_resolution' or field.field_name == 'time_resolution' %}
+          {% truncate_facet field.value separator=':' %}
+        {% else %}
+          {{field.value}}
+        {% endif %}
+      </label>
       <span class="badge gsearch-badge rounded-pill float-end">{{field.count}}</span>
     </div>
     {% empty %}

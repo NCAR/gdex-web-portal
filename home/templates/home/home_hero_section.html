@@ -2,16 +2,16 @@
 {% with hero_fallback_img="/media/original_images/hero_earth.png" %}
 {% if page.hero_banner_image %}
     {% image page.hero_banner_image original as hero_img %}
-    <section class="gdex-hero" style="background-image: url('{{ hero_img.url }}');">
+    <section class="gdex-hero" style="background-image: url('{{ hero_img.url }}');" aria-labelledby="gdex-hero-heading">
 {% else %}
-    <section class="gdex-hero" style="background-image: url('{{ hero_fallback_img }}');">
+    <section class="gdex-hero" style="background-image: url('{{ hero_fallback_img }}');" aria-labelledby="gdex-hero-heading">
 {% endif %}
     <div class="gdex-hero__content position-relative">
         <div class="container-lg">
         <div class="row">
             <!--gdex-hero__overlay-panel in bootstrap is: class="col-lg-5 col-xl-4 bg-dark bg-opacity-25 text-white p-4 rounded-3 maxWidth-sm" style="backdrop-filter: blur(8px); max-width: 500px;" -->
             <div class="col-lg-5 col-xl-4 gdex-hero__overlay-panel">
-                <h1 class="gdex-hero__heading">
+                <h1 class="gdex-hero__heading" id="gdex-hero-heading">
                     {% if page.hero_heading_highlight %}<span class="gdex-hero__heading-highlight">{{ page.hero_heading_highlight }}</span> {% endif %}{{ page.hero_heading|default:"The system of record for Earth system science." }}
                 </h1>
                 <div class="gdex-hero__description">

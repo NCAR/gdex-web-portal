@@ -14,14 +14,14 @@
   <div class="gdex-find-data-hero__bg" style="background-image: url('{{ hero_bg }}');"></div>
   <div class="container-lg gdex-find-data-hero__content position-relative">
     <div class="col-lg-5 col-xl-4 gdex-find-data-hero__overlay-panel mx-auto w-75 text-center mb-2">
-    <h1 class="gdex-find-data-hero__heading">Search GDEX</h1>
+    <h1 class="gdex-find-data-hero__heading" id="gdex-find-data-heading">Search GDEX</h1>
     <p class="gdex-find-data-hero__subtitle">
       Search GDEX by keyword, variable, project, instrument, or dataset ID.
       Use the filters on the left to narrow results and quickly find the data you need.
     </p>
     </div>
-    <form id="search-form" class="gdex-find-data-hero__form"
-          action="{% url 'search' globus_portal_framework.index %}">
+    <form id="search-form" class="gdex-find-data-hero__form" role="search" aria-labelledby="gdex-find-data-heading"
+          action="{% url 'dataset_search' index='dataset-search' %}">
       <div class="gdex-find-data-hero__search-bar">
         <input type="text" name="q" id="search-input" autocomplete="off"
                placeholder="Start your search here..."
@@ -29,7 +29,7 @@
                aria-label="Search GDEX datasets"
                {% if request.session.search.query and request.session.search.query != '*' %}value="{{ request.session.search.query }}"{% endif %}>
         <button type="submit" class="gdex-find-data-hero__search-btn" aria-label="Search">
-          <i class="fas fa-search"></i>
+          <i class="fas fa-search" aria-hidden="true"></i>
         </button>
       </div>
     </form>
@@ -62,10 +62,12 @@
                 <span class="gdex-active-filter-chip">
                   <span class="gdex-active-filter-chip__group">{{ facet.name }}</span>
                   <span class="gdex-active-filter-chip__value">
-                    {% if field.field_name == 'location' or field.field_name == 'platform' %}
+                    {% if field.field_name == 'platform' %}
                       {% truncate_facet field.value %}
                     {% elif field.field_name == 'spatial_resolution' or field.field_name == 'time_resolution' %}
                       {% truncate_facet field.value separator=':' %}
+                    {% elif field.field_name == 'gcmd_location_category' or field.field_name == 'gcmd_location_type' or field.field_name == 'gcmd_location_subregion1' or field.field_name == 'gcmd_location_subregion2' or field.field_name == 'gcmd_location_subregion3' or field.field_name == 'gcmd_location_detailed' %}
+                      {{ field.value|title }}
                     {% else %}
                       {{ field.value }}
                     {% endif %}
@@ -164,6 +166,21 @@ document.querySelectorAll('input[name="gdex-time-preset"]').forEach(function (r)
    Uses direct property comparison instead of a CSS selector so special characters
    in facet names/values (">", ".", etc.) are never misinterpreted. */
 function gdexRemoveFilter(name, value) {
+    /* A location tier chip is backed by a <select>, not a standalone
+       checkbox — clearing just the hidden checkbox would leave the dropdown
+       showing the old choice and orphan whatever deeper tiers were picked
+       under it. Route it through the cascade's own change handling instead
+       (search_data.js), which clears the select and cascades the clear to
+       everything below it before searching. */
+    var locSelect = document.querySelector(
+        '.gdex-location-select[data-filter-key="' + name + '"]'
+    );
+    if (locSelect && locSelect.value === value) {
+        locSelect.value = '';
+        locSelect.dispatchEvent(new Event('change'));
+        return;
+    }
+
     document.querySelectorAll('#facet-form input').forEach(function(inp) {
         if (inp.name === name && inp.value === value) { inp.checked = false; }
     });

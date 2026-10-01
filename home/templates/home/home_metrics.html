@@ -4,65 +4,65 @@
 {% with metrics_fallback_img='/media/original_images/bannerimage7.jpg' %}
 {% if page.metrics_banner_image %}
     {% image page.metrics_banner_image original as metrics_img %}
-    <section class="gdex-metrics-section" style="background-image: url('{{ metrics_img.url }}');">
+    <section class="gdex-metrics-section" style="background-image: url('{{ metrics_img.url }}');" aria-labelledby="gdex-metrics-heading">
 {% else %}
-    <section class="gdex-metrics-section" style="background-image: url('{{ metrics_fallback_img }}');">
+    <section class="gdex-metrics-section" style="background-image: url('{{ metrics_fallback_img }}');" aria-labelledby="gdex-metrics-heading">
 {% endif %}
     <div class="container-lg">
 
-        <h2 class="gdex-metrics-section__title">GDEX By the Numbers</h2>
+        <h2 class="gdex-metrics-section__title" id="gdex-metrics-heading">GDEX By the Numbers</h2>
 
         {# gdex-metrics-carousel only changes behavior on mobile (see mobile media query in home_page.css) #}
         <div class="gdex-metrics-carousel">
         <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-4" id="gdex-metrics-row">
             <div class="col">
                 <div class="gdex-metric">
-                    <div class="gdex-metric__icon"><i class="icon-data-software-services"></i></div>
+                    <div class="gdex-metric__icon"><i class="icon-data-software-services" aria-hidden="true"></i></div>
                     <div class="gdex-metric__value" id="gdex-metric-datasets">&hellip;</div>
                     <div class="gdex-metric__label">Total Datasets</div>
                 </div>
             </div>
             <div class="col">
                 <div class="gdex-metric">
-                    <div class="gdex-metric__icon"><i class="icon-documents"></i></div>
+                    <div class="gdex-metric__icon"><i class="icon-documents" aria-hidden="true"></i></div>
                     <div class="gdex-metric__value" id="gdex-metric-citations">&hellip;</div>
                     <div class="gdex-metric__label">Total Citations</div>
                 </div>
             </div>
             <div class="col">
                 <div class="gdex-metric">
-                    <div class="gdex-metric__icon"><i class="icon-our-staff"></i></div>
+                    <div class="gdex-metric__icon"><i class="icon-our-staff" aria-hidden="true"></i></div>
                     <div class="gdex-metric__value" id="gdex-metric-users">&hellip;</div>
                     <div class="gdex-metric__label">Unique IPs</div>
                 </div>
             </div>
             <div class="col">
                 <div class="gdex-metric">
-                    <div class="gdex-metric__icon"><i class="icon-observations"></i></div>
+                    <div class="gdex-metric__icon"><i class="icon-observations" aria-hidden="true"></i></div>
                     <div class="gdex-metric__value" id="gdex-metric-downloaded">&hellip;</div>
                     <div class="gdex-metric__label">Data Downloaded</div>
                 </div>
             </div>
             <div class="col">
                 <div class="gdex-metric">
-                    <div class="gdex-metric__icon"><i class="icon-computational-resources"></i></div>
+                    <div class="gdex-metric__icon"><i class="icon-computational-resources" aria-hidden="true"></i></div>
                     <div class="gdex-metric__value" id="gdex-metric-volume">&hellip;</div>
                     <div class="gdex-metric__label">Size of GDEX</div>
                 </div>
             </div>
             <div class="col">
                 <div class="gdex-metric">
-                    <div class="gdex-metric__icon"><i class="icon-what-we-offer"></i></div>
+                    <div class="gdex-metric__icon"><i class="icon-what-we-offer" aria-hidden="true"></i></div>
                     <div class="gdex-metric__value" id="gdex-metric-requests">&hellip;</div>
                     <div class="gdex-metric__label">Customized Requests</div>
                 </div>
             </div>
         </div>
         <button type="button" class="gdex-metrics-carousel__arrow gdex-metrics-carousel__arrow--prev" aria-label="Show previous metrics">
-            <i class="fas fa-chevron-left"></i>
+            <i class="fas fa-chevron-left" aria-hidden="true"></i>
         </button>
         <button type="button" class="gdex-metrics-carousel__arrow gdex-metrics-carousel__arrow--next" aria-label="Show next metrics">
-            <i class="fas fa-chevron-right"></i>
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
         </button>
         </div>
 

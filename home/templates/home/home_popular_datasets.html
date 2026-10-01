@@ -1,12 +1,12 @@
 {% load static wagtailcore_tags %}
 
 <!-- POPULAR DATASETS -->
-<section class="gdex-popular-section">
+<section class="gdex-popular-section" aria-labelledby="gdex-popular-heading">
     <div class="container-lg">
 
         <div class="d-flex align-items-center justify-content-between mb-2">
-            <h2 class="gdex-section-title mb-0">Explore Popular Datasets</h2>
-            <a href="/gsearch/popular/" class="gdex-popular-section__view-all">
+            <h2 class="gdex-section-title mb-0" id="gdex-popular-heading">Explore Popular Datasets</h2>
+            <a href="{% url 'popular_datasets' %}" class="gdex-popular-section__view-all">
                 View all datasets &rarr;
             </a>
         </div>
@@ -17,8 +17,8 @@
                     <!-- slides injected by JS after API call -->
                 </div>
             </div>
-            <div class="gdex-swiper-prev"><i class="fas fa-chevron-left"></i></div>
-            <div class="gdex-swiper-next"><i class="fas fa-chevron-right"></i></div>
+            <div class="gdex-swiper-prev" role="button" tabindex="0" aria-label="Previous datasets"><i class="fas fa-chevron-left" aria-hidden="true"></i></div>
+            <div class="gdex-swiper-next" role="button" tabindex="0" aria-label="Next datasets"><i class="fas fa-chevron-right" aria-hidden="true"></i></div>
         </div>
 
     </div>
@@ -26,6 +26,7 @@
 
 <script>
 (function () {
+    var default_img = '/images/ds_logos/default_200_200.png';
     var placeholderImgs = [
         '/media/original_images/hero_earth.png',
         '/media/original_images/image_X2hGX6H.png'
@@ -45,12 +46,20 @@
         .then(function (data) {
             var wrapper = document.getElementById('gdex-popular-datasets-wrapper');
             data.top_datasets.forEach(function (ds, i) {
-                var img = placeholderImgs[i % placeholderImgs.length];
+                var img;
+                if (ds.dslogo) {
+                    img = '/images/ds_logos/' + ds.dslogo;
+                } else {
+                  //  img = placeholderImgs[i % placeholderImgs.length];
+                    img = default_img;
+                }
+                var circleClass = 'gdex-dataset-card__circle' +
+                    (img === default_img ? ' gdex-dataset-card__circle--no-border' : '');
                 var slide = document.createElement('div');
                 slide.className = 'swiper-slide';
                 slide.innerHTML =
-                    '<a href="/datasets/' + ds.dataset + '" class="gdex-dataset-card">' +
-                        '<div class="gdex-dataset-card__circle">' +
+                    '<a href="/datasets/' + ds.dataset + '/" class="gdex-dataset-card">' +
+                        '<div class="' + circleClass + '">' +
                             '<img src="' + img + '" alt="' + ds.OName + '">' +
                         '</div>' +
                         '<div class="gdex-dataset-card__body">' +
@@ -89,5 +98,17 @@
         .catch(function () {
             document.getElementById('gdex-popular-datasets-wrapper').closest('.gdex-datasets-swiper-wrapper').style.display = 'none';
         });
+
+    // The prev/next controls are role="button" divs (Swiper needs plain
+    // elements, not real <button>s, to attach its own nav behavior), so
+    // native Enter/Space activation isn't provided automatically.
+    document.querySelectorAll('.gdex-swiper-prev, .gdex-swiper-next').forEach(function (el) {
+        el.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                el.click();
+            }
+        });
+    });
 }());
 </script>

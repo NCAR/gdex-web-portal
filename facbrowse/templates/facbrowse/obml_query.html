@@ -110,7 +110,31 @@ function submitSelections() {
 </div>
 {% endif %}
 {% if listtyp == "weblist" or listtyp == "gladelist" %}
+{% if fcodes|length > 0 %}
 {% include "facbrowse/filelist.html" %}
+{% else %}
+<div class="alert alert-danger text-white">
+    <p>
+        Your selections did not match any files.
+    </p>
+    {% if request.POST.id %}
+    <p>
+        {% if request.POST.id_match == "exact" %}
+        The station ID '{{ request.POST.id }}' is not valid for this dataset.
+        {% else %}
+        There are no stations in this dataset with '{{ request.POST.id }}' in their IDs.
+        {% endif %}
+    </p>
+    {% elif request.POST.gdrawboxmap_nlat %}
+    <p>
+        There are no stations in this dataset within the bounding box that you drew.
+    </p>
+    {% endif %}
+    <p>
+        You can <a href="javascript:void(0)" onclick="getAjaxContent('GET', '', '/datasets/{{ dsid }}/facbrowse/weblist/customize/', 'ds_content')">try again</a> with different selections.
+    </p>
+</div>
+{% endif %}
 {% endif %}
 <div id="calendar_div" class="calendar"></div>
 {% endif %}{% comment %}IF_ERROR{% endcomment %}

@@ -45,7 +45,7 @@
 }
 
 .gdex-specialized-card__thumb--rank {
-    background: linear-gradient(135deg, var(--gdex-navy) 0%, var(--gdex-blue) 100%);
+    background: linear-gradient(135deg, var(--gdex-space) 0%, var(--gdex-blue) 100%);
 }
 .gdex-specialized-card__rank {
     font-family: 'Poppins', sans-serif;

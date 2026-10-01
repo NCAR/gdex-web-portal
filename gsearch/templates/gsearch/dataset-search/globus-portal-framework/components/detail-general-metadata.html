@@ -2,9 +2,9 @@
 {% block detail_general_metadata %}
 {% for key, value in project_metadata.items %}
 <br/>
-<table class="table">
+<table class="table" aria-label="{{key}}">
   <h3>{{key}}</h3>
-  <table class="table no-border">
+  <table class="table no-border" aria-label="{{key}}">
     <tbody>
       <tr class="no-border">
         <td>{{value}}</td>

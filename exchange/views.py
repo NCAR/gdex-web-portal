@@ -1,11 +1,31 @@
 import os
 import re
+import smtplib
 from datetime import datetime
+from email.message import EmailMessage
 from urllib.parse import quote, urlparse
 
+import bleach
+import markdown
 import pelicanfs
 from django.conf import settings
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils.safestring import mark_safe
+
+_README_ALLOWED_TAGS = [
+    'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'code', 'pre',
+    'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr',
+]
+_README_ALLOWED_ATTRS = {'a': ['href', 'title', 'rel']}
+
+# Must be safe to use as a single POSIX path component: no "/", no null bytes,
+# not "." or "..", and no leading "-" (which some tools would treat as a flag).
+_PROJECT_NAME_RE = re.compile(r'^(?!\.\.?$)(?!-)[A-Za-z0-9._-]{1,74}$')
+
+
+def _is_valid_project_name(name):
+    return bool(_PROJECT_NAME_RE.match(name))
 
 
 def _format_size(size_bytes):
@@ -40,6 +60,12 @@ def _parse_readme(content):
 
     description = '\n'.join(desc_lines).strip() or None
     return title, description
+
+
+def _render_readme_markdown(text):
+    """Convert README markdown to sanitized HTML safe for template rendering."""
+    html = markdown.markdown(text, extensions=['fenced_code', 'tables'])
+    return mark_safe(bleach.clean(html, tags=_README_ALLOWED_TAGS, attributes=_README_ALLOWED_ATTRS))
 
 
 def _get_pelican_fs():
@@ -98,15 +124,73 @@ def _read_dataset_readme(pelfs, base_path, subpath):
     readme_path = base_path.rstrip('/') + '/' + subpath + '/README.md'
     try:
         content = pelfs.cat(readme_path).decode('utf-8')
-        return _parse_readme(content)
+        title, description = _parse_readme(content)
+        if description:
+            description = _render_readme_markdown(description)
+        return title, description
     except Exception:
         return None, None
+
+
+def _create_project(request):
+    """Handle the "Create New Project" form submission.
+
+    TEMPORARY: project creation isn't automated yet, so this just emails the
+    submitted details to be handled manually.
+    """
+    if not request.user.is_authenticated or not request.user.has_hpc_account:
+        return JsonResponse(
+            {'error': 'You must be signed in with an HPC account to create a project.'},
+            status=403,
+        )
+
+    project_name = request.POST.get('project_name', '').strip()
+    if not project_name:
+        return JsonResponse({'error': 'Project name is required.'}, status=400)
+    if not _is_valid_project_name(project_name):
+        return JsonResponse(
+            {
+                'error': (
+                    'Project name may only contain letters, numbers, periods, '
+                    'underscores, and hyphens; it cannot start with a hyphen or be "." or "..".'
+                ),
+            },
+            status=400,
+        )
+
+    full_title = request.POST.get('full_title', '').strip()
+    abstract = request.POST.get('abstract', '').strip()
+    hpc_username = request.user.hpc_username
+
+    body = (
+        "A new GDEX Exchange project has been requested.\n\n"
+        f"Requested by: {request.user.email}\n"
+        f"HPC username: {hpc_username}\n"
+        f"Project name: {project_name}\n"
+        f"Full title: {full_title or '(none)'}\n\n"
+        "Abstract:\n"
+        f"{abstract or '(none)'}\n"
+    )
+
+    msg = EmailMessage()
+    msg['From'] = request.user.email
+    msg['To'] = "rpconroy@ucar.edu"
+    msg['Subject'] = f"GDEX Exchange: new project request — {project_name}"
+    msg.set_content(body)
+    with smtplib.SMTP("localhost") as s:
+        s.send_message(msg)
+
+    return JsonResponse({'success': True})
 
 
 def filelist(request, subpath=''):
     base_path = getattr(settings, 'PELICAN_EXCHANGE_BASE_PATH', None)
     osdf_data_path = getattr(settings, 'OSDF_DIRECTOR_URL', '').rstrip('/')
     subpath = subpath.strip('/')
+
+    # The "Create New Project" form posts to the exchange root.
+    if request.method == 'POST' and not subpath:
+        return _create_project(request)
 
     entries = []
     error = None
@@ -143,7 +227,23 @@ def filelist(request, subpath=''):
         '&origin_path=' + quote(exchange_path, safe='')
     )
 
+    # Creating a project requires a signed-in user with an HPC account.
+    # Only look this up on the root page, where the button is shown, to
+    # avoid a SAM call on every directory listing.
+    new_project_state = None
+    hpc_username = None
+    if not subpath:
+        if not request.user.is_authenticated:
+            new_project_state = 'needs_login'
+        elif not request.user.has_hpc_account:
+            new_project_state = 'needs_hpc'
+        else:
+            new_project_state = 'enabled'
+            hpc_username = request.user.hpc_username
+
     return render(request, 'exchange/filelist.html', {
+        'new_project_state': new_project_state,
+        'hpc_username': hpc_username,
         'entries': entries,
         'current_subpath': subpath,
         'readme_title': readme_title,

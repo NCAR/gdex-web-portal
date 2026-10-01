@@ -1,10 +1,14 @@
 {% load static %}
-<div>
+<div role="region" aria-label="Search results">
   {% for result in search.search_results %}
   <article class="gdex-dataset-result">
 
     <div class="gdex-dataset-result__thumb">
+      {% if result.dataset_logo %}
+      <img class="gdex-dataset-result__thumb-img--logo" src="/images/ds_logos/{{ result.dataset_logo }}" alt="{{ result.title }}">
+      {% else %}
       <img src="/media/original_images/MPAS_image.png" alt="{{ result.title }}">
+      {% endif %}
     </div>
 
     <div class="gdex-dataset-result__body">
@@ -14,9 +18,9 @@
         <div class="gdex-dataset-result__title-block">
           <h3 class="gdex-dataset-result__title">
             <a href="{{ result.dataset_url }}/"
-               data-summary="{{ result.summary }}">
+               data-summary="{{ result.summary }}" target="_blank">
               {{ result.title }}
-              <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon"></i>
+              <i class="fas fa-arrow-up-right-from-square gdex-dataset-result__ext-icon" aria-hidden="true"></i>
             </a>
           </h3>
         </div>
@@ -25,14 +29,14 @@
       <p class="gdex-dataset-result__doi">
         DOI: {{ result.doi }}
         {% if result.doi != 'N/A' %}
-        <button class="gdex-doi-copy" title="Copy DOI" data-doi="{{ result.doi }}">
-          <i class="fas fa-copy"></i>
+        <button class="gdex-doi-copy" title="Copy DOI" aria-label="Copy DOI to clipboard" data-doi="{{ result.doi }}">
+          <i class="fas fa-copy" aria-hidden="true"></i>
         </button>
         {% endif %}
       </p>
       {% if result.dataset_type == 'H' %}
       <p class="gdex-ancillary-badge">
-        <i class="fa-solid fa-triangle-exclamation"></i>
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
         Ancillary use only — not recommended as a primary research dataset. Likely superseded by newer datasets.
       </p>
       {% endif %}
@@ -52,8 +56,17 @@
           <span class="gdex-dataset-result__meta-value">{{ result.data_format_display }}</span>
         </div>
         <a href="{{ result.dataset_url }}/dataaccess/" class="gdex-btn-access">
-          <i class="fas fa-download"></i> Access Data
+          <i class="fas fa-download" aria-hidden="true"></i> Access Data
         </a>
+      </div>
+
+      {# ── Tags row ── #}
+      <div class="gdex-dataset-result__tags">
+        {% for item in result.dataset_tags %}
+            <a href="{% url 'dataset_search' index='dataset-search' %}?q=&{{ item.search_filter_query_key }}={{ item.value }}" class="text-decoration-none">
+                <span class="badge rounded"><span class="visually-hidden">Filter by tag: </span>{{ item.value }}</span>
+            </a>
+        {% endfor %}
       </div>
 
     </div>

@@ -57,6 +57,7 @@ def popular_datasets(request):
                 'rank': ds.get('index', ''),
                 'users': ds.get('Total Number of Unique Users', 'N/A'),
                 'volume_tb': ds.get('Total Volume Downloaded (TB)', 'N/A'),
+                'summary': ds.get('summary', ''),
             }
             for ds in raw
         ]

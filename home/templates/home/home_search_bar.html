@@ -4,8 +4,8 @@
         <div class="row justify-content-center">
             <div class="col-12">
                 <div class="gdex-search-block">
-                    <h2 class="gdex-search-block__title">{{ page.search_box_title|default:"Search For Datasets" }}</h2>
-                    <form action="/gsearch/dataset-search/" method="get" id="gdex-home-search-form">
+                    <h2 class="gdex-search-block__title" id="gdex-search-block-title">{{ page.search_box_title|default:"Search For Datasets" }}</h2>
+                    <form action="{% url 'dataset_search' index='dataset-search' %}" method="get" id="gdex-home-search-form" role="search" aria-labelledby="gdex-search-block-title">
                         <div class="gdex-search-bar">
                             <input
                                 type="text"
@@ -16,7 +16,7 @@
                                 aria-label="Search datasets"
                             >
                             <button type="submit" class="gdex-search-bar__btn" aria-label="Search">
-                                <i class="fas fa-search"></i>
+                                <i class="fas fa-search" aria-hidden="true"></i>
                                 <span>Search</span>
                             </button>
                         </div>
@@ -40,26 +40,19 @@
 <!-- CHIPS -->
 <div class="gdex-search-chips">
     <div class="container-lg">
-        <p class="gdex-search-chips__label">Explore specialized datasets</p>
-        <div class="d-flex flex-wrap gap-3 justify-content-center">
-            <a href="/gsearch/ai-ready/" class="gdex-chip">
+        <p class="gdex-search-chips__label" id="gdex-search-chips-label">Explore specialized datasets</p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center" role="group" aria-labelledby="gdex-search-chips-label">
+            {% for suggestion in page.search_suggestions.all %}
+            <a href="{{ suggestion.search_term_url }}" class="gdex-chip">
                 <div class="gdex-chip__icon-zone">
-                    <i class="fas fa-robot"></i>
+                    <i class="{{ suggestion.icon }}" aria-hidden="true"></i>
                 </div>
                 <div class="gdex-chip__text-zone">
-                    <strong>AI-ready datasets</strong>
-                    <small class="d-block">Dataset prepared for AI/ML Workflow</small>
+                    <strong>{{ suggestion.search_term }}</strong>
+                    <small class="d-block">{{ suggestion.description }}</small>
                 </div>
             </a>
-            <a href="/gsearch/dataset-search/?q=&filter-match-all.format=Zarr" class="gdex-chip">
-                <div class="gdex-chip__icon-zone">
-                    <i class="fas fa-layer-group"></i>
-                </div>
-                <div class="gdex-chip__text-zone">
-                    <strong>Zarr datasets</strong>
-                    <small class="d-block">Cloud-optimized array data</small>
-                </div>
-            </a>
+            {% endfor %}
         </div>
     </div>
 </div>
