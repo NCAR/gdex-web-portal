@@ -310,9 +310,12 @@ def parse_sensor_filters_request(request, dsid, cursor):
                         'variables': [], }
         filters = copy.deepcopy(restrictions)
         query = ("select distinct d.platform_type_code, p.platform_type, d."
-                 f'data_type from "WObML".{dsid}_data_types_list as d left '
-                 f'join "WObML".platform_types as p on p.code = d.'
-                 "platform_type_code")
+                 'data_type, min(w.start_date), max(w.end_date) from "WObML".'
+                 f'{dsid}_data_types_list as d left join "WObML".'
+                 "platform_types as p on p.code = d.platform_type_code left "
+                 f'join "WObML".{dsid}_data_types as t on t.data_type_code = '
+                 f'd.code left join "WObML".{dsid}_webfiles2 as w on w.code = '
+                 "t.file_code")
         qparams = []
         wc = []
         if ('valid_date_min' in request.GET and
@@ -336,14 +339,6 @@ def parse_sensor_filters_request(request, dsid, cursor):
             del filters['products']
         else:
             del restrictions['products']
-
-        if ('valid_date_min' in restrictions or 'valid_date_max' in
-                restrictions or 'products' in restrictions):
-            query += (f' left join "WObML".{dsid}_data_types as t on t.'
-                      f'data_type_code = d.code left join "WObML".{dsid}'
-                      "_webfiles2 as w on w.code = t.file_code")
-            if 'products' in restrictions:
-                pass
 
         if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
             wc.append("d.platform_type_code in %s")
@@ -398,6 +393,14 @@ def parse_sensor_filters_request(request, dsid, cursor):
                     else:
                         filters['variables'].append(
                                 {'name': None, 'code': e[2]})
+
+                if 'valid_min_date' in filters:
+                    filters['valid_min_date'] = min(e[3],
+                                                    filters['valid_min_date'])
+
+                if 'valid_max_date' in filters:
+                    filters['valid_max_date'] = max(e[4],
+                                                    filters['valid_max_date'])
 
         else:
             with open(cfile) as f:
