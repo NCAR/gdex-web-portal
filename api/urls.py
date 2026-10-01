@@ -1,4 +1,5 @@
 from django.urls import path, include
+from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from . import views
 from dataaccess.views import DataAccessAPIView
@@ -71,6 +72,7 @@ _urlpatterns = [
     # "datasets" tag
     path(r'get_datasets/', views.get_datasets),
     path(r'datasets/<dsid>/data_access/root', DataAccessAPIView.as_view(), name='data-access-api' ),
+    path(r'datasets/<dsid>/has_thredds/', views.has_thredds),
 
     # "Files" tag
     path(r'datasets/<dsid>/filelist/', views.get_assembled_groups ),
@@ -100,6 +102,7 @@ _urlpatterns = [
 ]
 
 urlpatterns = _urlpatterns + [
+    path('', RedirectView.as_view(pattern_name='swagger-ui', permanent=False), name='api-root'),
     path('schema/', SpectacularAPIView.as_view(patterns=[path('api/', include((_urlpatterns, 'api')))]), name='schema'),
     path('documentation/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),

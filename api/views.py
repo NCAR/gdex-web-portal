@@ -33,6 +33,7 @@ from .docs import (
     get_root_groups_schema,
     get_assembled_groups_schema,
     has_arco_schema,
+    has_thredds_schema,
     get_arco_variables_schema,
     search_arco_variables_schema,
     get_child_groups_schema,
@@ -323,6 +324,16 @@ def has_arco(request, dsid):
     result = common.has_arco(dsid)
     response = rda_r.RDA_Response()
     response.add_data({'has_arco':result})
+    return JsonResponse(response.get_json())
+
+@has_thredds_schema
+@cache_page(60 * 60) # cache for 1 hour
+@api_view(['GET'])
+def has_thredds(request, dsid):
+    """Return true if a THREDDS catalog is available for the dataset"""
+    result = common.has_thredds(dsid)
+    response = rda_r.RDA_Response()
+    response.add_data({'has_thredds': result})
     return JsonResponse(response.get_json())
 
 @get_arco_variables_schema

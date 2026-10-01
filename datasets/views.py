@@ -25,7 +25,7 @@ from . import transform
 from .utils import get_custom_subset_context, get_hostname, ng_gdex_id
 from .services import visualize_file
 from .CodeExample import CodeExample
-from api.common import (format_dataset_id, get_request_info,
+from api.common import (format_dataset_id, get_request_info, get_thredds_gindexes,
                         get_request_files, get_request_status,
                         get_request_index_from_rqstid,
                         request_type, get_dataset_info,
@@ -322,6 +322,12 @@ def get_filelist_table(request, dsnum, groupid=None):
         filelist_json['data']['is_glade'] = True
     else:
         filelist_json['data']['is_glade'] = False
+    if 'data' in filelist_json:
+        # A group has TDS access if it has its own catalog or the dataset has one
+        thredds_gindexes = get_thredds_gindexes(dsid)
+        for group in filelist_json['data'].get('groups', []):
+            group['has_thredds'] = (0 in thredds_gindexes or
+                                    int(group.get('gindex', 0)) in thredds_gindexes)
 
     return render(request,
                   'datasets/filelist.html',

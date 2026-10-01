@@ -59,6 +59,15 @@ def dsid_dash_to_dot(dsid):
     return dsid
 
 @register.filter
+def make_tds_url(data_path):
+    """Return the THREDDS catalog URL for a file given its data_path
+    (e.g. d633000/dir/file.nc)"""
+    data_path = data_path.strip('/')
+    directory = os.path.dirname(data_path)
+    return ("https://thredds.rda.ucar.edu/thredds/catalog/files/g/"
+            f"{directory}/catalog.html?dataset=files/g/{data_path}")
+
+@register.filter
 def basename(value):
     return os.path.basename(value)
 
