@@ -62,6 +62,17 @@ _GRID_LEVELS = OpenApiParameter(
     description="Restrict to specified vertical level code(s)", many=True
 )
 
+_NAME_CODE_PROPERTY = {
+    'type': "array",
+    'items': {
+        'type': "object",
+        'properties': {
+            'name': {'type': "string"},
+            'code': {'type': "string"}
+        }
+    }
+}
+
 _STD_200 = {
     'status': {'type': 'string', 'example': 'ok'},
     'http_response': {'type': 'integer', 'example': 200},
@@ -320,23 +331,13 @@ filesearch_filters_grid_schema = extend_schema(
             'type': "object",
             'properties': {
                 'dsid': {'type': "string"},
-                'datatype': {'type': "string", 'enum': ["grid"]},
                 'restrictions': {'type': "array", 'items': {'type': "string"}},
                 'filters': {
                     'type': "object",
                     'properties': {
                         'valid_datetime_min': {'type': "string"},
                         'valid_datetime_max': {'type': "string"},
-                        'parameters': {
-                            'type': "array",
-                            'items': {
-                                'type': "object",
-                                'properties': {
-                                    'name': {'type': "string"},
-                                    'code': {'type': "string"}
-                                }
-                            }
-                        }
+                        'parameters': _NAME_CODE_PROPERTY
                     }
                  }
              }
@@ -353,9 +354,36 @@ filesearch_filters_sensor_schema = extend_schema(
     description=(
             "This operation returns the filters that are available for the "
             '"sensor" data files in a dataset.'),
-    parameters=[_DSID, _VALID_DATE_MIN, _VALID_DATE_MAX],
+    parameters=[
+        _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX, _PRODUCTS,
+        OpenApiParameter(
+            name="platforms", type=_ARRAY_OF_STRINGS,
+            location=OpenApiParameter.QUERY,
+            description="Restrict to specified platform code(s)", many=True
+        ),
+        OpenApiParameter(
+            name="variables", type=_ARRAY_OF_STRINGS,
+            location=OpenApiParameter.QUERY,
+            description="Restrict to specified variable code(s)", many=True
+        )
+    ],
     responses={
         200: {
+            'type': "object",
+            'properties': {
+                'dsid': {'type': "string"},
+                'restrictions': {'type': "array", 'items': {'type': "string"}},
+                'filters': {
+                    'type': "object",
+                    'properties': {
+                        'valid_date_min': {'type': "string"},
+                        'valid_date_max': {'type': "string"},
+                        'products': _NAME_CODE_PROPERTY,
+                        'platforms': _NAME_CODE_PROPERTY,
+                        'variables': _NAME_CODE_PROPERTY
+                    }
+                }
+            }
         },
         400: _FILESEARCH_ERROR_RESPONSE,
         500: _FILESEARCH_ERROR_RESPONSE
