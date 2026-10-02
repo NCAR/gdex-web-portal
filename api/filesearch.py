@@ -444,6 +444,19 @@ def parse_sensor_filters_request(request, dsid, cursor):
                 s = str(filters['valid_date_max'])
                 filters['valid_date_max'] = "-".join([s[0:4], s[4:6], s[6:8]])
 
+            if len(gidx_set) > 0:
+                cursor.execute(
+                        "select gindex, title from dssdb.dsgroup where dsid = "
+                        "%s and gindex in %s", (dsid, tuple(gidx_set)))
+                gidx_set = {str(e[0]): e[1] for e in cursor.fetchall()}
+                if 'products' in restrictions:
+                    d = restrictions['products']
+                else:
+                    d = filters['products']
+
+                for item in d:
+                    item['name'] = gidx_set[item['code']]
+
         else:
             with open(cfile) as f:
                 line = f.readline()
