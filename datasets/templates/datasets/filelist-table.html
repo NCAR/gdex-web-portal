@@ -1,58 +1,44 @@
-{% load static %}
 {% load custom_tags %}
-<style>
-{% if not group.is_group_summary %}
-/* fixed layout so expanding a detail row cannot resize the Index column */
-#{{group.group_id|slugify}}_table{table-layout:fixed}
-#{{group.group_id|slugify}}_table .w-1{width:6.5rem}
-#{{group.group_id|slugify}}_table td,#{{group.group_id|slugify}}_table th{overflow-wrap:anywhere;line-height:1.3}
-#{{group.group_id|slugify}}_table .file-toggle-btn{line-height:1;border:0;vertical-align:baseline}
-#{{group.group_id|slugify}}_table input[type=checkbox]{vertical-align:middle;margin-top:0}
-
-/* instant CSS tooltips for the file buttons */
-#{{group.group_id|slugify}}_table [data-tip]{position:relative}
-#{{group.group_id|slugify}}_table [data-tip]:hover::after,#{{group.group_id|slugify}}_table [data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#212529;color:#fff;font:400 .75rem/1.2 var(--bs-body-font-family,sans-serif);padding:.3rem .5rem;border-radius:.25rem;white-space:nowrap;pointer-events:none;z-index:1080}
-#{{group.group_id|slugify}}_table [data-tip]:hover::before,#{{group.group_id|slugify}}_table [data-tip]:focus-visible::before{content:'';position:absolute;bottom:calc(100% + 1px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#212529;border-bottom-width:0;pointer-events:none;z-index:1080}
-{% else %}
-#{{group.group_id|slugify}}_table .w-1{width:1%}
-{% endif %}
-</style>
-<table id='{{group.group_id|slugify}}_table' class='table table-light table-striped{% if not group.is_group_summary %} table-sm{% endif %}'>
+{% comment %}
+Table for one file group. Summary groups (is_group_summary) list every column as-is; file groups show
+only the Index and file name columns, with the remaining columns and the access buttons in a
+collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist.js).
+{% endcomment %}
+<table id='{{ group.group_id|slugify }}_table' class='table table-light table-striped{% if not group.is_group_summary %} table-sm filelist-table{% endif %}'>
     <thead>
         <tr>
             {% if not group.is_group_summary %}
-                <th class='w-1 text-nowrap'><input class='table_group me-1' type='checkbox' id='{{ group.group_id|slugify }}_group_index'></input>Index</th>
+                <th class='index-col'><input class='table_group me-1' type='checkbox' id='{{ group.group_id|slugify }}_group_index'>Index</th>
             {% endif %}
             {% for col in group.column_headers %}
                 {% if group.is_group_summary or forloop.first %}
-                    <th>{{col}}<i role='button' class="fas fa-solid fa-sort sort-column ps-1"></i></th>
+                    <th>{{ col }}<i role='button' class="fas fa-solid fa-sort sort-column ps-1"></i></th>
                 {% endif %}
             {% endfor %}
         </tr>
     </thead>
     <tbody>
         {% for row in group.rows %}
-            <tr {% for col in row %}{% if col.name == 'Size' %}data-size='{{col.value}}'{% endif %}{% endfor %}>
+            <tr {% for col in row %}{% if col.name == 'Size' %}data-size='{{ col.value }}'{% endif %}{% endfor %}>
                 {% if not group.is_group_summary %}
-                    <td class='w-1 text-nowrap'><input class='file me-1' type='checkbox'></input>{{ forloop.counter }}</td>
+                    <td class='index-col'><input class='file me-1' type='checkbox'>{{ forloop.counter }}</td>
                 {% endif %}
                 {% for col in row %}
                     {% if group.is_group_summary or forloop.first %}
-                    <td class='{{col.name}}' {% if col.name == 'Size' %}data-size='{{col.value}}'{% endif %}>
-                        {% include "datasets/filelist-cell.html" %}
-                        {% if not group.is_group_summary %}
-                            <button type='button' class='btn btn-sm btn-link p-0 ms-2 file-toggle-btn' data-tip='Show file details' aria-label='Show file details' aria-expanded='false'>
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        {% endif %}
-                    </td>
+                        <td class='{{ col.name }}' {% if col.name == 'Size' %}data-size='{{ col.value }}'{% endif %}>
+                            {% include "datasets/filelist-cell.html" %}
+                            {% if not group.is_group_summary %}
+                                <button type='button' class='btn btn-sm btn-link p-0 ms-2 file-toggle-btn' data-tip='Show file details' aria-label='Show file details' aria-expanded='false'>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            {% endif %}
+                        </td>
                     {% endif %}
                 {% endfor %}
             </tr>
             {% if not group.is_group_summary %}
-                {% with file_col=row.0 %}
                 <tr class='file-detail d-none'>
-                    <td class='w-1'></td>
+                    <td class='index-col'></td>
                     <td>
                         <dl class='row mb-0 small'>
                             {% for col in row %}
@@ -63,40 +49,11 @@
                             {% endfor %}
                             <dt class='col-sm-3'>Access Options</dt>
                             <dd class='col-sm-9 access-options text-nowrap'>
-                        {% if file_col.is_file %}
-                            {% if file_col.url %}
-                                <a class='btn btn-sm btn-outline-primary me-1 p-1' data-tip='Download file' aria-label='Download file' href="{{ file_col.url }}"><i class="fas fa-download"></i></a>
-                            {% endif %}
-                            {% if data.is_glade %}
-                                <button type='button' class='btn btn-sm btn-outline-primary me-1 p-1 copy-path-btn' data-tip='Copy file path' aria-label='Copy file path'
-                                        data-path="{% if data.locflag == 'O' %}{{ file_col.url|make_local_os_URL }}{% else %}{{ file_col.data_path|make_glade_URL }}{% endif %}">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                            {% endif %}
-                            {% if file_col.value|get_extension == 'nc' and data.locflag != 'O' %}
-                                <button type='button' class='btn btn-sm btn-outline-primary me-1 p-1 preview-file-btn' data-tip='Preview file' aria-label='Preview file'
-                                        data-dsid="{{ data.dsid }}" data-path="{{ file_col.data_path }}" data-name="{{ file_col.value }}">
-                                    <i class="fas fa-image"></i>
-                                </button>
-                            {% endif %}
-                            {% if group.has_thredds and data.locflag != 'O' and file_col.data_path %}
-                                <a class='btn btn-sm btn-outline-primary me-1 p-1' data-tip='TDS Access' aria-label='TDS Access' target='_blank' rel='noopener'
-                                   href="{{ file_col.data_path|make_tds_url }}">
-                                    <img src="{% static 'img/thredds_tds.png' %}" alt="TDS Access" style="height:1.1em;width:auto;vertical-align:-0.15em;">
-                                </a>
-                            {% endif %}
-                            {% if file_col.meta_link != 'N' and file_col.meta_link %}
-                                <a data-tip='Click for Detailed Metadata' aria-label='Click for Detailed Metadata' target='_blank' class='btn btn-sm btn-outline-primary p-1'
-                                   href="/ajax/#cgi-bin/transform?xml=/datasets/{{data.dsid}}/metadata/wfmd{{file_col.data_path|remove_datadsid}}.{{file_col.meta_link}}ML">
-                                    <i class="fas fa-info-circle"></i>
-                                </a>
-                            {% endif %}
-                        {% endif %}
+                                {% include "datasets/filelist-access-options.html" with file_col=row.0 %}
                             </dd>
                         </dl>
                     </td>
                 </tr>
-                {% endwith %}
             {% endif %}
         {% endfor %}
     </tbody>

@@ -17,18 +17,15 @@ $(document).ajaxSuccess(function() {
 });
 
 $(function() {
-    $(document).on('click', '.parent_group', toggleChildBoxes)
-               });
-$(function() {
-    $(document).on('click', '.table_group', toggleChildBoxes)
-               });
+    $(document).on('click', '.parent_group, .table_group', toggleChildBoxes);
+});
 $('.file').on('click', toggleSingleBox);
 $('.sort-column').on('click', sortColumn);
 $('.clear-group-btn').on('click', clearFileSelections);
 $('.btn-all-files').on('click', selectAllFiles);
 
-// Access Options column: delegated so it works for ajax-loaded tables. Unbind
-// first because this script is re-included each time the filelist is loaded.
+// Per-file controls and the page filter: delegated so they work for ajax-loaded tables.
+// Unbind first because this script is re-included each time the filelist is loaded.
 $(document).off('.accessOptions')
    .on('click.accessOptions', '.file-toggle-btn', toggleFileDetail)
    .on('click.accessOptions', '.copy-path-btn', copyPathClicked)
@@ -61,45 +58,6 @@ function pageFilterChanged() {
 
 function pageFilterCleared() {
    $('#' + $(this).data('table') + '_filter_input').val('').trigger('input');
-}
-
-// Client-side file name filter for groups that are not paginated (all files are in the table).
-// Terms are whitespace separated, case-insensitive, all must match; * is a wildcard.
-function pageFilterChanged() {
-   var input = $(this);
-   var table = $('#' + input.data('table'));
-   var terms = $.trim(input.val()).toLowerCase().split(/\s+/).filter(Boolean).map(function(t) {
-      return new RegExp(t.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*'));
-   });
-   var rows = table.find('tbody > tr:not(.file-detail)');
-   var shown = 0;
-   rows.each(function() {
-      var row = $(this);
-      var name = row.children('td').eq(1).text().toLowerCase();
-      var match = terms.every(function(re) { return re.test(name); });
-      row.toggleClass('d-none', !match);
-      var expanded = row.find('.file-toggle-btn').attr('aria-expanded') === 'true';
-      row.next('.file-detail').toggleClass('d-none', !(match && expanded));
-      if (match) { shown++; }
-   });
-   $('#' + input.data('table') + '_filter_count').text('Showing ' + shown + ' of ' + rows.length + ' files');
-   setTableSummary(table);
-}
-
-function pageFilterCleared() {
-   $('#' + $(this).data('table') + '_filter_input').val('').trigger('input');
-}
-
-// Bootstrap tooltips (no delay, no fade) in place of the browser's slow native title tooltips.
-// Created lazily on first hover so it works for ajax-loaded tables.
-function showInstantTooltip() {
-   var tip = bootstrap.Tooltip.getOrCreateInstance(this, {delay: 0, animation: false, trigger: 'hover focus', container: 'body'});
-   tip.show();
-}
-
-function hideInstantTooltip() {
-   var tip = bootstrap.Tooltip.getInstance(this);
-   if (tip) { tip.hide(); }
 }
 
 function toggleFileDetail() {
@@ -184,21 +142,6 @@ function getCellValue(row, index) {
   return $(row).children('td').eq(index).text(); 
 }
 
-/*
-var type = getColumnType();
-var column = $(this).parent().index();
-var table = $(this).closest('table');
-table.find('tr').each(
-    function() {
-        console.log($(this).attr('id'));
-    }
-);
-function getColumnType(table, column)
-{
-  console.log('here')
-}
-*/
-
 /**
  *
  * Given number of bytes, return string with best conversion.
@@ -232,37 +175,21 @@ function get_csrf_token()
 }
 function getCheckedFiles(parse=false)
 {
-    checked_boxes = [];
-    $('.file:checked').each(function() {
-            checked_boxes.push($(this));
-            });
-
-    if(checked_boxes.length == 0)
+    var checked = $('.file:checked');
+    if(checked.length == 0)
     {
         alert('No files are checked. Please select at least one file to continue.');
         throw 'No files selected';
     }
-    files = [];
-    for(var i=0; i < checked_boxes.length; i++)
-    {
-        var file_info = {
-            'filename' : '',
-            'size' : 0};
-        var row = $(checked_boxes[i]).parent().parent();
-        filename = row.find('a').attr('href');
-        if (parse) {
-          url = parseUrl(filename);
-          file_info['filename'] = url.pathname;
-        } else {
-          file_info['filename'] = filename;
+    return checked.map(function() {
+        var row = $(this).closest('tr');
+        var href = row.find('a').attr('href');
+        var filename = (parse && href !== undefined) ? parseUrl(href).pathname : href;
+        if(filename === undefined) {
+            filename = row.find('a').text().trim();
         }
-        if(file_info['filename'] === undefined) {
-            file_info['filename'] = row.find('a').text().trim();
-        }
-        file_info['size'] = row.attr('data-size');
-        files.push(file_info);
-    }
-    return files;
+        return {'filename': filename, 'size': row.attr('data-size')};
+    }).get();
 }
 function parseUrl(url)
 {
@@ -270,137 +197,46 @@ function parseUrl(url)
    a.href = url;
    return a;
 }
-function convertFiles()
+/**
+ * Replace the file list with a confirmation view of the selected files.
+ * opts: {files, header, message, buttonText, onConfirm}
+ */
+function showSelectionConfirmation(opts)
 {
-    var contentDiv = 'ds_content';
-    var files = getCheckedFiles();
-    var sizes = getListFromKey(files, 'size');
+    var files = opts.files;
     var totalSize = 0;
-    $.each(sizes,function(){totalSize+=parseFloat(this) || 0;});
-    var contact = "datahelp@ucar.edu";
-    var dsid = $('#file_table').attr('data-dsid');
-    var message = `Click the following button to send a request for converting format to NetCDF
+    $.each(getListFromKey(files, 'size'), function(){ totalSize += parseFloat(this) || 0; });
 
-    Contact ${contact} for further assitance
-    `;
     var confirmation_div = $('<div></div>', {'id': 'confirmation-div', 'class': 'dataset p-3'});
+    confirmation_div.append($("<h2></h2>", {'class':'mt-2'}).text(opts.header));
+    confirmation_div.append($('<div></div>')
+        .text('You have selected '+files.length+' files ('+Math.floor(totalSize/1000000)+' MB)'));
+    confirmation_div.append($('<div></div>', {'style':'white-space:pre-line'}).text(opts.message));
 
-    var header = $("<h2></h2>", {'class':'mt-2'}).text('Web files selected for GDEX dataset '+dsid);
-    confirmation_div.append(header);
-
-    var total_size_message = $('<div></div>')
-        .text('You have selected '+files.length+' files ('+Math.floor(totalSize/1000000)+' MB)');
-    confirmation_div.append(total_size_message);
-
-    var message_div = $('<div></div>', {'style':'white-space:pre-line'}).text(message);
-    confirmation_div.append(message_div);
-
-    var button_div = $('<div />', {'class':'pt-2 pb-2'});
-    var transfer_button = $('<button />', {'class':'btn btn-primary mr-2'})
-        .text('Request format conversion to NetCDF for selected files')
-        .on('click', function(){
-           sendConvertApp(dsid);
-        });
+    var confirm_button = $('<button />', {'class':'btn btn-primary mr-2'})
+        .text(opts.buttonText)
+        .on('click', opts.onConfirm);
     var cancel_button = $('<button />', {'class':'btn btn-outline-primary mr-2'})
         .text('Cancel')
-        .on('click',function(){
+        .on('click', function(){
            if($('#ds_content').length) {
               $('#ds_content').children().removeClass('d-none');
            }
            else {
               $('body').children().attr("style",'display:block');
            }
-              $('#confirmation-div').remove();
-         });
-    button_div
-        .append(transfer_button)
-        .append(cancel_button)
-    confirmation_div.append(button_div);
-
-    var file_table = $('<table />');
-    var table_header = $('<tr><th>Filename</th><th>Size</th></tr>');
-    file_table.append(table_header);
-    for( var i=0; i < files.length; i++){
-        var table_row = $('<tr><td>'+files[i]['filename']+'</td><td>'+files[i]['size']+'</td></tr>');
-        file_table.append(table_row);
-        }
-    confirmation_div.append(file_table);
-
-    //$('#ds_content').addClass('d-none');
-    //confirmation_div.insertBefore($('#ds_content'));
-    if($('#ds_content').length) {
-       $('#ds_content').children().addClass('d-none');
-       $('#ds_content').prepend(confirmation_div);
-    }
-    else {
-       $('body').children().attr("style",'display:none');
-       $('body').prepend(confirmation_div);
-    }
-}
-function showGlobusConfirmation()
-{
-    var contentDiv = 'ds_content';
-    var files = getCheckedFiles(true);
-    var sizes = getListFromKey(files, 'size');
-    var totalSize = 0;
-    $.each(sizes,function(){totalSize+=parseFloat(this) || 0;});
-    var contact = "datahelp@ucar.edu";
-    var dsid = $('#file_table').attr('data-dsid');
-    var message = `To transfer these files using the Globus data transfer service, select the button labeled 'Globus transfer' below. 
-                   You will be redirected to the Globus web app where you will be prompted to select a target endpoint to receive the 
-		   data transfer. Once you have defined a target endpoint, you will be redirected back to the GDEX website and your data 
-		   transfer will be submitted.  
-		   
-		   A Globus login is required to use this service.  You may sign into Globus with your preferred identity 
-		   (e.g. ORCID, GlobusID, Google, or other).
-		   
-		   Contact ${contact} for further assitance`;
-
-    var confirmation_div = $('<div></div>', {'id': 'confirmation-div', 'class': 'dataset p-3'});
-
-    var header = $("<h2></h2>", {'class':'mt-2'}).text('Files selected for GDEX dataset '+dsid);
-    confirmation_div.append(header);
-
-    var total_size_message = $('<div></div>')
-        .text('You have selected '+files.length+' files ('+Math.floor(totalSize/1000000)+' MB)');
-    confirmation_div.append(total_size_message);
-
-    var message_div = $('<div></div>', {'style':'white-space:pre-line'}).text(message);
-    confirmation_div.append(message_div);
-
-    var button_div = $('<div />', {'class':'pt-2 pb-2'});
-    var transfer_button = $('<button />', {'class':'btn btn-primary mr-2'})
-        .text('Globus transfer')
-        .on('click', function(){
-           globusTransfer(dsid);
+           $('#confirmation-div').remove();
         });
-    var cancel_button = $('<button />', {'class':'btn btn-outline-primary mr-2'})
-        .text('Cancel')
-        .on('click',function(){
-           if($('#ds_content').length) {
-              $('#ds_content').children().removeClass('d-none');
-           }
-           else {
-              $('body').children().attr("style",'display:block');
-           }
-              $('#confirmation-div').remove();
-         });
-    button_div
-        .append(transfer_button)
-        .append(cancel_button)
-    confirmation_div.append(button_div);
+    confirmation_div.append($('<div />', {'class':'pt-2 pb-2'}).append(confirm_button).append(cancel_button));
 
-    var file_table = $('<table />');
-    var table_header = $('<tr><th>Filename</th><th>Size</th></tr>');
-    file_table.append(table_header);
-    for( var i=0; i < files.length; i++){
-        var table_row = $('<tr><td>'+files[i]['filename']+'</td><td>'+files[i]['size']+'</td></tr>');
-        file_table.append(table_row);
-        }
+    var file_table = $('<table />').append('<tr><th>Filename</th><th>Size</th></tr>');
+    $.each(files, function(i, f) {
+        file_table.append($('<tr></tr>')
+            .append($('<td></td>').text(f['filename']))
+            .append($('<td></td>').text(f['size'])));
+    });
     confirmation_div.append(file_table);
 
-    //$('#ds_content').addClass('d-none');
-    //confirmation_div.insertBefore($('#ds_content'));
     if($('#ds_content').length) {
        $('#ds_content').children().addClass('d-none');
        $('#ds_content').prepend(confirmation_div);
@@ -411,12 +247,41 @@ function showGlobusConfirmation()
     }
     $(document).scrollTop(0);
 }
+function convertFiles()
+{
+    var dsid = $('#file_table').attr('data-dsid');
+    showSelectionConfirmation({
+        files: getCheckedFiles(),
+        header: 'Web files selected for GDEX dataset '+dsid,
+        message: 'Click the following button to send a request for converting format to NetCDF\n\n' +
+                 'Contact datahelp@ucar.edu for further assistance',
+        buttonText: 'Request format conversion to NetCDF for selected files',
+        onConfirm: function(){ sendConvertApp(dsid); }
+    });
+}
+function showGlobusConfirmation()
+{
+    var dsid = $('#file_table').attr('data-dsid');
+    showSelectionConfirmation({
+        files: getCheckedFiles(true),
+        header: 'Files selected for GDEX dataset '+dsid,
+        message: "To transfer these files using the Globus data transfer service, select the button labeled 'Globus transfer' below. " +
+                 "You will be redirected to the Globus web app where you will be prompted to select a target endpoint to receive the " +
+                 "data transfer. Once you have defined a target endpoint, you will be redirected back to the GDEX website and your data " +
+                 "transfer will be submitted.\n\n" +
+                 "A Globus login is required to use this service.  You may sign into Globus with your preferred identity " +
+                 "(e.g. ORCID, GlobusID, Google, or other).\n\n" +
+                 "Contact datahelp@ucar.edu for further assistance",
+        buttonText: 'Globus transfer',
+        onConfirm: function(){ globusTransfer(dsid); }
+    });
+}
 function sendConvertApp(dsid)
 {
-    files = getCheckedFiles();
+    var files = getCheckedFiles();
     var filenames = getListFromKey(files, 'filename');
-    email = get_user_email(true);
-    url = '/php/dsrqst.php'
+    var email = get_user_email(true);
+    var url = '/php/dsrqst.php';
     $.post(url, {'files':filenames, 'email':email,'rstat':'Q', 'rtype':'F', 'dsid':dsid }, function(data){
         window.location.href = data;
     });
