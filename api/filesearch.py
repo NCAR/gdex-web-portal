@@ -330,6 +330,7 @@ def parse_sensor_filters_request(request, dsid, cursor):
 
         if ('valid_date_max' in request.GET and
                 len(request.GET['valid_date_max']) > 0):
+            restrictions['valid_date_max'] = request.GET['valid_date_max']
             wc.append("w.start_date <= %s")
             qparams.append(request.GET['valid_date_max'].replace("-", ""))
             del filters['valid_date_max']
@@ -391,6 +392,7 @@ def parse_sensor_filters_request(request, dsid, cursor):
                     parts = line.strip().split("<!>")
                     variable_names[parts[0]] = parts[1]
 
+            gidx_set = set()
             plat_set = set()
             var_set = set()
             for e in res:
@@ -423,6 +425,16 @@ def parse_sensor_filters_request(request, dsid, cursor):
                 if 'valid_date_max' in filters:
                     filters['valid_date_max'] = max(e[4],
                                                     filters['valid_date_max'])
+
+                for gidx in e[5]:
+                    if gidx not in gidx_set:
+                        gidx_set.add(gidx)
+                        if 'products' in restrictions:
+                            restrictions['products'].append(
+                                    {'name': None, 'code': str(gidx)})
+                        else:
+                            filters['products'].append(
+                                    {'name': None, 'code': str(gidx)})
 
             if 'valid_date_min' in filters:
                 s = str(filters['valid_date_min'])
