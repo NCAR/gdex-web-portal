@@ -310,12 +310,13 @@ def parse_sensor_filters_request(request, dsid, cursor):
                         'variables': [], }
         filters = copy.deepcopy(restrictions)
         query = ("select distinct d.platform_type_code, p.platform_type, d."
-                 'data_type, min(w.start_date), max(w.end_date) from "WObML".'
-                 f'{dsid}_data_types_list as d left join "WObML".'
-                 "platform_types as p on p.code = d.platform_type_code left "
-                 f'join "WObML".{dsid}_data_types as t on t.data_type_code = '
-                 f'd.code left join "WObML".{dsid}_webfiles2 as w on w.code = '
-                 "t.file_code")
+                 'data_type, min(w.start_date), max(w.end_date), string_agg('
+                 f"""distinct tindex, ',') from "WObML".{dsid}"""
+                 '_data_types_list as d left join "WObML".platform_types as p '
+                 f'on p.code = d.platform_type_code left join "WObML".{dsid}'
+                 "_data_types as t on t.data_type_code = d.code left join "
+                 f'"WObML".{dsid}_webfiles2 as w on w.code = t.file_code left '
+                 f"join dssdb.wfile_{dsid} as wf on wf.wfile = w.id")
         qparams = []
         wc = []
         if ('valid_date_min' in request.GET and
