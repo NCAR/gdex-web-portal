@@ -47,17 +47,17 @@ _ARRAY_OF_STRINGS = {
     }
 }
 
-_GRID_PRODUCTS = OpenApiParameter(
+_PRODUCTS = OpenApiParameter(
     name="products", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
     description="Restrict to specified product code(s)", many=True
 )
 
-_GRID_GRIDS = OpenApiParameter(
+_GRIDS = OpenApiParameter(
     name="grids", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
     description="Restrict to specified grid code(s)", many=True
 )
 
-_GRID_LEVELS = OpenApiParameter(
+_LEVELS = OpenApiParameter(
     name="levels", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
     description="Restrict to specified vertical level code(s)", many=True
 )
@@ -324,7 +324,7 @@ filesearch_filters_grid_schema = extend_schema(
             location=OpenApiParameter.QUERY,
             description="Restrict to specified parameter code(s)", many=True
         ),
-        _GRID_PRODUCTS, _GRID_GRIDS, _GRID_LEVELS
+        _PRODUCTS, _GRIDS, _LEVELS
     ],
     responses={
         200: {
@@ -422,8 +422,8 @@ filesearch_files_grid_schema = extend_schema(
           description="Restrict to specified parameter code(s)", many=True,
           required=True
       ),
-      _VALID_DATETIME_MIN, _VALID_DATETIME_MAX, _GRID_PRODUCTS,
-      _GRID_GRIDS, _GRID_LEVELS
+      _VALID_DATETIME_MIN, _VALID_DATETIME_MAX, _PRODUCTS,
+      _GRIDS, _LEVELS
   ],
   responses={
       200: _FILESEARCH_FILES_RESPONSE,
