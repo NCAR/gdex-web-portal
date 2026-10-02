@@ -32,7 +32,21 @@ $('.btn-all-files').on('click', selectAllFiles);
 $(document).off('.accessOptions')
    .on('click.accessOptions', '.file-toggle-btn', toggleFileDetail)
    .on('click.accessOptions', '.copy-path-btn', copyPathClicked)
-   .on('click.accessOptions', '.preview-file-btn', previewFileClicked);
+   .on('click.accessOptions', '.preview-file-btn', previewFileClicked)
+   .on('mouseenter.accessOptions focusin.accessOptions', '.access-options [title], .access-options [data-bs-original-title]', showInstantTooltip)
+   .on('click.accessOptions', '.access-options a, .access-options button', hideInstantTooltip);
+
+// Bootstrap tooltips (no delay, no fade) in place of the browser's slow native title tooltips.
+// Created lazily on first hover so it works for ajax-loaded tables.
+function showInstantTooltip() {
+   var tip = bootstrap.Tooltip.getOrCreateInstance(this, {delay: 0, animation: false, trigger: 'hover focus', container: 'body'});
+   tip.show();
+}
+
+function hideInstantTooltip() {
+   var tip = bootstrap.Tooltip.getInstance(this);
+   if (tip) { tip.hide(); }
+}
 
 function toggleFileDetail() {
    var btn = $(this);

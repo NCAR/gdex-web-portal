@@ -1,10 +1,11 @@
 {% load static %}
 {% load custom_tags %}
-<table id='{{group.group_id|slugify}}_table' class='table table-light table-striped'>
+<style>#{{group.group_id|slugify}}_table .w-1{width:1%}</style>
+<table id='{{group.group_id|slugify}}_table' class='table table-light table-striped{% if not group.is_group_summary %} table-sm{% endif %}'>
     <thead>
         <tr>
             {% if not group.is_group_summary %}
-                <th><input class='table_group me-1' type='checkbox' id='{{ group.group_id|slugify }}_group_index'></input>Index</th>
+                <th class='w-1 text-nowrap'><input class='table_group me-1' type='checkbox' id='{{ group.group_id|slugify }}_group_index'></input>Index</th>
             {% endif %}
             {% for col in group.column_headers %}
                 {% if group.is_group_summary or forloop.first %}
@@ -17,7 +18,7 @@
         {% for row in group.rows %}
             <tr {% for col in row %}{% if col.name == 'Size' %}data-size='{{col.value}}'{% endif %}{% endfor %}>
                 {% if not group.is_group_summary %}
-                    <td><input class='file me-1' type='checkbox'></input>{{ forloop.counter }}</td>
+                    <td class='w-1 text-nowrap'><input class='file me-1' type='checkbox'></input>{{ forloop.counter }}</td>
                 {% endif %}
                 {% for col in row %}
                     {% if group.is_group_summary or forloop.first %}
@@ -35,9 +36,9 @@
             {% if not group.is_group_summary %}
                 {% with file_col=row.0 %}
                 <tr class='file-detail d-none'>
-                    <td></td>
+                    <td class='w-1'></td>
                     <td>
-                        <dl class='row mb-2 small'>
+                        <dl class='row mb-0 small'>
                             {% for col in row %}
                                 {% if not forloop.first %}
                                     <dt class='col-sm-3'>{{ col.name }}</dt>
