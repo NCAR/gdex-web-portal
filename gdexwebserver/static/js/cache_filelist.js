@@ -567,19 +567,12 @@ function setTableSummary(table) {
     var totalSize = 0;
     var numFiles = 0;
 
-    table.find("tbody tr").each(
-	    function () {
-         var self = $(this);
-         var size = self.attr('data-size') || self.find('td.Size').attr('data-size');
-         if (!size) {
-            size = self.find('td.size').attr('data-size');
-         }
-		   if ( self.find('input[type=checkbox]').is(':checked') ) {
-            totalSize+=parseInt(size);
-			   numFiles++;
-		   }
-      }
-    );
+    table.find("tbody input.file:checked").each(function () {
+        var row = $(this).closest('tr');
+        var size = row.attr('data-size') || row.find('td.Size, td.size').attr('data-size');
+        totalSize += parseInt(size) || 0;
+        numFiles++;
+    });
 
     num_files_ele.text(numFiles);
     total_size_ele.text('('+formatBytes(totalSize)+')');
@@ -590,7 +583,7 @@ function setTableSummary(table) {
  * Checkboxes in a table, excluding those in rows hidden by the page filter
  */
 function visibleCheckboxes(table) {
-    return table.find('input[type=checkbox]').not(table.find('tr.d-none input[type=checkbox]'));
+    return table.find('thead input[type=checkbox], tbody tr:not(.d-none) input[type=checkbox]');
 }
 
 function toggleChildBoxes()
