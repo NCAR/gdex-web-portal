@@ -39,9 +39,16 @@ function extendRequest(r, n, x, t) {
   }
 }
 
-function doPurge(r) {
-  var r=getContentFromSynchronousRequest(null,'/php/pgrqst.php?ridx='+r);
-  if (r.search("Thank you") > 0 && r.search("data will be purged") > 0) {
+function doPurge(r, t) {
+  var resp = getContentFromSynchronousPost(null, '/datasets/request/purge/' + r + '/', 'csrfmiddlewaretoken=' + t);
+  var success = false;
+  try {
+    var json = JSON.parse(resp);
+    success = (json.status == 'ok' && json.data.purge_successful == 'true');
+  } catch (e) {
+    success = false;
+  }
+  if (success) {
     document.getElementById('modal-window-content').innerHTML='<h1>Success</h1><p>Your data request has been marked for purging. The data will be removed from our system within one hour. If you did not mean to purge this request, please contact us immediately.</p>';
     getAjaxContent('GET', null, 'requests/','requests');
   } else {
@@ -49,6 +56,6 @@ function doPurge(r) {
   }
 }
 
-function purgeRequest(r) {
-  popConfirm('Once your data are purged, they will no longer be available for download. Are you sure you want to continue?', 'doPurge('+r+')', 500, 200);
+function purgeRequest(r, t) {
+  popConfirm('Once your data are purged, they will no longer be available for download. Are you sure you want to continue?', 'doPurge(&apos;' + r + '&apos;, &apos;' + t + '&apos;)', 500, 200);
 }
