@@ -33,10 +33,35 @@ $(document).off('.accessOptions')
    .on('click.accessOptions', '.file-toggle-btn', toggleFileDetail)
    .on('click.accessOptions', '.copy-path-btn', copyPathClicked)
    .on('click.accessOptions', '.preview-file-btn', previewFileClicked)
-   .on('mouseenter.accessOptions focusin.accessOptions', '.access-options [title], .access-options [data-bs-original-title]', showInstantTooltip)
-   .on('click.accessOptions', '.access-options a, .access-options button', hideInstantTooltip)
    .on('input.accessOptions', '.page-filter-input', pageFilterChanged)
    .on('click.accessOptions', '.page-filter-clear', pageFilterCleared);
+
+// Client-side file name filter for groups that are not paginated (all files are in the table).
+// Terms are whitespace separated, case-insensitive, all must match; * is a wildcard.
+function pageFilterChanged() {
+   var input = $(this);
+   var table = $('#' + input.data('table'));
+   var terms = $.trim(input.val()).toLowerCase().split(/\s+/).filter(Boolean).map(function(t) {
+      return new RegExp(t.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*'));
+   });
+   var rows = table.find('tbody > tr:not(.file-detail)');
+   var shown = 0;
+   rows.each(function() {
+      var row = $(this);
+      var name = row.children('td').eq(1).text().toLowerCase();
+      var match = terms.every(function(re) { return re.test(name); });
+      row.toggleClass('d-none', !match);
+      var expanded = row.find('.file-toggle-btn').attr('aria-expanded') === 'true';
+      row.next('.file-detail').toggleClass('d-none', !(match && expanded));
+      if (match) { shown++; }
+   });
+   $('#' + input.data('table') + '_filter_count').text('Showing ' + shown + ' of ' + rows.length + ' files');
+   setTableSummary(table);
+}
+
+function pageFilterCleared() {
+   $('#' + $(this).data('table') + '_filter_input').val('').trigger('input');
+}
 
 // Client-side file name filter for groups that are not paginated (all files are in the table).
 // Terms are whitespace separated, case-insensitive, all must match; * is a wildcard.
@@ -81,7 +106,8 @@ function toggleFileDetail() {
    var btn = $(this);
    var detail = btn.closest('tr').next('.file-detail').toggleClass('d-none');
    var open = !detail.hasClass('d-none');
-   btn.attr('aria-expanded', open).attr('title', open ? 'Hide file details' : 'Show file details');
+   var label = open ? 'Hide file details' : 'Show file details';
+   btn.attr('aria-expanded', open).attr('data-tip', label).attr('aria-label', label);
    btn.find('i').toggleClass('fa-chevron-right', !open).toggleClass('fa-chevron-down', open);
 }
 
