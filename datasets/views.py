@@ -7,9 +7,10 @@ import subprocess
 
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from os.path import exists
 try:
     from urllib.parse import urlencode
@@ -38,7 +39,7 @@ from home.utils import slug_list
 from globus.views import get_guest_collection_url
 from gdexwebserver.utils import make_tempdir, remove_tempdir
 from dashboard.utils import get_user_email, is_internal_user
-from api.post_actions import purge_request as api_purge_request
+from api.post_actions import purge as api_purge
 
 from .forms import DatasetRequestForm, BUFRSubsetForm
 from rda_python_dsrqst.PgRDARqst import rda_request
@@ -619,18 +620,27 @@ def submit_web_data_request(request, dsid):
 
     return redirect(f'/datasets/{dsid}/dataaccess/')
 
-@csrf_exempt
+@require_POST
 def purge_request(request, request_index):
     """
-    View to handle purging a data request.
+    View to handle purging a data request for the logged-in user.
     """
-    from django.http import JsonResponse
+    email = get_user_email(request)
+    if not email:
+        return JsonResponse(
+                {'status': 'error',
+                 'error_messages': ['Please log in to purge a data request.']},
+                status=401)
 
     try:
-        response = api_purge_request(request_index)
-    except Exception as e:
-        response = {'error': {'code': 'purge_error', 'message': str(e)}}
-    if 'error' in response:
+        response = api_purge(request_index, email=email).get_json()
+    except Exception:
+        logger.exception(f"Error purging request {request_index} for {email}")
+        return JsonResponse(
+                {'status': 'error',
+                 'error_messages': ['Purge error. Please contact datahelp@ucar.edu.']},
+                status=500)
+    if response['status'] == 'error':
         return JsonResponse(response, status=400)
     return JsonResponse(response)
 
