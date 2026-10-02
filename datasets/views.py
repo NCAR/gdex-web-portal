@@ -38,6 +38,7 @@ from home.utils import slug_list
 from globus.views import get_guest_collection_url
 from gdexwebserver.utils import make_tempdir, remove_tempdir
 from dashboard.utils import get_user_email, is_internal_user
+from api.post_actions import purge_request as api_purge_request
 
 from .forms import DatasetRequestForm, BUFRSubsetForm
 from rda_python_dsrqst.PgRDARqst import rda_request
@@ -618,6 +619,20 @@ def submit_web_data_request(request, dsid):
 
     return redirect(f'/datasets/{dsid}/dataaccess/')
 
+@csrf_exempt
+def purge_request(request, request_index):
+    """
+    View to handle purging a data request.
+    """
+    from django.http import JsonResponse
+
+    try:
+        response = api_purge_request(request_index)
+    except Exception as e:
+        response = {'error': {'code': 'purge_error', 'message': str(e)}}
+    if 'error' in response:
+        return JsonResponse(response, status=400)
+    return JsonResponse(response)
 
 def blank_request_form(request, dsid):
     """
