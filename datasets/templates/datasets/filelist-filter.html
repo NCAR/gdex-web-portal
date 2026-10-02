@@ -1,4 +1,5 @@
 <hr class="my-1">
+{% if group.paginator.needs_pagination or data.filter_wfile %}
 <div class="pb-2" id="filter_search">
     <div><strong>File name filter</strong></div>
     <div><em>Enter a case-sensitive file name pattern to filter this file list. You may use the * wildcard (glob-style), e.g. *2020*.nc.</em></div>
@@ -8,6 +9,18 @@
         <button class="btn btn-outline-primary rounded text-nowrap" style="font-size:1rem" id="clearFilters">Clear filter</button>
     </div>
 </div>
+{% else %}
+<div class="pb-2" id="filter_search">
+    <div><strong>File name filter</strong></div>
+    <div><em>Type to filter the files in this list (case-insensitive). You may use the * wildcard, e.g. *2020*.nc.</em></div>
+    <div class="d-flex align-items-center gap-2">
+        <input type="text" id="{{ group.group_id|slugify }}_table_filter_input" class='form-control page-filter-input' data-table="{{ group.group_id|slugify }}_table" placeholder="Enter a filter string">
+        <button class="btn btn-outline-primary rounded text-nowrap page-filter-clear" style="font-size:1rem" data-table="{{ group.group_id|slugify }}_table">Clear filter</button>
+    </div>
+    <div class="small text-muted" id="{{ group.group_id|slugify }}_table_filter_count">Showing {{ group.rows|length }} of {{ group.rows|length }} files</div>
+</div>
+{% endif %}
+{% if group.paginator.needs_pagination or data.filter_wfile %}
 <script>
 $("#applyFilters").on("click", function() {
     url='/datasets/{{data.dsid}}/filelist/{% if group.gindex != 0 %}{{group.gindex}}/{% endif %}?filter_wfile='+encodeURIComponent($("#filterwfile").val());
@@ -23,3 +36,4 @@ $("#clearFilters").on("click", function() {
     });
 })
 </script>
+{% endif %}

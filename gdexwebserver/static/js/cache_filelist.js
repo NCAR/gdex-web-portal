@@ -34,7 +34,36 @@ $(document).off('.accessOptions')
    .on('click.accessOptions', '.copy-path-btn', copyPathClicked)
    .on('click.accessOptions', '.preview-file-btn', previewFileClicked)
    .on('mouseenter.accessOptions focusin.accessOptions', '.access-options [title], .access-options [data-bs-original-title]', showInstantTooltip)
-   .on('click.accessOptions', '.access-options a, .access-options button', hideInstantTooltip);
+   .on('click.accessOptions', '.access-options a, .access-options button', hideInstantTooltip)
+   .on('input.accessOptions', '.page-filter-input', pageFilterChanged)
+   .on('click.accessOptions', '.page-filter-clear', pageFilterCleared);
+
+// Client-side file name filter for groups that are not paginated (all files are in the table).
+// Terms are whitespace separated, case-insensitive, all must match; * is a wildcard.
+function pageFilterChanged() {
+   var input = $(this);
+   var table = $('#' + input.data('table'));
+   var terms = $.trim(input.val()).toLowerCase().split(/\s+/).filter(Boolean).map(function(t) {
+      return new RegExp(t.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*'));
+   });
+   var rows = table.find('tbody > tr:not(.file-detail)');
+   var shown = 0;
+   rows.each(function() {
+      var row = $(this);
+      var name = row.children('td').eq(1).text().toLowerCase();
+      var match = terms.every(function(re) { return re.test(name); });
+      row.toggleClass('d-none', !match);
+      var expanded = row.find('.file-toggle-btn').attr('aria-expanded') === 'true';
+      row.next('.file-detail').toggleClass('d-none', !(match && expanded));
+      if (match) { shown++; }
+   });
+   $('#' + input.data('table') + '_filter_count').text('Showing ' + shown + ' of ' + rows.length + ' files');
+   setTableSummary(table);
+}
+
+function pageFilterCleared() {
+   $('#' + $(this).data('table') + '_filter_input').val('').trigger('input');
+}
 
 // Bootstrap tooltips (no delay, no fade) in place of the browser's slow native title tooltips.
 // Created lazily on first hover so it works for ajax-loaded tables.
@@ -616,7 +645,7 @@ function countChecked(start, end)
     row = row.next();
     curCheckbox = row.find('input[type=checkbox]');
     while(!curCheckbox.is(end)) {
-	if (curCheckbox.is(":checked")) {
+	if (curCheckbox.is(":checked") && !row.hasClass('d-none')) {
 	    count++;
 	}
 	row = row.next();
@@ -630,7 +659,9 @@ function checkRange(start, end)
     curChecked = row.find('input[type=checkbox]');
     while(!curChecked.is(end)) {
         curChecked = row.find('input[type=checkbox]');
-        curChecked.prop('checked', true);
+        if (!row.hasClass('d-none')) {
+            curChecked.prop('checked', true);
+        }
         row = row.next();
     }
 }
@@ -662,6 +693,13 @@ function setTableSummary(table) {
     num_files_ele.text(numFiles);
     total_size_ele.text('('+formatBytes(totalSize)+')');
     total_size_ele.data('value', totalSize);
+}
+
+/**
+ * Checkboxes in a table, excluding those in rows hidden by the page filter
+ */
+function visibleCheckboxes(table) {
+    return table.find('input[type=checkbox]').not(table.find('tr.d-none input[type=checkbox]'));
 }
 
 function toggleChildBoxes()
@@ -698,8 +736,7 @@ function toggleChildBoxes()
 	{
 	    $("#"+tableGroup+"_parent").filter(":input").prop('checked', check);
 	}
-    table.find('input[type=checkbox]')
-         .each(function(){
+    visibleCheckboxes(table).each(function(){
             $(this).prop('checked',check);
              });
     setTableSummary(table);	
@@ -739,8 +776,7 @@ function selectAllFiles() {
    var tableGroup = $(this).attr('id').split('_select_all')[0];
    var table = $("table#"+tableGroup+"_table");
    
-   table.find("input[type=checkbox]")
-        .each(function(){
+   visibleCheckboxes(table).each(function(){
                   $(this).prop("checked",true);
               }
    );

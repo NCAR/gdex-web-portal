@@ -23,12 +23,12 @@
                 {% for col in row %}
                     {% if group.is_group_summary or forloop.first %}
                     <td class='{{col.name}}' {% if col.name == 'Size' %}data-size='{{col.value}}'{% endif %}>
+                        {% include "datasets/filelist-cell.html" %}
                         {% if not group.is_group_summary %}
-                            <button type='button' class='btn btn-sm btn-link p-0 me-2 file-toggle-btn' title='Show file details' aria-expanded='false'>
+                            <button type='button' class='btn btn-sm btn-link p-0 ms-2 file-toggle-btn' title='Show file details' aria-expanded='false'>
                                 <i class="fas fa-chevron-right"></i>
                             </button>
                         {% endif %}
-                        {% include "datasets/filelist-cell.html" %}
                     </td>
                     {% endif %}
                 {% endfor %}
