@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from dateutil import tz
 from django.conf import settings
 from django.http import HttpRequest, JsonResponse, QueryDict
-from django.shortcuts import render
 from facbrowse.customize import customize_obml
 from facbrowse.grml_query import parse_grml_query
 from facbrowse.obml_query import parse_obml_query
