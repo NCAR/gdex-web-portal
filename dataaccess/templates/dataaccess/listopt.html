@@ -29,7 +29,7 @@
                         View a hierarchical listing of the full collection of data files.
                     </p>
                     <div class="position-absolute" style="bottom: 2.75rem">
-                        <a class="component-link i-angle-right--after" href="javascript:void(0)" onclick="$.get('/datasets/{{ dsid }}/filelist{% if group %}/{{ group.gindex }}{% endif %}{% if listtyp == "Glade" %}?fl=glade{% endif %}', replace_ds_content)">Link</a>
+                        <a class="component-link i-angle-right--after" href="javascript:void(0)" onclick="get_ds_content('/datasets/{{ dsid }}/filelist{% if group %}/{{ group.gindex }}{% endif %}{% if listtyp == "Glade" %}?fl=glade{% endif %}')">Link</a>
                     </div>
                 </div>
             </div>

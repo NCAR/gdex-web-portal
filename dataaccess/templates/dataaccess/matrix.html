@@ -83,7 +83,7 @@
     {% endif %}
     {% if matrix.columns.web_files %}
     <div class="d-fil o-blk tx-c" style="grid-row: 3">
-        <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.web_files }}', replace_ds_content)">Web<br>Download</a>
+        <a href="javascript:void(0)" onclick="get_ds_content('{{ matrix.union_urls.web_files }}')">Web<br>Download</a>
     </div>
     {% endif %}
     {% if matrix.columns.globus %}
@@ -129,7 +129,7 @@
     {% if matrix.columns.glade %}
     <div style="grid-row: 3"></div>
     <div class="c-fil o-blk tx-c" style="grid-row: 3">
-        <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}?fl=glade', replace_ds_content)">NCAR HPC<br>Data Access</a>
+        <a href="javascript:void(0)" onclick="get_ds_content('{{ matrix.union_urls.glade }}?fl=glade')">NCAR HPC<br>Data Access</a>
     </div>
     {% endif %}
 
@@ -148,7 +148,7 @@
             {% if matrix.columns.web_files %}
             <div class="d-fil o-blk tx-c" style="grid-row: {{ row }}">
                 {% if group.dwebcnt > 0 %}
-                <a href="javascript:void(0)" onclick="$.get('{{ group.urls.web }}/?title={{ group.title }}', replace_ds_content)">Web<br>Download</a>
+                <a href="javascript:void(0)" onclick="get_ds_content('{{ group.urls.web }}/?title={{ group.title }}')">Web<br>Download</a>
                 {% endif %}
             </div>
             {% endif %}
@@ -191,7 +191,7 @@
             {% if matrix.columns.glade %}
             <div style="grid-row: {{ row }}"></div>
             <div class="c-fil o-blk tx-c" style="grid-row: {{ row }}">
-                <a href="javascript:void(0)" onclick="$.get('{{ matrix.union_urls.glade }}{% if group.index %}{{ group.index }}/{% endif %}?fl=glade', replace_ds_content)">NCAR HPC<br>Data Access</a>
+                <a href="javascript:void(0)" onclick="get_ds_content('{{ matrix.union_urls.glade }}{% if group.index %}{{ group.index }}/{% endif %}?fl=glade')">NCAR HPC<br>Data Access</a>
             </div>
             {% endif %}
             {% else %}
@@ -205,7 +205,7 @@
 
             {% if matrix.columns.web_files %}
                 <div class="a-blk o-blk tx-c mt-1" style="grid-row: {{ row }}">
-                    <a href="javascript:void(0)" onclick="$.get('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/', replace_ds_content)">Web File<br>Listing</a>
+                    <a href="javascript:void(0)" onclick="get_ds_content('/datasets/{{ matrix.dsid }}/filelist/{{ group.index }}/')">Web File<br>Listing</a>
                 </div>
             {% endif %}
 

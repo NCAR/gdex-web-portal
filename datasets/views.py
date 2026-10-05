@@ -133,6 +133,25 @@ def description(request, dsid, **kwargs):
     return render(request, template, ctx)
 
 
+def shared_filelist_url(dsid, params):
+    """Build the filelist fragment URL for a shared link of the form
+    /datasets/<dsid>/dataaccess/?view=filelist&gindex=..&page=..&fl=..&filter_wfile=..
+    Only whitelisted, validated parameters are passed through."""
+    path = f"/datasets/{dsid}/filelist/"
+    gindex = params.get('gindex', '')
+    if re.fullmatch(r'-?\d+', gindex) and gindex != '0':
+        path += f"{gindex}/"
+
+    query = {}
+    if params.get('page', '').isdigit():
+        query['page'] = params['page']
+    if params.get('fl') == 'glade':
+        query['fl'] = 'glade'
+    if params.get('filter_wfile'):
+        query['filter_wfile'] = params['filter_wfile']
+    return f"{path}?{urlencode(query)}" if query else path
+
+
 def build_matrix(request, dsid):
     if dsid[0] != 'd' or len(dsid) != 7:
         return render(request, "404.html")
@@ -144,6 +163,8 @@ def build_matrix(request, dsid):
     if "HTTP_X_REQUESTED_WITH" in request.META:
         return render(request, "dataaccess/matrix.html", ctx)
 
+    if request.GET.get('view') == 'filelist':
+        ctx['filelist_url'] = shared_filelist_url(dsid, request.GET)
     ctx.update({'title': f"NSF NCAR GDEX | Dataset {dsid} Data Access"})
     return description(request, dsid, template="dataaccess/matrix_page.html",
                        page_context=ctx)

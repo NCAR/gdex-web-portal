@@ -23,7 +23,7 @@
 <div class='d-none' id='file_table' data-dsid='{{ data.dsid }}'></div>
 
 {% if data.parent.url %}
-    <a class="btn btn-icon-gray" href="javascript:void(0);" onclick="$.get('{{ data.parent.url }}{% if data.is_glade %}?fl=glade{% endif %}', function(d){replace_ds_content(d)});">
+    <a class="btn btn-icon-gray" href="javascript:void(0);" onclick="get_ds_content('{{ data.parent.url }}{% if data.is_glade %}?fl=glade{% endif %}');">
         <i class="fas fa-arrow-circle-left me-1"></i>
         <span class="d-none d-md-inline">Back</span>
     </a>

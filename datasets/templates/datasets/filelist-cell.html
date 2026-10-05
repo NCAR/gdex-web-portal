@@ -11,7 +11,7 @@ original inline version: file links, zarr/ARCO buttons, ajax subgroup links, gla
         {% include "datasets/filelist-arco-button.html" %}
     {% elif data.is_ajax %}
         <a href='javascript:void(0);' col-data='{{ col.url }}'
-           onclick="$.get('{{ col.url }}{% if data.is_glade %}?fl=glade{% endif %}', function(d){replace_ds_content(d);$('#datasetTab')[0].scrollIntoView();});">
+           onclick="get_ds_content('{{ col.url }}{% if data.is_glade %}?fl=glade{% endif %}');">
     {% else %}
         <a href="{{ col.url }}{% if data.is_glade %}?fl=glade{% endif %}">
     {% endif %}

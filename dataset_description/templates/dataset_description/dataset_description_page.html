@@ -57,12 +57,38 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
           });
         }
 
-        function get_ajax_with_history(u, t = '', h = true) {
+        // shown_url (optional) is the address-bar URL when it differs from the fragment URL being fetched
+        function get_ajax_with_history(u, t = '', h = true, shown_url = u) {
           $.get(u, replace_ds_content);
           if (h) {
             document.title = "NSF NCAR GDEX Dataset {{ page.dsid }} " + t;
-            window.history.pushState({'url': u, 'title': t}, "", u);
+            window.history.pushState({'url': u, 'title': t}, "", shown_url);
             setTab();
+          }
+        }
+
+        // Shareable address for a filelist fragment URL, kept under /dataaccess/ so a pasted link loads the full page:
+        // /datasets/dNNNNNN/filelist/[gindex/][?page=&fl=&filter_wfile=] -> /datasets/dNNNNNN/dataaccess/?view=filelist&...
+        // Returns null for URLs that are not filelist views.
+        function filelist_share_url(u) {
+          var m = u.match(/^\/datasets\/(d\d{6})\/filelist\/(?:(-?\d+)\/)?(?:\?(.*))?$/);
+          if (!m) return null;
+          var src = new URLSearchParams(m[3] || '');
+          var q = new URLSearchParams({'view': 'filelist'});
+          if (m[2] !== undefined) q.set('gindex', m[2]);
+          ['page', 'fl', 'filter_wfile'].forEach(function(k) {
+            if (src.get(k)) q.set(k, src.get(k));
+          });
+          return '/datasets/' + m[1] + '/dataaccess/?' + q.toString();
+        }
+
+        // Load a data access content fragment; filelist views also update the address bar so the page can be shared
+        function get_ds_content(u) {
+          var share = filelist_share_url(u);
+          if (share) {
+            get_ajax_with_history(u, 'Data Access', true, share);
+          } else {
+            $.get(u, replace_ds_content);
           }
         }
 

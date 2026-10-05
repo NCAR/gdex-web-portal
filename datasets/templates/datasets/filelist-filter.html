@@ -17,15 +17,12 @@ files; smaller groups already have every file in the table, so they filter insta
     <script>
     (function() {
         var baseUrl = '/datasets/{{ data.dsid }}/filelist/{% if group.gindex != 0 %}{{ group.gindex }}/{% endif %}';
-        function loadFilelist(url) {
-            $.get(url, function(d) { replace_ds_content(d); });
-        }
         $("#applyFilters").on("click", function() {
-            loadFilelist(baseUrl + '?filter_wfile=' + encodeURIComponent($("#filterwfile").val()));
+            get_ds_content(baseUrl + '?filter_wfile=' + encodeURIComponent($("#filterwfile").val()));
         });
         $("#clearFilters").on("click", function() {
             $("#filterwfile").val("");
-            loadFilelist(baseUrl);
+            get_ds_content(baseUrl);
         });
     })();
     </script>
