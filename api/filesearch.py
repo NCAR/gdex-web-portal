@@ -38,10 +38,6 @@ files_response = {'dsid': "", 'datatype': "", 'restrictions': {},
                   'pagination': {}}
 
 
-def swagger(request, output=None):
-    return render(request, "dsfiles/swagger.html", {})
-
-
 def valid_dsid(dsid, cursor):
     cursor.execute(
             "select dsid from search.datasets where dsid = %s and type in "
