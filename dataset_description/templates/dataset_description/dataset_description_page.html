@@ -69,9 +69,10 @@ NSF NCAR GDEX Dataset {{ page.dsid }}
 
         // Shareable address for a filelist fragment URL, kept under /dataaccess/ so a pasted link loads the full page:
         // /datasets/dNNNNNN/filelist/[gindex/][?page=&fl=&filter_wfile=] -> /datasets/dNNNNNN/dataaccess/?view=filelist&...
-        // Returns null for URLs that are not filelist views.
+        // Returns null for URLs that are not filelist views. The trailing slash is optional because the
+        // subgroup and Back links are generated without one (e.g. /datasets/d083002/filelist/3).
         function filelist_share_url(u) {
-          var m = u.match(/^\/datasets\/(d\d{6})\/filelist\/(?:(-?\d+)\/)?(?:\?(.*))?$/);
+          var m = u.match(/^\/datasets\/(d\d{6})\/filelist(?:\/(-?\d+))?\/?(?:\?(.*))?$/);
           if (!m) return null;
           var src = new URLSearchParams(m[3] || '');
           var q = new URLSearchParams({'view': 'filelist'});
