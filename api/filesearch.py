@@ -553,8 +553,8 @@ def files(request, dsid, datatype):
                            .replace(tzinfo=tz.tzutc())
                            .strftime("%Y-%m-%d %H:%M:%S"))
                 cursor.execute(
-                        "insert into metautil.dsfiles_api_result_ids values "
-                        "(%s, %s, %s, %s, %s)",
+                        "insert into metautil.filesearch_api_result_ids "
+                        "values (%s, %s, %s, %s, %s)",
                         (files_response['pagination']['result_id'],
                          expires, len(file_codes), datatype, dsid))
                 rows = (list(
@@ -563,17 +563,17 @@ def files(request, dsid, datatype):
                 for x in range(0, len(rows), 10000):
                     rowins = ", ".join([str(t) for t in rows[x:x+10000]])
                     cursor.execute(
-                            "insert into metautil.dsfiles_api_file_codes "
+                            "insert into metautil.filesearch_api_file_codes "
                             f"values {rowins}")
 
                 conn.commit()
                 files_response['pagination']['current_page'] = 1
                 files_response['pagination']['next_page'] = 2
                 cursor.execute(
-                        "select w.id from metautil.dsfiles_api_file_codes as "
-                        f'f left join "{db}".{dsid}_webfiles2 as w on w.code '
-                        "= f.file_code where f.result_id = %s order by w.id "
-                        f"limit {PAGE_SIZE} offset 0",
+                        "select w.id from metautil.filesearch_api_file_codes "
+                        f'as f left join "{db}".{dsid}_webfiles2 as w on w.'
+                        "code = f.file_code where f.result_id = %s order by "
+                        f"w.id limit {PAGE_SIZE} offset 0",
                         (files_response['pagination']['result_id'], ))
 
             files_response['files']['http_base'] = (
@@ -606,16 +606,16 @@ def files(request, dsid, datatype):
 def expire_ids(conn):
     cursor = conn.cursor()
     cursor.execute(
-            "select result_id from metautil.dsfiles_api_result_ids where "
+            "select result_id from metautil.filesearch_api_result_ids where "
             "expiration < %s", (datetime.now(), ))
     res = cursor.fetchall()
     for e in res:
         cursor.execute(
-                "delete from metautil.dsfiles_api_file_codes where result_id "
-                "= %s", (e[0], ))
+                "delete from metautil.filesearch_api_file_codes where "
+                "result_id = %s", (e[0], ))
         cursor.execute(
-                "delete from metautil.dsfiles_api_result_ids where result_id "
-                "= %s", (e[0], ))
+                "delete from metautil.filesearch_api_result_ids where "
+                "result_id = %s", (e[0], ))
         conn.commit()
 
 
@@ -636,8 +636,8 @@ def serve_result_set(request, dsid, result_id, page_num):
         cursor = conn.cursor()
         cursor.execute(
                 "select total_count, datatype from metautil."
-                "dsfiles_api_result_ids where result_id = %s and dsid = %s",
-                (result_id, dsid))
+                "filesearch_api_result_ids where result_id = %s and dsid = "
+                "%s", (result_id, dsid))
         total_count, datatype = cursor.fetchone() or (None, None)
         if total_count is None:
             return JsonResponse(
@@ -660,8 +660,8 @@ def serve_result_set(request, dsid, result_id, page_num):
                 {value: key for key, value in datatypes_map.items()}[datatype])
         offset = (page_num - 1) * PAGE_SIZE
         cursor.execute(
-                "select w.id from metautil.dsfiles_api_file_codes as f left "
-                f'join "W{service}".{dsid}_webfiles2 as w on w.code = f.'
+                "select w.id from metautil.filesearch_api_file_codes as f "
+                f'left join "W{service}".{dsid}_webfiles2 as w on w.code = f.'
                 "file_code where f.result_id = %s order by w.id limit "
                 f"{PAGE_SIZE} offset {offset}", (result_id, ))
         res = cursor.fetchall()
