@@ -152,7 +152,7 @@ def customize_obml(request, dsid, gindex, listtyp, cache_file, **kwargs):
             dtypes = []
             for n in range(nlines):
                 line = f.readline()
-                lst = line.split("<!>")
+                lst = line.strip().split("<!>")
                 dtypes.append({'code': lst[0], 'name': lst[1]})
 
             ctx.update({'data_types': dtypes})
