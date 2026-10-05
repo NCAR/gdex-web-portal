@@ -5,28 +5,28 @@ from django.shortcuts import render
 from libpkg.strutils import snake_to_capital
 
 from .log import add_to_log
-from .utils import cache_file
+from .utils import cache_file, get_groups
 
 
 def parse_obml_query(cursor, dsid, listtyp, request):
     add_to_log("parse_obml_query: start obs check")
     opts = {
         'min_start': 99999999,
-        'max_end': 00000000,
+        'max_end': 0,
         'platforms': [],
         'data_types': [],
         'formats': [],
     }
     q = ("select distinct t.file_code, d.platform_type_code, w.start_date, "
-         "w.end_date, d.data_type, w.format_code from \"WObML\"." + dsid +
-         "_data_types as t left join \"WObML\"." + dsid + "_data_types_list "
-         "as d on d.code = t.data_type_code left join \"WObML\"." + dsid +
-         "_webfiles2 as w on w.code = t.file_code")
+         'w.end_date, d.data_type, w.format_code, wf.tindex from "WObML".'
+         f'{dsid}_data_types as t left join "WObML".{dsid}_data_types_list as '
+         f'd on d.code = t.data_type_code left join "WObML".{dsid}_webfiles2 '
+         f"as w on w.code = t.file_code left join dssdb.wfile_{dsid} as wf on "
+         "wf.wfile = w.id")
     wc = ["w.start_date <= %s", "w.end_date >= %s"]
     vars = [int(request.POST['endDate'].replace("-", "")),
             int(request.POST['startDate'].replace("-", ""))]
     if 'gindex' in request.POST:
-        q += " left join dssdb.wfile_" + dsid + " as wf on wf.wfile = w.id"
         wc.append("wf.tindex = %s")
         vars.append(request.POST['gindex'])
 
@@ -43,9 +43,9 @@ def parse_obml_query(cursor, dsid, listtyp, request):
         vars.append(tuple(dtypes))
 
     if 'id' in request.POST or 'nlat' in request.POST:
-        q += (" left join \"WObML\"." + dsid + "_id_list as l on l.file_code "
-              "= w.code and l.platform_type_code = d.platform_type_code left "
-              "join \"WObML\"." + dsid + "_ids as i on i.code = l.id_code")
+        q += (f'" left join "WObML".{dsid}_id_list as l on l.file_code = w.'
+              "code and l.platform_type_code = d.platform_type_code left join "
+              f'"WObML".{dsid}_ids as i on i.code = l.id_code')
         if 'id_match' in request.POST:
             if request.POST['id_match'] == "exact":
                 wc.append("i.id = %s")
@@ -70,14 +70,21 @@ def parse_obml_query(cursor, dsid, listtyp, request):
     opts['platforms'] = set([e[1] for e in res])
     opts['data_types'] = set([e[4] for e in res])
     opts['formats'] = list(set([e[5] for e in res]))
+    gindexes = set()
     for e in res:
         opts['min_start'] = min(e[2], opts['min_start'])
         opts['max_end'] = max(e[3], opts['max_end'])
+        gindexes.add(e[6])
 
     s = str(opts['min_start'])
     opts['min_start'] = "-".join([s[0:4], s[4:6], s[6:8]])
     s = str(opts['max_end'])
     opts['max_end'] = "-".join([s[0:4], s[4:6], s[6:8]])
+    if 'gindex' not in request.POST and len(gindexes) > 1:
+        groups = get_groups(dsid)
+        opts['groups'] = [(str(e['gindex']), e['title']) for e in groups if
+                          e['gindex'] in gindexes]
+
     if len(opts['platforms']) > 0:
         cursor.execute('select code, platform_type from "WObML".'
                        "platform_types where code in %s",
