@@ -143,7 +143,7 @@ def customize_obml(request, dsid, gindex, listtyp, cache_file, **kwargs):
         for n in range(nlines):
             line = f.readline()
             lst = line.strip().split("<!>")
-            pfms.append({'code': lst[0], 'name': snake_to_capital(lst[1])})
+            pfms.append({'name': snake_to_capital(lst[1]), 'code': lst[0]})
 
         ctx.update({'platforms': pfms})
         line = f.readline()
@@ -153,7 +153,7 @@ def customize_obml(request, dsid, gindex, listtyp, cache_file, **kwargs):
             for n in range(nlines):
                 line = f.readline()
                 lst = line.strip().split("<!>")
-                dtypes.append({'code': lst[0], 'name': lst[1]})
+                dtypes.append({'name': lst[1], 'code': lst[0]})
 
             ctx.update({'data_types': dtypes})
 
