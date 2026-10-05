@@ -11,7 +11,8 @@ from django.http import HttpRequest, JsonResponse, QueryDict
 from django.shortcuts import render
 from facbrowse.customize import customize_obml
 from facbrowse.grml_query import parse_grml_query
-from facbrowse.utils import cache_file, get_groups, service_list
+from facbrowse.obml_query import parse_obml_query
+from facbrowse.utils import cache_file, service_list
 from libpkg.codemaps import decode_level, decode_parameter
 from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
@@ -310,160 +311,78 @@ def parse_sensor_filters_request(request, dsid, cursor):
                         'platforms': [],
                         'variables': [], }
         filters = copy.deepcopy(restrictions)
-        query = ("select distinct d.platform_type_code, p.platform_type, d."
-                 'data_type, min(w.start_date), max(w.end_date), array_agg('
-                 f'distinct tindex) from "WObML".{dsid}_data_types_list as d '
-                 'left join "WObML".platform_types as p on p.code = d.'
-                 f'platform_type_code left join "WObML".{dsid}_data_types as '
-                 f't on t.data_type_code = d.code left join "WObML".{dsid}'
-                 "_webfiles2 as w on w.code = t.file_code left join dssdb."
-                 f"wfile_{dsid} as wf on wf.wfile = w.id")
-        qparams = []
-        wc = []
+        obml_req = HttpRequest()
+        obml_req.method = "POST"
+        obml_req.POST = QueryDict(mutable=True)
         if ('valid_date_min' in request.GET and
                 len(request.GET['valid_date_min']) > 0):
+            obml_req.POST['startDate'] = request.GET['valid_date_min']
             restrictions['valid_date_min'] = request.GET['valid_date_min']
-            wc.append("w.end_date >= %s")
-            qparams.append(request.GET['valid_date_min'].replace("-", ""))
             del filters['valid_date_min']
         else:
+            obml_req.POST['startDate'] = "1000-01-01"
             del restrictions['valid_date_min']
 
         if ('valid_date_max' in request.GET and
                 len(request.GET['valid_date_max']) > 0):
+            obml_req.POST['endDate'] = request.GET['valid_date_max']
             restrictions['valid_date_max'] = request.GET['valid_date_max']
-            wc.append("w.start_date <= %s")
-            qparams.append(request.GET['valid_date_max'].replace("-", ""))
             del filters['valid_date_max']
         else:
+            obml_req.POST['endDate'] = "9000-12-31"
             del restrictions['valid_date_max']
 
         if 'products' in request.GET and len(request.GET['products']) > 0:
+            obml_req.POST['gindex'] = request.GET['products']
             del filters['products']
         else:
             del restrictions['products']
 
         if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
-            wc.append("d.platform_type_code in %s")
-            qparams.append(
-                    tuple([int(part) for e in request.GET.getlist('platforms')
-                           for part in e.split(",")]))
+            obml_req.POST['platform_type'] = request.GET['platforms']
             del filters['platforms']
         else:
             del restrictions['platforms']
 
         if 'variables' in request.GET and len(request.GET['variables']) > 0:
-            wc.append("d.data_type in %s")
-            qparams.append(
-                    tuple([part for e in request.GET.getlist('variables') for
-                           part in e.split(",")]))
+            obml_req.POST.setlist('data_type',
+                                  request.GET.getlist('variables'))
             del filters['variables']
         else:
             del restrictions['variables']
 
-        if len(qparams) > 0:
-            if len(wc) > 0:
-                query += f" where {' and '.join(wc)}"
-
-            query += (" group by d.platform_type_code, p.platform_type, d."
-                      "data_type")
-            cursor.execute(query, tuple(qparams))
-            res = cursor.fetchall()
-            if len(res) == 0:
-                err = ("No filters were identified. Perhaps an invalid query "
-                       "parameter was specified. See the "
-                       f"'/api/datasets/{dsid}/filesearch/filters/sensor' "
-                       "endpoint for valid parameter values for this dataset.")
-                return ({}, {}, err, 400)
-
-            variable_names = {}
-            with open(cfile) as f:
-                line = f.readline()
-                line = f.readline()
-                nlines = int(line)
-                # skip the platforms
-                for n in range(nlines):
-                    line = f.readline()
-
-                line = f.readline()
-                nlines = int(line)
-                # get the variables
-                for n in range(nlines):
-                    line = f.readline()
-                    parts = line.strip().split("<!>")
-                    variable_names[parts[0]] = parts[1]
-
-            gidx_set = set()
-            plat_set = set()
-            var_set = set()
-            for e in res:
-                if e[0] not in plat_set:
-                    plat_set.add(e[0])
-                    code = str(e[0])
-                    name = e[1].replace("_", " ").title()
-                    if 'platforms' in restrictions:
-                        restrictions['platforms'].append(
-                                {'name': name, 'code': code})
-                    else:
-                        filters['platforms'].append(
-                                {'name': name, 'code': code})
-
-                if e[2] not in var_set:
-                    var_set.add(e[2])
-                    name = (variable_names[e[2]] if e[2] in variable_names else
-                            None)
-                    if 'variables' in restrictions:
-                        restrictions['variables'].append(
-                                {'name': name, 'code': e[2]})
-                    else:
-                        filters['variables'].append(
-                                {'name': name, 'code': e[2]})
-
-                if 'valid_date_min' in filters:
-                    filters['valid_date_min'] = min(e[3],
-                                                    filters['valid_date_min'])
-
-                if 'valid_date_max' in filters:
-                    filters['valid_date_max'] = max(e[4],
-                                                    filters['valid_date_max'])
-
-                for gidx in e[5]:
-                    if gidx not in gidx_set:
-                        gidx_set.add(gidx)
-                        if 'products' in restrictions:
-                            restrictions['products'].append(
-                                    {'name': None, 'code': str(gidx)})
-                        else:
-                            filters['products'].append(
-                                    {'name': None, 'code': str(gidx)})
-
+        if len(obml_req.POST) > 0:
+            obml = parse_obml_query(cursor, dsid, "weblist", obml_req)
             if 'valid_date_min' in filters:
-                s = str(filters['valid_date_min'])
-                filters['valid_date_min'] = "-".join([s[0:4], s[4:6], s[6:8]])
+                filters['valid_date_min'] = obml['min_start']
 
             if 'valid_date_max' in filters:
-                s = str(filters['valid_date_max'])
-                filters['valid_date_max'] = "-".join([s[0:4], s[4:6], s[6:8]])
+                filters['valid_date_max'] = obml['max_end']
 
-            if len(gidx_set) > 0:
-                cursor.execute(
-                        "select gindex, title from dssdb.dsgroup where dsid = "
-                        "%s and gindex in %s", (dsid, tuple(gidx_set)))
-                gidx_set = {str(e[0]): e[1] for e in cursor.fetchall()}
-                if 'products' in restrictions:
-                    d = restrictions['products']
-                else:
-                    d = filters['products']
+            if 'products' in filters:
+                for item in obml['groups']:
+                    filters['products'].append({'name': item[1],
+                                                'code': item[0]})
 
-                for item in d:
-                    item['name'] = gidx_set[item['code']]
+            if 'platforms' in filters:
+                for item in obml['platforms']:
+                    filters['platforms'].append({'name': item[1],
+                                                 'code': item[0]})
+
+            if 'variables' in filters:
+                for item in obml['data_types']:
+                    filters['variables'].append({'name': item[1],
+                                                 'code': item[0]})
 
         else:
             ctx = customize_obml(request, dsid, None, "weblist", cfile,
                                  from_api=True)
             filters['valid_date_min'] = ctx['start_date']
             filters['valid_date_max'] = ctx['end_date']
-            filters['products'] = ctx['groups']
+            for group in ctx['groups']:
+                filters['products'].append({'name': group['title'],
+                                            'code': group['gindex']})
+
             filters['platforms'] = ctx['platforms']
             filters['variables'] = ctx['data_types']
 
