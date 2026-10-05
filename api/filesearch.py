@@ -9,6 +9,7 @@ from dateutil import tz
 from django.conf import settings
 from django.http import HttpRequest, JsonResponse, QueryDict
 from django.shortcuts import render
+from facbrowse.customize import customize_obml
 from facbrowse.grml_query import parse_grml_query
 from facbrowse.utils import cache_file, get_groups, service_list
 from libpkg.codemaps import decode_level, decode_parameter
@@ -458,40 +459,13 @@ def parse_sensor_filters_request(request, dsid, cursor):
                     item['name'] = gidx_set[item['code']]
 
         else:
-            with open(cfile) as f:
-                line = f.readline()
-                dates = line.strip().split()
-                filters['valid_date_min'] = (
-                        "-".join([dates[0][0:4], dates[0][4:6],
-                                  dates[0][6:8]]))
-                filters['valid_date_max'] = (
-                        "-".join([dates[1][0:4], dates[1][4:6],
-                                  dates[1][6:8]]))
-                line = f.readline()
-                nlines = int(line)
-                for n in range(nlines):
-                    line = f.readline()
-                    parts = line.strip().split("<!>")
-                    name = parts[1].replace("_", " ").title()
-                    filters['platforms'].append(
-                            {'name': name, 'code': parts[0]})
-
-                line = f.readline()
-                nlines = int(line)
-                for n in range(nlines):
-                    line = f.readline()
-                    parts = line.strip().split("<!>")
-                    filters['variables'].append(
-                            {'name': parts[1], 'code': parts[0]})
-
-            groups = get_groups(dsid)
-            for group in groups:
-                if 'products' in restrictions:
-                    restrictions['products'].append(
-                            {'name': group['title'], 'code': group['gindex']})
-                else:
-                    filters['products'].append(
-                            {'name': group['title'], 'code': group['gindex']})
+            ctx = customize_obml(request, dsid, None, "weblist", cfile,
+                                 from_api=True)
+            filters['valid_date_min'] = ctx['start_date']
+            filters['valid_date_max'] = ctx['end_date']
+            filters['products'] = ctx['groups']
+            filters['platforms'] = ctx['platforms']
+            filters['variables'] = ctx['data_types']
 
         if 'products' in restrictions:
             if len(restrictions['products']) < 2:
