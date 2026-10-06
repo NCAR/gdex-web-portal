@@ -45,6 +45,19 @@ input.file[type="checkbox"] {
     vertical-align: baseline;
 }
 
+.filelist-access-options__icon {
+    border-radius: 14px;
+    background-color: var(--gdex-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.filelist-access-options__icon i {
+    font-size: 1rem; 
+    color: var(--gdex-white);
+}
+
 /* Instant CSS tooltips (no hover delay, unlike the native title attribute) */
 [data-tip] {
     position: relative;
