@@ -8,7 +8,7 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
     <thead>
         <tr>
             {% if not group.is_group_summary %}
-                <th class='index-col'><input class='table_group me-1' type='checkbox' id='{{ group.group_id|slugify }}_group_index'>Index</th>
+                <th class='index-col'></th>
             {% endif %}
             {% for col in group.column_headers %}
                 {% if group.is_group_summary or forloop.first %}
