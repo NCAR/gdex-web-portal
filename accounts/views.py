@@ -15,6 +15,11 @@ def logout(request):
     MyAccountAdapter().remove_cookies(response)
     return response
 
+def signup(request):
+    # Email/password signup is closed (see MyAccountAdapter), so signup is
+    # ORCID-only; this replaces allauth's account_signup view.
+    return render(request, 'account/signup.html')
+
 def newtoken(request):
     token,valid_date = request.user.usertoken.generate_new_token()
     return JsonResponse({'token':str(token), 'valid_date':str(valid_date)})
