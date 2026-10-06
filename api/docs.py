@@ -47,18 +47,20 @@ _ARRAY_OF_STRINGS = {
     }
 }
 
-_PRODUCTS = OpenApiParameter(
-    name="products", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
+_PRODUCT_CODES = OpenApiParameter(
+    name="product_codes", type=_ARRAY_OF_STRINGS,
+    location=OpenApiParameter.QUERY,
     description="Restrict to specified product code(s)", many=True
 )
 
-_GRID = OpenApiParameter(
-    name="grids", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+_GRID_CODE = OpenApiParameter(
+    name="grid_code", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
     description="Restrict to specified grid code"
 )
 
-_LEVELS = OpenApiParameter(
-    name="levels", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
+_LEVEL_CODES = OpenApiParameter(
+    name="level_codes", type=_ARRAY_OF_STRINGS,
+    location=OpenApiParameter.QUERY,
     description="Restrict to specified vertical level code(s)", many=True
 )
 
@@ -335,11 +337,11 @@ filesearch_filters_grid_schema = extend_schema(
     parameters=[
         _DSID, _VALID_DATETIME_MIN, _VALID_DATETIME_MAX,
         OpenApiParameter(
-            name="parameters", type=_ARRAY_OF_STRINGS,
+            name="parameter_codes", type=_ARRAY_OF_STRINGS,
             location=OpenApiParameter.QUERY,
             description="Restrict to specified parameter code(s)", many=True
         ),
-        _PRODUCTS, _GRID, _LEVELS
+        _PRODUCT_CODES, _GRID_CODE, _LEVEL_CODES
     ],
     responses={
         200: {
@@ -422,13 +424,13 @@ filesearch_files_grid_schema = extend_schema(
     parameters=[
         _DSID,
         OpenApiParameter(
-            name="parameters", type=_ARRAY_OF_STRINGS,
+            name="parameter_codes", type=_ARRAY_OF_STRINGS,
             location=OpenApiParameter.QUERY,
             description="Restrict to specified parameter code(s)", many=True,
             required=True
         ),
-        _VALID_DATETIME_MIN, _VALID_DATETIME_MAX, _PRODUCTS,
-        _GRID, _LEVELS
+        _VALID_DATETIME_MIN, _VALID_DATETIME_MAX, _PRODUCT_CODES,
+        _GRID_CODE, _LEVEL_CODES
     ],
     responses={
         200: _FILESEARCH_FILES_RESPONSE,

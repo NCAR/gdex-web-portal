@@ -82,26 +82,6 @@ def parse_cyclone_fix_filters_request(request, dsid, cursor):
 
 def parse_grid_filters_request(request, dsid, cursor):
     try:
-        if 'parameters' in request.GET and len(request.GET['parameters']) > 0:
-            request_parameters = (
-                    [part for e in request.GET.getlist('parameters') for part
-                     in e.split(",")])
-
-        if 'products' in request.GET and len(request.GET['products']) > 0:
-            request_products = (
-                    [part for e in request.GET.getlist('products') for part in
-                     e.split(",")])
-
-        if 'grids' in request.GET and len(request.GET['grids']) > 0:
-            request_grids = (
-                    [part for e in request.GET.getlist('grids') for part in
-                     e.split(",")])
-
-        if 'levels' in request.GET and len(request.GET['levels']) > 0:
-            request_levels = (
-                    [part for e in request.GET.getlist('levels') for part in
-                     e.split(",")])
-
         restrictions = {'valid_datetime_min': 999999999999,
                         'valid_datetime_max': 0,
                         'parameters': [],
@@ -151,29 +131,37 @@ def parse_grid_filters_request(request, dsid, cursor):
         else:
             del restrictions['valid_datetime_max']
 
-        if 'request_parameters' in locals():
+        if ('parameter_codes' in request.GET and
+                len(request.GET['parameter_codes']) > 0):
             query += " and concat(s.format_code, '!', s.parameter) in %s"
-            qparams.append(tuple(request_parameters))
+            qparams.append(tuple(
+                    [part for e in request.GET.getlist('parameter_codes') for
+                     part in e.split(",")]))
             del filters['parameters']
         else:
             del restrictions['parameters']
 
-        if 'request_products' in locals():
+        if ('product_codes' in request.GET and
+                len(request.GET['product_codes']) > 0):
             query += " and s.time_range_code in %s"
-            qparams.append(tuple([int(e) for e in request_products]))
+            qparams.append(tuple(
+                    [int(part) for e in request.GET.getlist('product_codes')
+                     for part in e.split(",")]))
             del filters['products']
         else:
             del restrictions['products']
 
-        if 'request_grids' in locals():
-            query += " and s.grid_definition_code in %s"
-            qparams.append(tuple([int(e) for e in request_grids]))
+        if 'grid_code' in request.GET and len(request.GET['grid_code']) > 0:
+            query += " and s.grid_definition_code = %s"
+            qparams.append(request.GET['grid_code'])
             del filters['grids']
         else:
             del restrictions['grids']
 
-        if 'request_levels' in locals():
-            lvals = [int(e) for e in request_levels]
+        if ('level_codes' in request.GET and len(request.GET['level_codes']) >
+                0):
+            lvals = [int(part) for e in request.GET.getlist('level_codes') for
+                     part in e.split(",")]
             query += (" and cast((string_to_array(level_type_codes, ':'))[1] "
                       "as integer) <= %s")
             qparams.append(max(lvals))
@@ -216,7 +204,7 @@ def parse_grid_filters_request(request, dsid, cursor):
 
             if e[1] not in tr_set:
                 tr_set.add(e[1])
-                if 'request_products' in locals():
+                if 'products' in restrictions:
                     restrictions['products'].append(
                             {'name': e[2], 'code': str(e[1])})
                 else:
@@ -227,7 +215,7 @@ def parse_grid_filters_request(request, dsid, cursor):
                 gd_set.add(e[3])
                 grid_name = convert_grid_definition(e[4].split("!"),
                                                     output="text")
-                if 'request_grids' in locals():
+                if 'grids' in restrictions:
                     restrictions['grids'].append(
                             {'name': grid_name, 'code': str(e[3])})
                 else:
@@ -252,7 +240,7 @@ def parse_grid_filters_request(request, dsid, cursor):
 
         param_list = [{'name': name, 'code': code} for name, code in
                       param_names.items()]
-        if 'request_parameters' in locals():
+        if 'parameters' in restrictions:
             restrictions['parameters'] = param_list
         else:
             filters['parameters'] = param_list
@@ -268,7 +256,7 @@ def parse_grid_filters_request(request, dsid, cursor):
         level_maps = {}
         for e in res:
             lev_name = decode_level(lev_fmts[e[3]], *e[0:3], level_maps)
-            if 'request_levels' in locals():
+            if 'levels' in restrictions:
                 restrictions['levels'].append(
                         {'name': lev_name, 'code': str(e[3])})
             else:
@@ -455,7 +443,7 @@ def get_grml_file_codes(request, dsid, cursor):
     grml_req = HttpRequest()
     grml_req.method = "POST"
     grml_req.POST = QueryDict(mutable=True)
-    grml_req.POST.setlist('parameter', request.GET.getlist('parameters'))
+    grml_req.POST.setlist('parameter', request.GET.getlist('parameter_codes'))
     files_response['restrictions']['parameters'] = (
             request.GET.getlist('parameters'))
     if 'valid_datetime_min' in request.GET:
@@ -491,23 +479,21 @@ def get_grml_file_codes(request, dsid, cursor):
         grml_req.POST['endTime'] = ""
 
     kwargs = {}
-    if 'products' in request.GET:
+    if 'product_codes' in request.GET:
         kwargs['pcodes'] = (
-                [part for e in request.GET.getlist('products') for part in
+                [part for e in request.GET.getlist('product_codes') for part in
                  e.split(",")])
         files_response['restrictions']['products'] = (
-                request.GET.getlist('products'))
+                request.GET.getlist('product_codes'))
 
-    if 'grids' in request.GET:
-        kwargs['gcodes'] = (
-                [part for e in request.GET.getlist('grids') for part in
-                 e.split(",")])
-        files_response['restrictions']['grids'] = request.GET.getlist('grids')
+    if 'grid_code' in request.GET:
+        kwargs['gcodes'] = request.GET['grid_code']
+        files_response['restrictions']['grids'] = request.GET['grid_code']
 
-    if 'levels' in request.GET:
+    if 'level_codes' in request.GET:
         kwargs['lcodes'] = (
-                [int(part) for e in request.GET.getlist('levels') for part in
-                 e.split(",")])
+                [int(part) for e in request.GET.getlist('level_codes') for part
+                 in e.split(",")])
         files_response['restrictions']['levels'] = (
                 request.GET.getlist('levels'))
 
