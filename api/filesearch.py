@@ -26,6 +26,8 @@ datatypes_map = {
 
 grid_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}"
 
+sensor_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2}"
+
 PAGE_SIZE = 1000
 
 files_response = {'dsid': "", 'datatype': "", 'restrictions': {},
@@ -454,6 +456,8 @@ def get_grml_file_codes(request, dsid, cursor):
     grml_req.method = "POST"
     grml_req.POST = QueryDict(mutable=True)
     grml_req.POST.setlist('parameter', request.GET.getlist('parameters'))
+    files_response['restrictions']['parameters'] = (
+            request.GET.getlist('parameters'))
     if 'valid_datetime_min' in request.GET:
         if not re.fullmatch(grid_date_re, request.GET['valid_datetime_min']):
             return JsonResponse(
@@ -486,8 +490,6 @@ def get_grml_file_codes(request, dsid, cursor):
         grml_req.POST['endDate'] = ""
         grml_req.POST['endTime'] = ""
 
-    files_response['restrictions']['parameters'] = (
-            request.GET.getlist('parameters'))
     kwargs = {}
     if 'products' in request.GET:
         kwargs['pcodes'] = (
@@ -513,6 +515,54 @@ def get_grml_file_codes(request, dsid, cursor):
     return grml['fcodes']
 
 
+def get_obml_file_codes(request, dsid, cursor):
+    obml_req = HttpRequest()
+    obml_req.method = "POST"
+    obml_req.POST = QueryDict(mutable=True)
+    if 'valid_date_min' in request.GET:
+        if not re.fullmatch(sensor_date_re, request.GET['valid_date_min']):
+            return JsonResponse(
+                    {'error_message':
+                     "Invalid format for 'valid_date_min'"},
+                    status=400)
+
+        files_response['restrictions']['valid_date_min'] = (
+                request.GET['valid_date_min'])
+        obml_req.POST['startDate'] = request.GET['valid_date_min']
+    else:
+        obml_req.POST['startDate'] = "1000-01-01"
+
+    if 'valid_date_max' in request.GET:
+        if not re.fullmatch(sensor_date_re, request.GET['valid_date_max']):
+            return JsonResponse(
+                    {'error_message':
+                     "Invalid format for 'valid_date_max'"},
+                    status=400)
+
+        files_response['restrictions']['valid_date_max'] = (
+                request.GET['valid_date_max'])
+        obml_req.POST['endDate'] = request.GET['valid_date_max']
+    else:
+        obml_req.POST['endDate'] = "9000-12-31"
+
+    if 'products' in request.GET and len(request.GET['products']) > 0:
+        files_response['restrictions']['products'] = request.GET['products']
+        obml_req.POST['gindex'] = request.GET['products']
+
+    if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
+        files_response['restrictions']['platforms'] = request.GET['platforms']
+        obml_req.POST['platform_type'] = request.GET['platforms']
+
+    if 'variables' in request.GET and len(request.GET['variables']) > 0:
+        files_response['restrictions']['variables'] = (
+                request.GET.getlist('variables'))
+        obml_req.POST.setlist('data_type',
+                              request.GET.getlist('variables'))
+
+    obml = parse_obml_query(cursor, dsid, "weblist", obml_req)
+    return obml['fcodes']
+
+
 def files(request, dsid, datatype):
     try:
         conn = psycopg2.connect(**settings.RDADB['metadata_config_pg'])
@@ -527,8 +577,8 @@ def files(request, dsid, datatype):
             db = "WGrML"
             file_codes = get_grml_file_codes(request, dsid, cursor)
         elif datatype == "sensor" and "ObML" in services:
-            return JsonResponse({'error_message': "Not yet implemented."},
-                                status=500)
+            db = "WObML"
+            file_codes = get_obml_file_codes(request, dsid, cursor)
 
         if 'file_codes' in locals():
             files_response['pagination']['total_count'] = len(file_codes)
