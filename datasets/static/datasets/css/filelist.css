@@ -52,7 +52,7 @@ input.file[type="checkbox"] {
     font-size: 1rem; 
     color: var(--gdex-white);
 }
-.filelist-access-options__icon:hover {
+.filelist-access-options__icon:hover i {
     color: var(--gdex-blue);
 }
 
