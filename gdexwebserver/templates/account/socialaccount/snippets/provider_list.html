@@ -3,7 +3,8 @@
 
 <div class="col-xs-12 col-md-6 col-md-offset-3">
 
-{% for provider in socialaccount_providers %}
+{# Reverse-alphabetical by id puts ORCID before Globus #}
+{% for provider in socialaccount_providers|dictsortreversed:"id" %}
 {% if not only_provider or provider.id == only_provider %}
 
 {% if provider.id == "openid" %}
@@ -20,10 +21,10 @@
 {% endif %}
 
 <div class="pb-2">
-    <a title="{{ provider.name }}" 
-       href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}"
-       class="socialaccount_provider {{ provider.id }}">
-        <button class="btn btn-outline-primary btn-block btn-sm">
+    {# POST form so allauth skips its "You are about to sign in" confirmation page #}
+    <form method="post" action="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
+        {% csrf_token %}
+        <button type="submit" title="{{ provider.name }}" class="btn btn-outline-primary btn-block btn-sm socialaccount_provider {{ provider.id }}">
             <picture>
                 {% if provider.name|lower == "orcid" %}
                     <source type="image/svg+xml" srcset="/media/images/logos/{{ provider.name|lower }}.svg">
@@ -33,7 +34,14 @@
             </picture>
             {{ action_label|default:"Sign in with" }} {{ provider.name }}
         </button>
-    </a>
+    </form>
+    {% if provider.id == "globus" %}
+    <p class="small text-start mt-1">
+        Please log into Globus with your ORCID, and link your ORCID to your primary Globus account if you have a primary Globus account identity other than ORCID.
+        Instructions to link your ORCID to your Globus account will be provided on the Globus login page.
+        If you have linked your ORCID to your Globus account, you may log into Globus with any of your valid identity providers.
+    </p>
+    {% endif %}
 </div>
 
 {% endif %}
