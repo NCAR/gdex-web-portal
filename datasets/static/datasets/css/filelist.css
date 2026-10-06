@@ -16,6 +16,12 @@ input.file[type="checkbox"] {
     background-color: #fff;
     cursor: pointer;
 }
+.btn-all-files {
+    font-size: 1rem;
+}
+.clear-group-btn {
+    font-size: 1rem;
+}
 
 /* File table (non-summary): fixed layout so expanding a detail row cannot resize the Index column */
 .filelist-table {
