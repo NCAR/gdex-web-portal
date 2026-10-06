@@ -36,11 +36,14 @@
         </button>
     </form>
     {% if provider.id == "globus" %}
-    <p class="small text-start mt-1">
-        Please log into Globus with your ORCID, and link your ORCID to your primary Globus account if you have a primary Globus account identity other than ORCID.
-        Instructions to link your ORCID to your Globus account will be provided on the Globus login page.
-        If you have linked your ORCID to your Globus account, you may log into Globus with any of your valid identity providers.
-    </p>
+    <details class="small text-start mt-1">
+        <summary class="text-muted">Using Globus? Read this first</summary>
+        <p class="mt-1">
+            Please log into Globus with your ORCID, and link your ORCID to your primary Globus account if you have a primary Globus account identity other than ORCID.
+            Instructions to link your ORCID to your Globus account will be provided on the Globus login page.
+            If you have linked your ORCID to your Globus account, you may log into Globus with any of your valid identity providers.
+        </p>
+    </details>
     {% endif %}
 </div>
 
