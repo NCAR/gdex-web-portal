@@ -11,7 +11,7 @@ from django.http import HttpRequest, JsonResponse, QueryDict
 from facbrowse.customize import customize_obml
 from facbrowse.grml_query import parse_grml_query
 from facbrowse.obml_query import parse_obml_query
-from facbrowse.utils import cache_file, service_list
+from facbrowse.utils import cache_file, service_list, sort_levels
 from libpkg.codemaps import decode_level, decode_parameter
 from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
@@ -258,10 +258,12 @@ def parse_grid_filters_request(request, dsid, cursor):
             lev_name = decode_level(lev_fmts[e[3]], *e[0:3], level_maps)
             if 'levels' in restrictions:
                 restrictions['levels'].append(
-                        {'name': lev_name, 'code': str(e[3])})
+                #        {'name': lev_name, 'code': str(e[3])})
+                        (str(e[3]), lev_name))
             else:
                 filters['levels'].append(
-                        {'name': lev_name, 'code': str(e[3])})
+                #        {'name': lev_name, 'code': str(e[3])})
+                        (str(e[3]), lev_name))
 
         if 'valid_datetime_min' in filters:
             s = str(filters['valid_datetime_min'])
@@ -272,6 +274,17 @@ def parse_grid_filters_request(request, dsid, cursor):
             s = str(filters['valid_datetime_max'])
             filters['valid_datetime_max'] = (
                     f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
+
+        if 'levels' in restrictions:
+            restrictions['levels'].sort(key=sort_levels)
+            restrictions['levels'] = (
+                    [{'name': t[1], 'code': t[0]} for t in
+                     restrictions['levels']])
+        else:
+            filters['levels'].sort(key=sort_levels)
+            filters['levels'] = (
+                    [{'name': t[1], 'code': t[0]} for t in
+                     filters['levels']])
 
         return (restrictions, filters, "", 200)
     except Exception as err:
