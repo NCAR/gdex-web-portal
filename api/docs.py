@@ -52,14 +52,29 @@ _PRODUCTS = OpenApiParameter(
     description="Restrict to specified product code(s)", many=True
 )
 
-_GRIDS = OpenApiParameter(
-    name="grids", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
-    description="Restrict to specified grid code(s)", many=True
+_GRID = OpenApiParameter(
+    name="grids", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+    description="Restrict to specified grid code"
 )
 
 _LEVELS = OpenApiParameter(
     name="levels", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
     description="Restrict to specified vertical level code(s)", many=True
+)
+
+_GROUP = OpenApiParameter(
+    name="product", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+    description="Restrict to specified dataset product code"
+)
+
+_PLATFORM = OpenApiParameter(
+    name="platform", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+    description="Restrict to specified platform code"
+)
+
+_VARIABLES = OpenApiParameter(
+    name="variables", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
+    description="Restrict to specified variable/data type code(s)", many=True
 )
 
 _NAME_CODE_PROPERTY = {
@@ -324,7 +339,7 @@ filesearch_filters_grid_schema = extend_schema(
             location=OpenApiParameter.QUERY,
             description="Restrict to specified parameter code(s)", many=True
         ),
-        _PRODUCTS, _GRIDS, _LEVELS
+        _PRODUCTS, _GRID, _LEVELS
     ],
     responses={
         200: {
@@ -355,17 +370,7 @@ filesearch_filters_sensor_schema = extend_schema(
             "This operation returns the filters that are available for the "
             '"sensor" data files in a dataset.'),
     parameters=[
-        _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX, _PRODUCTS,
-        OpenApiParameter(
-            name="platforms", type=_ARRAY_OF_STRINGS,
-            location=OpenApiParameter.QUERY,
-            description="Restrict to specified platform code(s)", many=True
-        ),
-        OpenApiParameter(
-            name="variables", type=_ARRAY_OF_STRINGS,
-            location=OpenApiParameter.QUERY,
-            description="Restrict to specified variable code(s)", many=True
-        )
+        _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX, _GROUP, _PLATFORM, _VARIABLES
     ],
     responses={
         200: {
@@ -378,8 +383,8 @@ filesearch_filters_sensor_schema = extend_schema(
                     'properties': {
                         'valid_date_min': {'type': "string"},
                         'valid_date_max': {'type': "string"},
-                        'products': _NAME_CODE_PROPERTY,
-                        'platforms': _NAME_CODE_PROPERTY,
+                        'product': {'type': "string"},
+                        'platform': {'type': "string"},
                         'variables': _NAME_CODE_PROPERTY
                     }
                 }
@@ -391,91 +396,91 @@ filesearch_filters_sensor_schema = extend_schema(
 )
 
 filesearch_files_cyclone_fix_schema = extend_schema(
-  tags=['Files'],
-  operation_id="get_filesearch_cyclone_fix_files",
-  summary='Get a list of data files containing data type "cyclone_fix" data',
-  description=(
-          "This operation returns a list of data files that contain data in "
-          'the "cyclone_fix" data type, optionally restricted by filters.'),
-  parameters=[
-      _DSID, _VALID_DATETIME_MIN, _VALID_DATETIME_MAX
-  ],
-  responses={
-      200: _FILESEARCH_FILES_RESPONSE,
-      400: _FILESEARCH_ERROR_RESPONSE,
-      500: _FILESEARCH_ERROR_RESPONSE
-  }
-)
-
-filesearch_files_grid_schema = extend_schema(
-  tags=['Files'],
-  operation_id="get_filesearch_grid_files",
-  summary='Get a list of data files containing data type "grid" data',
-  description=(
-          "This operation returns a list of data files that contain data in "
-          'the "grid" data type, optionally restricted by filters.'),
-  parameters=[
-      _DSID,
-      OpenApiParameter(
-          name="parameters", type=_ARRAY_OF_STRINGS,
-          location=OpenApiParameter.QUERY,
-          description="Restrict to specified parameter code(s)", many=True,
-          required=True
-      ),
-      _VALID_DATETIME_MIN, _VALID_DATETIME_MAX, _PRODUCTS,
-      _GRIDS, _LEVELS
-  ],
-  responses={
-      200: _FILESEARCH_FILES_RESPONSE,
-      400: _FILESEARCH_ERROR_RESPONSE,
-      500: _FILESEARCH_ERROR_RESPONSE
-  }
-)
-
-filesearch_files_sensor_schema = extend_schema(
-  tags=['Files'],
-  operation_id="get_filesearch_sensor_files",
-  summary='Get a list of data files containing data type "sensor" data',
-  description=(
-          "This operation returns a list of data files that contain data in "
-          'the "sensor" data type, optionally restricted by filters.'),
-  parameters=[
-      _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX
-  ],
-  responses={
-      200: _FILESEARCH_FILES_RESPONSE,
-      400: _FILESEARCH_ERROR_RESPONSE,
-      500: _FILESEARCH_ERROR_RESPONSE
-  }
-)
-
-filesearch_result_set_schema = extend_schema(
-  tags=['Files'],
-  operation_id="get_filesearch_result_set",
-  summary="Get a list of data files from a previously-created result set",
-  description=(
-          "This operation returns a list of data files for the specified "
-          "dataset and previously-created result set."),
-  parameters=[
-          _DSID,
-          OpenApiParameter(
-              name="result_id", type=OpenApiTypes.STR,
-              location=OpenApiParameter.PATH,
-              description="The result set ID for pagination",
-              required=True
-          ),
-          OpenApiParameter(
-              name="page_num", type=OpenApiTypes.INT,
-              location=OpenApiParameter.PATH,
-              description="The page number of the result set to retrieve",
-              required=True
-          )
-  ],
-  responses={
+    tags=['Files'],
+    operation_id="get_filesearch_cyclone_fix_files",
+    summary='Get a list of data files containing data type "cyclone_fix" data',
+    description=(
+            "This operation returns a list of data files that contain data in "
+            'the "cyclone_fix" data type, optionally restricted by filters.'),
+    parameters=[
+        _DSID, _VALID_DATETIME_MIN, _VALID_DATETIME_MAX
+    ],
+    responses={
         200: _FILESEARCH_FILES_RESPONSE,
         400: _FILESEARCH_ERROR_RESPONSE,
         500: _FILESEARCH_ERROR_RESPONSE
-  }
+    }
+)
+
+filesearch_files_grid_schema = extend_schema(
+    tags=['Files'],
+    operation_id="get_filesearch_grid_files",
+    summary='Get a list of data files containing data type "grid" data',
+    description=(
+            "This operation returns a list of data files that contain data in "
+            'the "grid" data type, optionally restricted by filters.'),
+    parameters=[
+        _DSID,
+        OpenApiParameter(
+            name="parameters", type=_ARRAY_OF_STRINGS,
+            location=OpenApiParameter.QUERY,
+            description="Restrict to specified parameter code(s)", many=True,
+            required=True
+        ),
+        _VALID_DATETIME_MIN, _VALID_DATETIME_MAX, _PRODUCTS,
+        _GRID, _LEVELS
+    ],
+    responses={
+        200: _FILESEARCH_FILES_RESPONSE,
+        400: _FILESEARCH_ERROR_RESPONSE,
+        500: _FILESEARCH_ERROR_RESPONSE
+    }
+)
+
+filesearch_files_sensor_schema = extend_schema(
+    tags=['Files'],
+    operation_id="get_filesearch_sensor_files",
+    summary='Get a list of data files containing data type "sensor" data',
+    description=(
+            "This operation returns a list of data files that contain data in "
+            'the "sensor" data type, optionally restricted by filters.'),
+    parameters=[
+        _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX, _GROUP, _PLATFORM, _VARIABLES
+    ],
+    responses={
+        200: _FILESEARCH_FILES_RESPONSE,
+        400: _FILESEARCH_ERROR_RESPONSE,
+        500: _FILESEARCH_ERROR_RESPONSE
+    }
+)
+
+filesearch_result_set_schema = extend_schema(
+    tags=['Files'],
+    operation_id="get_filesearch_result_set",
+    summary="Get a list of data files from a previously-created result set",
+    description=(
+            "This operation returns a list of data files for the specified "
+            "dataset and previously-created result set."),
+    parameters=[
+            _DSID,
+            OpenApiParameter(
+                name="result_id", type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description="The result set ID for pagination",
+                required=True
+            ),
+            OpenApiParameter(
+                name="page_num", type=OpenApiTypes.INT,
+                location=OpenApiParameter.PATH,
+                description="The page number of the result set to retrieve",
+                required=True
+            )
+    ],
+    responses={
+          200: _FILESEARCH_FILES_RESPONSE,
+          400: _FILESEARCH_ERROR_RESPONSE,
+          500: _FILESEARCH_ERROR_RESPONSE
+    }
 )
 
 # ---------------------------------------------------------------------------
