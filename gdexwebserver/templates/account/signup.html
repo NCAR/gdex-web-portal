@@ -2,20 +2,31 @@
 
 {% load i18n %}
 
-{% block head_title %}{% trans "Signup" %}{% endblock %}
+{% block head_title %}{% trans "Sign Up" %}{% endblock %}
 
 {% block content %}
-<h1>{% trans "Sign Up" %}</h1>
 
-<p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
+<h2>{% trans "Sign Up" %}</h2>
 
-<form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
-  {% csrf_token %}
-  {{ form.as_p }}
-  {% if redirect_field_value %}
-  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-  {% endif %}
-  <button type="submit">{% trans "Sign Up" %} &raquo;</button>
-</form>
+<p>
+  Anyone can sign up for a free GDEX account. <em>An account is not required to
+  download data files</em>, but it lets you use GDEX custom services such as
+  dataset subsetting and file format conversion.
+</p>
+<p>
+  Accounts are created using an ORCID iD. If you have not yet registered with
+  ORCID, select the 'Sign up with ORCID' button below and follow the steps to
+  register for an ORCID iD.
+</p>
+
+<div class="socialaccount_ballot">
+  <div class="socialaccount_providers">
+    {% include "account/socialaccount/snippets/provider_list.html" with process="login" only_provider="orcid" action_label="Sign up with" %}
+  </div>
+</div>
+
+<p>Already have an account? Please <a href="{% url 'account_login' %}">sign in</a>.</p>
+
+{% include "socialaccount/snippets/login_extra.html" %}
 
 {% endblock %}

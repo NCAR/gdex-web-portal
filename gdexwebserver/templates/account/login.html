@@ -34,6 +34,12 @@
     </div>
   </div>
 
+  <div class="alert alert-info mt-3">
+    <strong>New to GDEX?</strong> Anyone can sign up for a free GDEX account.
+    If you do not have an account yet, use the
+    <a href="{% url 'account_signup' %}">sign up page</a> to create one.
+  </div>
+
   {% include "socialaccount/snippets/login_extra.html" %}
 
 {% else %}
