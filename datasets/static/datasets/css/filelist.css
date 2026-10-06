@@ -46,12 +46,7 @@ input.file[type="checkbox"] {
 }
 
 .filelist-access-options__icon {
-    border-radius: 14px;
     background-color: var(--gdex-blue);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
 }
 .filelist-access-options__icon i {
     font-size: 1rem; 
