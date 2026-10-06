@@ -26,7 +26,7 @@ Access option buttons for one file. Expects: file_col (the file's first column),
         </a>
     {% endif %}
     {% if file_col.meta_link != 'N' and file_col.meta_link %}
-        <a data-tip='Click for Detailed Metadata' aria-label='Click for Detailed Metadata' target='_blank' class='btn btn-sm btn-primary filelist-access-options__icon rounded p-1'
+        <a data-tip='Click for Detailed Metadata' aria-label='Detailed Metadata' target='_blank' class='btn btn-sm btn-primary filelist-access-options__icon rounded p-1'
            href="/ajax/#cgi-bin/transform?xml=/datasets/{{data.dsid}}/metadata/wfmd{{file_col.data_path|remove_datadsid}}.{{file_col.meta_link}}ML">
             <i class="fa-solid fa-info-circle"></i>
         </a>

@@ -52,6 +52,9 @@ input.file[type="checkbox"] {
     font-size: 1rem; 
     color: var(--gdex-white);
 }
+.filelist-access-options__icon i:hover {
+    color: var(--gdex-blue);
+}
 
 /* Instant CSS tooltips (no hover delay, unlike the native title attribute) */
 [data-tip] {
