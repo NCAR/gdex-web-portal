@@ -754,10 +754,10 @@ def get_grouplevel(dsid):
     return grouplevel
 
 def get_local_emailname():
-    disallowed_users = set('apache',)
+    disallowed_users = set(['apache',])
     uid = get_user_id()
     if uid in disallowed_users:
-        raise ValueError("Dissallowed user request")
+        raise ValueError("Disallowed user request")
     user = uid + "@ucar.edu"
     return user
 
@@ -1687,7 +1687,7 @@ def update_sflag(sflag, rqstidx):
 
 def get_user_id():
     """Get user id"""
-    return pwd.getpwuid( os.getuid()).pw_name
+    return pwd.getpwuid(os.getuid()).pw_name
 
 def check_ds(ds):
     """Returns True if proper dataset id,
