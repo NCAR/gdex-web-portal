@@ -89,7 +89,8 @@ input.file[type="checkbox"] {
     table-layout: fixed;
     margin-bottom: -1px; /* last visible row's divider tucks under the wrapper border */
 }
-.filelist-table.table > tbody > tr:has(input.file:checked) > td {
+.filelist-table.table > tbody > tr:has(input.file:checked) > td,
+.gdex-table.table > tbody > tr:has(input.parent_group:checked) > td {
     background-color: var(--gdex-bg-tint);
 }
 
