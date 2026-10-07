@@ -23,22 +23,25 @@ input.file[type="checkbox"] {
     font-size: 1rem;
 }
 
-/* File table (non-summary). Selectors are prefixed with .table / > to beat the Unity theme's
-   table rules (solid blue header, bordered cells, 1.125rem padding). */
-.filelist-table-wrap {
+/* Shared data table look (file list, documentation and software tables). Selectors are prefixed
+   with .table / > to beat the Unity theme's table rules (solid blue header, bordered cells,
+   1.125rem padding). Wrap the table in .gdex-table-wrap for the rounded border. */
+.gdex-table-wrap {
     border: 1px solid var(--gdex-border);
     border-radius: .5rem;
     overflow: hidden;
     margin-bottom: 1rem;
 }
-/* Fixed layout so expanding a detail row cannot resize the index column */
-.filelist-table.table {
-    table-layout: fixed;
-    margin-bottom: -1px; /* last row's divider tucks under the wrapper border */
+/* Scrolls sideways on narrow screens instead of clipping */
+.gdex-table-wrap.table-responsive {
+    overflow-x: auto;
+}
+.gdex-table.table {
+    margin-bottom: 0;
     --bs-table-bg: transparent;
 }
-.filelist-table.table > :not(caption) > tr > th,
-.filelist-table.table > :not(caption) > tr > td {
+.gdex-table.table > :not(caption) > tr > th,
+.gdex-table.table > :not(caption) > tr > td {
     border: 0;
     border-bottom: 1px solid var(--gdex-border);
     background-color: transparent;
@@ -48,9 +51,14 @@ input.file[type="checkbox"] {
     overflow-wrap: anywhere;
     line-height: 1.4;
 }
+/* The wrapper border closes the table */
+.gdex-table.table > tbody > tr:last-child > td {
+    border-bottom: 0;
+}
 
-/* Header: quiet labels over a single blue rule */
-.filelist-table.table > thead > tr > th {
+/* Header: quiet labels on a subtle tint over a single blue rule */
+.gdex-table.table > thead > tr > th {
+    background-color: #F1F4F8;
     color: var(--gdex-text-muted);
     font-size: .75rem;
     font-weight: 600;
@@ -58,22 +66,28 @@ input.file[type="checkbox"] {
     text-transform: uppercase;
     border-bottom: 2px solid var(--gdex-blue);
 }
-.filelist-table .sort-column {
+.gdex-table .sort-column {
     color: var(--gdex-icon-muted);
     cursor: pointer;
     transition: color .15s;
 }
-.filelist-table th:hover .sort-column {
+.gdex-table th:hover .sort-column {
     color: var(--gdex-blue);
 }
 
-/* Rows: hover and selected tints */
-.filelist-table.table > tbody > tr > td {
+/* Rows: hover tint */
+.gdex-table.table > tbody > tr > td {
     font-size: .9375rem;
     transition: background-color .15s;
 }
-.filelist-table.table > tbody > tr:not(.file-detail):hover > td {
+.gdex-table.table > tbody > tr:not(.file-detail):hover > td {
     background-color: #F5F8FD;
+}
+
+/* File table (non-summary): fixed layout so expanding a detail row cannot resize the index column */
+.filelist-table.table {
+    table-layout: fixed;
+    margin-bottom: -1px; /* last visible row's divider tucks under the wrapper border */
 }
 .filelist-table.table > tbody > tr:has(input.file:checked) > td {
     background-color: var(--gdex-bg-tint);

@@ -4,8 +4,8 @@ Table for one file group. Summary groups (is_group_summary) list every column as
 only the Index and file name columns, with the remaining columns and the access buttons in a
 collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist.js).
 {% endcomment %}
-{% if not group.is_group_summary %}<div class='filelist-table-wrap'>{% endif %}
-<table id='{{ group.group_id|slugify }}_table' class='table{% if group.is_group_summary %} table-light table-striped{% else %} filelist-table{% endif %}'>
+{% if not group.is_group_summary %}<div class='gdex-table-wrap'>{% endif %}
+<table id='{{ group.group_id|slugify }}_table' class='table{% if group.is_group_summary %} table-light table-striped{% else %} gdex-table filelist-table{% endif %}'>
     <thead>
         <tr>
             {% if not group.is_group_summary %}
