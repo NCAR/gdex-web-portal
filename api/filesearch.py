@@ -258,11 +258,9 @@ def parse_grid_filters_request(request, dsid, cursor):
             lev_name = decode_level(lev_fmts[e[3]], *e[0:3], level_maps)
             if 'levels' in restrictions:
                 restrictions['levels'].append(
-                #        {'name': lev_name, 'code': str(e[3])})
                         (str(e[3]), lev_name))
             else:
                 filters['levels'].append(
-                #        {'name': lev_name, 'code': str(e[3])})
                         (str(e[3]), lev_name))
 
         if 'valid_datetime_min' in filters:
@@ -330,21 +328,24 @@ def parse_sensor_filters_request(request, dsid, cursor):
             obml_req.POST['endDate'] = "9000-12-31"
             del restrictions['valid_date_max']
 
-        if 'products' in request.GET and len(request.GET['products']) > 0:
-            obml_req.POST['gindex'] = request.GET['products']
+        if ('product_code' in request.GET and len(request.GET['product_code'])
+                > 0):
+            obml_req.POST['gindex'] = request.GET['product_code']
             del filters['products']
         else:
             del restrictions['products']
 
-        if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
-            obml_req.POST['platform_type'] = request.GET['platforms']
+        if ('platform_code' in request.GET and
+                len(request.GET['platform_code']) > 0):
+            obml_req.POST['platform_type'] = request.GET['platform_code']
             del filters['platforms']
         else:
             del restrictions['platforms']
 
-        if 'variables' in request.GET and len(request.GET['variables']) > 0:
+        if ('variable_codes' in request.GET and
+                len(request.GET['variable_codes']) > 0):
             obml_req.POST.setlist('data_type',
-                                  request.GET.getlist('variables'))
+                                  request.GET.getlist('variable_codes'))
             del filters['variables']
         else:
             del restrictions['variables']

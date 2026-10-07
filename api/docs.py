@@ -64,17 +64,19 @@ _LEVEL_CODES = OpenApiParameter(
     description="Restrict to specified vertical level code(s)", many=True
 )
 
-_GROUP = OpenApiParameter(
-    name="product", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+_GROUP_CODE = OpenApiParameter(
+    name="product_code", type=OpenApiTypes.STR,
+    location=OpenApiParameter.QUERY,
     description="Restrict to specified dataset product code"
 )
 
-_PLATFORM = OpenApiParameter(
-    name="platform", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY,
+_PLATFORM_CODE = OpenApiParameter(
+    name="platform_code", type=OpenApiTypes.STR,
+    location=OpenApiParameter.QUERY,
     description="Restrict to specified platform code"
 )
 
-_VARIABLES = OpenApiParameter(
+_VARIABLE_CODES = OpenApiParameter(
     name="variables", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
     description="Restrict to specified variable/data type code(s)", many=True
 )
@@ -372,7 +374,8 @@ filesearch_filters_sensor_schema = extend_schema(
             "This operation returns the filters that are available for the "
             '"sensor" data files in a dataset.'),
     parameters=[
-        _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX, _GROUP, _PLATFORM, _VARIABLES
+        _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX, _GROUP_CODE, _PLATFORM_CODE,
+        _VARIABLE_CODES
     ],
     responses={
         200: {
@@ -447,7 +450,8 @@ filesearch_files_sensor_schema = extend_schema(
             "This operation returns a list of data files that contain data in "
             'the "sensor" data type, optionally restricted by filters.'),
     parameters=[
-        _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX, _GROUP, _PLATFORM, _VARIABLES
+        _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX, _GROUP_CODE, _PLATFORM_CODE,
+         _VARIABLE_CODES
     ],
     responses={
         200: _FILESEARCH_FILES_RESPONSE,
