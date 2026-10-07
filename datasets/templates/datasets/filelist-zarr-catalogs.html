@@ -23,9 +23,8 @@
                     <tr>
                         <td class="roboto-regular" style="font-family: Roboto Mono;">{{ arco_file.file_name }}</td>
                         <td>
-                            <button class="btn btn-primary px-2 py-1 rounded" 
-                                type="button" 
-                                style="transition: all 0.2s ease; font-size: 1rem;" 
+                            <button class="btn filelist-access-options__icon filelist-access-options__icon--labeled"
+                                type="button"
                                 onClick="copyFullLink(this, '{{ arco_file.file_url }}', 'Copy Full {% if 'http' in arco_file.file_url %} URL {% else %} Path {% endif %}')">
                                 <i class="fa-solid fa-copy pe-1"></i>
                                 Copy Full {% if 'http' in arco_file.file_url %} URL {% else %} Path {% endif %}

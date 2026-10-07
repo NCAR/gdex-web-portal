@@ -196,6 +196,24 @@ input.file[type="checkbox"] {
 .btn.filelist-access-options__icon:active {
     color: var(--gdex-white);
 }
+/* Same style with a text label (e.g. "Copy Full URL" on Zarr catalogs) */
+.btn.filelist-access-options__icon--labeled {
+    width: auto;
+    padding: 0 .75rem;
+    gap: .25rem;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 500;
+    white-space: nowrap;
+}
+/* "Copied!" state: copyFullLink() adds .btn-success for a few seconds */
+.btn.filelist-access-options__icon.btn-success {
+    --bs-btn-color: var(--gdex-white);
+    --bs-btn-bg: var(--bs-success);
+    --bs-btn-border-color: var(--bs-success);
+    --bs-btn-hover-bg: var(--bs-success);
+    --bs-btn-hover-border-color: var(--bs-success);
+}
 
 /* Instant CSS tooltips (no hover delay, unlike the native title attribute) */
 [data-tip] {
