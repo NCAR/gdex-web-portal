@@ -720,9 +720,12 @@ function get_user_email(remove) {
  */
 function copyFullLink(btn, link, text='Copy Full URL') {
     navigator.clipboard.writeText(link);
+    // Remember the button's own classes (not every caller uses btn-primary); a repeat click keeps the first copy
+    if (!$(btn).data('origClass')) { $(btn).data('origClass', btn.className); }
     $(btn).removeClass('btn-primary').addClass('btn-success').html('<i class="fa-solid fa-check pe-1"></i> Copied!');
     setTimeout(() => {
-      $(btn).removeClass('btn-success').addClass('btn-primary').html('<i class="fa-solid fa-copy pe-1"></i> '+text);
+      btn.className = $(btn).data('origClass');
+      $(btn).html('<i class="fa-solid fa-copy pe-1"></i> '+text);
     }, 5000);
 }
 
