@@ -189,6 +189,12 @@ input.file[type="checkbox"] {
     line-height: 1;
     transition: background-color .15s, border-color .15s, color .15s;
 }
+/* Beat the theme's .ncar a:hover light blue on the <a> buttons (download, THREDDS, metadata) */
+.btn.filelist-access-options__icon:hover,
+.btn.filelist-access-options__icon:focus-visible,
+.btn.filelist-access-options__icon:active {
+    color: var(--gdex-white);
+}
 
 /* Instant CSS tooltips (no hover delay, unlike the native title attribute) */
 [data-tip] {
