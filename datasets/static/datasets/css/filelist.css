@@ -60,7 +60,7 @@ input.file[type="checkbox"] {
 .gdex-table.table > thead > tr > th {
     background-color: #F1F4F8;
     color: var(--gdex-text-muted);
-    font-size: .75rem;
+    font-size: .875rem;
     font-weight: 600;
     letter-spacing: .06em;
     text-transform: uppercase;
@@ -77,7 +77,7 @@ input.file[type="checkbox"] {
 
 /* Rows: hover tint */
 .gdex-table.table > tbody > tr > td {
-    font-size: .9375rem;
+    font-size: 1.0625rem;
     transition: background-color .15s;
 }
 .gdex-table.table > tbody > tr:not(.file-detail):hover > td {
