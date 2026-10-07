@@ -33,7 +33,7 @@ input.file[type="checkbox"] {
     line-height: 1.3;
 }
 .filelist-table .index-col {
-    width: 6.5rem;
+    width: 4.25rem;
     white-space: nowrap;
 }
 .filelist-table input[type="checkbox"] {
