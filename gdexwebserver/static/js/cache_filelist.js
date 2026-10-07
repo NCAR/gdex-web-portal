@@ -213,10 +213,10 @@ function showSelectionConfirmation(opts)
         .text('You have selected '+files.length+' files ('+Math.floor(totalSize/1000000)+' MB)'));
     confirmation_div.append($('<div></div>', {'style':'white-space:pre-line'}).text(opts.message));
 
-    var confirm_button = $('<button />', {'class':'btn btn-primary mr-2'})
+    var confirm_button = $('<button />', {'class':'btn btn-primary btn-gdex'})
         .text(opts.buttonText)
         .on('click', opts.onConfirm);
-    var cancel_button = $('<button />', {'class':'btn btn-outline-primary mr-2'})
+    var cancel_button = $('<button />', {'class':'btn btn-outline-primary btn-gdex'})
         .text('Cancel')
         .on('click', function(){
            if($('#ds_content').length) {
@@ -227,7 +227,7 @@ function showSelectionConfirmation(opts)
            }
            $('#confirmation-div').remove();
         });
-    confirmation_div.append($('<div />', {'class':'pt-2 pb-2'}).append(confirm_button).append(cancel_button));
+    confirmation_div.append($('<div />', {'class':'d-flex flex-wrap gap-2 py-2'}).append(confirm_button).append(cancel_button));
 
     var file_table = $('<table />').append('<tr><th>Filename</th><th>Size</th></tr>');
     $.each(files, function(i, f) {

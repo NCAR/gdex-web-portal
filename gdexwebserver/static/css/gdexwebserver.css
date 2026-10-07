@@ -18,3 +18,9 @@
 .home-search-badge:hover {
     color: #42c0ff;
 }
+
+.btn-gdex {
+    border-radius: 0.25rem; /* Rounded corners */
+    font-size: 1rem; /* Set font size */
+    padding: 0.5rem 1rem; /* Set padding */
+}
