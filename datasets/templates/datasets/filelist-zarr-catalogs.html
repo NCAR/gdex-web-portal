@@ -8,7 +8,8 @@
                  {{group.group_name}}
              </h3>
          {% endif %}
-    <table id="zarr-catalogs-table" class="table table-striped table-bordered">
+    <div class="gdex-table-wrap table-responsive">
+    <table id="zarr-catalogs-table" class="table gdex-table">
         <thead>
             <tr>
                 <th scope="col">Catalog Name</th>
@@ -37,5 +38,6 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
          {% endfor %}
 </div>
