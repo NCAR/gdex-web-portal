@@ -23,38 +23,157 @@ input.file[type="checkbox"] {
     font-size: 1rem;
 }
 
-/* File table (non-summary): fixed layout so expanding a detail row cannot resize the Index column */
-.filelist-table {
+/* File table (non-summary). Selectors are prefixed with .table / > to beat the Unity theme's
+   table rules (solid blue header, bordered cells, 1.125rem padding). */
+.filelist-table-wrap {
+    border: 1px solid var(--gdex-border);
+    border-radius: .5rem;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+/* Fixed layout so expanding a detail row cannot resize the index column */
+.filelist-table.table {
     table-layout: fixed;
+    margin-bottom: -1px; /* last row's divider tucks under the wrapper border */
+    --bs-table-bg: transparent;
 }
-.filelist-table th,
-.filelist-table td {
+.filelist-table.table > :not(caption) > tr > th,
+.filelist-table.table > :not(caption) > tr > td {
+    border: 0;
+    border-bottom: 1px solid var(--gdex-border);
+    background-color: transparent;
+    box-shadow: none;
+    padding: .5rem .75rem;
+    vertical-align: middle;
     overflow-wrap: anywhere;
-    line-height: 1.3;
+    line-height: 1.4;
 }
+
+/* Header: quiet labels over a single blue rule */
+.filelist-table.table > thead > tr > th {
+    color: var(--gdex-text-muted);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--gdex-blue);
+}
+.filelist-table .sort-column {
+    color: var(--gdex-icon-muted);
+    cursor: pointer;
+    transition: color .15s;
+}
+.filelist-table th:hover .sort-column {
+    color: var(--gdex-blue);
+}
+
+/* Rows: hover and selected tints */
+.filelist-table.table > tbody > tr > td {
+    font-size: .9375rem;
+    transition: background-color .15s;
+}
+.filelist-table.table > tbody > tr:not(.file-detail):hover > td {
+    background-color: #F5F8FD;
+}
+.filelist-table.table > tbody > tr:has(input.file:checked) > td {
+    background-color: var(--gdex-bg-tint);
+}
+
+/* Index column: checkbox plus a muted row number */
 .filelist-table .index-col {
-    width: 4.25rem;
+    width: 4.5rem;
     white-space: nowrap;
+}
+.filelist-table.table > :not(caption) > tr > .index-col {
+    padding-right: .25rem;
 }
 .filelist-table input[type="checkbox"] {
     vertical-align: middle;
     margin-top: 0;
 }
-.filelist-table .file-toggle-btn {
-    line-height: 1;
-    border: 0;
-    vertical-align: baseline;
+.filelist-table .file-index {
+    color: var(--gdex-text-muted);
+    font-size: .8125rem;
+    font-variant-numeric: tabular-nums;
+    vertical-align: middle;
 }
 
-.filelist-access-options__icon {
-    background-color: var(--gdex-blue);
+/* Expand/collapse chevron: muted, rotates when open */
+.filelist-table .btn.file-toggle-btn {
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    margin-right: .375rem;
+    border: 0;
+    border-radius: .25rem;
+    font-size: .75rem;
+    line-height: 1;
+    color: var(--gdex-icon-muted);
+    vertical-align: middle;
 }
-.filelist-access-options__icon i {
-    font-size: 1rem; 
-    color: var(--gdex-white);
-}
-.filelist-access-options__icon:hover i {
+.filelist-table .btn.file-toggle-btn:hover {
     color: var(--gdex-blue);
+    background-color: var(--gdex-bg-tint);
+}
+.filelist-table .file-toggle-btn i {
+    transition: transform .15s;
+}
+.filelist-table .file-toggle-btn[aria-expanded="true"] {
+    color: var(--gdex-blue);
+}
+.filelist-table .file-toggle-btn[aria-expanded="true"] i {
+    transform: rotate(90deg);
+}
+
+/* Detail row: panel attached to its file row, with a blue accent bar */
+.filelist-table.table > tbody > tr:has(+ tr.file-detail:not(.d-none)) > td {
+    border-bottom: 0;
+}
+.filelist-table.table > tbody > tr.file-detail > td {
+    padding-top: 0;
+}
+.file-detail__panel {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: .375rem 1.5rem;
+    align-items: center;
+    margin: 0 0 .25rem;
+    padding: .75rem 1rem;
+    background-color: #F8F9FB;
+    border-left: 3px solid var(--gdex-blue);
+    border-radius: 0 .375rem .375rem 0;
+    font-size: .875rem;
+}
+.file-detail__panel dt {
+    color: var(--gdex-text-muted);
+    font-weight: 500;
+}
+.file-detail__panel dd {
+    margin: 0;
+}
+
+/* Access option buttons: outlined icon squares that fill on hover */
+.btn.filelist-access-options__icon {
+    --bs-btn-color: var(--gdex-blue);
+    --bs-btn-bg: var(--gdex-white);
+    --bs-btn-border-color: var(--gdex-border-input);
+    --bs-btn-hover-color: var(--gdex-white);
+    --bs-btn-hover-bg: var(--gdex-blue);
+    --bs-btn-hover-border-color: var(--gdex-blue);
+    --bs-btn-active-color: var(--gdex-white);
+    --bs-btn-active-bg: var(--gdex-dark-blue);
+    --bs-btn-active-border-color: var(--gdex-dark-blue);
+    --bs-btn-border-width: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-radius: .375rem;
+    font-size: .875rem;
+    line-height: 1;
+    transition: background-color .15s, border-color .15s, color .15s;
 }
 
 /* Instant CSS tooltips (no hover delay, unlike the native title attribute) */

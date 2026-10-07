@@ -66,7 +66,6 @@ function toggleFileDetail() {
    var open = !detail.hasClass('d-none');
    var label = open ? 'Hide file details' : 'Show file details';
    btn.attr('aria-expanded', open).attr('data-tip', label).attr('aria-label', label);
-   btn.find('i').toggleClass('fa-chevron-right', !open).toggleClass('fa-chevron-down', open);
 }
 
 function copyPathClicked() {

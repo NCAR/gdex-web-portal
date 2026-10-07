@@ -4,7 +4,8 @@ Table for one file group. Summary groups (is_group_summary) list every column as
 only the Index and file name columns, with the remaining columns and the access buttons in a
 collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist.js).
 {% endcomment %}
-<table id='{{ group.group_id|slugify }}_table' class='table table-light table-striped{% if not group.is_group_summary %} table-sm filelist-table{% endif %}'>
+{% if not group.is_group_summary %}<div class='filelist-table-wrap'>{% endif %}
+<table id='{{ group.group_id|slugify }}_table' class='table{% if group.is_group_summary %} table-light table-striped{% else %} filelist-table{% endif %}'>
     <thead>
         <tr>
             {% if not group.is_group_summary %}
@@ -21,17 +22,17 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
         {% for row in group.rows %}
             <tr {% for col in row %}{% if col.name == 'Size' %}data-size='{{ col.value }}'{% endif %}{% endfor %}>
                 {% if not group.is_group_summary %}
-                    <td class='index-col'><input class='file me-1' type='checkbox'>{{ forloop.counter }}</td>
+                    <td class='index-col'><input class='file me-2' type='checkbox'><span class='file-index'>{{ forloop.counter }}</span></td>
                 {% endif %}
                 {% for col in row %}
                     {% if group.is_group_summary or forloop.first %}
                         <td class='{{ col.name }}' {% if col.name == 'Size' %}data-size='{{ col.value }}'{% endif %}>
-                            {% include "datasets/filelist-cell.html" %}
                             {% if not group.is_group_summary %}
-                                <button type='button' class='btn btn-sm btn-link p-0 ms-2 file-toggle-btn' data-tip='Show file details' aria-label='Show file details' aria-expanded='false'>
+                                <button type='button' class='btn btn-link file-toggle-btn' data-tip='Show file details' aria-label='Show file details' aria-expanded='false'>
                                     <i class="fas fa-chevron-right"></i>
                                 </button>
                             {% endif %}
+                            {% include "datasets/filelist-cell.html" %}
                         </td>
                     {% endif %}
                 {% endfor %}
@@ -40,15 +41,15 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
                 <tr class='file-detail d-none'>
                     <td class='index-col'></td>
                     <td>
-                        <dl class='row mb-0 small'>
+                        <dl class='file-detail__panel'>
                             {% for col in row %}
                                 {% if not forloop.first %}
-                                    <dt class='col-sm-3'>{{ col.name }}</dt>
-                                    <dd class='col-sm-9 {{ col.name }}'>{% include "datasets/filelist-cell.html" %}</dd>
+                                    <dt>{{ col.name }}</dt>
+                                    <dd class='{{ col.name }}'>{% include "datasets/filelist-cell.html" %}</dd>
                                 {% endif %}
                             {% endfor %}
-                            <dt class='col-sm-3'>Access Options</dt>
-                            <dd class='col-sm-9 access-options d-flex flex-wrap gap-1'>
+                            <dt>Access Options</dt>
+                            <dd class='access-options d-flex flex-wrap gap-1'>
                                 {% include "datasets/filelist-access-options.html" with file_col=row.0 %}
                             </dd>
                         </dl>
@@ -58,3 +59,4 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
         {% endfor %}
     </tbody>
 </table>
+{% if not group.is_group_summary %}</div>{% endif %}
