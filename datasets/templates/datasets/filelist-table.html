@@ -48,7 +48,7 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
                                 {% endif %}
                             {% endfor %}
                             <dt class='col-sm-3'>Access Options</dt>
-                            <dd class='col-sm-9 access-options text-nowrap'>
+                            <dd class='col-sm-9 access-options d-flex flex-wrap gap-1'>
                                 {% include "datasets/filelist-access-options.html" with file_col=row.0 %}
                             </dd>
                         </dl>
