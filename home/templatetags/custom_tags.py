@@ -64,8 +64,12 @@ def make_tds_url(data_path):
     (e.g. d633000/dir/file.nc)"""
     data_path = data_path.strip('/')
     directory = os.path.dirname(data_path)
-    return ("https://thredds.rda.ucar.edu/thredds/catalog/files/g/"
-            f"{directory}/catalog.html?dataset=files/g/{data_path}")
+    tds_domain = settings.TDS_BASE_URL
+    tds_base_path = "thredds/catalog/files/g"
+    tds_url = os.path.join(tds_domain, tds_base_path, directory, "catalog.html")
+    tds_query = f"?dataset=files/g/{data_path}"
+    tds_url = f"{tds_url}{tds_query}"
+    return tds_url
 
 @register.filter
 def basename(value):
