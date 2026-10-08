@@ -6,9 +6,8 @@
 {% with settings.RDA_DATA_BASE_URL as gdex_base_url %}
 {% with settings.GDEX_CANONICAL_DATA_PATH as gdex_base_path %}
 {% load wagtailcore_tags static decs_tags home_tags custom_tags %}
-    <button class='btn btn-primary px-2 py-1 float-end rounded' 
-            type='button' 
-            style='transition:all 0.2s ease; font-size:1rem;' 
+    <button class='btn filelist-access-options__icon filelist-access-options__icon--labeled float-end'
+            type='button'
             onclick="copyFullLink(this, 
                 {% if is_glade and data.locflag != 'O' %}
                     {% if col.webpath %}

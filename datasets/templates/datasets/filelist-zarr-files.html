@@ -9,7 +9,8 @@
                  {{group.group_name}}
              </h3>
          {% endif %}
-    <table id="zarr-files-table" class="table table-striped table-bordered">
+    <div class="gdex-table-wrap table-responsive">
+    <table id="zarr-files-table" class="table gdex-table">
         <thead>
             <tr>
                 <th scope="col">Group Name</th>
@@ -24,9 +25,8 @@
                     <tr>
                         <td class="roboto-regular" style="font-family: Roboto Mono;">{{ zarr_file.file_name }}</td>
                         <td>
-                            <button class="btn btn-primary px-2 py-1 rounded" 
-                                type="button" 
-                                style="transition: all 0.2s ease; font-size: 1rem;" 
+                            <button class="btn filelist-access-options__icon filelist-access-options__icon--labeled"
+                                type="button"
                                 onClick="copyFullLink(this, '{{ zarr_file.file_url }}', 'Copy {% if 'http' in zarr_file.file_url %} URL {% else %} Path {% endif %}')">
                                 <i class="fa-solid fa-copy pe-1"></i>
                                 Copy {% if 'http' in zarr_file.file_url %} URL {% else %} Path {% endif %}
@@ -39,5 +39,6 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
          {% endfor %}
 </div>
