@@ -8,9 +8,10 @@ from datetime import datetime, timedelta
 from dateutil import tz
 from django.conf import settings
 from django.http import HttpRequest, JsonResponse, QueryDict
-from django.shortcuts import render
+from facbrowse.customize import customize_obml
 from facbrowse.grml_query import parse_grml_query
-from facbrowse.utils import service_list
+from facbrowse.obml_query import parse_obml_query
+from facbrowse.utils import cache_file, service_list, sort_levels
 from libpkg.codemaps import decode_level, decode_parameter
 from libpkg.dbutils import uncompress_bitmap_values
 from libpkg.gridutils import convert_grid_definition
@@ -25,6 +26,8 @@ datatypes_map = {
 
 grid_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}"
 
+sensor_date_re = r"[0-9]{4}-[0-9]{2}-[0-9]{2}"
+
 PAGE_SIZE = 1000
 
 files_response = {'dsid': "", 'datatype': "", 'restrictions': {},
@@ -34,10 +37,6 @@ files_response = {'dsid': "", 'datatype': "", 'restrictions': {},
                       'paths': [],
                    },
                   'pagination': {}}
-
-
-def swagger(request, output=None):
-    return render(request, "dsfiles/swagger.html", {})
 
 
 def valid_dsid(dsid, cursor):
@@ -77,28 +76,12 @@ def datatypes(dsid):
             conn.close()
 
 
+def parse_cyclone_fix_filters_request(request, dsid, cursor):
+    return ({}, {}, "Not yet implemented.", 500)
+
+
 def parse_grid_filters_request(request, dsid, cursor):
     try:
-        if 'parameters' in request.GET and len(request.GET['parameters']) > 0:
-            request_parameters = (
-                    [part for e in request.GET.getlist('parameters') for part
-                     in e.split(",")])
-
-        if 'products' in request.GET and len(request.GET['products']) > 0:
-            request_products = (
-                    [part for e in request.GET.getlist('products') for part in
-                     e.split(",")])
-
-        if 'grids' in request.GET and len(request.GET['grids']) > 0:
-            request_grids = (
-                    [part for e in request.GET.getlist('grids') for part in
-                     e.split(",")])
-
-        if 'levels' in request.GET and len(request.GET['levels']) > 0:
-            request_levels = (
-                    [part for e in request.GET.getlist('levels') for part in
-                     e.split(",")])
-
         restrictions = {'valid_datetime_min': 999999999999,
                         'valid_datetime_max': 0,
                         'parameters': [],
@@ -148,29 +131,37 @@ def parse_grid_filters_request(request, dsid, cursor):
         else:
             del restrictions['valid_datetime_max']
 
-        if 'request_parameters' in locals():
+        if ('parameter_codes' in request.GET and
+                len(request.GET['parameter_codes']) > 0):
             query += " and concat(s.format_code, '!', s.parameter) in %s"
-            qparams.append(tuple(request_parameters))
+            qparams.append(tuple(
+                    [part for e in request.GET.getlist('parameter_codes') for
+                     part in e.split(",")]))
             del filters['parameters']
         else:
             del restrictions['parameters']
 
-        if 'request_products' in locals():
+        if ('product_codes' in request.GET and
+                len(request.GET['product_codes']) > 0):
             query += " and s.time_range_code in %s"
-            qparams.append(tuple([int(e) for e in request_products]))
+            qparams.append(tuple(
+                    [int(part) for e in request.GET.getlist('product_codes')
+                     for part in e.split(",")]))
             del filters['products']
         else:
             del restrictions['products']
 
-        if 'request_grids' in locals():
-            query += " and s.grid_definition_code in %s"
-            qparams.append(tuple([int(e) for e in request_grids]))
+        if 'grid_code' in request.GET and len(request.GET['grid_code']) > 0:
+            query += " and s.grid_definition_code = %s"
+            qparams.append(request.GET['grid_code'])
             del filters['grids']
         else:
             del restrictions['grids']
 
-        if 'request_levels' in locals():
-            lvals = [int(e) for e in request_levels]
+        if ('level_codes' in request.GET and len(request.GET['level_codes']) >
+                0):
+            lvals = [int(part) for e in request.GET.getlist('level_codes') for
+                     part in e.split(",")]
             query += (" and cast((string_to_array(level_type_codes, ':'))[1] "
                       "as integer) <= %s")
             qparams.append(max(lvals))
@@ -213,7 +204,7 @@ def parse_grid_filters_request(request, dsid, cursor):
 
             if e[1] not in tr_set:
                 tr_set.add(e[1])
-                if 'request_products' in locals():
+                if 'products' in restrictions:
                     restrictions['products'].append(
                             {'name': e[2], 'code': str(e[1])})
                 else:
@@ -224,7 +215,7 @@ def parse_grid_filters_request(request, dsid, cursor):
                 gd_set.add(e[3])
                 grid_name = convert_grid_definition(e[4].split("!"),
                                                     output="text")
-                if 'request_grids' in locals():
+                if 'grids' in restrictions:
                     restrictions['grids'].append(
                             {'name': grid_name, 'code': str(e[3])})
                 else:
@@ -249,7 +240,7 @@ def parse_grid_filters_request(request, dsid, cursor):
 
         param_list = [{'name': name, 'code': code} for name, code in
                       param_names.items()]
-        if 'request_parameters' in locals():
+        if 'parameters' in restrictions:
             restrictions['parameters'] = param_list
         else:
             filters['parameters'] = param_list
@@ -265,12 +256,12 @@ def parse_grid_filters_request(request, dsid, cursor):
         level_maps = {}
         for e in res:
             lev_name = decode_level(lev_fmts[e[3]], *e[0:3], level_maps)
-            if 'request_levels' in locals():
+            if 'levels' in restrictions:
                 restrictions['levels'].append(
-                        {'name': lev_name, 'code': str(e[3])})
+                        (str(e[3]), lev_name))
             else:
                 filters['levels'].append(
-                        {'name': lev_name, 'code': str(e[3])})
+                        (str(e[3]), lev_name))
 
         if 'valid_datetime_min' in filters:
             s = str(filters['valid_datetime_min'])
@@ -282,11 +273,153 @@ def parse_grid_filters_request(request, dsid, cursor):
             filters['valid_datetime_max'] = (
                     f"{s[0:4]}-{s[4:6]}-{s[6:8]} {s[8:10]}:{s[10:12]}")
 
+        if 'levels' in restrictions:
+            restrictions['levels'].sort(key=sort_levels)
+            restrictions['levels'] = (
+                    [{'name': t[1], 'code': t[0]} for t in
+                     restrictions['levels']])
+        else:
+            filters['levels'].sort(key=sort_levels)
+            filters['levels'] = (
+                    [{'name': t[1], 'code': t[0]} for t in
+                     filters['levels']])
+
         return (restrictions, filters, "", 200)
     except Exception as err:
-        print("DSFILES API SERVER ERROR: parse_grid_filters_request(): "
+        print("FILESEARCH API SERVER ERROR: parse_grid_filters_request(): "
               f"'{err}'")
         return ({}, {}, "Server error.", 500)
+
+
+def parse_sensor_filters_request(request, dsid, cursor):
+    try:
+        cfile = cache_file(dsid, None, "ObML", "weblist")
+        if len(cfile) == 0:
+            err = ("API file discovery is not available for data type "
+                   "'sensor'. See the "
+                   f"'/api/datasets/{dsid}/filesearch/datatypes' endpoint for "
+                   "the valid data types for this dataset.")
+            return ({}, {}, err, 400)
+
+        restrictions = {'valid_date_min': 99999999,
+                        'valid_date_max': 0,
+                        'products': [],
+                        'platforms': [],
+                        'variables': [], }
+        filters = copy.deepcopy(restrictions)
+        obml_req = HttpRequest()
+        obml_req.method = "POST"
+        obml_req.POST = QueryDict(mutable=True)
+        if ('valid_date_min' in request.GET and
+                len(request.GET['valid_date_min']) > 0):
+            obml_req.POST['startDate'] = request.GET['valid_date_min']
+            restrictions['valid_date_min'] = request.GET['valid_date_min']
+            del filters['valid_date_min']
+        else:
+            obml_req.POST['startDate'] = "1000-01-01"
+            del restrictions['valid_date_min']
+
+        if ('valid_date_max' in request.GET and
+                len(request.GET['valid_date_max']) > 0):
+            obml_req.POST['endDate'] = request.GET['valid_date_max']
+            restrictions['valid_date_max'] = request.GET['valid_date_max']
+            del filters['valid_date_max']
+        else:
+            obml_req.POST['endDate'] = "9000-12-31"
+            del restrictions['valid_date_max']
+
+        if ('product_code' in request.GET and len(request.GET['product_code'])
+                > 0):
+            obml_req.POST['gindex'] = request.GET['product_code']
+            del filters['products']
+        else:
+            del restrictions['products']
+
+        if ('platform_code' in request.GET and
+                len(request.GET['platform_code']) > 0):
+            obml_req.POST['platform_type'] = request.GET['platform_code']
+            del filters['platforms']
+        else:
+            del restrictions['platforms']
+
+        if ('variable_codes' in request.GET and
+                len(request.GET['variable_codes']) > 0):
+            obml_req.POST.setlist('data_type',
+                                  request.GET.getlist('variable_codes'))
+            del filters['variables']
+        else:
+            del restrictions['variables']
+
+        if len(obml_req.POST) > 0:
+            obml = parse_obml_query(cursor, dsid, "weblist", obml_req)
+            if 'valid_date_min' in filters:
+                filters['valid_date_min'] = obml['min_start']
+
+            if 'valid_date_max' in filters:
+                filters['valid_date_max'] = obml['max_end']
+
+            if 'products' in filters:
+                for item in obml['groups']:
+                    filters['products'].append({'name': item[1],
+                                                'code': item[0]})
+
+            if 'platforms' in filters:
+                for item in obml['platforms']:
+                    filters['platforms'].append({'name': item[1],
+                                                 'code': item[0]})
+
+            if 'variables' in filters:
+                for item in obml['data_types']:
+                    filters['variables'].append({'name': item[1],
+                                                 'code': item[0]})
+
+        else:
+            ctx = customize_obml(request, dsid, None, "weblist", cfile,
+                                 from_api=True)
+            filters['valid_date_min'] = ctx['start_date']
+            filters['valid_date_max'] = ctx['end_date']
+            for group in ctx['groups']:
+                filters['products'].append({'name': group['title'],
+                                            'code': group['gindex']})
+
+            filters['platforms'] = ctx['platforms']
+            filters['variables'] = ctx['data_types']
+
+        if 'products' in restrictions:
+            if len(restrictions['products']) < 2:
+                del restrictions['products']
+
+        else:
+            if len(filters['products']) < 2:
+                del filters['products']
+
+        if 'platforms' in restrictions:
+            restrictions['platforms'].sort(key=lambda x: x['code'])
+        else:
+            filters['platforms'].sort(key=lambda x: x['code'])
+
+        return (restrictions, filters, "", 200)
+    except Exception as err:
+        print("FILESEARCH API SERVER ERROR: parse_sensor_filters_request(): "
+              f"'{err}'")
+        return ({}, {}, "Server error.", 500)
+
+
+def parse_filters_request(request, dsid, datatype, cursor):
+    if datatype == "cyclone_fix":
+        return parse_cyclone_fix_filters_request(request, dsid, cursor)
+
+    if datatype == "grid":
+        return parse_grid_filters_request(request, dsid, cursor)
+
+    if datatype == "sensor":
+        return parse_sensor_filters_request(request, dsid, cursor)
+
+    err_msg = ("API file discovery is not available for data type "
+               f"'{datatype}'. See the "
+               f"'/api/datasets/{dsid}/filesearch/datatypes/' endpoint for "
+               "the valid data types for this dataset.")
+    return ({}, {}, err_msg, 400)
 
 
 def filters(request, dsid, datatype):
@@ -300,31 +433,16 @@ def filters(request, dsid, datatype):
                     status=400)
 
         response = {'dsid': dsid}
-        if datatype == "cyclone_fix":
-            return JsonResponse({'error_message': "Not yet implemented."},
-                                status=500)
+        restrictions, filters, err, status = (
+                parse_filters_request(request, dsid, datatype, cursor))
+        if len(err) > 0:
+            return JsonResponse({'error_message': err}, status=status)
 
-        if datatype == "grid":
-            restrictions, filters, err, status = (
-                    parse_grid_filters_request(request, dsid, cursor))
-            if len(err) > 0:
-                return JsonResponse({'error_message': err}, status=status)
+        if len(restrictions) > 0:
+            response['restrictions'] = restrictions
 
-            if len(restrictions) > 0:
-                response['restrictions'] = restrictions
-
-            response['filters'] = filters
-            return JsonResponse(response)
-
-        if datatype == "sensor":
-            return JsonResponse({'error_message': "Not yet implemented."},
-                                status=500)
-
-        msg = ("API file discovery is not available for data type "
-               f"'{datatype}'. See the "
-               f"'/api/datasets/{dsid}/filesearch/datatypes/' endpoint for "
-               "the valid data types for this dataset.")
-        return JsonResponse({'error_message': msg}, status=400)
+        response['filters'] = filters
+        return JsonResponse(response)
     except Exception as err:
         # log the error in the Apache error log
         print(f"FILESEARCH API SERVER ERROR: filters(dsid={dsid}, "
@@ -339,7 +457,9 @@ def get_grml_file_codes(request, dsid, cursor):
     grml_req = HttpRequest()
     grml_req.method = "POST"
     grml_req.POST = QueryDict(mutable=True)
-    grml_req.POST.setlist('parameter', request.GET.getlist('parameters'))
+    grml_req.POST.setlist('parameter', request.GET.getlist('parameter_codes'))
+    files_response['restrictions']['parameters'] = (
+            request.GET.getlist('parameters'))
     if 'valid_datetime_min' in request.GET:
         if not re.fullmatch(grid_date_re, request.GET['valid_datetime_min']):
             return JsonResponse(
@@ -372,31 +492,85 @@ def get_grml_file_codes(request, dsid, cursor):
         grml_req.POST['endDate'] = ""
         grml_req.POST['endTime'] = ""
 
-    files_response['restrictions']['parameters'] = (
-            request.GET.getlist('parameters'))
     kwargs = {}
-    if 'products' in request.GET:
+    if 'product_codes' in request.GET:
         kwargs['pcodes'] = (
-                [part for e in request.GET.getlist('products') for part in
+                [part for e in request.GET.getlist('product_codes') for part in
                  e.split(",")])
         files_response['restrictions']['products'] = (
-                request.GET.getlist('products'))
+                request.GET.getlist('product_codes'))
 
-    if 'grids' in request.GET:
-        kwargs['gcodes'] = (
-                [part for e in request.GET.getlist('grids') for part in
-                 e.split(",")])
-        files_response['restrictions']['grids'] = request.GET.getlist('grids')
+    if 'grid_code' in request.GET:
+        kwargs['gcodes'] = request.GET['grid_code']
+        files_response['restrictions']['grids'] = request.GET['grid_code']
 
-    if 'levels' in request.GET:
+    if 'level_codes' in request.GET:
         kwargs['lcodes'] = (
-                [int(part) for e in request.GET.getlist('levels') for part in
-                 e.split(",")])
+                [int(part) for e in request.GET.getlist('level_codes') for part
+                 in e.split(",")])
         files_response['restrictions']['levels'] = (
                 request.GET.getlist('levels'))
 
     grml = parse_grml_query(cursor, dsid, "weblist", grml_req, **kwargs)
     return grml['fcodes']
+
+
+def get_obml_file_codes(request, dsid, cursor):
+    obml_req = HttpRequest()
+    obml_req.method = "POST"
+    obml_req.POST = QueryDict(mutable=True)
+    if 'valid_date_min' in request.GET:
+        if not re.fullmatch(sensor_date_re, request.GET['valid_date_min']):
+            return JsonResponse(
+                    {'error_message':
+                     "Invalid format for 'valid_date_min'"},
+                    status=400)
+
+        files_response['restrictions']['valid_date_min'] = (
+                request.GET['valid_date_min'])
+        obml_req.POST['startDate'] = request.GET['valid_date_min']
+    else:
+        obml_req.POST['startDate'] = "1000-01-01"
+
+    if 'valid_date_max' in request.GET:
+        if not re.fullmatch(sensor_date_re, request.GET['valid_date_max']):
+            return JsonResponse(
+                    {'error_message':
+                     "Invalid format for 'valid_date_max'"},
+                    status=400)
+
+        files_response['restrictions']['valid_date_max'] = (
+                request.GET['valid_date_max'])
+        obml_req.POST['endDate'] = request.GET['valid_date_max']
+    else:
+        obml_req.POST['endDate'] = "9000-12-31"
+
+    if 'products' in request.GET and len(request.GET['products']) > 0:
+        files_response['restrictions']['products'] = request.GET['products']
+        obml_req.POST['gindex'] = request.GET['products']
+
+    if 'platforms' in request.GET and len(request.GET['platforms']) > 0:
+        files_response['restrictions']['platforms'] = request.GET['platforms']
+        obml_req.POST['platform_type'] = request.GET['platforms']
+
+    if ('variable_codes' in request.GET and
+            len(request.GET['variable_codes']) > 0):
+        files_response['restrictions']['variables'] = (
+                request.GET.getlist('variable_codes'))
+        obml_req.POST.setlist('data_type',
+                              request.GET.getlist('variable_codes'))
+
+    if 'id_is' in request.GET:
+        files_response['restrictions']['ID'] = request.GET['id_is']
+        obml_req.POST['id'] = request.GET['id_is']
+        obml_req.POST['id_match'] = "exact"
+    elif 'id_has' in request.GET:
+        files_response['restrictions']['ID_has'] = request.GET['id_has']
+        obml_req.POST['id'] = request.GET['id_has']
+        obml_req.POST['id_match'] = "partial"
+
+    obml = parse_obml_query(cursor, dsid, "weblist", obml_req)
+    return obml['fcodes']
 
 
 def files(request, dsid, datatype):
@@ -413,8 +587,8 @@ def files(request, dsid, datatype):
             db = "WGrML"
             file_codes = get_grml_file_codes(request, dsid, cursor)
         elif datatype == "sensor" and "ObML" in services:
-            return JsonResponse({'error_message': "Not yet implemented."},
-                                status=500)
+            db = "WObML"
+            file_codes = get_obml_file_codes(request, dsid, cursor)
 
         if 'file_codes' in locals():
             files_response['pagination']['total_count'] = len(file_codes)
@@ -428,6 +602,11 @@ def files(request, dsid, datatype):
                 files_response['pagination']['current_page'] = 1
                 files_response['pagination']['next_page'] = None
                 files_response['pagination']['result_id'] = None
+                if len(file_codes) == 0:
+                    file_codes = [-1, -1]
+                elif len(file_codes) == 1:
+                    file_codes = [file_codes[0], file_codes[0]]
+
                 cursor.execute(
                         f'select id from "{db}".{dsid}_webfiles2 where code '
                         "in %s order by id", (tuple(file_codes), ))
@@ -438,8 +617,8 @@ def files(request, dsid, datatype):
                            .replace(tzinfo=tz.tzutc())
                            .strftime("%Y-%m-%d %H:%M:%S"))
                 cursor.execute(
-                        "insert into metautil.dsfiles_api_result_ids values "
-                        "(%s, %s, %s, %s, %s)",
+                        "insert into metautil.filesearch_api_result_ids "
+                        "values (%s, %s, %s, %s, %s)",
                         (files_response['pagination']['result_id'],
                          expires, len(file_codes), datatype, dsid))
                 rows = (list(
@@ -448,17 +627,17 @@ def files(request, dsid, datatype):
                 for x in range(0, len(rows), 10000):
                     rowins = ", ".join([str(t) for t in rows[x:x+10000]])
                     cursor.execute(
-                            "insert into metautil.dsfiles_api_file_codes "
+                            "insert into metautil.filesearch_api_file_codes "
                             f"values {rowins}")
 
                 conn.commit()
                 files_response['pagination']['current_page'] = 1
                 files_response['pagination']['next_page'] = 2
                 cursor.execute(
-                        "select w.id from metautil.dsfiles_api_file_codes as "
-                        f'f left join "{db}".{dsid}_webfiles2 as w on w.code '
-                        "= f.file_code where f.result_id = %s order by w.id "
-                        f"limit {PAGE_SIZE} offset 0",
+                        "select w.id from metautil.filesearch_api_file_codes "
+                        f'as f left join "{db}".{dsid}_webfiles2 as w on w.'
+                        "code = f.file_code where f.result_id = %s order by "
+                        f"w.id limit {PAGE_SIZE} offset 0",
                         (files_response['pagination']['result_id'], ))
 
             files_response['files']['http_base'] = (
@@ -491,16 +670,16 @@ def files(request, dsid, datatype):
 def expire_ids(conn):
     cursor = conn.cursor()
     cursor.execute(
-            "select result_id from metautil.dsfiles_api_result_ids where "
+            "select result_id from metautil.filesearch_api_result_ids where "
             "expiration < %s", (datetime.now(), ))
     res = cursor.fetchall()
     for e in res:
         cursor.execute(
-                "delete from metautil.dsfiles_api_file_codes where result_id "
-                "= %s", (e[0], ))
+                "delete from metautil.filesearch_api_file_codes where "
+                "result_id = %s", (e[0], ))
         cursor.execute(
-                "delete from metautil.dsfiles_api_result_ids where result_id "
-                "= %s", (e[0], ))
+                "delete from metautil.filesearch_api_result_ids where "
+                "result_id = %s", (e[0], ))
         conn.commit()
 
 
@@ -521,8 +700,8 @@ def serve_result_set(request, dsid, result_id, page_num):
         cursor = conn.cursor()
         cursor.execute(
                 "select total_count, datatype from metautil."
-                "dsfiles_api_result_ids where result_id = %s and dsid = %s",
-                (result_id, dsid))
+                "filesearch_api_result_ids where result_id = %s and dsid = "
+                "%s", (result_id, dsid))
         total_count, datatype = cursor.fetchone() or (None, None)
         if total_count is None:
             return JsonResponse(
@@ -545,8 +724,8 @@ def serve_result_set(request, dsid, result_id, page_num):
                 {value: key for key, value in datatypes_map.items()}[datatype])
         offset = (page_num - 1) * PAGE_SIZE
         cursor.execute(
-                "select w.id from metautil.dsfiles_api_file_codes as f left "
-                f'join "W{service}".{dsid}_webfiles2 as w on w.code = f.'
+                "select w.id from metautil.filesearch_api_file_codes as f "
+                f'left join "W{service}".{dsid}_webfiles2 as w on w.code = f.'
                 "file_code where f.result_id = %s order by w.id limit "
                 f"{PAGE_SIZE} offset {offset}", (result_id, ))
         res = cursor.fetchall()
@@ -565,7 +744,7 @@ def serve_result_set(request, dsid, result_id, page_num):
 
         return JsonResponse(files_response, status=200)
     except Exception as err:
-        print(f"DSFILES API SERVER ERROR: serve_result_set(): '{err}'")
+        print(f"FILESEARCH API SERVER ERROR: serve_result_set(): '{err}'")
         return JsonResponse({'error_message': "Server error."}, status=500)
     finally:
         if 'conn' in locals():

@@ -111,8 +111,8 @@ def customize_grml(request, dsid, gindex, listtyp, path):
     return render(request, "facbrowse/customize_grml.html", ctx)
 
 
-def customize_obml(request, dsid, gindex, listtyp, path):
-    if not path:
+def customize_obml(request, dsid, gindex, listtyp, cache_file, **kwargs):
+    if not cache_file:
         return render(request, "facbrowse/error.html",
                       {'error': 'service_unavailable'})
 
@@ -128,7 +128,7 @@ def customize_obml(request, dsid, gindex, listtyp, path):
         if groups:
             ctx.update({'groups': groups})
 
-    with open(path) as f:
+    with open(cache_file) as f:
         line = f.readline()
         lst = line.split()
         sdate = lst[0][0:4] + '-' + lst[0][4:6] + '-' + lst[0][6:8]
@@ -142,8 +142,8 @@ def customize_obml(request, dsid, gindex, listtyp, path):
         pfms = []
         for n in range(nlines):
             line = f.readline()
-            lst = line.split("<!>")
-            pfms.append({'code': lst[0], 'name': snake_to_capital(lst[1])})
+            lst = line.strip().split("<!>")
+            pfms.append({'name': snake_to_capital(lst[1]), 'code': lst[0]})
 
         ctx.update({'platforms': pfms})
         line = f.readline()
@@ -152,13 +152,16 @@ def customize_obml(request, dsid, gindex, listtyp, path):
             dtypes = []
             for n in range(nlines):
                 line = f.readline()
-                lst = line.split("<!>")
-                dtypes.append({'code': lst[0], 'name': lst[1]})
+                lst = line.strip().split("<!>")
+                dtypes.append({'name': lst[1], 'code': lst[0]})
 
             ctx.update({'data_types': dtypes})
 
     ctx.update({'gmap_api_url': settings.GMAP_API_URL,
                 'gmap_api_key': settings.GMAP_API_KEY})
+    if 'from_api' in kwargs and kwargs['from_api']:
+        return ctx
+
     return render(request, "facbrowse/customize_obml.html", ctx)
 
 
