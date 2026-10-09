@@ -11,6 +11,7 @@ from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from os.path import exists
+from urllib.parse import urlsplit
 try:
     from urllib.parse import urlencode
 except Exception:
@@ -398,6 +399,9 @@ def filelist_preview(request, dsnum):
     if not url:
         logger.error("Unexpected visualize response for %s: %r", glade_path, result)
         return JsonResponse({'error': 'Unable to generate a preview for this file.'}, status=502)
+    # The service returns a URL on its own host; serve the image from the Stratus base URL instead
+    parts = urlsplit(url)
+    url = settings.RDA_STRATUS_BASE_URL.rstrip('/') + parts.path + ('?' + parts.query if parts.query else '')
     return JsonResponse({'url': url})
 
 
