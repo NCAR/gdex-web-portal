@@ -602,6 +602,11 @@ def files(request, dsid, datatype):
                 files_response['pagination']['current_page'] = 1
                 files_response['pagination']['next_page'] = None
                 files_response['pagination']['result_id'] = None
+                if len(file_codes) == 0:
+                    file_codes = [-1, -1]
+                elif len(file_codes) == 1:
+                    file_codes = [file_codes[0], file_codes[0]]
+
                 cursor.execute(
                         f'select id from "{db}".{dsid}_webfiles2 where code '
                         "in %s order by id", (tuple(file_codes), ))
