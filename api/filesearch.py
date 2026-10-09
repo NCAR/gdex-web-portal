@@ -553,11 +553,12 @@ def get_obml_file_codes(request, dsid, cursor):
         files_response['restrictions']['platforms'] = request.GET['platforms']
         obml_req.POST['platform_type'] = request.GET['platforms']
 
-    if 'variables' in request.GET and len(request.GET['variables']) > 0:
+    if ('variable_codes' in request.GET and
+            len(request.GET['variable_codes']) > 0):
         files_response['restrictions']['variables'] = (
-                request.GET.getlist('variables'))
+                request.GET.getlist('variable_codes'))
         obml_req.POST.setlist('data_type',
-                              request.GET.getlist('variables'))
+                              request.GET.getlist('variable_codes'))
 
     obml = parse_obml_query(cursor, dsid, "weblist", obml_req)
     return obml['fcodes']

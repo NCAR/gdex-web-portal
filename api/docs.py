@@ -77,7 +77,8 @@ _PLATFORM_CODE = OpenApiParameter(
 )
 
 _VARIABLE_CODES = OpenApiParameter(
-    name="variables", type=_ARRAY_OF_STRINGS, location=OpenApiParameter.QUERY,
+    name="variable_codes", type=_ARRAY_OF_STRINGS,
+    location=OpenApiParameter.QUERY,
     description="Restrict to specified variable/data type code(s)", many=True
 )
 
