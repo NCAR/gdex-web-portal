@@ -117,6 +117,8 @@ input.file[type="checkbox"] {
 .filelist-table .file-name-cell {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    width: 100%;
 }
 /* Every name gets the width of the group's longest name (--name-w, set by alignFileSizes() in
    cache_filelist.js) so the file sizes line up in a column just past the names; still shrinks to wrap */
@@ -131,7 +133,8 @@ input.file[type="checkbox"] {
 }
 .filelist-table .file-size {
     flex: 0 0 auto;
-    margin-left: 1rem;
+    margin-left: auto;
+    padding-left: 1rem;
     color: var(--gdex-icon-muted);
     font-size: .875rem;
     font-variant-numeric: tabular-nums;
