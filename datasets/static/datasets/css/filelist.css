@@ -113,6 +113,24 @@ input.file[type="checkbox"] {
     vertical-align: middle;
 }
 
+/* File name cell: chevron and name on the left, size right-justified in a muted color */
+.filelist-table .file-name-cell {
+    display: flex;
+    align-items: center;
+}
+.filelist-table .file-name-cell__name {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.filelist-table .file-size {
+    flex: 0 0 auto;
+    margin-left: 1rem;
+    color: var(--gdex-icon-muted);
+    font-size: .875rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
 /* Expand/collapse chevron: muted, rotates when open */
 .filelist-table .btn.file-toggle-btn {
     width: 1.5rem;
