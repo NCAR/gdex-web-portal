@@ -28,11 +28,20 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
                     {% if group.is_group_summary or forloop.first %}
                         <td class='{{ col.name }}' {% if col.name == 'Size' %}data-size='{{ col.value }}'{% endif %}>
                             {% if not group.is_group_summary %}
-                                <button type='button' class='btn btn-link file-toggle-btn' data-tip='Show file details' aria-label='Show file details' aria-expanded='false'>
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
+                                <div class='file-name-cell'>
+                                    <button type='button' class='btn btn-link file-toggle-btn' data-tip='Show file details' aria-label='Show file details' aria-expanded='false'>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                    <span class='file-name-cell__name'>{% include "datasets/filelist-cell.html" %}</span>
+                                    {% for size_col in row %}
+                                        {% if size_col.name == 'Size' and size_col.value %}
+                                            <span class='file-size'>{{ size_col.value|convert_bytes }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {% include "datasets/filelist-cell.html" %}
                             {% endif %}
-                            {% include "datasets/filelist-cell.html" %}
                         </td>
                     {% endif %}
                 {% endfor %}
