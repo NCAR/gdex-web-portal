@@ -43,7 +43,7 @@ def parse_obml_query(cursor, dsid, listtyp, request):
         vars.append(tuple(dtypes))
 
     if 'id' in request.POST or 'nlat' in request.POST:
-        q += (f'" left join "WObML".{dsid}_id_list as l on l.file_code = w.'
+        q += (f' left join "WObML".{dsid}_id_list as l on l.file_code = w.'
               "code and l.platform_type_code = d.platform_type_code left join "
               f'"WObML".{dsid}_ids as i on i.code = l.id_code')
         if 'id_match' in request.POST:
