@@ -560,6 +560,15 @@ def get_obml_file_codes(request, dsid, cursor):
         obml_req.POST.setlist('data_type',
                               request.GET.getlist('variable_codes'))
 
+    if 'id_is' in request.GET:
+        files_response['restrictions']['ID'] = request.GET['id_is']
+        obml_req.POST['id'] = request.GET['id_is']
+        obml_req.POST['id_match'] = "exact"
+    elif 'id_has' in request.GET:
+        files_response['restrictions']['ID_has'] = request.GET['id_has']
+        obml_req.POST['id'] = request.GET['id_has']
+        obml_req.POST['id_match'] = "partial"
+
     obml = parse_obml_query(cursor, dsid, "weblist", obml_req)
     return obml['fcodes']
 
