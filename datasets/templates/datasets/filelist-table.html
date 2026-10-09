@@ -55,7 +55,7 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
                                 {% if col.is_file and col.note is not none %}
                                     <dt>Description</dt>
                                     <dd class='description'>{{ col.note }}</dd>
-                                {% else %}
+                                {% else if col.name != 'File Name' %}
                                     <dt>{{ col.name }}</dt>
                                     <dd class='{{ col.name }}'>{% include "datasets/filelist-cell.html" %}</dd>
                                 {% endif %}
