@@ -18,7 +18,24 @@ $(document).ajaxSuccess(function() {
 
 $(function() {
     $(document).on('click', '.parent_group, .table_group', toggleChildBoxes);
+    alignFileSizes();
+    // Re-measure once web fonts (Roboto Mono file names) have loaded
+    if (document.fonts) { document.fonts.ready.then(alignFileSizes); }
 });
+
+// Give each file table's name column the width of its longest file name, so the file
+// sizes that follow the names line up in a column (see .file-name-cell__name in filelist.css).
+function alignFileSizes() {
+    $('table.filelist-table').each(function() {
+        var table = $(this).addClass('measuring');
+        var widest = 0;
+        table.find('.file-name-cell__name').each(function() {
+            widest = Math.max(widest, this.offsetWidth);
+        });
+        table.removeClass('measuring');
+        if (widest > 0) { this.style.setProperty('--name-w', Math.ceil(widest) + 'px'); }
+    });
+}
 $('.file').on('click', toggleSingleBox);
 $('.sort-column').on('click', sortColumn);
 $('.clear-group-btn').on('click', clearFileSelections);
