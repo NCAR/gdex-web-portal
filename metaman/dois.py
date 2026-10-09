@@ -4,6 +4,7 @@ import psycopg2
 import requests
 import smtplib
 import subprocess
+import time
 
 from datetime import datetime
 from doi_manager import local_settings as doi_manager_settings
@@ -565,6 +566,7 @@ def get_active_doi(dsid):
 
 
 def create_a_real_doi(request, dsid, iuser, ctx):
+    time.sleep(1)
     try:
         conn = psycopg2.connect(**settings.RDADB['dssdb_config_pg'])
         cursor = conn.cursor()

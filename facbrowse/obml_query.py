@@ -49,10 +49,11 @@ def parse_obml_query(cursor, dsid, listtyp, request):
         if 'id_match' in request.POST:
             if request.POST['id_match'] == "exact":
                 wc.append("i.id = %s")
+                vars.append(request.POST['id'])
             elif request.POST['id_match'] == "partial":
-                wc.append("i.id ilike %%%s%%")
+                wc.append("i.id ilike %s")
+                vars.append(f"%%{request.POST['id']}%%")
 
-            vars.append(request.POST['id'])
         else:
             wc.append(("i.sw_lat <= %s and i.ne_lat >= %s and i.sw_lon <= %s "
                        "and i.ne_lon >= %s"))
@@ -77,10 +78,13 @@ def parse_obml_query(cursor, dsid, listtyp, request):
     opts['min_start'] = "-".join([s[0:4], s[4:6], s[6:8]])
     s = str(opts['max_end'])
     opts['max_end'] = "-".join([s[0:4], s[4:6], s[6:8]])
-    cursor.execute(("select code, platform_type from \"WObML\".platform_types "
-                    "where code in %s"), (tuple(opts['platforms']), ))
-    res = cursor.fetchall()
-    opts['platforms'] = [(str(e[0]), snake_to_capital(e[1])) for e in res]
+    if len(opts['platforms']) > 0:
+        cursor.execute('select code, platform_type from "WObML".'
+                       "platform_types where code in %s",
+                       (tuple(opts['platforms']), ))
+        res = cursor.fetchall()
+        opts['platforms'] = [(str(e[0]), snake_to_capital(e[1])) for e in res]
+
     cfile = cache_file(dsid, request.POST.get('gindex'), "ObML", listtyp)
     with open(cfile) as f:
         line = f.readline()
