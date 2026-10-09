@@ -48,7 +48,7 @@ def parse_obml_query(cursor, dsid, listtyp, request):
               f'"WObML".{dsid}_ids as i on i.code = l.id_code')
         if 'id_match' in request.POST:
             if request.POST['id_match'] == "exact":
-                wc.append("i.id = %s")
+                wc.append("lower(i.id) = lower(%s)")
                 vars.append(request.POST['id'])
             elif request.POST['id_match'] == "partial":
                 wc.append("i.id ilike %s")
