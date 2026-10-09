@@ -14,7 +14,8 @@ $.get('{{settings.DOCUMENTATION_BASE_URL}}/{{ request.path|get_dsid_from_url|dsi
 
 
 
-<table id='file_table' data-dsid='{{ data.dsid }}'>
+<div class='gdex-table-wrap table-responsive'>
+<table id='file_table' class='table gdex-table' data-dsid='{{ data.dsid }}'>
 <thead>
 <tr>
 <th>Filename <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
@@ -53,4 +54,5 @@ $.get('{{settings.DOCUMENTATION_BASE_URL}}/{{ request.path|get_dsid_from_url|dsi
 {% endfor %}
 </tbody>
 </table>
+</div>
 {% endif %}

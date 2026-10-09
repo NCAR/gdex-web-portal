@@ -486,6 +486,29 @@ get_dataset_software_schema = extend_schema(
 # ARCO
 # ---------------------------------------------------------------------------
 
+has_thredds_schema = extend_schema(
+    operation_id='has_thredds_data',
+    summary='Check if a THREDDS catalog is available',
+    description='Returns whether a THREDDS catalog is available for a specific dataset.',
+    parameters=[_DSID],
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                **_STD_200,
+                'data': {
+                    'type': 'object',
+                    'properties': {
+                        'has_thredds': {'type': 'boolean', 'example': True,
+                                        'description': 'Whether a THREDDS catalog is available for the dataset'}
+                    }
+                },
+            }
+        }
+    },
+    tags=['datasets']
+)
+
 has_arco_schema = extend_schema(
     operation_id='has_arco_data',
     summary='Check if ARCO data is available',

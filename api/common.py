@@ -1589,6 +1589,34 @@ def has_arco(dsid):
     close_connection(con,cur)
     return len(data) != 0
 
+def get_thredds_gindexes(dsid):
+    """Returns the set of group indexes that have a THREDDS catalog.
+
+    A catalog is registered as an rcrqst row with rqsttype 'N' (the 'dap'
+    entry in the data access matrix). gindex 0 means the catalog covers the
+    whole dataset.
+    """
+    dsid = format_dataset_id(dsid)
+    con, cur = init_connection()
+    try:
+        cur.execute("select gindex from rcrqst where dsid=%s and rqsttype='N' "
+                    "and url is not null and url != ''", (dsid,))
+        data = cur.fetchall()
+    finally:
+        close_connection(con, cur)
+    return {row[0] for row in data}
+
+def has_thredds(dsid, gindex=None):
+    """Returns True if the dataset has a THREDDS catalog.
+
+    If gindex is given, only a catalog for that group (or for the whole
+    dataset) counts. Otherwise a catalog for any group counts.
+    """
+    gindexes = get_thredds_gindexes(dsid)
+    if gindex is None:
+        return len(gindexes) > 0
+    return 0 in gindexes or int(gindex) in gindexes
+
 def get_staff():
     """Get DECS employee information."""
     con, cur = init_connection()

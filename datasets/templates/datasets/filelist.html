@@ -1,17 +1,29 @@
 {% load wagtailcore_tags decs_tags home_tags custom_tags static %}
 <script type="text/javascript" src="{% static 'js/cache_filelist.js' %}"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'datasets/css/filelist.css' %}">
-{% if error_messages %}}
+{% if error_messages %}
 {{ error_messages }}
 {% endif %}
 {% csrf_token %}
+
+<div class="modal fade" id="filePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filePreviewTitle">Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center" id="filePreviewBody"></div>
+        </div>
+    </div>
+</div>
 
 <input type="hidden" id="clipboard"></input> {# Used for copying text to clipboard #}
 <button class="btn btn-primary rounded" id="topButton" title="Scroll to top"><i class="fas fa-arrow-up"></i>&nbsp;Top</button>
 <div class='d-none' id='file_table' data-dsid='{{ data.dsid }}'></div>
 
 {% if data.parent.url %}
-    <a class="btn btn-icon-gray" href="javascript:void(0);" onclick="$.get('{{ data.parent.url }}{% if data.is_glade %}?fl=glade{% endif %}', function(d){replace_ds_content(d)});">
+    <a class="btn btn-icon-gray" href="javascript:void(0);" onclick="get_ds_content('{{ data.parent.url }}{% if data.is_glade %}?fl=glade{% endif %}');">
         <i class="fas fa-arrow-circle-left me-1"></i>
         <span class="d-none d-md-inline">Back</span>
     </a>
@@ -63,12 +75,7 @@
         {% endif %}
   
         {% if not group.is_group_summary and group.rows|length > 1 and data_format != "zarr"%}
-            {# Show download buttons, and table summary if not a summary group and there are files in the group #}
-            {% if data.is_glade %}
-                {% include "datasets/glade_buttons.html" %}
-            {% else %}
-                {% include "datasets/download_buttons.html" %}
-            {% endif %}
+            {# Show table summary (which includes the download buttons) if not a summary group and there are files in the group #}
             {% include "datasets/filelist-table-summary.html" with group=group %}
         {% endif %}
 

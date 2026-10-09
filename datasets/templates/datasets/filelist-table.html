@@ -1,72 +1,74 @@
-{% load static %}
 {% load custom_tags %}
-<table id='{{group.group_id|slugify}}_table' class='table table-light table-striped'>
+{% comment %}
+Table for one file group. Summary groups (is_group_summary) list every column as-is; file groups show
+only the Index and file name columns, with the remaining columns and the access buttons in a
+collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist.js).
+{% endcomment %}
+<div class='gdex-table-wrap{% if group.is_group_summary %} table-responsive{% endif %}'>
+<table id='{{ group.group_id|slugify }}_table' class='table gdex-table{% if not group.is_group_summary %} filelist-table{% endif %}'>
     <thead>
         <tr>
             {% if not group.is_group_summary %}
-                <th><input class='table_group me-1' type='checkbox' id='{{ group.group_id|slugify }}_group_index'></input>Index</th>
+                <th class='index-col'></th>
             {% endif %}
             {% for col in group.column_headers %}
-                <th>{{col}}<i role='button' class="fas fa-solid fa-sort sort-column ps-1"></i></th>
+                {% if group.is_group_summary or forloop.first %}
+                    <th>{{ col }}<i role='button' class="fas fa-solid fa-sort sort-column ps-1"></i></th>
+                {% endif %}
             {% endfor %}
         </tr>
     </thead>
     <tbody>
         {% for row in group.rows %}
-            <tr>
+            <tr {% for col in row %}{% if col.name == 'Size' %}data-size='{{ col.value }}'{% endif %}{% endfor %}>
                 {% if not group.is_group_summary %}
-                    <td><input class='file me-1' type='checkbox'></input>{{ forloop.counter }}</td>
+                    <td class='index-col'><input class='file me-2' type='checkbox'><span class='file-index'>{{ forloop.counter }}</span></td>
                 {% endif %}
                 {% for col in row %}
-                    <td class='{{col.name}}' {% if col.name == 'Size' %}data-size='{{col.value}}'{% endif %}>
-                    {% if col.url %}
-                        
-                        {% if col.is_file and col.url|get_extension != "zarr" %}
-                            <a style="font-family:'Roboto Mono';"{% if not data.is_glade %} href="{{col.url}}"{% endif %}>
-                        {% else %}
-	                        {% if col.webpath|get_extension == "zarr" or col.value|get_extension == "zarr" or col.url|get_extension == "zarr" %}
-	                            {# Zarr catalog file #}
-                                {% include "datasets/filelist-arco-button.html" %}
-                            {% elif data.is_ajax %}
-                                <a href='javascript:void(0);' col-data='{{col.url}}' 
-                                   onclick="$.get('{{col.url}}{% if data.is_glade %}?fl=glade{% endif %}', function(d){replace_ds_content(d);$('#datasetTab')[0].scrollIntoView();});">
+                    {% if group.is_group_summary or forloop.first %}
+                        <td class='{{ col.name }}' {% if col.name == 'Size' %}data-size='{{ col.value }}'{% endif %}>
+                            {% if not group.is_group_summary %}
+                                <div class='file-name-cell'>
+                                    <button type='button' class='btn btn-link file-toggle-btn' data-tip='Show file details' aria-label='Show file details' aria-expanded='false'>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                    <span class='file-name-cell__name'>{% include "datasets/filelist-cell.html" %}</span>
+                                    {% for size_col in row %}
+                                        {% if size_col.name == 'Size' and size_col.value %}
+                                            <span class='file-size'>{{ size_col.value|convert_bytes }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
                             {% else %}
-                                <a href="{{col.url}}{% if data.is_glade %}?fl=glade{% endif %}">
+                                {% include "datasets/filelist-cell.html" %}
                             {% endif %}
-                        {% endif %}
-
-                        <!--a href={{ col.url }}-->
-
-                        {% if data.is_glade and col.is_file %}
-                            {% if data.locflag == 'O' %}
-                                {{ col.url|make_local_os_URL }}
-                            {% else %}
-                                {{ col.data_path|make_glade_URL }}
-                            {% endif %}
-	                    {% elif col.webpath|get_extension == "zarr" %}
-	                        {{ col.webpath|basename }}
-                        {% else %}
-                            {{ col.value }}
-                            </a>
-                        {% endif %}
-                        
-                        {% if col.meta_link != 'N' and col.is_file %}
-                            <a title='Click for Detailed Metadata' target='_blank' 
-                               href="/ajax/#cgi-bin/transform?xml=/datasets/{{data.dsid}}/metadata/wfmd{{col.data_path|remove_datadsid}}.{{col.meta_link}}ML">
-                               <i class="pe-1 fas fa-info-circle"> </i>
-                            </a>
-                        {% endif %}
-                    
-                    {% else %}
-                        {% if col.name == 'Size' %}
-                            {{ col.value|convert_bytes }}
-                        {% else %}
-                            {{ col.value }}
-                        {% endif %}
+                        </td>
                     {% endif %}
-                    </td>
                 {% endfor %}
             </tr>
+            {% if not group.is_group_summary %}
+                <tr class='file-detail d-none'>
+                    <td class='index-col'></td>
+                    <td>
+                        <dl class='file-detail__panel'>
+                            {% for col in row %}
+                                {% if col.is_file and col.note is not None %}
+                                    <dt>Description</dt>
+                                    <dd class='description'>{{ col.note }}</dd>
+                                {% elif col.name != 'File Name' %}
+                                    <dt>{{ col.name }}</dt>
+                                    <dd class='{{ col.name }}'>{% include "datasets/filelist-cell.html" %}</dd>
+                                {% endif %}
+                            {% endfor %}
+                            <dt>Access Options</dt>
+                            <dd class='access-options d-flex flex-wrap gap-1'>
+                                {% include "datasets/filelist-access-options.html" with file_col=row.0 %}
+                            </dd>
+                        </dl>
+                    </td>
+                </tr>
+            {% endif %}
         {% endfor %}
     </tbody>
 </table>
+</div>

@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.RILEY_HARBOR_USERNAME }}
           password: ${{ secrets.RILEY_HARBOR_PASSWORD }}
@@ -27,7 +27,7 @@ jobs:
             #      - name: Increment the version number
             #        run: echo "VERSION_NUMBER=$(($VERSION_NUMBER+1))" >> $GITHUB_ENV
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.ref }} 
           ssh-key: ${{ secrets.ACTIONS_PUSH_KEY }}

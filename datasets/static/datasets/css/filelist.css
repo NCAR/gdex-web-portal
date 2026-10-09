@@ -11,13 +11,265 @@ input.parent_group[type="checkbox"] {
     background-color: #fff;
     cursor: pointer;
 }
-input.table_group[type="checkbox"] {
-    outline: 1px solid #f1f0ee;
-    background-color: #fff;
-    cursor: pointer;
-}
 input.file[type="checkbox"] {
     outline: 1px solid #0057c2;
     background-color: #fff;
     cursor: pointer;
+}
+.btn-all-files {
+    font-size: 1rem;
+}
+.clear-group-btn {
+    font-size: 1rem;
+}
+
+/* Shared data table look (file list, documentation and software tables). Selectors are prefixed
+   with .table / > to beat the Unity theme's table rules (solid blue header, bordered cells,
+   1.125rem padding). Wrap the table in .gdex-table-wrap for the rounded border. */
+.gdex-table-wrap {
+    border: 1px solid var(--gdex-border);
+    border-radius: .5rem;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+/* Scrolls sideways on narrow screens instead of clipping */
+.gdex-table-wrap.table-responsive {
+    overflow-x: auto;
+}
+.gdex-table.table {
+    margin-bottom: 0;
+    --bs-table-bg: transparent;
+}
+.gdex-table.table > :not(caption) > tr > th,
+.gdex-table.table > :not(caption) > tr > td {
+    border: 0;
+    border-bottom: 1px solid var(--gdex-border);
+    background-color: transparent;
+    box-shadow: none;
+    padding: .5rem .75rem;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+}
+/* The wrapper border closes the table */
+.gdex-table.table > tbody > tr:last-child > td {
+    border-bottom: 0;
+}
+
+/* Header: quiet labels on a subtle tint over a single blue rule */
+.gdex-table.table > thead > tr > th {
+    background-color: #F1F4F8;
+    color: var(--gdex-text-muted);
+    font-size: .875rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--gdex-blue);
+}
+.gdex-table .sort-column {
+    color: var(--gdex-icon-muted);
+    cursor: pointer;
+    transition: color .15s;
+}
+.gdex-table th:hover .sort-column {
+    color: var(--gdex-blue);
+}
+
+/* Rows: hover tint */
+.gdex-table.table > tbody > tr > td {
+    font-size: 1.0625rem;
+    transition: background-color .15s;
+}
+.gdex-table.table > tbody > tr:not(.file-detail):hover > td {
+    background-color: #F5F8FD;
+}
+
+/* File table (non-summary): fixed layout so expanding a detail row cannot resize the index column */
+.filelist-table.table {
+    table-layout: fixed;
+    margin-bottom: -1px; /* last visible row's divider tucks under the wrapper border */
+}
+.filelist-table.table > tbody > tr:has(input.file:checked) > td,
+.gdex-table.table > tbody > tr:has(input.parent_group:checked) > td {
+    background-color: var(--gdex-bg-tint);
+}
+
+/* Index column: checkbox plus a muted row number */
+.filelist-table .index-col {
+    width: 4.5rem;
+    white-space: nowrap;
+}
+.filelist-table.table > :not(caption) > tr > .index-col {
+    padding-right: .25rem;
+}
+.filelist-table input[type="checkbox"] {
+    vertical-align: middle;
+    margin-top: 0;
+}
+.filelist-table .file-index {
+    color: var(--gdex-text-muted);
+    font-size: .8125rem;
+    font-variant-numeric: tabular-nums;
+    vertical-align: middle;
+}
+
+/* File name cell: chevron and name on the left, size right-justified in a muted color */
+.filelist-table .file-name-cell {
+    display: flex;
+    align-items: center;
+}
+/* Every name gets the width of the group's longest name (--name-w, set by alignFileSizes() in
+   cache_filelist.js) so the file sizes line up in a column just past the names; still shrinks to wrap */
+.filelist-table .file-name-cell__name {
+    min-width: 0;
+    flex: 0 1 var(--name-w, auto);
+}
+/* Natural (unwrapped) width, applied briefly while alignFileSizes() measures */
+.filelist-table.measuring .file-name-cell__name {
+    flex: none;
+    white-space: nowrap;
+}
+.filelist-table .file-size {
+    flex: 0 0 auto;
+    margin-left: 1rem;
+    color: var(--gdex-icon-muted);
+    font-size: .875rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Expand/collapse chevron: muted, rotates when open */
+.filelist-table .btn.file-toggle-btn {
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    margin-right: .375rem;
+    border: 0;
+    border-radius: .25rem;
+    font-size: .75rem;
+    line-height: 1;
+    color: var(--gdex-icon-muted);
+    vertical-align: middle;
+}
+.filelist-table .btn.file-toggle-btn:hover {
+    color: var(--gdex-blue);
+    background-color: var(--gdex-bg-tint);
+}
+.filelist-table .file-toggle-btn i {
+    transition: transform .15s;
+}
+.filelist-table .file-toggle-btn[aria-expanded="true"] {
+    color: var(--gdex-blue);
+}
+.filelist-table .file-toggle-btn[aria-expanded="true"] i {
+    transform: rotate(90deg);
+}
+
+/* Detail row: panel attached to its file row, with a blue accent bar */
+.filelist-table.table > tbody > tr:has(+ tr.file-detail:not(.d-none)) > td {
+    border-bottom: 0;
+}
+.filelist-table.table > tbody > tr.file-detail > td {
+    padding-top: 0;
+}
+.file-detail__panel {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: .375rem 1.5rem;
+    align-items: center;
+    margin: 0 0 .25rem;
+    padding: .75rem 1rem;
+    background-color: #F8F9FB;
+    border-left: 3px solid var(--gdex-blue);
+    border-radius: 0 .375rem .375rem 0;
+    font-size: .875rem;
+}
+.file-detail__panel dt {
+    color: var(--gdex-text-muted);
+    font-weight: 500;
+}
+.file-detail__panel dd {
+    margin: 0;
+}
+
+/* Access option buttons: outlined icon squares that fill on hover */
+.btn.filelist-access-options__icon {
+    --bs-btn-color: var(--gdex-blue);
+    --bs-btn-bg: var(--gdex-white);
+    --bs-btn-border-color: var(--gdex-border-input);
+    --bs-btn-hover-color: var(--gdex-white);
+    --bs-btn-hover-bg: var(--gdex-blue);
+    --bs-btn-hover-border-color: var(--gdex-blue);
+    --bs-btn-active-color: var(--gdex-white);
+    --bs-btn-active-bg: var(--gdex-dark-blue);
+    --bs-btn-active-border-color: var(--gdex-dark-blue);
+    --bs-btn-border-width: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-radius: .375rem;
+    font-size: .875rem;
+    line-height: 1;
+    transition: background-color .15s, border-color .15s, color .15s;
+}
+/* Beat the theme's .ncar a:hover light blue on the <a> buttons (download, THREDDS, metadata) */
+.btn.filelist-access-options__icon:hover,
+.btn.filelist-access-options__icon:focus-visible,
+.btn.filelist-access-options__icon:active {
+    color: var(--gdex-white);
+}
+/* Same style with a text label (e.g. "Copy Full URL" on Zarr catalogs) */
+.btn.filelist-access-options__icon--labeled {
+    width: auto;
+    padding: 0 .75rem;
+    gap: .25rem;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 500;
+    white-space: nowrap;
+}
+/* "Copied!" state: copyFullLink() adds .btn-success for a few seconds */
+.btn.filelist-access-options__icon.btn-success {
+    --bs-btn-color: var(--gdex-white);
+    --bs-btn-bg: var(--bs-success);
+    --bs-btn-border-color: var(--bs-success);
+    --bs-btn-hover-bg: var(--bs-success);
+    --bs-btn-hover-border-color: var(--bs-success);
+}
+
+/* Instant CSS tooltips (no hover delay, unlike the native title attribute) */
+[data-tip] {
+    position: relative;
+}
+[data-tip]:hover::after,
+[data-tip]:focus-visible::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #212529;
+    color: #fff;
+    font: 400 .75rem/1.2 var(--bs-body-font-family, sans-serif);
+    padding: .3rem .5rem;
+    border-radius: .25rem;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1080;
+}
+[data-tip]:hover::before,
+[data-tip]:focus-visible::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 1px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #212529;
+    border-bottom-width: 0;
+    pointer-events: none;
+    z-index: 1080;
 }

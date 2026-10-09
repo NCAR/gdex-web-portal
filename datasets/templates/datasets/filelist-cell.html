@@ -1,0 +1,35 @@
+{% load custom_tags %}
+{% comment %}
+Contents of one table cell. Expects: col (the cell dict), data. Logic intentionally unchanged from the
+original inline version: file links, zarr/ARCO buttons, ajax subgroup links, glade paths.
+{% endcomment %}
+{% if col.url %}
+    {% if col.is_file and col.url|get_extension != "zarr" %}
+        <a style="font-family:'Roboto Mono';"{% if not data.is_glade %} href="{{ col.url }}"{% endif %}>
+    {% elif col.webpath|get_extension == "zarr" or col.value|get_extension == "zarr" or col.url|get_extension == "zarr" %}
+        {# Zarr catalog file #}
+        {% include "datasets/filelist-arco-button.html" %}
+    {% elif data.is_ajax %}
+        <a href='javascript:void(0);' col-data='{{ col.url }}'
+           onclick="get_ds_content('{{ col.url }}{% if data.is_glade %}?fl=glade{% endif %}');">
+    {% else %}
+        <a href="{{ col.url }}{% if data.is_glade %}?fl=glade{% endif %}">
+    {% endif %}
+
+    {% if data.is_glade and col.is_file %}
+        {% if data.locflag == 'O' %}
+            {{ col.url|make_local_os_URL }}
+        {% else %}
+            {{ col.data_path|make_glade_URL }}
+        {% endif %}
+    {% elif col.webpath|get_extension == "zarr" %}
+        {{ col.webpath|basename }}
+    {% else %}
+        {{ col.value }}
+        </a>
+    {% endif %}
+{% elif col.name == 'Size' %}
+    {{ col.value|convert_bytes }}
+{% else %}
+    {{ col.value }}
+{% endif %}

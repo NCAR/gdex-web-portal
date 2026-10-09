@@ -8,7 +8,8 @@
             {% include "datasets/download_buttons.html" %}
          {% endif %}
       {% endif %}
-      <table class='table table-striped'>
+      <div class='gdex-table-wrap table-responsive'>
+      <table class='table gdex-table'>
         <thead>
             <tr>
                 <th>Group ID</th>
@@ -22,7 +23,7 @@
             <tr>
                 <td>
                     {% if not data.groups.0.gindex|add:"0" < 0  %} 
-                      <input type='checkbox' class='parent_group' id='{{group.group_id|slugify}}_parent'></input>
+                      <input type='checkbox' class='parent_group me-2' id='{{group.group_id|slugify}}_parent'>
                     {% endif %}
                     <a href='#{{group.group_id|slugify}}' onclick="$event.preventDefault()">{{ group.group_id }}</a>
                 </td>
@@ -37,5 +38,6 @@
             {% endfor %}
         </tbody>
       </table>
+      </div>
    </div>
 <hr/>
