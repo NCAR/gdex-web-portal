@@ -456,7 +456,9 @@ filesearch_files_sensor_schema = extend_schema(
         OpenApiParameter(
             name="id_is", type=OpenApiTypes.STR,
             location=OpenApiParameter.QUERY,
-            description="Restrict to specified station ID"
+            description=(
+                    "Restrict to specified station ID (overrides 'id_has' "
+                    "when both are specified)")
         ),
         OpenApiParameter(
             name="id_has", type=OpenApiTypes.STR,
