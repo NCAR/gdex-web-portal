@@ -452,7 +452,18 @@ filesearch_files_sensor_schema = extend_schema(
             'the "sensor" data type, optionally restricted by filters.'),
     parameters=[
         _DSID, _VALID_DATE_MIN, _VALID_DATE_MAX, _GROUP_CODE, _PLATFORM_CODE,
-         _VARIABLE_CODES
+        _VARIABLE_CODES,
+        OpenApiParameter(
+            name="id_is", type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Restrict to specified station ID"
+        ),
+        OpenApiParameter(
+            name="id_has", type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description=(
+                    "Restrict to station IDs containing the specified pattern")
+        )
     ],
     responses={
         200: _FILESEARCH_FILES_RESPONSE,
