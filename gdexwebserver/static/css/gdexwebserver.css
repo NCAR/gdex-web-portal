@@ -24,3 +24,20 @@
     font-size: 1rem; /* Set font size */
     padding: 0.5rem 1rem; /* Set padding */
 }
+/* Column sort control in sortable table headers (file lists, documentation, software, requests).
+   A real <button> so it is focusable and keyboard operable; styled to look like the bare icon. */
+button.sort-column {
+    background: none;
+    border: 0;
+    padding: 0 .25rem;
+    margin-left: .25rem;
+    color: inherit;
+    line-height: 1;
+    vertical-align: baseline;
+    cursor: pointer;
+}
+button.sort-column:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: 2px;
+}

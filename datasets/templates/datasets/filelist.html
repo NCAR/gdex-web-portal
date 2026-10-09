@@ -6,7 +6,7 @@
 {% endif %}
 {% csrf_token %}
 
-<div class="modal fade" id="filePreviewModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="filePreviewModal" tabindex="-1" aria-labelledby="filePreviewTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -19,12 +19,12 @@
 </div>
 
 <input type="hidden" id="clipboard"></input> {# Used for copying text to clipboard #}
-<button class="btn btn-primary rounded" id="topButton" title="Scroll to top"><i class="fas fa-arrow-up"></i>&nbsp;Top</button>
+<button class="btn btn-primary rounded" id="topButton" title="Scroll to top"><i class="fas fa-arrow-up" aria-hidden="true"></i>&nbsp;Top</button>
 <div class='d-none' id='file_table' data-dsid='{{ data.dsid }}'></div>
 
 {% if data.parent.url %}
-    <a class="btn btn-icon-gray" href="javascript:void(0);" onclick="get_ds_content('{{ data.parent.url }}{% if data.is_glade %}?fl=glade{% endif %}');">
-        <i class="fas fa-arrow-circle-left me-1"></i>
+    <a class="btn btn-icon-gray" href="javascript:void(0);" aria-label="Back" onclick="get_ds_content('{{ data.parent.url }}{% if data.is_glade %}?fl=glade{% endif %}');">
+        <i class="fas fa-arrow-circle-left me-1" aria-hidden="true"></i>
         <span class="d-none d-md-inline">Back</span>
     </a>
 {% endif %}
@@ -36,7 +36,7 @@
     {# If NCAR HPC or glade filelist is being viewed, show note about file access and generating a text file list #}
     {% with data_format=data.groups.0.rows.0|get_data_format_from_row %}
     <p class='border p-1 bg-light d-inline-block rounded-sm'>
-        <i class="pe-1 fas fa-info-circle"></i>
+        <i class="pe-1 fas fa-info-circle" aria-hidden="true"></i>
         <strong>To access data files: </strong>   
         {% if data_format == "zarr" %}
         Zarr data is accessible via the URLs provided below, and can be accessed directly from any compatible Zarr client (e.g., Python with zarr or xarray library).
@@ -48,7 +48,7 @@
 {% endif %}
 
 {% if data.note %}
-    <p class='border p-1 bg-light d-inline-block rounded-sm'><i class="pe-1 fas fa-info-circle"> </i> {{ data.note|striptags }}</p>
+    <p class='border p-1 bg-light d-inline-block rounded-sm'><i class="pe-1 fas fa-info-circle" aria-hidden="true"></i> {{ data.note|striptags }}</p>
     <br>
 {% endif %}
 

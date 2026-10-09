@@ -6,10 +6,10 @@ files; smaller groups already have every file in the table, so they filter insta
 <hr class="my-1">
 {% if group.paginator.needs_pagination or data.filter_wfile %}
     <div class="pb-2" id="filter_search">
-        <div><strong>File name filter</strong></div>
-        <div><em>Enter a case-sensitive file name pattern to filter this file list. You may use the * wildcard (glob-style), e.g. *2020*.nc.</em></div>
+        <div><label for="filterwfile" class="fw-bold">File name filter</label></div>
+        <div id="filterwfile_help"><em>Enter a case-sensitive file name pattern to filter this file list. You may use the * wildcard (glob-style), e.g. *2020*.nc.</em></div>
         <div class="d-flex align-items-center gap-2">
-            <input type="text" id="filterwfile" class='form-control' placeholder="Enter a filter string" name="filter_wfile"{% if data.filter_wfile %} value="{{ data.filter_wfile }}"{% endif %}>
+            <input type="text" id="filterwfile" class='form-control' placeholder="Enter a filter string" aria-describedby="filterwfile_help" name="filter_wfile"{% if data.filter_wfile %} value="{{ data.filter_wfile }}"{% endif %}>
             <button class="btn btn-primary rounded text-nowrap" style="font-size:1rem" id="applyFilters">Apply filter</button>
             <button class="btn btn-outline-primary rounded text-nowrap" style="font-size:1rem" id="clearFilters">Clear filter</button>
         </div>
@@ -28,12 +28,12 @@ files; smaller groups already have every file in the table, so they filter insta
     </script>
 {% else %}
     <div class="pb-2" id="filter_search">
-        <div><strong>File name filter</strong></div>
-        <div><em>Type to filter the files in this list (case-insensitive). You may use the * wildcard, e.g. *2020*.nc.</em></div>
+        <div><label for="{{ group.group_id|slugify }}_table_filter_input" class="fw-bold">File name filter</label></div>
+        <div id="{{ group.group_id|slugify }}_table_filter_help"><em>Type to filter the files in this list (case-insensitive). You may use the * wildcard, e.g. *2020*.nc.</em></div>
         <div class="d-flex align-items-center gap-2">
-            <input type="text" id="{{ group.group_id|slugify }}_table_filter_input" class='form-control page-filter-input' data-table="{{ group.group_id|slugify }}_table" placeholder="Enter a filter string">
+            <input type="text" id="{{ group.group_id|slugify }}_table_filter_input" class='form-control page-filter-input' data-table="{{ group.group_id|slugify }}_table" placeholder="Enter a filter string" aria-describedby="{{ group.group_id|slugify }}_table_filter_help">
             <button class="btn btn-outline-primary rounded text-nowrap page-filter-clear" style="font-size:1rem" data-table="{{ group.group_id|slugify }}_table">Clear filter</button>
         </div>
-        <div class="small text-muted" id="{{ group.group_id|slugify }}_table_filter_count">Showing {{ group.rows|length }} of {{ group.rows|length }} files</div>
+        <div class="small text-muted" id="{{ group.group_id|slugify }}_table_filter_count" role="status" aria-live="polite">Showing {{ group.rows|length }} of {{ group.rows|length }} files</div>
     </div>
 {% endif %}

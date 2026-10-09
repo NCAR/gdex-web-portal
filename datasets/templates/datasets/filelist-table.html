@@ -9,11 +9,11 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
     <thead>
         <tr>
             {% if not group.is_group_summary %}
-                <th class='index-col'></th>
+                <th class='index-col' scope='col'><span class='visually-hidden'>Select</span></th>
             {% endif %}
             {% for col in group.column_headers %}
                 {% if group.is_group_summary or forloop.first %}
-                    <th>{{ col }}<i role='button' class="fas fa-solid fa-sort sort-column ps-1"></i></th>
+                    <th scope='col'>{{ col }}<button type='button' class='sort-column' aria-label='Sort by {{ col }}'><i class="fas fa-solid fa-sort" aria-hidden="true"></i></button></th>
                 {% endif %}
             {% endfor %}
         </tr>
@@ -22,15 +22,16 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
         {% for row in group.rows %}
             <tr {% for col in row %}{% if col.name == 'Size' %}data-size='{{ col.value }}'{% endif %}{% endfor %}>
                 {% if not group.is_group_summary %}
-                    <td class='index-col'><input class='file me-2' type='checkbox'><span class='file-index'>{{ forloop.counter }}</span></td>
+                    <td class='index-col'><input class='file me-2' type='checkbox' aria-label='Select {{ row.0.value }}'><span class='file-index'>{{ forloop.counter }}</span></td>
                 {% endif %}
                 {% for col in row %}
                     {% if group.is_group_summary or forloop.first %}
                         <td class='{{ col.name }}' {% if col.name == 'Size' %}data-size='{{ col.value }}'{% endif %}>
                             {% if not group.is_group_summary %}
                                 <div class='file-name-cell'>
-                                    <button type='button' class='btn btn-link file-toggle-btn' data-tip='Show file details' aria-label='Show file details' aria-expanded='false'>
-                                        <i class="fas fa-chevron-right"></i>
+                                    <button type='button' class='btn btn-link file-toggle-btn' data-tip='Show file details' aria-label='Show details for {{ row.0.value }}'
+                                            data-name='{{ row.0.value }}' aria-expanded='false' aria-controls='{{ group.group_id|slugify }}_detail_{{ forloop.parentloop.counter }}'>
+                                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
                                     </button>
                                     <span class='file-name-cell__name'>{% include "datasets/filelist-cell.html" %}</span>
                                     {% for size_col in row %}
@@ -47,7 +48,7 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
                 {% endfor %}
             </tr>
             {% if not group.is_group_summary %}
-                <tr class='file-detail d-none'>
+                <tr class='file-detail d-none' id='{{ group.group_id|slugify }}_detail_{{ forloop.counter }}'>
                     <td class='index-col'></td>
                     <td>
                         <dl class='file-detail__panel'>

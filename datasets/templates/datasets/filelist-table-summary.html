@@ -1,4 +1,4 @@
-<div class="table_summary pb-2" id="table_summary">
+<div class="table_summary pb-2">
     <div class="pt-2">
         <strong>{{ group.rows|length }} Files </strong> are listed below.
         {% if group.paginator.needs_pagination %}
@@ -17,7 +17,7 @@
         {% include "datasets/download_buttons.html" %}
     {% endif %}
     <div class="pt-2 d-flex flex-wrap align-items-center gap-2">
-        <span>Currently <strong id='num_selected_files_{{group.group_id|slugify}}'>0</strong><strong> Files </strong><strong id='total_size_{{group.group_id|slugify}}' data-value='0'> </strong> selected</span>
+        <span aria-live='polite' aria-atomic='true'>Currently <strong id='num_selected_files_{{group.group_id|slugify}}'>0</strong><strong> Files </strong><strong id='total_size_{{group.group_id|slugify}}' data-value='0'> </strong> selected</span>
         <button class="btn btn-primary btn-all-files rounded" id="{{ group.group_id|slugify }}_select_all">Select all files</button>
         <button class="btn btn-primary clear-group-btn rounded" id="{{ group.group_id|slugify }}_clear_button" disabled>Clear Selections</button>
     </div>

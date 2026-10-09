@@ -54,7 +54,7 @@ NSF NCAR GDEX | Data Request {{ info.request_index }}
   <br />
   Click on a filename to download a single file or select multiple files and generate a download script.
   <br />
-  Currently <strong id='num_selected_files_request'>0</strong><strong> Files </strong><strong id='total_size_request' data-value='0'> </strong> selected
+  <span aria-live='polite' aria-atomic='true'>Currently <strong id='num_selected_files_request'>0</strong><strong> Files </strong><strong id='total_size_request' data-value='0'> </strong> selected</span>
   <br />
   <button class="btn btn-primary btn-all-files my-2 rounded" id="request_select_all">Select all</button>
   <button class="btn btn-primary clear-group-btn my-2 rounded" id="request_clear_button" disabled>Clear selections</button>
@@ -66,12 +66,12 @@ NSF NCAR GDEX | Data Request {{ info.request_index }}
 <table id='request_table' class='table table-light table-striped'>
   <thead>
     <tr>
-      <th>
+      <th scope="col">
         Index
       </th>
       {% for key,val in column_headers.items %}
-      <th>
-        {{ val }} <i role='button' class="fas fa-solid fa-sort sort-column"></i>
+      <th scope="col">
+        {{ val }}<button type="button" class="sort-column" aria-label="Sort by {{ val }}"><i class="fas fa-solid fa-sort" aria-hidden="true"></i></button>
       </th>
       {% endfor %}
     </tr>
@@ -81,7 +81,7 @@ NSF NCAR GDEX | Data Request {{ info.request_index }}
     {% for file in files %}
     <tr>
       <td>
-        <input class='file' type='checkbox'></input>
+        <input class='file' type='checkbox' aria-label='Select {{ file.base_file_name }}'>
         {{ forloop.counter }}
       </td>
       

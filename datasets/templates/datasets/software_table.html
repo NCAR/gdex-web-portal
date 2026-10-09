@@ -20,10 +20,10 @@ $.get('{{settings.SOFTWARE_BASE_URL}}/{{ request.path|get_dsid_from_url|dsid_das
 <table id='file_table' class='table gdex-table' data-dsid='{{ data.dsid }}'>
 <thead>
 <tr>
-<th>Filename <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
-<th>Size <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
-<th>Date Modified <i role='button' class="fas fa-solid fa-sort sort-column"></i></th>
-<th>Description</th>
+<th scope="col">Filename<button type="button" class="sort-column" aria-label="Sort by Filename"><i class="fas fa-solid fa-sort" aria-hidden="true"></i></button></th>
+<th scope="col">Size<button type="button" class="sort-column" aria-label="Sort by Size"><i class="fas fa-solid fa-sort" aria-hidden="true"></i></button></th>
+<th scope="col">Date Modified<button type="button" class="sort-column" aria-label="Sort by Date Modified"><i class="fas fa-solid fa-sort" aria-hidden="true"></i></button></th>
+<th scope="col">Description</th>
 </tr>
 </thead>
 <tbody>

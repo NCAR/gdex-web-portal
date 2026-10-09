@@ -16,8 +16,24 @@ $(document).ajaxSuccess(function() {
   $(document).scrollTop(0);
 });
 
+/**
+ * Announce a short message to screen readers through a shared, visually hidden live region.
+ * The region is created once and kept across ajax reloads of the file list.
+ */
+function announce(msg) {
+    var region = $('#filelist-status');
+    if (!region.length) {
+        region = $('<div id="filelist-status" class="visually-hidden" role="status" aria-live="polite"></div>').appendTo('body');
+    }
+    // clear first so repeating the same message is announced again
+    region.text('');
+    setTimeout(function() { region.text(msg); }, 100);
+}
+
 $(function() {
     $(document).on('click', '.parent_group, .table_group', toggleChildBoxes);
+    // create the live region up front; some screen readers ignore regions added at the moment they change
+    announce('');
     alignFileSizes();
     // Re-measure once web fonts (Roboto Mono file names) have loaded
     if (document.fonts) { document.fonts.ready.then(alignFileSizes); }
@@ -81,13 +97,15 @@ function toggleFileDetail() {
    var btn = $(this);
    var detail = btn.closest('tr').next('.file-detail').toggleClass('d-none');
    var open = !detail.hasClass('d-none');
-   var label = open ? 'Hide file details' : 'Show file details';
-   btn.attr('aria-expanded', open).attr('data-tip', label).attr('aria-label', label);
+   var verb = open ? 'Hide' : 'Show';
+   btn.attr('aria-expanded', open).attr('data-tip', verb + ' file details')
+      .attr('aria-label', verb + ' details for ' + btn.data('name'));
 }
 
 function copyPathClicked() {
    var btn = $(this);
    navigator.clipboard.writeText(btn.data('path'));
+   announce('File path copied to clipboard');
    btn.find('i').removeClass('fa-copy').addClass('fa-check');
    setTimeout(function() { btn.find('i').removeClass('fa-check').addClass('fa-copy'); }, 2000);
 }
@@ -138,6 +156,11 @@ function sortColumn()
     var rows = table.find('tr:gt(0):not(.file-detail)').toArray().sort(comparer($(this).parent().index()))
     this.asc = !this.asc
     if (!this.asc){rows = rows.reverse()}
+    // expose the sort state to assistive technology on the header cell
+    var th = $(this).closest('th');
+    th.siblings('th').removeAttr('aria-sort');
+    th.attr('aria-sort', this.asc ? 'ascending' : 'descending');
+    announce('Sorted by ' + $.trim(th.text()) + ', ' + (this.asc ? 'ascending' : 'descending'));
     // keep each file's expandable detail row directly beneath it
     var details = rows.map(function(r) { return $(r).next('.file-detail'); });
     for (var i = 0; i < rows.length; i++){table.append(rows[i]); table.append(details[i])}
@@ -737,12 +760,13 @@ function get_user_email(remove) {
  */
 function copyFullLink(btn, link, text='Copy Full URL') {
     navigator.clipboard.writeText(link);
+    announce('Copied to clipboard');
     // Remember the button's own classes (not every caller uses btn-primary); a repeat click keeps the first copy
     if (!$(btn).data('origClass')) { $(btn).data('origClass', btn.className); }
-    $(btn).removeClass('btn-primary').addClass('btn-success').html('<i class="fa-solid fa-check pe-1"></i> Copied!');
+    $(btn).removeClass('btn-primary').addClass('btn-success').html('<i class="fa-solid fa-check pe-1" aria-hidden="true"></i> Copied!');
     setTimeout(() => {
       btn.className = $(btn).data('origClass');
-      $(btn).html('<i class="fa-solid fa-copy pe-1"></i> '+text);
+      $(btn).html('<i class="fa-solid fa-copy pe-1" aria-hidden="true"></i> '+text);
     }, 5000);
 }
 

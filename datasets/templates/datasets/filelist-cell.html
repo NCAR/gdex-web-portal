@@ -22,6 +22,7 @@ original inline version: file links, zarr/ARCO buttons, ajax subgroup links, gla
         {% else %}
             {{ col.data_path|make_glade_URL }}
         {% endif %}
+        {% if col.url|get_extension != "zarr" %}</a>{% endif %}
     {% elif col.webpath|get_extension == "zarr" %}
         {{ col.webpath|basename }}
     {% else %}

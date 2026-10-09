@@ -4,31 +4,31 @@ Access option buttons for one file. Expects: file_col (the file's first column),
 {% endcomment %}
 {% if file_col.is_file %}
     {% if file_col.url %}
-        <a class='btn filelist-access-options__icon' data-tip='Download file' aria-label='Download file' href="{{ file_col.url }}"><i class="fa-solid fa-download"></i></a>
+        <a class='btn filelist-access-options__icon' data-tip='Download file' aria-label='Download {{ file_col.value }}' href="{{ file_col.url }}"><i class="fa-solid fa-download" aria-hidden="true"></i></a>
     {% endif %}
     {% if data.is_glade %}
-        <button type='button' class='btn filelist-access-options__icon copy-path-btn' data-tip='Copy file path' aria-label='Copy file path'
+        <button type='button' class='btn filelist-access-options__icon copy-path-btn' data-tip='Copy file path' aria-label='Copy file path for {{ file_col.value }}'
                 data-path="{% if data.locflag == 'O' %}{{ file_col.url|make_local_os_URL }}{% else %}{{ file_col.data_path|make_glade_URL }}{% endif %}">
-            <i class="fa-solid fa-copy"></i>
+            <i class="fa-solid fa-copy" aria-hidden="true"></i>
         </button>
     {% endif %}
     {% if file_col.value|get_extension == 'nc' and data.locflag != 'O' %}
-        <button type='button' class='btn filelist-access-options__icon preview-file-btn' data-tip='Preview file' aria-label='Preview file'
+        <button type='button' class='btn filelist-access-options__icon preview-file-btn' data-tip='Preview file' aria-label='Preview {{ file_col.value }}'
                 data-dsid="{{ data.dsid }}" data-path="{{ file_col.data_path }}" data-name="{{ file_col.value }}">
-            <i class="fa-solid fa-image"></i>
+            <i class="fa-solid fa-image" aria-hidden="true"></i>
         </button>
     {% endif %}
     {% if group.has_thredds and data.locflag != 'O' and file_col.data_path %}
-        <a class='btn filelist-access-options__icon' data-tip='THREDDS Access' aria-label='THREDDS Access' target='_blank' rel='noopener'
+        <a class='btn filelist-access-options__icon' data-tip='THREDDS Access' aria-label='THREDDS access for {{ file_col.value }} (opens in new tab)' target='_blank' rel='noopener'
            href="{{ file_col.data_path|make_tds_url }}">
-            <i class="fa-solid fa-t"></i>
+            <i class="fa-solid fa-t" aria-hidden="true"></i>
             {# <img src="{% static 'img/thredds_tds.png' %}" alt="TDS Access" style="height:1.1em;width:auto;vertical-align:-0.15em;"> #}
         </a>
     {% endif %}
     {% if file_col.meta_link != 'N' and file_col.meta_link %}
-        <a data-tip='Detailed Metadata' aria-label='Detailed Metadata' target='_blank' class='btn filelist-access-options__icon'
+        <a data-tip='Detailed Metadata' aria-label='Detailed metadata for {{ file_col.value }} (opens in new tab)' target='_blank' rel='noopener' class='btn filelist-access-options__icon'
            href="/ajax/#cgi-bin/transform?xml=/datasets/{{data.dsid}}/metadata/wfmd{{file_col.data_path|remove_datadsid}}.{{file_col.meta_link}}ML">
-            <i class="fa-solid fa-info-circle"></i>
+            <i class="fa-solid fa-info-circle" aria-hidden="true"></i>
         </a>
     {% endif %}
 {% endif %}

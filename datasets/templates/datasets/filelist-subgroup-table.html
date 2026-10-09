@@ -12,9 +12,9 @@
       <table class='table gdex-table'>
         <thead>
             <tr>
-                <th>Group ID</th>
-                <th>Data Description</th>
-                <th>File Count</th>
+                <th scope='col'>Group ID</th>
+                <th scope='col'>Data Description</th>
+                <th scope='col'>File Count</th>
             </tr>
         </thead>
         <tbody>
@@ -23,9 +23,9 @@
             <tr>
                 <td>
                     {% if not data.groups.0.gindex|add:"0" < 0  %} 
-                      <input type='checkbox' class='parent_group me-2' id='{{group.group_id|slugify}}_parent'>
+                      <input type='checkbox' class='parent_group me-2' id='{{group.group_id|slugify}}_parent' aria-label='Select all files in group {{ group.group_id }}'>
                     {% endif %}
-                    <a href='#{{group.group_id|slugify}}' onclick="$event.preventDefault()">{{ group.group_id }}</a>
+                    <a href='#{{group.group_id|slugify}}'>{{ group.group_id }}</a>
                 </td>
                 <td>
                     {{ group.title }}
