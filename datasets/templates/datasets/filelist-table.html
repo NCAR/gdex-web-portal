@@ -52,10 +52,10 @@ collapsible detail row per file (toggled by .file-toggle-btn, see cache_filelist
                     <td>
                         <dl class='file-detail__panel'>
                             {% for col in row %}
-                                {% if col.is_file and col.note is not none %}
+                                {% if col.is_file and col.note is not None %}
                                     <dt>Description</dt>
                                     <dd class='description'>{{ col.note }}</dd>
-                                {% else if col.name != 'File Name' %}
+                                {% elif col.name != 'File Name' %}
                                     <dt>{{ col.name }}</dt>
                                     <dd class='{{ col.name }}'>{% include "datasets/filelist-cell.html" %}</dd>
                                 {% endif %}
